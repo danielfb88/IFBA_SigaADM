@@ -1,0 +1,104 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<? //var_dump($pagGeral);
+/**
+ * Grid Bolsista por Bolsa para Pagamento
+ * @package br.org.miolo.ufjf.adm.grids
+ */
+class gridBolsistaPorBolsa extends DataGrid2
+{
+	/**
+	 * Base URL
+	 * @var string 
+	 */
+	var $listURL;
+
+	/**
+	 * Constructor
+	 */
+	function gridBolsistaPorBolsa()
+	{
+		global $MIOLO, $module, $self, $state, $item ;
+		
+		$pgGeral = $_REQUEST['pgGeral']; 
+		$aux = explode('_',$item);
+		$idbolsa = $aux[0];
+		$mesano = $aux[1];
+		
+		//modificacoes
+		$folha = $aux[2];
+
+		$this->listURL = $MIOLO->GetActionURL($module,$self,$item);
+		
+		$objBolsista = $MIOLO->GetBusiness($module,'bolsista');
+		
+	    //modificacoes
+		//Lista somente os bolsistas ativos que *possuem conta*
+		$query = $objBolsista->ListBolsistasNaoPagosPorBolsa($idbolsa,$mesano,$folha);
+	
+		$columns = array(
+	     	new DataGridColumn('idbolsista','Id','right', true, '0%',false),
+		    new DataGridColumn('nome','Nome','left', true, '50%',true, null, false,true),
+			new DataGridColumn('datainclusao','Inclusão','left',true, '20%',true, null, false,true),
+			new DataGridColumn('dataexclusao','Exclusão','left', true, '30%',true, null, false,true),
+		);
+		
+		if ( $pgGeral == 'sim' )
+		{
+			$this->AddFilterText('nome','Nome:','');
+
+	    	parent::__construct($query, $columns, $this->listURL,20);
+		    
+	    	if (($f = $state->get('filtro')) === NULL) $f = true;			
+	   		$this->SetFilter($f);
+		   	$state->set('filtro',$f);
+		    if ($query->result)
+		    {
+		    	$ctlArray = array (
+           	        new FormButton('btnNew','Pagar em Bloco',$MIOLO->GetActionURL($module,'pagbolsabloco',$mesano.'_'.$idbolsa.'_'.$folha, array('event'=>'btnPrepara:click'))));
+		  	    $this->SetControls($ctlArray);
+		    }		   		
+           	$this->SetTitle('Bolsistas Por Bolsa para Pagamento em Bloco');
+		}
+		else
+		{			
+			$this->AddFilterText('nome','Nome:','');
+
+			parent::__construct($query, $columns, $this->listURL,20,0);
+			
+		 	if (($f = $state->get('filtro')) === NULL) $f = true;			
+		    $this->SetFilter($f);
+	     	$state->set('filtro',$f);
+ 
+		    //modificacoes
+		    $href_edit = $MIOLO->GetActionURL($module,'pagbolsa','%0%_'.$mesano.'_'.$idbolsa.'_'.$folha, array('event'=>'btnPrepara:click'));
+		    
+		    $this->SetTitle('Bolsistas Por Bolsa para Pagamento');
+			$this->AddActionUpdate($href_edit);
+		}
+		
+		$this->HeaderLink('voltar', 'Voltar',$MIOLO->GetActionURL($module,'listapagbolsa',$item));
+
+		$this->SetClose($MIOLO->GetActionURL($module,'main:pagbolsa'));
+	}
+}
+?>

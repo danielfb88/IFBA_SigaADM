@@ -1,0 +1,44 @@
+Tarefas da Pré Catalogação
+
+
+1-  bug  -  Em Catalogação::Pré-Catalogação o sistema permite qualquer caracter no campo ISBN.    tarefa = 32492   100%
+
+2 - Validar os campos ao inserir Pré-Catalogação  tarefa : 32435
+
+Em Catalogação::Pré-Catalogação os campos não estão sendo validados.
+
+    Permite espaço nos campos obrigatórios.
+    Qualquer valor no campo Data de Publicação.
+    Valor negativo no campo Número de Classificação.
+
+
+3- Corrigir erro ao inserir Pré-Catalogação    - # 32434
+
+Em Catalogação::Pré-Catalogação ao tentar inserir uma pré-catalogação com o campo Tipo de Documento vazio o sistema apresenta o seguinte erro:
+
+
+
+4-  #29981    - sugestão
+Problema - Pré-catalogação
+crição
+
+Vou transcrever o problema encontrado por um de nossos bibliotecários.
+
+No módulo Biblioteca, na parte de pré-catalogação e catalogação não nos fornece a possibilidade de inserir
+Cutter (classificação feita com base no nome do autor).
+
+Segundo o manual a opção Cutter deveria aparecer abaixo do 
+======================================================================tarefa 29959 letras maiuscula
+
+EDITORA:
+
+1)  Bug #32311 -- Corrigir erro ao editar uma nova Editora
+2) bud  - 32310   ----Em Administração::Editora ao tentar inserir mais de 20 caracteres no campo Mnemônico o sistema apresenta o seguinte erro:
+3)Bug -32309              -------------------------------------------------------------------------------------------(está em aberto)
+validar os campos ao inserir uma nova Editora:
+Em Administração::Editoras o sistema permite o sistema não está fazendo nenhuma validação nos campos.
+    Permite espaço no campo obrigatório Descrição.
+    Permite qualquer caracter nos campos CEP e Telefone
+    Não valida CNPJ
+
+

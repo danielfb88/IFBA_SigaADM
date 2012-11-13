@@ -1,0 +1,121 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+class frmUoAlmoxarifadoEstorno2006 extends MCompoundForm
+{
+    protected $uoalmoxarifado;
+    protected $material;
+    function __construct($objUO)
+    {
+        global $MIOLO;
+        $this->uoalmoxarifado = $objUO;
+        $this->material = $MIOLO->getBusiness('adm','material',Form::getFormValue('id'));
+        //$this->material[0]= $objUo->idUo;
+		parent::__construct("Estorno de Entrada de Material (Anos Anteriores)");
+        $this->EventHandler();
+		$this->SetClose(null);
+    }
+
+	function CreateFields()
+    {
+        global $item;
+		$cf = new MCurrencyFormatter(); 
+		$materialUo['iduo'] = $this->uoalmoxarifado->idUo;		
+		$materialUo['idmaterial'] = $this->material->idMaterial;		
+		$this->_form[] = $this->manager->GetUI()->GetGrid('adm','gridUoAlmoxarifadoEstorno2006',$materialUo);
+        
+        $buttons = array(
+            new MButton('btnEstornar','Estornar'),
+        );
+        $this->setButtons($buttons);
+    }
+
+	function btnEstornar_click()
+	{
+		global $MIOLO, $action, $module, $item;
+
+		$estoque = $MIOLO->GetBusiness($module, 'estoque');
+		$movimento = $MIOLO->GetBusiness($module, 'movimento');		
+		$cf = new MCurrencyFormatter();
+
+		if($select = $this->GetFormValue('select'))
+		{
+			foreach($select as $sel)
+			{
+				$movimento->GetById($sel);
+				$estoque->GetById($this->uoalmoxarifado->idUo, $movimento->idMaterial);				
+
+				try
+				{
+					//Novo movimento (estorno)
+					$novoMovimento = $MIOLO->GetBusiness($module, 'movimento');
+					$novoMovimento->dataMovimento = date('d/m/Y');
+					$novoMovimento->quantidade = $movimento->quantidade;
+					$novoMovimento->valorTotal = $movimento->valorTotal;
+					$novoMovimento->idRequisicao = $movimento->idRequisicao;
+					$novoMovimento->idMaterial = $movimento->idMaterial;
+					$novoMovimento->idMovimentoRef = $movimento->idMovimento;
+					$novoMovimento->idUoAlmoxarifado = $this->uoalmoxarifado->idUo;
+					if($movimento->tipoMovimento == '1')
+					{
+						$novoMovimento->tipoMovimento = '2';//ESTORNO ENTRADA
+					}
+					if($movimento->tipoMovimento == '5')
+					{
+						$novoMovimento->tipoMovimento = '6';//ESTORNO E/S
+					}
+					$novoMovimento->beginTransaction();
+					$novoMovimento->save();
+
+					//Estoque
+					if($movimento->tipoMovimento == '1')
+					{
+						$estoque->estoque -= $novoMovimento->quantidade;
+						$estoque->valorTotal = $cf->toDecimal($estoque->valorTotal) - $cf->toDecimal($novoMovimento->valorTotal);
+						$estoque->setTransaction($novoMovimento->getTransaction());
+						$estoque->save();
+					}
+
+					//Precisa apagar idItemNota do movimento para poder apagar registro de ad_itemnota
+					//Precisa apagar idOrdemEntrega do movimento para cortar ligação com ad_ordentrega
+					//Tambem grava idMovimentoRef (id do novo movimento de estorno) no original					
+					$movimento->setTransaction($novoMovimento->getTransaction());
+					$movimento->idItemNota = '';
+					$movimento->idOrdemEntrega = '';
+					$movimento->idMovimentoRef = $novoMovimento->idMovimento;
+					$movimento->save();					
+																
+
+					$movimento->endTransaction();
+
+					$movimento->Log(OP_DEL,"Estorno de Entrada: " . $novoMovimento->idMovimento . " item empenhado: " . $idEmpenhado);
+					$MIOLO->Information('Estorno feito com sucesso.');
+				}
+				catch (Exception $e)
+				{
+					$this->addError($e->getMessage());
+				}
+			}
+		}
+	}
+}
+?>

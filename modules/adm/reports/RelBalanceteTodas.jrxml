@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="balanceteTodas" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="786" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="zebra" isDefault="false" backcolor="#D7D7D7">
+		<box>
+			<pen lineWidth="0.0" lineStyle="Dotted"/>
+			<topPen lineWidth="0.0" lineStyle="Dotted"/>
+			<leftPen lineWidth="0.0" lineStyle="Dotted"/>
+			<bottomPen lineWidth="0.0" lineStyle="Dotted"/>
+			<rightPen lineWidth="0.0" lineStyle="Dotted"/>
+		</box>
+	</style>
+	<style name="pageHeader" isDefault="false">
+		<box>
+			<leftPen lineWidth="0.0" lineColor="#FFFFFF"/>
+			<rightPen lineWidth="0.0" lineColor="#FFFFFF"/>
+		</box>
+	</style>
+	<parameter name="pEmpenho" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="pImg" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="pIdUsuario" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pURL" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String"/>
+	<parameter name="pDataIni" class="java.lang.String">
+		<defaultValueExpression><![CDATA[new Date().toString()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pDataFim" class="java.lang.String">
+		<defaultValueExpression><![CDATA[new Date().toString()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pIdInstituicao" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT
+	consultafinal.idvidautil as contacontabil,
+	consultafinal.descricao as descricao,
+	consultafinal.quant as quant,
+	COALESCE(consultafinal.anterior,0.00) as anterior,
+	COALESCE(consultafinal.aquisicoes,0.00) as aquisicoes,
+	COALESCE(consultafinal.extras,0.00) as extras,
+	COALESCE(consultafinal.baixas,0.00) as baixas,
+	COALESCE(consultafinal.anterior,0.00) +
+	COALESCE(consultafinal.aquisicoes,0.00) +
+	COALESCE(consultafinal.extras,0.00) -
+	COALESCE(consultafinal.baixas,0.00) as valor
+FROM (
+(SELECT
+	ad_subelemento."idelemento" ||'.'|| ad_subelemento."idsubelemento" AS rubrica,
+        ad_itempatrimonio.idvidautil,
+	ad_subelemento.descricao,
+	count(ad_itempatrimonio.iditempatrimonio) as quant
+FROM
+	(ad_itempatrimonio
+	INNER JOIN cm_setor ON (ad_itempatrimonio.idsetor=cm_setor.idsetor)
+	INNER JOIN ad_subelemento ON ((ad_itempatrimonio.subelemento=ad_subelemento.idsubelemento)))
+WHERE
+	(ad_subelemento.idelemento = 449052
+	and ad_itempatrimonio.subelemento IS NOT NULL
+	and ad_itempatrimonio.ativo = 'S')
+GROUP BY
+	ad_itempatrimonio.subelemento,
+	rubrica,
+	ad_itempatrimonio.idvidautil,
+	ad_subelemento.descricao
+ORDER BY
+	rubrica
+) as consulta1
+LEFT JOIN
+(SELECT
+	ad_subelemento."idelemento" ||'.'|| ad_subelemento."idsubelemento" AS rubrica1,
+    ad_itempatrimonio.idvidautil as idvidautil1,
+	sum(ad_itempatrimonio.valor)as Anterior
+FROM
+	(ad_itempatrimonio
+INNER JOIN
+	ad_subelemento ON ((ad_itempatrimonio.subelemento=ad_subelemento.idsubelemento))
+INNER JOIN
+	ad_movimentopat ON ((ad_itempatrimonio.iditempatrimonio=ad_movimentopat.iditempatrimonio))
+LEFT JOIN
+	cm_tabelageral ON (ad_movimentopat.motivobaixa = cm_tabelageral.item1))
+WHERE
+	ad_subelemento.idelemento = 449052
+	and (
+		(
+		ad_itempatrimonio.subelemento IS NOT NULL
+		and ad_itempatrimonio.ativo = 'S'
+		and (to_date(TO_CHAR(AD_ITEMPATRIMONIO.DATAAQUISICAO,'DD/MM/YYYY') ,'DD/MM/YYYY') < to_date($P{pDataIni},'DD/MM/YYYY'))
+		AND ((ad_movimentopat.tipomovimento = '1') OR (ad_movimentopat.tipomovimento IS NULL))
+		)
+		OR
+		(
+		ad_subelemento.idelemento = 449052
+		and ad_itempatrimonio.subelemento IS NOT NULL
+		and ad_itempatrimonio.ativo = 'N'
+		and (to_date(TO_CHAR(ad_movimentopat.data,'DD/MM/YYYY') ,'DD/MM/YYYY') >= to_date($P{pDataIni},'DD/MM/YYYY')
+		)
+	AND (ad_movimentopat.tipomovimento ='3')
+	AND (cm_tabelageral.tabela = 'AD_MOTIVOBAIXAPAT')
+	)
+)
+
+GROUP BY
+	ad_itempatrimonio.subelemento,
+	rubrica1,
+	idvidautil1,
+	ad_subelemento.descricao
+ORDER BY
+	rubrica1
+) as consulta2
+ON (consulta1.rubrica=consulta2.rubrica1)
+LEFT JOIN
+(SELECT
+	ad_subelemento."idelemento" ||'.'|| ad_subelemento."idsubelemento" AS rubrica2,
+    ad_itempatrimonio.idvidautil as idvidautil2,
+	sum(ad_itempatrimonio.valor)as aquisicoes
+FROM
+	(ad_itempatrimonio
+INNER JOIN
+	ad_subelemento ON ((ad_itempatrimonio.subelemento=ad_subelemento.idsubelemento)))WHERE
+	(
+	ad_subelemento.idelemento = 449052
+	and ad_itempatrimonio.subelemento IS NOT NULL
+	and ad_itempatrimonio.ativo = 'S'
+	and (to_date(TO_CHAR(AD_ITEMPATRIMONIO.DATAAQUISICAO,'DD/MM/YYYY') ,'DD/MM/YYYY') >= to_date($P{pDataIni},'DD/MM/YYYY'))
+	and (to_date(TO_CHAR(AD_ITEMPATRIMONIO.DATAAQUISICAO,'DD/MM/YYYY') ,'DD/MM/YYYY') <= to_date($P{pDataFim},'DD/MM/YYYY'))
+	AND (
+		ad_itempatrimonio.iditempatrimonio NOT IN
+		(SELECT DISTINCT ad_itempatrimonio.iditempatrimonio
+		FROM ad_itempatrimonio
+		WHERE ((tipoingresso > '1') AND (tipoingresso < '8'))
+		)
+	))
+GROUP BY
+	ad_itempatrimonio.subelemento,
+	rubrica2,
+	idvidautil2,
+	ad_subelemento.descricao
+ORDER BY
+	rubrica2
+) as consulta3
+ON (consulta1.rubrica=consulta3.rubrica2)
+LEFT JOIN
+(SELECT
+	ad_subelemento."idelemento" ||'.'|| ad_subelemento."idsubelemento" AS rubrica3,
+    ad_itempatrimonio.idvidautil as idvidautil3,
+	sum(ad_itempatrimonio.valor)as extras
+FROM
+	(ad_itempatrimonio
+INNER JOIN
+	ad_subelemento ON ((ad_itempatrimonio.subelemento=ad_subelemento.idsubelemento)))WHERE
+	(
+	ad_subelemento.idelemento = 449052
+	and ad_itempatrimonio.subelemento IS NOT NULL
+	and ad_itempatrimonio.ativo = 'S'
+	and (to_date(TO_CHAR(AD_ITEMPATRIMONIO.DATAAQUISICAO,'DD/MM/YYYY') ,'DD/MM/YYYY') >= to_date($P{pDataIni},'DD/MM/YYYY'))
+	and (to_date(TO_CHAR(AD_ITEMPATRIMONIO.DATAAQUISICAO,'DD/MM/YYYY') ,'DD/MM/YYYY') <= to_date($P{pDataFim},'DD/MM/YYYY'))
+	AND (ad_itempatrimonio.iditempatrimonio IN
+		(
+		SELECT DISTINCT ad_itempatrimonio.iditempatrimonio
+		FROM
+			ad_itempatrimonio
+		WHERE ((tipoingresso <> '1') AND (tipoingresso <> '8'))
+		)
+	))
+GROUP BY
+	ad_itempatrimonio.subelemento,
+	rubrica3,
+	idvidautil3,
+	ad_subelemento.descricao
+ORDER BY
+	rubrica3
+) as consulta4
+ON (consulta1.rubrica=consulta4.rubrica3)
+LEFT JOIN (
+SELECT
+	ad_subelemento."idelemento" ||'.'|| ad_subelemento."idsubelemento" AS rubrica4,
+    ad_itempatrimonio.idvidautil as idvidautil4,
+	sum(ad_itempatrimonio.valor)as Baixas
+FROM
+	((((ad_itempatrimonio
+	INNER JOIN ad_movimentopat ON (ad_itempatrimonio.iditempatrimonio=ad_movimentopat.iditempatrimonio))
+	INNER JOIN ad_subelemento ON (ad_itempatrimonio.subelemento=ad_subelemento.idsubelemento))
+	INNER JOIN cm_setor ON (ad_itempatrimonio.idsetor=cm_setor.idsetor))
+	INNER JOIN cm_tabelageral ON (ad_movimentopat.motivobaixa = cm_tabelageral.item1))
+WHERE
+	ad_subelemento.idelemento = 449052
+	and ad_itempatrimonio.subelemento IS NOT NULL
+	and ad_itempatrimonio.ativo = 'N'
+	and (to_date(TO_CHAR(ad_movimentopat.data,'DD/MM/YYYY') ,'DD/MM/YYYY') >= to_date($P{pDataIni},'DD/MM/YYYY'))
+	and (to_date(TO_CHAR(ad_movimentopat.data,'DD/MM/YYYY') ,'DD/MM/YYYY') <= to_date($P{pDataFim},'DD/MM/YYYY'))
+	AND (ad_movimentopat.tipomovimento ='3')
+	AND (cm_tabelageral.tabela = 'AD_MOTIVOBAIXAPAT')
+GROUP BY
+	ad_itempatrimonio.subelemento,
+	rubrica4,
+	idvidautil4,
+	ad_subelemento.descricao
+ORDER BY
+	rubrica4
+) as consulta5 ON (consulta1.rubrica=consulta5.rubrica4)
+) as consultafinal]]>
+	</queryString>
+	<field name="contacontabil" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="descricao" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="quant" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="anterior" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="aquisicoes" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="extras" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="baixas" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="valor" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="classificador_sub_totals" class="java.math.BigDecimal" resetType="Group" resetGroup="balancete" calculation="Sum">
+		<variableExpression><![CDATA[$F{valor}]]></variableExpression>
+	</variable>
+	<variable name="totalGeral" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{valor}]]></variableExpression>
+	</variable>
+	<variable name="qteTotal" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{quant}]]></variableExpression>
+	</variable>
+	<variable name="totalAnterior" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{anterior}]]></variableExpression>
+	</variable>
+	<variable name="totalAquisicoes" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{aquisicoes}]]></variableExpression>
+	</variable>
+	<variable name="totalExtras" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{extras}]]></variableExpression>
+	</variable>
+	<variable name="totalBaixas" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{baixas}]]></variableExpression>
+	</variable>
+	<group name="balancete">
+		<groupExpression><![CDATA[$F{contacontabil}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band height="17">
+				<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
+					<reportElement key="textField" mode="Opaque" x="705" y="0" width="91" height="15"/>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{valor})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+					<reportElement key="textField-13" stretchType="RelativeToBandHeight" x="88" y="1" width="255" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{descricao}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField" x="344" y="0" width="35" height="15"/>
+					<textElement textAlignment="Center">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$F{quant}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-9" x="2" y="1" width="64" height="14"/>
+					<textElement textAlignment="Center">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{contacontabil}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
+					<reportElement key="textField" mode="Opaque" x="382" y="0" width="81" height="15"/>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{anterior} )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="true">
+					<reportElement key="textField" mode="Opaque" x="473" y="2" width="73" height="15"/>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{aquisicoes} )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
+					<reportElement key="textField" mode="Opaque" x="629" y="0" width="69" height="15"/>
+					<textElement textAlignment="Right">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{baixas} )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="true">
+					<reportElement key="textField" mode="Opaque" x="556" y="2" width="77" height="15"/>
+					<textElement textAlignment="Center">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new Locale ("pt", "BR")).format( $F{extras} )]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="78">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" mode="Transparent" x="0" y="0" width="797" height="77"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA["MOVIMENTAÇÃO DE BENS MÓVEIS"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} +"/common/reports/CabecalhoPaisagem.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="33">
+			<line>
+				<reportElement key="line-1" x="0" y="1" width="797" height="1"/>
+			</line>
+			<line>
+				<reportElement key="line-1" x="1" y="28" width="796" height="1"/>
+			</line>
+			<line>
+				<reportElement key="line-1" x="0" y="2" width="797" height="1"/>
+			</line>
+			<line>
+				<reportElement key="line-2" x="1" y="29" width="796" height="1"/>
+			</line>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-18" stretchType="RelativeToTallestObject" x="6" y="3" width="458" height="22"/>
+				<textElement verticalAlignment="Bottom">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Balancete - Período de "+$P{pDataIni}.toString()+" a "+$P{pDataFim}.toString()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="31">
+			<rectangle>
+				<reportElement key="rectangle-1" style="zebra" mode="Opaque" x="0" y="3" width="797" height="26" backcolor="#D7D7D7"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Dotted"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-20" x="729" y="5" width="69" height="17"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-21" x="87" y="5" width="172" height="19"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Descrição]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-23" x="344" y="5" width="35" height="17"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Qte]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" x="410" y="5" width="63" height="17"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Anterior]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" x="486" y="6" width="62" height="17"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Aquisições]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" x="666" y="5" width="33" height="17"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Baixas]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" positionType="Float" x="556" y="3" width="87" height="26"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Extras Orçamentárias]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" positionType="Float" x="2" y="3" width="64" height="26"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Conta Contábil]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band/>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="24">
+			<textField pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="false">
+				<reportElement key="textField-16" x="32" y="6" width="161" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-19" x="506" y="5" width="25" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-27" x="464" y="5" width="40" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Página Estático]]></text>
+			</staticText>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="24">
+			<rectangle>
+				<reportElement key="rectangle-2" x="0" y="0" width="796" height="24" isPrintWhenDetailOverflows="true" backcolor="#FFFFFF"/>
+				<graphicElement>
+					<pen lineWidth="0.1" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-26" x="280" y="8" width="58" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Total:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-18" stretchType="RelativeToTallestObject" mode="Opaque" x="692" y="6" width="104" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $V{totalGeral} )]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="342" y="8" width="35" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$V{qteTotal}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="379" y="8" width="94" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $V{totalAnterior} )]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="473" y="8" width="83" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $V{totalAquisicoes} )]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="570" y="8" width="52" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $V{totalExtras} )]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="627" y="8" width="70" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $V{totalBaixas})]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

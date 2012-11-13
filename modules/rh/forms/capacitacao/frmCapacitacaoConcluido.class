@@ -1,0 +1,264 @@
+<?
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+class frmCapacitacaoConcluido extends MForm
+{
+    public $setor;
+    public $modulo;
+
+    function __construct($siape)
+    {
+        global $MIOLO;
+ 
+        $this->setor = $MIOLO->getBusiness('common','setor');
+        parent::__construct('Relação de Concluídos');
+	    $this->eventHandler();
+    }
+
+	function CreateFields()
+	{
+		global $MIOLO, $action;
+
+        	$ui = $MIOLO->GetUI();
+
+/*//        $ano = array(array('2010','2010'),array('2009','2009'),array('AAAA','TODOS'));
+	$ano = array(array('AAAA','TODOS'));
+        $query = $this->setor->listUnidade();
+        $unidades = $query->chunkResult();
+        $unidades['AAAA'] = 'TODAS AS UNIDADES';
+
+		$fields = array(
+           new MSpacer('10px'),
+           new MSelection('ano','','Ano',$ano),
+           new MSelection('unidade','','Unidade', $unidades),
+           new MSpacer('10px')
+        );
+        $this->SetFields($fields);
+		$buttons = array(
+           new MButton('btnPost','Gerar Relatório - Concluídos','PDF'),
+        );
+        $this->SetButtons($buttons);*/
+		$objModulo = $MIOLO->GetBusiness('rh','capacitacaomodulo');
+		$modulos = $objModulo->listCursoModuloAberto();
+        	$hamodulosAbertos = count($modulos);
+        	if ($hamodulosAbertos)
+        	{
+	    		foreach($modulos as $n=>$c)
+		    	{
+				$opt = array(); 
+			   	foreach($c as $c1)
+			   	{
+                  			$opt[] = new MOption( $c1[2], $c1[2], $c1[0].'&nbsp;-&nbsp;'.$aTurno[$c1[1]], false);
+			   	}
+               			$optGroup[] = new MOptionGroup($c[2],'Curso: '.$n,$opt);
+		    	}
+            		$fmodulo = new MSelection('idmodulo','','Curso/Módulo',$optGroup);
+
+//            		$fmodulo->AddAttribute('onChange',"javascript:ajaxBtnModulo.call();");
+        	}
+		else
+       		{
+            		$fmodulo = new MLabel('Nenhum modulo aberto.','red',true);
+        	}
+			
+
+
+
+		$op = array("ANUAL","MENSAL");
+		$meses = array(
+			"01-JANEIRO"=>"JANEIRO",
+			"02-FEVEREIRO"=>"FEVEREIRO",
+			"03-MARCO"=>"MARCO",
+			"04-ABRIL"=>"ABRIL",
+			"05-MAIO"=>"MAIO",
+			"06-JUNHO"=>"JUNHO",
+			"07-JULHO"=>"JULHO",
+			"08-AGOSTO"=>"AGOSTO",
+			"09-SETEMBRO"=>"SETEMBRO",
+			"10-OUTUBRO"=>"OUTUBRO",
+			"11-NOVEMBRO"=>"NOVEMBRO",
+			"12-DEZEMBRO"=>"DEZEMBRO"
+				);
+		$fields = array(
+				$fmodulo,
+				new MSelection('op','','Opção',$op),
+				new MTextField('ano','','Ano','4','Utilize 4 dígitos'),
+				new MSelection('mes','','Mês',$meses),
+				);
+		$this->setFields($fields);
+
+		$buttons = array(
+				new MButton('btnPost','Enviar'),
+				new MButton('btnPost1','Enviar'),
+				new MButton('btnPost2','Enviar'),//Anual
+				new MButton('btnPost3','Enviar'),//Mensal
+				);
+		$this->setButtons($buttons);
+		$this->setFieldAttr('op','visible',false);
+		$this->setFieldAttr('ano','visible',false);
+		$this->setFieldAttr('mes','visible',false);
+		$this->setButtonAttr('btnPost1','visible',false);
+		$this->setButtonAttr('btnPost2','visible',false);
+		$this->setButtonAttr('btnPost3','visible',false);
+	}
+	function btnPost_click()
+	{
+		$modulo = $this->getFormValue('idmodulo');
+		if($modulo == '')
+		{
+			$this->addError('Informe o curso/módulo');
+		}
+		else
+		{
+			$this->modulo = $modulo;
+			$this->setFieldAttr('op','visible',true);
+			$this->setFieldAttr('idmodulo','readonly',true);
+			$this->setButtonAttr('btnPost1','visible',true);
+			$this->setButtonAttr('btnPost','visible',false);
+		}
+	}
+	function btnPost1_click()
+	{
+		//0 == Anual
+		//1 == Mensal
+		$op = $this->getFormValue('op');
+		if($op == '')
+		{
+			$this->setFieldAttr('op','visible',true);
+			$this->setFieldAttr('idmodulo','readonly',true);
+			$this->setButtonAttr('btnPost1','visible',true);
+			$this->setButtonAttr('btnPost','visible',false);
+			$this->addError('Informe a opção de geração do relat');
+		}
+		elseif($op == '0')
+		{
+			$this->setFieldAttr('ano','visible',true);
+			$this->setFieldAttr('op','visible',true);
+			$this->setFieldAttr('op','readonly',true);
+			$this->setFieldAttr('idmodulo','readonly',true);
+			$this->setButtonAttr('btnPost2','visible',true);
+			$this->setButtonAttr('btnPost1','visible',false);
+			$this->setButtonAttr('btnPost','visible',false);
+		}
+		elseif($op == '1')
+		{
+			$this->setFieldAttr('ano','visible',true);
+			$this->setFieldValue('ano','2012');
+			$this->setFieldAttr('ano','readonly',true);
+			$this->setFieldAttr('mes','visible',true);
+			$this->setFieldAttr('op','visible',true);
+			$this->setFieldAttr('op','readonly',true);
+			$this->setFieldAttr('idmodulo','readonly',true);
+			$this->setButtonAttr('btnPost3','visible',true);
+			$this->setButtonAttr('btnPost1','visible',false);
+			$this->setButtonAttr('btnPost','visible',false);
+		}
+	}
+	function btnPost2_click()
+	{
+		global $MIOLO;
+
+		$ano = strlen(trim($this->getFormValue('ano')));
+		if($ano != '4')
+		{
+			$this->setFieldAttr('ano','visible',true);
+			$this->setFieldAttr('op','visible',true);
+			$this->setFieldAttr('op','readonly',true);
+			$this->setFieldAttr('idmodulo','readonly',true);
+			$this->setButtonAttr('btnPost2','visible',true);
+			$this->setButtonAttr('btnPost1','visible',false);
+			$this->setButtonAttr('btnPost','visible',false);
+			$this->addError('Informe o Ano Corretamente');			
+		}
+		elseif(!is_numeric($this->getFormValue('ano')))
+		{
+			$this->setFieldAttr('ano','visible',true);
+			$this->setFieldAttr('op','visible',true);
+			$this->setFieldAttr('op','readonly',true);
+			$this->setFieldAttr('idmodulo','readonly',true);
+			$this->setButtonAttr('btnPost2','visible',true);
+			$this->setButtonAttr('btnPost1','visible',false);
+			$this->setButtonAttr('btnPost','visible',false);
+			$this->addError('Informe o Ano no padrão correto de 4 dígitos numéricos');
+		}
+		else
+		{
+			$stringModulo = $this->getFormValue('idmodulo');
+			$stringAno = $this->getFormValue('ano');
+			$report = new MJasperReport('sigaept'); 
+			$parameters['str_ano'] = $stringAno;
+			$parameters['int_modulo'] = $stringModulo;
+			$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
+			$parameters['int_pIdUsuario']= $MIOLO->login->idkey;
+			$parameters['pURL']=$MIOLO->GetConf('home.url');
+	
+	        	$report->Execute('rh', 'RelCapacitacaoConcluidos',$parameters); 
+		}
+	}
+	function btnPost3_click()
+	{
+		global $MIOLO;
+
+		$mes = $this->getFormValue('mes');
+		if($mes == '')
+		{
+			$this->setFieldAttr('ano','visible',true);
+			$this->setFieldValue('ano','2012');
+			$this->setFieldAttr('ano','readonly',true);
+			$this->setFieldAttr('mes','visible',true);
+			$this->setFieldAttr('op','readonly',true);
+			$this->setButtonAttr('btnPost3','visible',true);
+			$this->setButtonAttr('btnPost1','visible',false);
+			$this->addError('Informe o Mês corretamente');
+		}
+		else
+		{
+			$stringModulo = $this->getFormValue('idmodulo');
+			$stringAno = $this->getFormValue('ano');
+			$m = $this->getFormValue('mes');
+			$m = explode('-',$mes);
+			$stringMes = $m[0];
+			$stringMes2 = $m[1];
+			$report = new MJasperReport('sigaept'); 
+			$parameters['str_ano'] = $stringAno;
+			$parameters['int_modulo'] = $stringModulo;
+			$parameters['str_mes'] = $stringMes;
+			$parameters['str_mes2'] = $stringMes2;
+			$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
+			$parameters['int_pIdUsuario']= $MIOLO->login->idkey;
+			$parameters['pURL']=$MIOLO->GetConf('home.url');
+	
+	        	$report->Execute('rh', 'RelCapacitacaoConcluidosMes',$parameters); 
+		}
+	}
+	
+
+/*    function btnPost_click()
+    {   global $MIOLO ;
+
+        $ui = $MIOLO->GetUI();
+        $data = $this->getData();
+        $report = $ui->GetReport('rh','repCapacitacaoConcluido',$data);
+        $report->Generate();
+
+    }*/
+
+
+ }
+?>

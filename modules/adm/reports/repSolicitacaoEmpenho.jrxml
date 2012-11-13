@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="repSolicitacaoEmpenho" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String"/>
+	<parameter name="pURL" class="java.lang.String"/>
+	<parameter name="pIdUsuario" class="java.lang.Integer"/>
+	<parameter name="pDataIni" class="java.lang.String"/>
+	<parameter name="pIdLicitacao" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT ad_empenho.idempenho,
+       sum(ad_empenhado.valoremp),
+       ad_empenho.numpro,
+       ad_licitacao.numero as licitacao,
+       ad_orcamento.idptr,
+       ad_orcamento.idrubrica,
+       ad_orcamento.idfonte
+FROM (ad_empenho
+      INNER JOIN ad_empenhado ON ((ad_empenho.idempenho=ad_empenhado.idempenho))
+      INNER JOIN ad_licitacao ON ((ad_empenhado.idlicitacao=ad_licitacao.idlicitacao))
+      INNER JOIN ad_orcamento ON ((ad_empenhado.idorcamento=ad_orcamento.idorcamento))
+
+     )
+WHERE (
+      (to_date(TO_CHAR(AD_EMPENHADO.DATAORCAMENTO,'DD/MM/YYYY') ,'DD/MM/YYYY') >= to_date($P{pDataIni},'DD/MM/YYYY')) AND
+      (ad_empenhado.idlicitacao = CAST($P{pIdLicitacao} AS integer) ))
+
+
+GROUP BY ad_empenho.idempenho,ad_empenho.numpro,ad_licitacao.numero,ad_orcamento.idptr,
+ad_orcamento.idrubrica,ad_orcamento.idfonte]]>
+	</queryString>
+	<field name="idempenho" class="java.math.BigDecimal"/>
+	<field name="sum" class="java.math.BigDecimal"/>
+	<field name="numpro" class="java.lang.String"/>
+	<field name="licitacao" class="java.lang.String"/>
+	<field name="idptr" class="java.lang.String"/>
+	<field name="idrubrica" class="java.lang.String"/>
+	<field name="idfonte" class="java.lang.String"/>
+	<group name="Empenho">
+		<groupExpression><![CDATA[$F{idempenho}]]></groupExpression>
+		<groupHeader>
+			<band isSplitAllowed="false"/>
+		</groupHeader>
+		<groupFooter>
+			<band height="13"/>
+		</groupFooter>
+	</group>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="84">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-9" stretchType="RelativeToTallestObject" mode="Transparent" x="3" y="2" width="527" height="77"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA["SOLICITAÇÃO DE EMPENHO"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "/common/reports/Cabecalho.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="83">
+			<staticText>
+				<reportElement key="staticText-41" x="5" y="8" width="307" height="63"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Solicitação de Empenho:
+
+De: Setor de Orçamento
+Para: Setor de Execução Orçamentária]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-4" x="6" y="77" width="527" height="1"/>
+			</line>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="207">
+			<rectangle>
+				<reportElement key="rectangle-3" mode="Opaque" x="3" y="5" width="55" height="28" forecolor="#E2E2E2" backcolor="#E2E2E2"/>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle-4" mode="Opaque" x="3" y="151" width="55" height="30" forecolor="#E2E2E2" backcolor="#E2E2E2"/>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle-5" mode="Opaque" x="3" y="40" width="55" height="30" forecolor="#E2E2E2" backcolor="#E2E2E2"/>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle-6" mode="Opaque" x="3" y="77" width="55" height="30" forecolor="#E2E2E2" backcolor="#E2E2E2"/>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle-7" mode="Opaque" x="3" y="114" width="55" height="30" forecolor="#E2E2E2" backcolor="#E2E2E2"/>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-42" x="4" y="6" width="53" height="27"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Licitação:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="84" y="5" width="100" height="30"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{licitacao}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-43" x="4" y="40" width="54" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[PTR:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="84" y="40" width="100" height="30"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{idptr}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-44" x="4" y="77" width="53" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Fonte:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-45" x="3" y="114" width="54" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Rubrica:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-46" x="4" y="151" width="54" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Valor:]]></text>
+			</staticText>
+			<textField pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="84" y="151" width="100" height="30"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{sum}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="84" y="77" width="100" height="30"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{idfonte}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="84" y="114" width="100" height="30"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{idrubrica}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-3" x="3" y="193" width="527" height="1"/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="59"/>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="23">
+			<staticText>
+				<reportElement key="staticText-30" x="2" y="0" width="55" height="22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Página]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="52" y="0" width="32" height="22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="65">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="52" y="41" width="32" height="22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-30" x="2" y="41" width="55" height="22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Página]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-2" x="151" y="15" width="257" height="1"/>
+			</line>
+			<staticText>
+				<reportElement key="staticText-47" x="163" y="17" width="225" height="23"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Chefe do Setor de Orçamento]]></text>
+			</staticText>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

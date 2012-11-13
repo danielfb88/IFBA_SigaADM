@@ -1,0 +1,105 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class FrmSessao extends Form
+{
+
+	function FrmSessao()
+    {   global $MIOLO, $module, $page, $context, $self;
+
+		parent::__construct('Sessões');
+	    $this->EventHandler();
+	}
+
+    function CreateFields()
+	{  
+
+        $action = $this->manager->getCurrentUrl();
+
+       $aOpcoes = array(
+           new MLinkButton('btnAll','[Todas as sessões]', $action),
+           new MLinkButton('btnActive','[Sessões ativas]', $action),
+           new MLinkButton('btnClosed','[Sessões fechadas]', $action)
+       );
+       $fields = Array(
+           new MLinkButtonGroup('lbGrpSessao','',$aOpcoes,'horizontal')
+       );
+	   $this->SetFields($fields);
+       $this->defaultButton = false;
+	}
+
+	function btnAll_click($filter='')
+	{   
+		global $MIOLO, $module, $self, $theme, $action;
+        $columns = array(
+           new MDataGridColumn('idsessao','Sessão','right', true, '10%',true),
+           new MDataGridColumn('login','Usuário','right', true, '10%',true, null, false, true),
+           new MDataGridColumn('tsin','Data/Hora Entrada','right', true, '20%',true),
+           new MDataGridColumn('tsout','Data/Hora Saída','right', true, '20%',true),
+           new MDataGridColumn('duracao','Duração (min)','right', true, '15%',true),
+           new MDataGridColumn('remoteaddr','Ip Address','left', true, '20%',true, null, false, true),
+           new MDataGridColumn('forced','Forced','left', true, '5%',true)
+        );
+        $fmtTsin = "TO_CHAR(s.tsin,'DD/MM/YYYY HH24:MI:SS') as tsin";
+        $fmtTsout = "TO_CHAR(s.tsout,'DD/MM/YYYY HH24:MI:SS') as tsout";
+        $fmtDuracao = "trunc(24*60*(s.tsout-s.tsin)) as duracao";
+        if ($filter == 'aberta')
+        {
+           $fmtDuracao = "trunc(24*60*(sysdate-s.tsin)) as duracao";
+        }
+        $sql = new Msql("s.idsessao, u.login, $fmtTsin, $fmtTsout, $fmtDuracao, ".
+                       "s.remoteaddr, s.forced",
+                       'cm_sessao s, cm_usuario u', '(s.idusuario=u.idusuario)', 's.tsin desc');
+        if ($filter == 'aberta')
+        {
+           $sql->where .= ' and s.tsout is null';
+        } 
+        elseif ($filter == 'fechada')
+        {
+           $sql->where .= ' and s.tsout is not null';
+        } 
+
+        
+        $db = $this->manager->getDatabase('sigaept');
+        $query = $db->query($sql->Select());
+
+		$href_datagrid = $MIOLO->GetActionURL($module,$self,'', Array('event'=>'btnAll_click'));              
+        $datagrid = new MDataGrid($query, $columns, $href_datagrid, 25);
+        $datagrid->SetTitle('Sessões');
+        $datagrid->SetLinkType('linkbutton');
+		$theme->InsertContent($datagrid);
+	}
+
+	function btnActive_click()
+	{   
+       $this->btnAll_click('aberta');
+    }
+
+	function btnClosed_click()
+	{   
+       $this->btnAll_click('fechada');
+    }
+
+
+}
+
+?>

@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="DotacaoDebito" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="LOGO" class="java.lang.String"/>
+	<parameter name="IDUSUARIO" class="java.lang.Integer"/>
+	<parameter name="TITULO" class="java.lang.String"/>
+	<parameter name="IDUO" class="java.lang.Integer"/>
+	<parameter name="RUBRICA" class="java.lang.String"/>
+	<parameter name="ANO" class="java.lang.Integer"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT TO_CHAR( AD_LANCAMENTOINT.DATA,'DD/MM/YYYY' ) as data,
+	ad_orcamentointerno.iduo,
+	sigla,
+	ad_orcamentointerno.idrubrica,
+	cm_tabelageral.item2 as tipolancamento,
+	credito,
+	debito,
+	previsaodebito,
+	ad_lancamentoint.valor
+from ad_uo inner join ad_lancamentoint on ( ad_uo.iduo = ad_lancamentoint.iduoreq )
+	inner join cm_tabelageral on ad_lancamentoint.tipolancamento = cm_tabelageral.item1
+	INNER JOIN ad_orcamentointerno USING (iduo)
+where  tabela ilike ('ad_tipolancamentoint')
+AND  ( ad_orcamentointerno.ano = CAST($P{ANO} AS integer) )
+AND ( ( ad_lancamentoint.ano = CAST($P{ANO} AS integer) )
+AND ( ad_orcamentointerno.idrubrica = $P{RUBRICA})
+AND ( ad_lancamentoint.idrubrica = $P{RUBRICA})
+AND ( ad_orcamentointerno.iduo = $P{IDUO})
+AND ( ad_uo.ativo = 'S' ) )
+order by tipolancamento]]>
+	</queryString>
+	<field name="data" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="iduo" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="sigla" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="idrubrica" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="tipolancamento" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="credito" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="debito" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="previsaodebito" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="valor" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<background>
+		<band/>
+	</background>
+	<pageHeader>
+		<band height="119">
+			<staticText>
+				<reportElement key="staticText" x="3" y="99" width="71" height="20"/>
+				<textElement>
+					<font size="16" pdfFontName="Helvetica"/>
+				</textElement>
+				<text><![CDATA[Rubrica:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="3" y="79" width="51" height="20"/>
+				<textElement>
+					<font size="16" pdfFontName="Helvetica"/>
+				</textElement>
+				<text><![CDATA[Sigla:]]></text>
+			</staticText>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport" x="0" y="0" width="555" height="68"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA[$P{TITULO}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{LOGO}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{IDUSUARIO}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "Cabecalho.jasper"]]></subreportExpression>
+			</subreport>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="54" y="79" width="501" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="16"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{sigla}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="74" y="99" width="481" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="16"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{idrubrica}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="21">
+			<rectangle>
+				<reportElement key="rectangle" x="1" y="1" width="554" height="20" backcolor="#C0C0C0"/>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="3" y="1" width="158" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="16"/>
+				</textElement>
+				<text><![CDATA[Data]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="161" y="1" width="223" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="16"/>
+				</textElement>
+				<text><![CDATA[Tipo de lançamento]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="385" y="1" width="170" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="16"/>
+				</textElement>
+				<text><![CDATA[Valor]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="21">
+			<rectangle radius="0">
+				<reportElement key="rectangle" stretchType="RelativeToTallestObject" mode="Opaque" x="1" y="0" width="554" height="20" backcolor="#E2E2E2">
+					<printWhenExpression><![CDATA[new Boolean(((($V{COLUMN_COUNT}.intValue()) % 2) == 0))]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<textField>
+				<reportElement x="1" y="1" width="160" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{data}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="161" y="0" width="223" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tipolancamento}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="384" y="0" width="170" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{valor} == null ? " R$0,00 " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{valor} ))]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="18">
+			<line>
+				<reportElement key="line" x="0" y="1" width="554" height="1"/>
+			</line>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="435" y="3" width="80" height="15"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Página "+$V{PAGE_NUMBER}+" de"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField" x="515" y="2" width="40" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="false">
+				<reportElement key="textField" x="1" y="1" width="160" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="46">
+			<frame>
+				<reportElement mode="Opaque" x="1" y="2" width="553" height="44" backcolor="#C0C0C0"/>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField" x="315" y="21" width="152" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font size="13"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{credito} == null ?
+                        $F{debito} == null ?
+                        " R$0,00 "
+                        :
+                        DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{debito}.negate() )
+                    :
+                    $F{debito} == null ?
+                    DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{credito} )
+                    :
+                    DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{credito}.subtract( $F{debito}) )]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText" x="261" y="22" width="54" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font size="13" pdfFontName="Helvetica"/>
+					</textElement>
+					<text><![CDATA[Saldo:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText" x="35" y="21" width="66" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font size="13" pdfFontName="Helvetica"/>
+					</textElement>
+					<text><![CDATA[Débito:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText" x="35" y="1" width="66" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font size="13" pdfFontName="Helvetica"/>
+					</textElement>
+					<text><![CDATA[Crédito:]]></text>
+				</staticText>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField" x="101" y="21" width="150" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font size="13"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{debito} == null ? " R$0,00 " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{debito} ))]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField" x="101" y="2" width="150" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font size="13"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{credito} == null ? " R$0,00 " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{credito} ))]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField" x="375" y="1" width="175" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font size="13"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{previsaodebito} == null ? " R$0,00 " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{previsaodebito} ))]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText" x="261" y="1" width="114" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font size="13" pdfFontName="Helvetica"/>
+					</textElement>
+					<text><![CDATA[Previsão Débito:]]></text>
+				</staticText>
+			</frame>
+		</band>
+	</summary>
+</jasperReport>

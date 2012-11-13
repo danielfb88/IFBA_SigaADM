@@ -1,0 +1,253 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+MIOLO::Import('extensions::class.phpmailer.php','PHPMailer');
+class frmProcessoArquivos extends MForm
+{
+    protected $processo;
+    function __construct($params)
+    {
+	//construct
+        global $MIOLO;
+	//Verifica se array em caso positivo será realizada exclusão em caso negativo aparecerá o formulário
+	if(!is_array($params))
+	{
+		$objProcesso = $params;
+		$this->processo = $objProcesso;
+		parent::__construct('Arquivos Anexados');
+        	$this->SetClose($MIOLO->GetActionURL('protocolo','main'));
+        	$this->eventHandler();
+        	$this->defaultButton = false;
+	}
+	else
+	{
+		$objProcesso = $params[0];
+		$this->processo = $objProcesso;
+		parent::__construct('Arquivos Anexados');
+		//Passa o nome do arquivo para função
+		$this->excluir_arquivos($params[1]);	
+	}
+    }
+
+    function CreateFields()
+    {
+	     global $MIOLO;
+	     // Insere uma observação, informando ao usuário que só poderão ser feitos 3 uploads de arquivos para o processo
+	     $this->AddField(new MText('txtObs',"Só poderão ser realizados 3 uploads de arquivos para este processo. As extensões de arquivos permitidas são 'doc', 'pdf', 'xls', 'odt', 'odf', 'ppt', 'ods', 'docx', 'pptx'.",'blue',TRUE));
+
+	     $numProcesso = $this->processo->numProcesso;
+	     //Pega o endereço do módulo protocolo
+	     $dir = $MIOLO->GetModulePath('protocolo');
+	     $dir = $dir . 'html/files/uploads/';
+	     // pega o endereço do diretório contendo as pastas dos processos
+	     $_UP['pasta'] = $dir;
+	     $_UP['dir_Processo'] = $_UP['pasta'];
+     
+	     // abre o diretório
+	     $ponteiro  = opendir($_UP['pasta']);
+
+	     // recebe os itens encontrados na pasta
+	     while ($nome_itens = readdir($ponteiro))
+	     {
+	              // retira "./" e "../" para que retorne apenas pastas
+	             if ($nome_itens!="." && $nome_itens!="..")
+		     {
+	                 // se o diretório possuir como nome o id do processo
+	                    if($nome_itens == $numProcesso)
+	                    {
+	                         $_UP['dir_Processo'] = $_UP['pasta'].$nome_itens.'/';
+	                         break;
+	                    }
+	             }
+	     }
+	     closedir($ponteiro);
+	     
+	     //Variável que controla a quantidade de arquivos anexados
+	     $qtde = 0;
+	     if($_UP['dir_Processo'] != $_UP['pasta'])
+	     {
+	          // abre o diretório do processo
+	          $ponteiro  = opendir($_UP['dir_Processo']);
+	          //recebe os arquivos encontrados na pasta
+	          while ($nome_arquivos = readdir($ponteiro)){
+	              // retira "./" e "../" para que retorne apenas arquivos
+	             if ($nome_arquivos != "." && $nome_arquivos != ".."){
+	                 $qtde++;
+	                 //imprime o nome do arquivo em forma de link para que o usuário posssa abrí-lo
+			 $arquivo = "
+			 	<font face=verdana size=2>
+			  	<a href=\"{$home}/index.php?module=protocolo&action=html:files:uploads:".$nome_itens.":".$nome_arquivos."\">$nome_arquivos</a><br>
+			    	</font>
+			    	";
+			 $url_arquivo = $dir.$nome_itens."/".$nome_arquivos;
+			 $excluir = "
+                              <font face=verdana size=2>
+                              <a href=\"{$home}/index.php?module=protocolo&action=main:processos&item=".$this->processo->numProcesso."item=".$url_arquivo."&form=arquivos"."\">Excluir</a><br>
+                              </font>
+                              ";
+			  $fields = array(
+				    new MLabel($arquivo), 
+				    new MLabel($excluir));
+				  // new MButton('excluir_arquivos', _M('excluir', 'miolo', $nome_arquivos)));
+			$this->AddField($fields);
+        	       }
+	          }
+	          closedir($ponteiro);
+     	     }
+	     //Caso a quantidade de arquivos for menor que 3, insiro o campo que permite ao usuário fazer mais upload's
+	     if($qtde < 3)
+ 	     {
+		  $this->AddField( new MFileField('arquivo','','Arquivo',40) );
+		  $this->SetButtons( new MButton('btnAnexar', 'Anexar') );
+	     }
+    }
+
+    function btnAnexar_click()
+    {
+	global $MIOLO;
+
+	$numProcesso = $this->processo->numProcesso;
+
+	// Pasta onde o arquivo vai ser salvo
+	$dir = $MIOLO->GetModulePath('protocolo');
+        $dir = $dir . 'html/files/uploads/';
+        $_UP['pasta'] = $dir;
+        $_UP['dir_Processo'] = $_UP['pasta'];
+       
+        // abre o diretório
+        $ponteiro  = opendir($_UP['pasta']);
+
+	// Realiza uma busca para ver se existe o diretório do processo
+        while ($nome_itens = readdir($ponteiro))
+        {
+	     // retira "./" e "../" para que retorne apenas pastas
+             if ( $nome_itens != "." && $nome_itens != ".." )
+             {
+                    // se possuir como nome o número do processo
+                    if($nome_itens == $numProcesso)
+                    {
+                         $_UP['dir_Processo'] = $dir.$nome_itens.'/';
+                         break;
+                    }
+             }
+        }
+	closedir($ponteiro);
+
+	// Tamanho maximo do arquivo (em Bytes)
+        $_UP['tamanho'] = 1024 * 1024 * 2; // 2Mb
+
+        // Array com as extensoes permitidas
+        $_UP['extensoes'] = array('doc', 'pdf', 'xls', 'odt', 'odf', 'ppt', 'ods', 'docx', 'pptx');
+
+        // Renomeia o arquivo? (Se true, o arquivo sera salvo como .doc e um nome unico)
+        $_UP['renomeia'] = false;
+
+        // Array com os tipos de erros de upload do PHP
+        $_UP['erros'][0] = 'Nao houve erro';
+	$_UP['erros'][1] = 'O arquivo no upload e maior do que o limite do PHP';
+        $_UP['erros'][2] = 'O arquivo ultrapassa o limite de tamanho especifiado no HTML';
+        $_UP['erros'][3] = 'O upload do arquivo foi feito parcialmente';
+        $_UP['erros'][4] = 'Não foi feito o upload do arquivo';
+
+	$arquivo = $this->GetFormValue('arquivo'); 
+	// Verifica se houve algum erro com o upload. Se sim, exibe a mensagem referente ao erro
+	if($_FILES['arquivo']['name'] == "")
+	{
+		$this->AddError("Não foi possível fazer o upload, erro: faltou especificar o arquivo");
+	}
+        else if($_FILES['arquivo'] == null || $_FILES['arquivo']['size'] > $_UP['tamanho'])
+        {
+               $this->AddError("Não foi possível fazer o upload, erro: excedeu o tamanho máximo.");
+        }
+        //Verifica se não houve erros
+        else 
+	{
+		if ($_FILES['arquivo']['error'] != 0)
+       		{
+                	$this->AddError("Não foi possível fazer o upload, erro:" . $_UP['erros'][$_FILES['arquivo']['error']]);
+        	}
+
+	        // Faz a verificação da extensão do arquivo
+        	$extensao = strtolower(end(explode('.', $_FILES['arquivo']['name'])));
+	        $quebra = explode('.', $_FILES['arquivo']['name']);
+        	$extensao = strtolower(end($quebra));
+	        if (array_search($extensao, $_UP['extensoes']) === false)
+	        {
+        	        $this->AddError("Por favor, envie arquivos com as seguintes extensões: doc, pdf, xls, odt, odf, ppt, ods, docx ou pptx.");
+	        }
+		// O arquivo passou em todas as verificações, hora de tentar move-lo para a pasta
+	        else
+	        {
+			// Caso o endereço do diretório do processo esteja igual ao do diretório que contém os upload's, 
+			//será necessário criar um diretório para o processo
+		        if($_UP['dir_Processo'] == $_UP['pasta'])
+	       		{
+	            		$dir = $dir.$numProcesso.'/';
+			        mkdir($dir);
+           			$_UP['dir_Processo'] = $dir;
+	       		}
+			
+                	// Primeiro verifica se deve trocar o nome do arquivo
+        	        if ($_UP['renomeia'] == true)
+	                {
+        	                // Cria um nome baseado no UNIX TIMESTAMP atual e com extensão .doc
+                	        $nome_final = time().'.doc';
+	                }else {
+        	                // Mantém o nome original do arquivo
+                	        $nome_final = $_FILES['arquivo']['name'];
+	                } 
+			// Retira acentos e espaços do nome final do arquivo 
+			$nome_final = $this->retira_acentos($nome_final);
+			$nome_final = str_replace(" ", "_", $nome_final);
+			// Depois verifica se é possível mover o arquivo para a pasta escolhida
+                	if (move_uploaded_file($_FILES['arquivo']['tmp_name'], $_UP['dir_Processo'].$nome_final))
+	                {
+        	                // Upload efetuado com sucesso, exibindo uma mensagem
+                	        $this->manager->Information("Upload efetuado com sucesso!");
+	                } else {
+        	                // Não foi possível fazer o upload 
+                	        $this->AddError( "Não foi possível enviar o arquivo, tente novamente" );
+	                }
+		}
+	}
+    }
+
+    function retira_acentos( $texto )
+    {
+ 	 $array1 = array(   "á", "à", "â", "ã", "ä", "é", "è", "ê", "ë", "í", "ì", "î", "ï", "ó", "ò", "ô", "õ", "ö", "ú", "ù", "û", "ü", "ç"
+                     , "Á", "À", "Â", "Ã", "Ä", "É", "È", "Ê", "Ë", "Í", "Ì", "Î", "Ï", "Ó", "Ò", "Ô", "Õ", "Ö", "Ú", "Ù", "Û", "Ü", "Ç" );
+	  $array2 = array(   "a", "a", "a", "a", "a", "e", "e", "e", "e", "i", "i", "i", "i", "o", "o", "o", "o", "o", "u", "u", "u", "u", "c"
+                     , "A", "A", "A", "A", "A", "E", "E", "E", "E", "I", "I", "I", "I", "O", "O", "O", "O", "O", "U", "U", "U", "U", "C" );
+	  return str_replace( $array1, $array2, $texto );
+    }
+    
+    function excluir_arquivos($nome)
+    {
+	if (!unlink ($nome)) 
+		$this->AddError("Exclusão não realizada.");
+	else 
+		 $this->manager->Information("Exclusão feita com sucesso!");
+	  	
+    }
+
+}
+?>

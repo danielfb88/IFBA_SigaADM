@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="repRequisicaoPendente" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="DATAINICIAL" class="java.lang.String"/>
+	<parameter name="ID_USUARIO" class="java.lang.Integer"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y:\\miolo\\modules\\adm\\reports\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="URL_LOGO" class="java.lang.String"/>
+	<parameter name="DATAFINAL" class="java.lang.String"/>
+	<parameter name="TIPOREQ" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT ad_requisicao.idrequisicao,
+    ad_uo.sigla,
+    ad_requisicao.datahorareq,
+    sum ((COALESCE(ad_itemreq.quantpedida,0.00)-COALESCE(ad_itemreq.quantdevolvida,0.00)) * COALESCE(ad_itemreq.precoestimado,0.00)),
+    cm_tabelageral.item2 as status,
+    ad_tiporeq.descricao as descricao
+FROM (((ad_requisicao INNER JOIN cm_tabelageral ON ((ad_requisicao.status=cm_tabelageral.item1)))
+    INNER JOIN ad_uo ON ((ad_requisicao.iduoreq=ad_uo.iduo)))
+    INNER JOIN ad_tiporeq ON (ad_tiporeq.idtiporeq=ad_requisicao.tiporequisicao))
+    LEFT JOIN ad_itemreq ON ((ad_requisicao.idrequisicao=ad_itemreq.idrequisicao))
+
+WHERE ((((ad_requisicao.status = '4') OR (ad_requisicao.status = '7') OR (ad_requisicao.status = '2')) )
+    and (to_date(TO_CHAR(ad_requisicao.datahorareq,'DD/MM/YYYY') ,'DD/MM/YYYY') >= to_date($P{DATAINICIAL},'DD/MM/YYYY'))
+    and (to_date(TO_CHAR(ad_requisicao.datahorareq,'DD/MM/YYYY') ,'DD/MM/YYYY') <= to_date($P{DATAFINAL},'DD/MM/YYYY'))
+    AND (ad_requisicao.tiporequisicao = $P{TIPOREQ})
+    AND (cm_tabelageral.tabela = 'AD_ALMOXSTATUSREQ'))
+GROUP BY ad_requisicao.idrequisicao,
+    ad_uo.sigla,
+    ad_requisicao.datahorareq,
+    cm_tabelageral.item2,
+    ad_tiporeq.descricao
+
+ORDER BY ad_uo.sigla ASC,ad_requisicao.idrequisicao ASC]]>
+	</queryString>
+	<field name="idrequisicao" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="sigla" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="datahorareq" class="java.sql.Timestamp">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="sum" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="status" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="descricao" class="java.lang.String"/>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="68">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport" x="1" y="0" width="535" height="68"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA["Requisições Pendentes de " + $F{descricao}.toLowerCase()]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{URL_LOGO}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{ID_USUARIO}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "/common/reports/Cabecalho.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band height="24">
+			<rectangle>
+				<reportElement key="rectangle" positionType="Float" x="0" y="4" width="535" height="20" isPrintWhenDetailOverflows="true" backcolor="#C0C0C0"/>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText" positionType="Float" x="5" y="4" width="54" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="14" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Nº Req.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" positionType="Float" x="60" y="4" width="130" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font size="14" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Unidade]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" positionType="Float" x="190" y="4" width="97" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font size="14" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Data]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" positionType="Float" x="287" y="4" width="107" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="14" isBold="false" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Valor Estimado]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" positionType="Float" x="394" y="4" width="141" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font size="14" isBold="false" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Status]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="26">
+			<rectangle>
+				<reportElement key="rectangle" stretchType="RelativeToTallestObject" x="3" y="4" width="533" height="22" backcolor="#E2E2E2">
+					<printWhenExpression><![CDATA[new Boolean(!(( $V{COLUMN_COUNT}.intValue() % 2 )==0))]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" positionType="Float" x="5" y="5" width="56" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{idrequisicao}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField" positionType="Float" x="62" y="5" width="128" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center">
+					<font isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{sigla}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="false">
+				<reportElement key="textField" positionType="Float" x="192" y="6" width="95" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement>
+					<font isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{datahorareq}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" positionType="Float" x="287" y="6" width="107" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center">
+					<font isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{sum} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{sum} ))]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField" positionType="Float" x="394" y="6" width="141" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Left">
+					<font isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{status}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="17">
+			<line>
+				<reportElement key="line" x="0" y="1" width="533" height="1"/>
+			</line>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="415" y="2" width="80" height="15"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Página "+$V{PAGE_NUMBER}+" de"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField" x="495" y="2" width="40" height="15"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="false">
+				<reportElement key="textField" x="1" y="1" width="414" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

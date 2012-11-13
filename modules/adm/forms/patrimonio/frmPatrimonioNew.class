@@ -1,0 +1,939 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmPatrimonioNew extends MForm
+{
+    function __construct()
+    {
+        parent::__construct('Incluir Novo Item no Patrimônio');
+        $this->EventHandler();
+        $this->defaultButton = false;
+    }
+
+    function CreateFields()
+    {
+        global $MIOLO, $module, $action, $item, $theme, $event;
+ 
+	// Pega o id do usuário para verificar se ele permanece conectado
+        $usuario = $MIOLO->GetLogin()->idkey;
+        if($usuario == NULL)
+        {
+                $go = $this->manager->getActionURL($this->manager->GetConf('login.module'),'main');
+                $MIOLO->Information("Você não está conectado ao sistema. Precisará, portanto, se logar para executar esta ação.", $go);
+        } else
+        {       
+		    $cf = new MCurrencyFormatter();
+		    $tipoIngresso = $this->GetFormValue('tipoIngresso');
+
+		    $tabelaGeral = $MIOLO->GetBusiness('common', 'tabelageral');
+		    $options = $tabelaGeral->ListByTabela('AD_TIPOINGRESSOPAT');
+		    $fields = array(
+		        new MSelection('tipoIngresso',$tipoIngresso,'Tipo de Ingresso',$options->result),
+		        new MLookupTextField('filterCodigo','','Código do Material',20),
+		        new MMultiLineField('descricao','','Descrição',60,5,60,'Máx. 500 caracteres'),
+		        new MHiddenField('idMaterial'),
+		        new MTextField('numeroSerie','','Número de Série',20),
+		        new MTextField('marcaModelo','','Marca/Modelo',60,'Máx. 50 caracteres'),
+		        new MLookupTextField('classificador','','Classificador',50),
+		        new MHiddenField('idClassificador'),
+		        new MMultiLineField('descricaoEstado','','Estado do Material', 50, 5, 50),
+		        new MCalendarField('dataAquisicao','','Data de Aquisição',20),
+		        new MHiddenField('idEmpenhado'),
+		        new MLookupTextField('setor','','Setor',50),
+		        new MHiddenField('idSetor'),
+				new MLookupTextField('dependencia','','Dependência',50),
+				new MHiddenField('idDependencia'),
+		        new MTextField('numPro','','Processo',20,'Ex: Processo: 23059.000707/2009-92, coloca-se 000707/2009-92'),
+		        // 20/10/2010 - Vitor Pacheco
+		        new MHiddenField('subelemento'),
+		        new MTextField('quantidade','','Qt. Total Empenhada',10),
+		        new MTextField('quantidadeItemNF','','Qt. Item Nota',10),
+		        // 18/10/2010 - Vitor Pacheco
+			new MCalendarField('datainiciouso','','Data de Início de uso',20),
+			new MLookupTextField('contacontabil', $descricao, 'Conta contábil', 50, NULL, NULL, NULL, 'adm', 'contacontabil'),
+			new MHiddenField('idvidautil'),
+		    );
+		    $this->SetFields($fields);
+			
+		    $this->SetFieldAttr('tipoIngresso','readonly',true);
+		    $this->SetFieldAttr('quantidade','readonly',true);
+		    $this->SetFieldAttr('quantidadeItemNF','readonly',true);
+		    $this->SetFieldAttr('setor','module','common');
+		    $this->SetFieldAttr('setor','item','setor');
+		    $this->SetFieldAttr('setor','related','idSetor,setor');
+			$this->SetFieldAttr('dependencia','module','adm');
+			$this->SetFieldAttr('dependencia','item','dependencia');
+			$this->SetFieldAttr('dependencia','related','idDependencia,dependencia');
+			$this->SetFieldAttr('dependencia','filter','dependencia,idSetor,setor');
+		    $this->SetFieldAttr('classificador','module',$module);
+		    $this->SetFieldAttr('classificador','item','classificador');
+		    $this->SetFieldAttr('classificador','related','idClassificador,classificador');
+		    $this->SetFieldAttr('filterCodigo','module',$module);
+		    $this->SetFieldAttr('filterCodigo','item','materialPermanente');
+		    $this->SetFieldAttr('filterCodigo','related','idMaterial,descricao,filterCodigo');
+		    $this->SetFieldAttr('numeroSerie','visible',false);
+		    // 18/10/2010 - Vitor Pacheco
+			$this->SetFieldAttr('contacontabil', 'related', 'idvidautil,contacontabil');
+
+		if($tipoIngresso == '1' or $tipoIngresso == '9') //item é proveniente de COMPRA
+		{
+			$empenhado = $MIOLO->GetBusiness($module, 'empenhado');
+			$passo = $this->GetFormValue('passo');
+
+			if($passo == 'Empenho')
+			{
+				if ($tipoIngresso == '9')
+				{
+					$query = $empenhado->ListEmpenhosComItensAPatrimoniarAcervo();
+				}else
+				{
+					$query = $empenhado->ListEmpenhosComItensAPatrimoniar();
+				}
+
+				$columns = array(
+					new MDataGridColumn('numero','Número','center',false, '15%'),
+					new MDataGridColumn('dataEmpenho','Data','center', true, '15%'),
+					new MDataGridColumn('fornecedor','Fornecedor','left', true, '70%'),
+				);
+
+				$href_datagrid = $MIOLO->GetActionURL($module,$action,$item, array('tipoIngresso'=>$tipoIngresso,'passo'=>'Empenho') );
+				$datagrid = new MDataGrid2($query, $columns, $href_datagrid,0);
+				$datagrid->SetTitle('Relação de Empenhos com Itens a Patrimoniar');
+				$hrefNF = $MIOLO->GetActionURL($module, $action, '%0%', array('tipoIngresso'=>$tipoIngresso, 'passo'=>'NotaFiscal') );
+				$datagrid->SetWidth('99%');
+				$datagrid->SetClose(null);
+				$datagrid->addActionIcon('Incluir','select.gif',$hrefNF);
+				$this->SetFields($datagrid);
+			}
+			else if($passo == 'NotaFiscal')
+			{
+				$empenho = $MIOLO->GetBusiness($module, 'empenho', $item);
+				$empenho->retrieveAssociation('empenhado');
+				$empenho->getValorContabilizado();
+				$empenho->getValor();
+				$empenho->getFornecedor();
+				$empenho->empenhado[0]->retrieveAssociation('licitacao');
+
+				/****************************************************/
+				//$query = $empenhado->ListItensAPatrimoniarPorEmpenho($item);
+				/****************************************************/
+				$NFEdit = $this->GetFormValue('NF');
+				if ($tipoIngresso == '9')
+				{
+					if($NFEdit)
+					{
+						$query = $empenhado->ListItensAPatrimoniarPorEmpenhoAcervo2($item);
+					}
+					else
+					{
+						$query = $empenhado->ListItensAPatrimoniarPorEmpenhoAcervo($item);
+					}
+				}
+				else
+				{
+					if($NFEdit)
+					{
+						$query = $empenhado->ListItensAPatrimoniarPorEmpenho2($item);
+					}
+					else
+					{
+						$query = $empenhado->ListItensAPatrimoniarPorEmpenho($item);
+					}
+				}
+
+				/*****************************************************************/
+				$columns = array(
+					new MDataGridColumn('descricao','Descrição','left',false, '66%'),
+					new MDataGridColumn('quantidadeEmp','Qt Empenhada','center', true, '12%'),
+					new MDataGridColumn('quantidadePat','Qt Patrimoniada','center', true, '12%'),
+					new MDataGridColumn('quantidadeNota','Qt Nota','center', true, '10%'),
+				);
+
+			/*************************************
+		            //$NFEdit = $this->GetFormValue('NF');
+			*************************************/
+		            $notaFiscal = $MIOLO->GetBusiness($module, 'notafiscal');
+		            //itens da nota
+		            if($NFEdit)
+		            {
+		                for($i = 0; $i < count($query->result); $i++)
+		                {
+		                    $itemNota = $MIOLO->GetBusiness($module, 'itemnota');
+		                    $itemNota = $itemNota->GetByIdNotaEmpenhado($NFEdit, $query->result[$i][0]);
+		                    $query->result[$i][5] = $itemNota->result[0][0];
+		                    $query->result[$i][4] = $itemNota->result[0][3];
+		                }
+		            }
+
+		            $href_datagrid = $MIOLO->GetActionURL($module,$action,$item,array('tipoIngresso'=>$tipoIngresso));
+		            $datagrid = new MDataGrid2($query, $columns, $href_datagrid, 0);
+		            $datagrid->SetTitle('Itens do Empenho');
+		            $datagrid->SetRowMethod('frmPatrimonioNew', 'MyRowMethod2');
+		            $this->SetTitle('Dados da Nota Fiscal Referente ao Empenho');
+		            $href = $MIOLO->GetActionURL($module, $action, '%0%', array('tipoIngresso'=>$tipoIngresso, 'passo'=>'Inclusão', 'idNF'=>'%5%') );
+		            $datagrid->SetWidth('99%');
+		            $datagrid->SetClose(null);
+		            if($NFEdit)
+		            {
+		                $notaFiscal->GetById($NFEdit);
+		                $datagrid->SetTitle('Itens da Nota Fiscal ' . $notaFiscal->notaFiscal);
+		                $datagrid->addActionIcon('Incluir','edit.gif',$href);
+		            }
+
+		            //relação de nfs para o empenho
+		            $query = $notaFiscal->GetNotasByIdEmpenho($item);
+		            for($i = 0; $i < count($query->result); $i++)
+		            {
+		                $query->result[$i][3] = number_format(str_replace(',','.',$query->result[$i][3]),2,',','.');
+		            }
+		            $columnsNF = array(
+		                new MDataGridColumn('notaFiscal','Nota Fiscal','center',false, '33%'),
+		                new MDataGridColumn('dataNotaFiscal','Data Nota Fiscal','center',false, '34%'),
+		                new MDataGridColumn('valor','Valor','center', true, '33%'),
+		            );
+		            $datagridNF = new MDataGrid2($query, $columnsNF, '', 0);
+		            $datagridNF->SetTitle("Notas Fiscais Lançadas para o Empenho $empenho->numero");
+		            $datagridNF->SetWidth('99%');
+		            $hrefNF = $MIOLO->GetActionURL($module, $action, $item, array('tipoIngresso'=>$tipoIngresso, 'passo'=>'NotaFiscal', 'NF'=>'%0%') );
+		            $datagridNF->addActionIcon('Alterar','edit.gif',$hrefNF);
+
+		            $fields = array(
+		                new MTextField('empenho',$empenho->numero,'Empenho',20),
+		                new MTextField('tipoEmpenho',$empenho->tipoEmpenho,'Tipo',10),
+		                new MTextField('licitacao',$empenho->empenhado[0]->licitacao->numero,'Licitação',20),
+		                new MTextField('fornecedor',$empenho->fornecedor->instituicao->nome,'Fornecedor',70),
+		                new MTextField('dataEmpenho',$empenho->dataEmpenho,'Data',20),
+		                new MTextField('saldo',$cf->format($empenho->valorSaldo),'Saldo',20),
+		                new MSpacer(1),
+		                new MSeparator('Dados da Nota Fiscal'),
+		                new MHiddenField('idNotaFiscal'),
+		                new MTextField('notaFiscal','','Nota Fiscal',20),
+		                new MCalendarField('dataNotaFiscal','','Data da Nota Fiscal',20),
+		                new MCalendarField('dataAteste','','Data do Ateste',20),
+		                new MMultiLineField('obs','','Obs',60,4,60,'Máx. 200 caracteres'),
+		                //new MTextField('valor','','Valor da Nota Fiscal',10),
+		                new MCurrencyField('valor','','Valor da Nota Fiscal',10),
+				//new MTextField('valorDesconto','','Valor Desconto',10),
+		                new MCurrencyField('valorDesconto','','Valor Desconto',10),
+				new MHiddenField('tipoIngresso', $tipoIngresso),
+		                new MHiddenField('passoRetorno', 'NotaFiscal'),
+		                new MSpacer(2),
+		                $datagridNF,
+		                new Text('','<b>Obs.: Para editar os dados ou patrimoniar os itens referentes a uma nota fiscal já gravada, clique no ícone de editar no grid acima.</b>'),
+		                new MSpacer(2),
+		                $datagrid,
+		                new Text('','<b>Obs.: Para patrimoniar um item, primeiro escolha uma nota fiscal já lançada no grid de notas, depois clique no ícone de editar no grid acima.</b>'),
+		            );
+		            $this->SetFields($fields);
+		            $this->SetFieldAttr('empenho', 'readonly', true);
+		            $this->SetFieldAttr('tipoEmpenho', 'readonly', true);
+		            $this->SetFieldAttr('licitacao', 'readonly', true);
+		            $this->SetFieldAttr('fornecedor', 'readonly', true);
+		            $this->SetFieldAttr('dataEmpenho', 'readonly', true);
+		            $this->SetFieldAttr('saldo', 'readonly', true);
+
+		            if($NFEdit)
+		            {
+		                $notaFiscal->GetById($NFEdit);
+		                $this->SetFieldValue('idNotaFiscal', $notaFiscal->idNotaFiscal);
+		                $this->SetFieldValue('notaFiscal', $notaFiscal->notaFiscal);
+		                $this->SetFieldValue('dataNotaFiscal', $notaFiscal->dataNotaFiscal);
+		                $this->SetFieldValue('dataAteste', $notaFiscal->dataAteste);
+		                $this->SetFieldValue('obs', $notaFiscal->obs);
+		                $this->SetFieldValue('valor', $cf->format($notaFiscal->valor));
+		                $this->SetFieldValue('valorDesconto', $cf->format($notaFiscal->desconto));
+		                //IFSP - Thaís
+		                $this->AddButton(new MButton('btnExcluiNota', 'Excluir Nota Fiscal'));
+		                
+		            }
+
+		            //grava e volta para passo atual
+		             $this->AddButton(new MButton('btnNotaFiscal', 'Gravar Nota Fiscal'));
+		        }
+		        else if($passo == 'Inclusão')
+		        {
+		            $idNF = $this->GetFormValue('idNF');
+		            $itemNota = $MIOLO->GetBusiness($module, 'itemnota', $idNF);
+		            $notaFiscal = $MIOLO->GetBusiness($module, 'notafiscal', $itemNota->idNotaFiscal);
+		            $processo = $MIOLO->GetBusiness('protocolo', 'processo', $data->result[0][3]);
+		            $this->SetFieldValue('numPro',$processo->numProcessoFormatado());
+
+				
+					if ($tipoIngresso == '9')
+					{
+		            $data = $empenhado->GetDadosItemAPatrimoniarAcervo($item);
+					}else
+					{
+		            $data = $empenhado->GetDadosItemAPatrimoniar($item);
+					}
+		            $this->SetFieldValue('idEmpenhado',$data->result[0][0]);
+		            $this->SetFieldValue('idMaterial',$data->result[0][1]);
+		            $this->SetFieldValue('descricao',$data->result[0][2]);
+		            $processo = $MIOLO->GetBusiness('protocolo', 'processo', $data->result[0][3]);
+		            $this->SetFieldValue('numPro',$processo->numProcessoFormatado());
+		            $this->SetFieldValue('subelemento',$data->result[0][4]);
+		            $this->SetFieldValue('quantidade',$data->result[0][6]);
+		            $this->SetFieldValue('quantidadeItemNF',$itemNota->quantidade);
+		            $this->SetFieldValue('marcaModelo',$data->result[0][7]);
+		            $this->SetFieldValue('dataAquisicao',date('d/m/Y'));
+		           
+		            //$this->SetFieldValue('descricaoestado', $itemNota->descricaEstado);
+
+		            $buttons = array(
+		                new MButton('btnNew', 'Cadastrar Item')
+		            );
+		            $this->SetButtons($buttons);
+
+		            //grid de setores
+		            $empenhado->GetById($item);
+					//var_dump($tipoIngresso);
+					if ($tipoIngresso == '9')
+					{
+					$empenhado->getItemReqBib();
+					$empenhado->itemreq = $empenhado->itemreqbib;
+					}
+					else
+					{
+		            $empenhado->getItemReq();
+					}
+		            
+					$empenhado->getQuantidadeEmpenhada();
+		            $quant = $this->GetFormValue('quant');
+		            $setores = array();
+		            $idSetores = '';
+		            $k = 0;
+		            foreach($empenhado->itemreq as $i)
+		            {
+		                $requisicao = $MIOLO->GetBusiness($module, 'requisicao', $i->idRequisicao);
+		                $uo = $MIOLO->GetBusiness($module, 'uo', $requisicao->idUoRequisitante);
+		                //atualiza valor, se o textfield='' e quantidadeEmp, qts empenhadas do itemreq (distribuido) e qt itemNota forem iguais
+		                if((!$quant[$k]) and ($data->result[0][6] == $empenhado->quantidadeEmpenhada) and ($data->result[0][6] == $itemNota->quantidade))
+		                {
+		                    $quant[$k] = $i->quantEmpenhada;
+		                }
+		                $setores[] = array($uo->nome . ' (' . $uo->sigla . ')', $i->quantEmpenhada, $quant[$k]);
+		                $idSetores .= $uo->idSetor . ';';
+		                $k++;
+		            }
+		            $idSetores = substr($idSetores,0,-1);
+		            $this->SetFieldValue('idSetor', $idSetores);
+		            $columns = array(
+		                new MGridColumn('Setor','left',false, '70%'),
+		                new MGridColumn('Quant. Empenhada','center', true, '15%'),
+		                new MGridColumn('Quantidade','center', true, '15%'),
+			);
+		            $grid = new MGrid($setores, $columns, $href_datagrid,0);
+		            $grid->SetTitle("Distribuição do Item (Nota Fiscal $notaFiscal->notaFiscal) por Setores");
+		            $grid->SetClose(null);
+		            $grid->SetWidth('99%');
+		            $grid->SetRowMethod('frmPatrimonioNew', 'MyRowMethod');
+		            $this->AddField(new MSpacer(1));
+		            $this->AddField($grid);
+		            $this->AddField(new MHiddenField('valor',$data->result[0][5]));
+		            $this->AddField(new MHiddenField('quantidade',$data->result[0][6]));
+		            $this->AddField(new MHiddenField('quantidadeNF',$itemNota->quantidade));
+		            $this->AddField(new MHiddenField('idNF',$idNF));
+		            $this->SetFieldAttr('setor','visible',true);
+		            //$this->SetFieldAttr('setor','visible',false);
+		            $this->SetFieldAttr('filterCodigo','visible',false);
+
+		            $erro = $this->GetFormValue('erro');
+		            if($erro == '2')
+		            {
+		                $soma = $this->GetFormValue('soma');
+		                $quantidadeEmp = $this->GetFormValue('quantidadeEmp');
+		                $quantidadeNF = $this->GetFormValue('quantidadeNF');
+		                $this->Error("Quantidades informadas ($soma) não conferem com a quantidade do item da Nota Fiscal ($quantidadeNF).");
+		            }
+		        }
+		    }
+		    else //item não é proveniente de COMPRA
+		    {
+		        $this->SetFieldAttr('numPro','visible',true);
+		        $this->SetFieldAttr('quantidade','visible',false);
+		        $this->SetFieldAttr('quantidadeItemNF','visible',false);
+		        $this->SetFieldAttr('numeroSerie','visible',true);
+		       
+		   
+		        $this->AddField(new MTextField('numeroEmpenho','','Empenho',20));
+		    
+		        $this->AddField(new MTextField('notaFiscal2','','Nota Fiscal',20));
+		        if($tipoIngresso != '8')
+		        {
+		            $this->AddField(new MCurrencyField('valor','','Valor Total',10));
+			$this->AddField(new MTextField('quantidadeOutros','','Quantidade',10));
+		            $this->AddField(new MCalendarField('dataNotaFiscal','','Data da Nota Fiscal',20));
+		            $this->AddField(new MCalendarField('dataAteste','','Data do Ateste',20));
+		            $this->AddField(new MMultiLineField('obs','','Obs',60,4,60,'Máx. 200 caracteres'));
+		            $this->AddField(new MCurrencyField('valorDesconto','','Valor Desconto',10));
+			$this->SetFieldAttr('numeroEmpenho', 'visible', false);
+		        }
+		        else
+		        {
+		            $this->AddField(new MCurrencyField('valor','','Valor',10));
+		            $this->AddField(new MTextField('quantidadeOutros','','Quantidade',10));
+		            //$this->SetFieldValue('quantidadeOutros', '1');
+		            //$this->SetFieldValue('quantidade', '1');
+		            //$this->SetFieldValue('filterCodigo', '449052');
+		        }
+		        $this->SetFieldValue('dataAquisicao',date('d/m/Y'));
+
+		        $buttons = array(
+		            new MButton('btnNew', 'Cadastrar Item')
+		        );
+		        $this->SetButtons($buttons);
+		    }
+        }
+    }
+
+    function btnNew_click()
+    {
+        global $MIOLO, $module, $item;
+
+        $erro = '0';
+        $data = $this->GetData();
+
+	$cf = new MCurrencyFormatter();
+	 
+	 if (substr_count($data->valor, ",") == 0) 
+	 {
+             $data->valor = str_replace(".",",",$data->valor);
+         }
+	 else
+	 {
+             $data->valor = str_replace(".","",$data->valor);
+         }	
+	
+	$data->valor = $cf->toDecimal($data->valor);
+        $setores = explode(';', $data->idSetor);
+        $tipoIngresso = $this->GetFormValue('tipoIngresso');
+        $quant = $this->GetFormValue('quant');
+        $quantidadeNF = $this->GetFormValue('quantidadeNF');
+        $idNF = $this->GetFormValue('idNF');
+        // 20/10/2010 - Vitor Pacheco
+        $subelemento = substr($data->idvidautil, -4, -2);
+
+	// Verificações de preenchimento obrigatório dos campos.
+        $qtde = $this->GetFormValue('quantidadeOutros');
+        $desc = $this->GetFormValue('descricao');
+	$idsector = $this->GetFormValue('idSetor');
+	#$iddependencia = $this->GetFormValue('idDependencia');
+	$classificador = $this->GetFormValue('idClassificador');
+	$contacontabil = $this->GetFormValue('idvidautil');
+	$dataaquisicao = $this->GetFormValue('dataAquisicao');
+	$dataInicioUso = $this->GetFormValue('datainiciouso');
+	
+	
+		$processo = $this->manager->GetBusiness('protocolo', 'processo');$processo->getByNumeroFormatado($data->numPro);	
+		$dtInicioUso = substr($dataInicioUso,6,4).substr($dataInicioUso,3,2).substr($dataInicioUso,0,2);
+		$dtAquisicao = substr($dataaquisicao,6,4).substr($dataaquisicao,3,2).substr($dataaquisicao,0,2);
+	
+	if (!$dataInicioUso)
+	    $this->addError("Data de Início de Uso não informada");
+	if ($dtInicioUso < $dtAquisicao)
+        	$this->addError('A Data Início de Uso precisa ser maior que a Data de Aquisição do Bem');
+	
+	if (($desc == '') or ($desc == NULL))
+            $this->addError("Descrição não informada.");
+
+        if ((($qtde < 1) or ($qtde == '') or ($qtde == NULL)) and (($quant < 1) or ($quant == '') or ($quant == NULL)))
+            $this->addError("Quantidade não informada.");
+
+        if (($idsector == '') or ($idsector == NULL))
+            $this->addError("Clique na lupa para buscar o setor.");
+
+        if ((strlen(trim($desc))< 5))
+            $this->addError("Informe uma Descrição Válida.");
+            
+        if( strlen(trim($data->numeroSerie)) > 25 )
+			$this->addError("O número de série deve possuir no máximo 25 caracteres.");
+
+        if (($classificador == '') or ($classificador == NULL))
+            $this->addError("Clique na lupa para buscar o classificador.");
+		
+		if ($processo->tipo == null && $data->numPro != null) {
+			$this->addError('Processo não encontrado. Por favor verifique se o código foi digitado corretamente.');                                
+                            }
+                            
+         if (($contacontabil == '') or ($contacontabil == NULL))
+            $this->addError("Clique na lupa para buscar a conta contábil.");
+            
+         if (($dataaquisicao == '') or ($dataaquisicao == NULL))
+            $this->addError("Informe uma data para aquisição.");            
+            
+                                                                   
+        if ($this->errors != '') //Caso haja algum erro, exibe na tela.
+            $this->GenerateErrors();
+        else {
+            //busca numero da NF
+            $itemNota = $MIOLO->GetBusiness($module, 'itemnota', $idNF);
+            $notaFiscal = $MIOLO->GetBusiness($module, 'notafiscal', $itemNota->idNotaFiscal);
+            if($tipoIngresso == 1 or $tipoIngresso == 9)
+            {
+                $data->notaFiscal = $notaFiscal->notaFiscal;
+            }
+            else
+            {
+                $data->notaFiscal = $this->GetFormValue('notaFiscal2');
+            }
+
+            if(!$quant) //não é COMPRA
+            {
+                //para COMPRAS 2006 busca a quant informada e gera um array de setores repetindo o mesmo setor informado, alem de buscar o idMaterial pelo codMaterial informado (não precisa usar lupa)
+                if($tipoIngresso == '8')
+                {
+                    $quant[0] = $this->GetFormValue('quantidadeOutros');
+                    for($i = 0; $i < $quant[0]; $i++)
+                    {
+                        $setores[$i] = $data->idSetor;
+                    }
+                    $objMaterial = $MIOLO->GetBusiness($module, 'material');				
+                    $objMaterial->GetByCod($data->filterCodigo);
+                    $data->idMaterial = $objMaterial->idMaterial;
+                }
+                else //não é COMPRA ou COMPRAS 2006, busca quantideade de itens a serem patrimoniados
+                {
+                    $quant[0] = $this->GetFormValue('quantidadeOutros');
+                    $data->quantidade = $quant[0];
+                    for($i = 0; $i < $quant[0]; $i++)
+                    {
+                        $setores[$i] = $data->idSetor;
+                    }
+                }
+            }
+            $somaQuant = 0; //testa se a soma das quantidades para setores = total de itens empenhados
+            foreach($quant as $q)
+            {
+                $somaQuant += $q;
+            }
+            $empenhado = $MIOLO->GetBusiness($module, 'empenhado', $data->idEmpenhado);
+            if( ($tipoIngresso == '1' or $tipoIngresso == '9') and ($somaQuant != $quantidadeNF) )
+            {
+                $this->AddError("Quantidades informadas ($somaQuant) não conferem com a quantidade do item da Nota Fiscal ($quantidadeNF).");
+                $erro = '2';
+            }
+            else
+            {
+                $i = 0;
+                try
+                {
+                    $numItem = '';
+                    $objectId = $MIOLO->GetBusiness('common', 'objectid');
+                    $itemPatrimonioT = $this->manager->GetBusiness('adm','itempatrimonio');
+                    $itemPatrimonioT->beginTransaction();
+                    $movimentoPat = $this->manager->GetBusiness('adm','movimentopat');
+                    foreach($setores as $setor)
+                    {
+                        $novoIdNumeroTermo = $movimentoPat->GetTermoFormatado($movimentoPat->GetNextIdTermo());
+                        for($j = 0; $j < $quant[$i]; $j++)
+                        {
+                            $itemPatrimonio = $this->manager->GetBusiness('adm','itempatrimonio');
+                            $movimentoPat = $this->manager->GetBusiness('adm','movimentopat');
+                            $itemPatrimonio->setTransaction($itemPatrimonioT->getTransaction());
+                            $data->idSetor = $setor;
+                            $itemPatrimonio->SetData($data);
+                            $itemPatrimonio->descricao = $data->descricao;
+                            if ($data->tipoIngresso == '1' or $data->tipoIngresso == '9')
+                            {
+                            	$ide = $itemPatrimonio->getEmpenho($empenhado->idEmpenho);
+		                $ider = $ide->fields('numero');
+		                $data->numeroEmpenho = $ider;
+		                $itemPatrimonio->numeroEmpenho = $ider;
+		                $itemPatrimonio->idEmpenhado = $data->idEmpenhado;
+                            }
+                            
+                            if($data->tipoIngresso == '8')
+                            {
+                                $itemPatrimonio->tipoIngresso = '1';
+//                                $itemPatrimonio->valor = str_replace(',','.',str_replace('.','',$data->valor));
+                                $itemPatrimonio->valor = $data->valor;
+                            }
+                            else
+                            {
+                                $itemPatrimonio->tipoIngresso = $data->tipoIngresso;
+//				$itemPatrimonio->valor = str_replace(',','.',str_replace('.','',$data->valor)) /  str_replace(',','.',str_replace('.','',$data->quantidade));
+								$itemPatrimonio->valor = $data->valor /  str_replace(',','.',str_replace('.','',$data->quantidade));
+                            }
+                            $itemPatrimonio->dataAquisicao = $data->dataAquisicao;
+                            $itemPatrimonio->marcaModelo = $data->marcaModelo;
+                            $itemPatrimonio->notaFiscal = $data->notaFiscal;
+                            // 21/10/2010 - Vitor Pacheco
+                            $itemPatrimonio->subelemento = $subelemento;
+                            $itemPatrimonio->idMaterial = $data->idMaterial;
+                            $itemPatrimonio->idSetor = $data->idSetor;
+							$itemPatrimonio->idDependencia = $data->idDependencia;
+                            $itemPatrimonio->descricaoEstado = $data->descricaoEstado;
+                            $itemPatrimonio->classificador = $data->classificador;
+
+                            $processo = $this->manager->GetBusiness('protocolo', 'processo');$processo->getByNumeroFormatado($data->numPro);
+                            if ($processo->tipo == null && $data->numPro != null) {
+                                $this->addError('Processo não encontrado. Por favor verifique se o código foi digitado corretamente.');                                
+                            }
+                            if ($this->errors != '') //Caso haja algum erro, exibe na tela.
+							$this->GenerateErrors();
+							else
+								{
+								
+                            $serie = substr($processo->numProcesso,0,6);
+                            $ano = substr($processo->numProcesso,7,4);
+                            $codigo = substr($processo->numProcesso,12,2);
+//===========================================================================
+//  Alteração realizada por Cleber mediante sugestão do Romero 
+//  Forum:   https://redmine.renapi.gov.br/boards/37/topics/6430?r=6435  
+//  Tarefa:  https://redmine.renapi.gov.br/issues/22698
+//                          $itemPatrimonio->numPro = $processo->numProcesso;
+//
+                            if (((int)$processo->numProcesso) == 0) {
+                            	$itemPatrimonio->numPro = null;
+                            } else {
+                            	$itemPatrimonio->numPro = $processo->numProcesso;
+                            }
+//===========================================================================
+                            //$ano.$serie.$codigo;
+
+                            $itemPatrimonio->ativo = 'S';
+                            $itemPatrimonio->numeroSerie = $data->numeroSerie;
+							//var_dump($ider);
+                            $itemPatrimonio->numeroEmpenho = $data->numeroEmpenho;
+
+                            $movimentoPat->numeroTermo = $novoIdNumeroTermo . '/' . date('Y');
+                            $movimentoPat->tipoMovimento = '1';
+                            $movimentoPat->idSetorOrigem = $data->idSetor;
+                            $movimentoPat->idSetorDestino = $data->idSetor;
+							$movimentoPat->idDependenciaOrigem = $data->idDependencia;
+							$movimentoPat->idDependenciaDestino = $data->idDependencia;					
+                            $movimentoPat->dataMovimento = $data->dataAquisicao;
+ 
+                            $itemPatrimonio->save();
+                            $numItem .= "<BR>" . $itemPatrimonio->idItemPatrimonio;
+
+                            $movimentoPat->setTransaction($itemPatrimonioT->getTransaction());
+                            $movimentoPat->idItemPatrimonio = $itemPatrimonio->idItemPatrimonio;
+                            $movimentoPat->save();
+                            $itemPatrimonio->Log(OP_INS,"Novo item patrimoniado: " . $itemPatrimonio->idItemPatrimonio);
+								}
+                        }
+
+			if(($quant[$i] > 0) and ($tipoIngresso == '1' or $tipoIngresso == '9'))
+			{
+			    //Item Requisição
+			    
+				if($tipoIngresso == '9')
+                {
+				$idRequisicao = $empenhado->GetIdRequisicaoByIdEmpenhadoAcervo($itemPatrimonio->idEmpenhado);
+				$itemReq = $MIOLO->GetBusiness($module, 'itemreqbib');
+				
+				}
+				else
+				{
+			    $idRequisicao = $empenhado->GetIdRequisicaoByIdEmpenhado($itemPatrimonio->idEmpenhado);
+			    $itemReq = $MIOLO->GetBusiness($module, 'itemreq');
+				
+				}
+			    
+			    $itemReq->GetById($idRequisicao, $itemPatrimonio->idMaterial);
+			    $itemReq->quantAutorizada += $quant[$i];
+			    if($itemReq->quantAutorizada == $itemReq->quantPedida)
+			    {
+			        $itemReq->status = '7';//ENTREGUE
+			    }
+			    else
+		  	    {
+			        $itemReq->status = '8';//EMPENHO PARCELADO
+			    }
+			    $itemReq->setTransaction($itemPatrimonioT->getTransaction());
+			    $itemReq->save();
+
+			    //Requisicao
+			    $requisicao = $MIOLO->GetBusiness('adm','requisicao',$idRequisicao);
+			    $itens = $requisicao->GetItemReqNaoEntregue();
+			    if(count($itens) > 1)
+			    {
+			        $requisicao->status = '8';//EXECUTADA PARCIALMENTE
+			    }
+			    else
+			    {
+			        $requisicao->status = '9';//EXECUTADA TOTALMENTE
+			    }
+			    $requisicao->setTransaction($itemPatrimonioT->getTransaction());
+			    $requisicao->save();
+			}
+
+		        $i++;
+		    }
+
+		    //se for COMPRA, atualiza os status
+		    if($tipoIngresso == 1  or $tipoIngresso == 9)
+		    {
+		        $empenhado->setTransaction($itemPatrimonioT->getTransaction());
+			$empenhado->status = '2'; //CONTABILIZADO
+			$empenhado->save();
+			$itens = $empenhado->ListItensAPatrimoniarPorEmpenho($empenhado->idEmpenho);
+			
+			$empenho = $MIOLO->GetBusiness($module, 'empenho', $empenhado->idEmpenho);
+			if(count($itens->result) == 1) //não há itens a patrimoniar, a não ser os que estão sendo patrimoniados nesta operação, então altera status tb do empenho
+			{
+			    $empenho->setTransaction($itemPatrimonioT->getTransaction());
+			    $empenho->status = '3'; //ENTREGUE
+			    $empenho->save();
+			}
+		    }
+		    else // se não for COMPRA, grava a NF, quando informada
+		    {
+		        if(($data->notaFiscal) && ($tipoIngresso != '8'))
+			{
+			    $notaFiscal = $MIOLO->GetBusiness($module, 'notafiscal');
+			    $notaFiscal->setTransaction($itemPatrimonioT->getTransaction());
+			    $notaFiscal->notaFiscal = $data->notaFiscal;
+			    $notaFiscal->dataNotaFiscal = $data->dataNotaFiscal;
+			    $notaFiscal->valor =str_replace(',','.',str_replace('.','',$data->valor));
+			    $notaFiscal->desconto = str_replace(',','.',str_replace('.','',$data->valorDesconto));
+			    $notaFiscal->dataAteste = $data->dataAteste;
+			    $notaFiscal->obs = $data->obs;
+			    $notaFiscal->save();
+			}
+		    }
+		    
+		    $itemPatrimonioT->endTransaction();
+		    $go = $this->manager->GetActionURL('adm','main:itempatrimonio:find');
+
+		    $empenho = $MIOLO->GetBusiness($module, 'empenho', $empenhado->idEmpenho);
+		    if(($empenho->status != '3') && ($tipoIngresso == '1' or $tipoIngresso == '9'))
+		    {
+		        $go = $MIOLO->GetActionURL($module, $action, $empenhado->idEmpenho, array('tipoIngresso'=>$tipoIngresso, 'passo'=>'NotaFiscal'));
+		    }
+
+		    $MIOLO->Information("Item(ns) patrimoniado(s) com sucesso:" . $numItem, $go);
+		}
+		catch (Exception $e)
+		{
+		    $this->addError($e->getMessage());
+		}
+            }
+        }
+    }
+
+    function btnNotaFiscal_click()
+    {
+        global $MIOLO, $module, $action, $item, $theme;
+		
+		 
+         
+        $tipoIngresso = $this->GetFormValue('tipoIngresso');
+        $passoRetorno = $this->GetFormValue('passoRetorno');
+	//Thaís
+	$itemPatrimonio = $MIOLO->GetBusiness('adm','itempatrimonio');
+       
+        //Thaís
+        $data->idNotaFiscal = $this->GetFormValue('idNotaFiscal');
+        $data->notaFiscal = $this->GetFormValue('notaFiscal');
+        $data->dataNotaFiscal = $this->GetFormValue('dataNotaFiscal');
+        $data->dataAteste = $this->GetFormValue('dataAteste');
+        $data->obs = $this->GetFormValue('obs');
+        $data->valor = $this->GetFormValue('valor');
+        $data->valorDesconto = $this->GetFormValue('valorDesconto');
+        $data->idItemNota = $this->GetFormValue('idItemNota');
+        $data->idEmpenhado = $this->GetFormValue('idEmpenhado');
+        $data->quantNF = $this->GetFormValue('quantNF');
+         //Thaís
+        //$empenhado = $MIOLO->GetBusiness($module, 'empenhado', $data->idEmpenhado);
+        
+        $cf = new MCurrencyFormatter();
+        if (substr_count($data->valor, ",") == 0) 
+		{
+             $data->valor = str_replace(".",",",$data->valor);
+        }
+		else
+		{
+             $data->valor = str_replace(".","",$data->valor);
+        }
+        $data->valor = $cf->toDecimal($data->valor);
+         
+         
+        if (substr_count($data->valorDesconto, ",") == 0) 
+		{
+             $data->valorDesconto = str_replace(".",",",$data->valorDesconto);
+        }
+		else
+		{
+             $data->valorDesconto = str_replace(".","",$data->valorDesconto);
+        }
+        $data->valorDesconto = $cf->toDecimal($data->valorDesconto);
+
+         $empenho = $MIOLO->GetBusiness('adm','empenho',$item);
+        
+      
+         if (!$data->notaFiscal){
+		$this->AddError('Informe o Numero da Nota Fiscal');        
+									}
+	elseif($data->dataNotaFiscal==null){
+		$this->AddError('Informe a Data da Nota Fiscal');
+	}    
+		
+	elseif($data->dataAteste ==null){
+		$this->AddError('Informe a Data do Ateste');
+	}	
+	elseif($data->valor < 0.00 || $data->valor == null || !is_numeric($data->valor)){
+		
+		$this->AddError('Informe Corretamente o Valor da Nota Fiscal');
+	}
+/*	elseif($data->idItemNota != null && $data->quantNF == ""){
+		$this->AddError('Informe a Quantidade de itens da Nota Fiscal');
+	}
+*/	
+		else
+	
+			{
+	
+        
+        
+         $r = (float)$data->valor;
+         //Thaís
+         	$idemp = (integer)($item);
+         	$notaf = $this->GetFormValue('notaFiscal');
+         	$itemNota = $itemPatrimonio->NotaFiscal($notaf, $idemp);
+         	$ritemNota = $itemNota->fields('idnotafiscal');
+         	if ($ritemNota != NULL && $this->GetFormValue('idNotaFiscal') == NULL)
+         	{
+         		$this->addError('Nota Fiscal já cadastrada para esse empenho.');
+         	}
+         //Thaís
+         
+         if ($r > $empenho->valorSaldo && $this->GetFormValue('idNotaFiscal') == NULL)
+         {
+
+       		$this->addError('Valor Total da Nota Fiscal maior que o valor do Empenho');
+       	}	
+        else
+        {
+         $idnota = (integer)($this->GetFormValue('idNotaFiscal'));
+         $valorNota = $this->GetFormValue('valor');
+         $valornotas = $itemPatrimonio->SomaValorEmpenho($idemp, $idnota);
+         $r = $valornotas->fields('sum');
+         $valorempenho = $empenho->valor;
+         $valorn = (float)($valorNota);
+         $valorTotal = $valorempenho - $valorNota;
+         $valoritens = $valorempenho - $r;
+         if ($valorn > $valoritens && $this->GetFormValue('idNotaFiscal') != NULL)
+         {
+         	$this->addError('Valor Total da Nota Fiscal maior que o valor do Empenho');	
+         }
+         
+        else
+        {
+        	$notaExistente = $itemPatrimonio-> NotaExistente($notaf, $idemp, $idnota);
+        	$rnotaExistente = $notaExistente->fields('idnotafiscal');
+        	if ($rnotaExistente != NULL &&  $this->GetFormValue('idNotaFiscal') != NULL)
+        	{
+        		$this->addError('Nota Fiscal já cadastrada para esse empenho!');	
+        	}
+        	else
+        	{
+       //Thaís
+        if($data->notaFiscal)
+        {
+            $notaFiscal 			= 	$MIOLO->GetBusiness($module, 'notafiscal');
+            $notaFiscal->GetById($data->idNotaFiscal);
+
+            $notaFiscal->notaFiscal 	= 	$data->notaFiscal;
+            $notaFiscal->dataNotaFiscal 	= 	$data->dataNotaFiscal;
+            $notaFiscal->valor 		= 	str_replace(',','.',str_replace('.','',$data->valor));
+            $notaFiscal->desconto 		= 	str_replace(',','.',str_replace('.','',$data->valorDesconto));
+            $notaFiscal->idEmpenho 		= 	$item;
+            $notaFiscal->dataAteste 	= 	$data->dataAteste;
+            $notaFiscal->obs 		= 	$data->obs;
+            $notaFiscal->save();
+
+            //itens da nota
+            for($i = 0; $i < count($data->idEmpenhado); $i++)
+            { 
+                $empenhado = $MIOLO->GetBusiness($module, 'empenhado', $data->idEmpenhado[$i]);
+                $valor = str_replace(',','.',str_replace('.','',$empenhado->valorEmp)) / str_replace(',','.',str_replace('.','',$empenhado->quantidadeEmp));
+
+                $itemNota = $MIOLO->GetBusiness($module, 'itemnota', $data->idItemNota[$i]);
+                $itemNota->idEmpenhado = $data->idEmpenhado[$i];
+                $itemNota->idNotaFiscal = $notaFiscal->idNotaFiscal;
+                $itemNota->quantidade = $data->quantNF[$i];
+                $itemNota->valor = $valor;
+                $itemNota->save();
+            }
+        }
+      
+    //Thaís
+  
+    //}
+    //Thaís
+        //empenho
+        $empenho = $MIOLO->GetBusiness('adm','empenho',$item);
+        $empenho->status = '3';
+        $empenho->save();
+
+        if($passoRetorno == 'NotaFiscal')
+        {
+            $go = $MIOLO->GetActionURL($module, $action, $item, array('tipoIngresso'=>$tipoIngresso, 'passo'=>'NotaFiscal'));
+            $theme->ClearContent();
+            $MIOLO->Information("Nota Fiscal $notaFiscal->notaFiscal gravada com sucesso.", $go);
+            return;
+        }
+       }
+       }
+      }
+		}
+    }
+
+    // Método a ser executado antes de renderizar cada linha
+    function MyRowMethod($i, $row, $actions, $columns)
+    {
+        global $MIOLO, $module, $item;
+
+        $textField = new MTextField("quant[$i]",$row[2],'',6);
+        $columns[2]->control[$i] = $textField;
+    }
+
+    // Método a ser executado antes de renderizar cada linha
+    function MyRowMethod2($i, $row, $actions, $columns)
+    {
+        global $MIOLO, $module, $item;
+
+        $controles = array(
+            new MTextField("quantNF[$i]", $row[4],'',6),
+            new MHiddenField("idEmpenhado[$i]",$row[0],'',6),
+            new MHiddenField("idItemNota[$i]",$row[5],'',6),
+        );
+        $columns['quantidadeNota']->control[$i] = $controles;
+    }
+    
+	function btnExcluiNota_click()
+	{
+		 global $MIOLO, $module, $item;
+		 $tipoIngresso = $this->GetFormValue('tipoIngresso');
+                 $passoRetorno = $this->GetFormValue('passoRetorno');
+		 $itemPatrimonio = $MIOLO->GetBusiness('adm','itempatrimonio');
+		 $go = $MIOLO->GetActionURL($module, $action, $item, array('tipoIngresso'=>$tipoIngresso, 'passo'=>'NotaFiscal'));
+		 $idnota = (integer)($this->GetFormValue('idNotaFiscal'));
+		 $deleteItem = $itemPatrimonio->DeleteItemNota($idnota);
+		 $deleteNota = $itemPatrimonio->DeleteNota($idnota);
+		 $MIOLO->Information("Nota Fiscal excluída com sucesso.", $go);	
+	}	
+    
+}
+?>

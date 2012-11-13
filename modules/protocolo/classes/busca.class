@@ -1,0 +1,216 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class BusinessProtocoloBusca extends Business
+{
+	public $numProcesso;
+	public $dataAbertura;
+	public $instituicao;
+	public $arquivo;
+	public $setorOrigem;
+    public $tipo;
+    public $solicitante;
+    public $titulo;
+    public $assunto;
+
+    function __construct($data=NULL)
+    {
+       $this->Business('sigaept',$data);
+    }
+    
+        
+
+    function dataFormatada($data)
+    {
+        $ano = substr($data,0,4);
+        $mes = substr($data,4,2);
+        $dia = substr($data,6,2);
+        $hora = substr($data,8,2);
+        $minuto = substr($data,10,2);
+        return "$dia/$mes/$ano - $hora:$minuto";
+        
+    }
+    
+    function numProcessoFormatado()
+    {
+
+        // variáveis
+        $ano = substr($this->numProcesso,0,4);
+        $serie = substr($this->numProcesso,4,6);
+        $codigo = substr($this->numProcesso,10,2);
+
+        // retorna número de processo formatado
+        return "$serie/$ano-$codigo";
+
+    }
+    
+    function numProcessoFormatadoPass($numpro)
+    {
+
+        // variáveis
+        $ano = substr($numpro,0,4);
+        $serie = substr($numpro,4,6);
+        $codigo = substr($numpro,10,2);
+
+        // retorna número de processo formatado
+        return "$serie/$ano-$codigo";
+
+    }
+    
+    function numProcesso($numpro)
+    {
+
+        // variáveis
+        $ano = substr($numpro,7,4);
+        $serie = substr($numpro,0,6);
+        $codigo = substr($numpro,12,2);
+
+        // retorna número de processo formatado
+        return "$ano$serie$codigo";
+
+    }
+    
+        
+    function Buscar($busca)
+    {
+        global $MIOLO ;
+    	
+    	$objProcesso = $MIOLO->getBusiness('protocolo','processo');
+		$criteria = $objProcesso->getCriteria();
+    	$busca = strtoupper(trim($busca));    	
+    	$criteria->addColumnAttribute('numProcesso');
+        $criteria->addColumnAttribute('titulo');
+        $criteria->addColumnAttribute('assunto');
+        $criteria->addColumnAttribute('setororig');
+        $criteria->addColumnAttribute('stampaber');
+        $criteria->addOrCriteria('interes','LIKE',"'%$busca%'");
+        $criteria->addOrCriteria('titulo','LIKE',"'%$busca%'");
+        $criteria->addOrCriteria('assunto','LIKE',"'%$busca%'");
+        $criteria->addOrderAttribute('stampaber',FALSE);
+        
+        $resultados =  $criteria->retrieveAsQuery();
+        if ($resultados->result)
+        {
+	        foreach ($resultados->result as $indice => $registro)
+			{				
+				$registro[3] = $this->dataFormatada($registro[3]);
+									
+				$resultados->result[$indice] = $registro;
+			}
+        }
+		return $resultados;
+		
+    }
+    
+    function BuscarByNumpro($busca)
+    {
+        global $MIOLO ;
+                  	
+    	$objProcesso = $MIOLO->getBusiness('protocolo','processo');
+		$criteria = $objProcesso->getCriteria();
+    	$criteria->addColumnAttribute('numProcesso');
+        $criteria->addColumnAttribute('titulo');
+        $criteria->addColumnAttribute('setororig');
+        $criteria->addColumnAttribute('stampaber');
+        foreach ($busca as $registro)
+       	{
+        	$criteria->addORCriteria('numProcesso','=',"'$registro[0]'");
+        }
+        $resultados =  $criteria->retrieveAsQuery();        
+        if ($resultados->result)
+        {
+	        foreach ($resultados->result as $indice => $registro)
+			{				
+				$registro[3] = $this->dataFormatada($registro[3]);						
+				$resultados->result[$indice] = $registro;
+			}
+        }
+		return $resultados;
+		
+    }
+    
+    function Detalhes($numpro)
+    {
+        
+    	global $MIOLO ;
+    	
+    	$objProcesso = $MIOLO->getBusiness('protocolo','processo');
+		$criteria = $objProcesso->getCriteria();
+        $criteria->addColumnAttribute('titulo');
+        $criteria->addColumnAttribute('interes');
+        $criteria->addColumnAttribute('assunto');
+        $criteria->addColumnAttribute('instit');
+        $criteria->addColumnAttribute('setororig');
+        $criteria->addColumnAttribute('tipo');
+        $criteria->addColumnAttribute('stampaber');
+        $criteria->addColumnAttribute('cxarq');
+        $criteria->addCriteria('numProcesso','=',"'$numpro'");
+        return $criteria->retrieveAsQuery();
+    }
+    
+    function Tramite($numpro)
+    {
+        
+    	global $MIOLO ;
+    	
+    	$objAndamento = $MIOLO->getBusiness('protocolo','andamento');
+		$criteria = $objAndamento->getCriteria();
+    	$criteria->addColumnAttribute('numanda');
+    	$criteria->addColumnAttribute('setor');
+    	$criteria->addColumnAttribute('stampentr');
+        $criteria->addColumnAttribute('setordest');
+        $criteria->addColumnAttribute('stampdesp');
+        $criteria->addColumnAttribute('despacho');
+        $criteria->addCriteria('numProcesso','=',"'$numpro'");
+        $criteria->addOrderAttribute('numAndamento',false);
+        return $criteria->retrieveAsQuery();
+    }
+    
+     function GetProcessos($anox, $anoy)
+    {
+        global $MIOLO ;
+    	
+    	$objProcesso = $MIOLO->getBusiness('protocolo','processo');
+		$criteria = $objProcesso->getCriteria();
+    	$criteria->addColumnAttribute('numProcesso');
+        $criteria->addColumnAttribute('stampaber');
+        $criteria->addCriteria('numProcesso','>',"'$anox'");
+        $criteria->addCriteria('numProcesso','<',"'$anoy'");
+        $criteria->addOrderAttribute('numProcesso',true);
+        $resultados =  $criteria->retrieveAsQuery();		
+        if ($resultados->result)
+        {
+			foreach ($resultados->result as $indice => $registro)
+			{
+				
+				$registro[0] = substr($registro[0],0,10);
+									
+				$resultados->result[$indice] = $registro;
+			}
+        }
+          
+        return $resultados;
+		
+    }   
+        
+}
+?>

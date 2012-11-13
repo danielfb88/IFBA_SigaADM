@@ -1,0 +1,237 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+/**
+ * Formulário para criar uma nova pessoa
+ */
+MIOLO::Import('modules::common::controls::linkpessoa');
+MIOLO::Import('modules::common::controls::selectionpais');
+MIOLO::Import('modules::common::controls::selectionuf');
+MIOLO::Import('modules::common::controls::selectionsexo');
+ 
+class frmPessoaNova extends Form
+{
+    /**
+     * Objeto pessoa
+     * @access protected
+     * @var BusinessCommonPessoa
+     */
+    protected $pessoa;
+
+
+    /**
+     * Step constants
+     */
+    const STEP_CRIA_PESSOA      = 3;
+    
+    public function __construct()
+    {
+        global $MIOLO, $page, $item;
+        $this->pessoa  = $MIOLO->GetBusiness('common','pessoa');
+        
+
+        parent::__construct('Incluir Pessoa');
+        $this->SetClose($MIOLO->GetActionURL('common','main'));
+        $this->SetIcon($MIOLO->GetUI()->GetImage('common','pessoa_mini.png'));
+    }    
+    
+    public function CreateFields()
+    {
+        $fields = array(
+            new HiddenField('step',self::STEP_CRIA_PESSOA),
+            array(
+                new TextField('nome','','Nome',40),
+                new SelectionSexo('sexo','','Sexo'),
+            ),
+			new TextField('datanasc','','Data Nascimento',15,"Ex: 20/05/2008"),
+            new LookupTextField('lkpNaturalidade','','Naturalidade',40),
+            new HiddenField('idmunicipio'),
+            new TextField('cep','','CEP (só números)',20),
+            new SelectionPais('idpaisnascimento','','País de nascimento'),
+            new SelectionPais('idpais','','Nacionalidade'),
+        );
+        $fieldschrome = array(
+            new HiddenField('step',self::STEP_CRIA_PESSOA),
+            array(
+                new TextField('nome','','Nome',40),
+                new SelectionSexo('sexo','','Sexo'),
+            ),          
+            new LookupTextField('lkpNaturalidade','','Naturalidade',40),
+            new HiddenField('idmunicipio'),
+            new TextField('cep','','CEP (só números)',20),
+            new SelectionPais('idpaisnascimento','','País de nascimento'),
+            new SelectionPais('idpais','','Nacionalidade'),
+			new TextField('datanasc','','Data Nascimento',15,"Ex: 20/05/2008"),
+        );
+        
+        if($this->is_chrome())
+		{
+		$this->SetFields($fieldschrome);
+		}else{
+        $this->SetFields($fields);
+			}
+
+        $buttons = array(
+            new FormButton('btnCreate','Criar'),
+        );
+        $this->SetButtons($buttons);
+        $this->defaultButton = false;
+		
+		//Validação do campo datanasc
+    	$this->datanasc->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+    	$this->datanasc->addAttribute('onBlur','makeMask(this, \'##/##/####\');');
+        
+        $this->SetFieldAttr('lkpNaturalidade','module','rh');
+        $this->SetFieldAttr('lkpNaturalidade','item','municipio');
+        $this->SetFieldAttr('lkpNaturalidade','event', 'filler');
+        $this->SetFieldAttr('lkpNaturalidade','related', 'idmunicipio,lkpNaturalidade');
+        
+	$validators = array(
+		new RequiredValidator('nome'),
+		new RequiredValidator('datanasc'),
+       	new MDATEDMYValidator('datanasc'),
+		new RequiredValidator('lkpNaturalidade'),
+		new RequiredValidator('cep'),
+	);
+	
+		$this->cep->AddAttribute('maxlength','8');
+		
+	$this->SetValidators($validators);
+
+        $this->EventHandler();
+    }
+    
+    public function SetPessoa($pessoa)
+    {
+        $this->pessoa = $pessoa;
+    }
+    
+    protected function setIdPessoa($idPessoa)
+    {
+        global $MIOLO;
+        $this->pessoa->GetById($idPessoa);
+        if(!$this->pessoa->IsPersistent())
+        {
+            $MIOLO->Assert('Texto',false);
+        }
+    }
+
+    /**
+     * GetData method
+     * @var FormData
+     */
+     public function SetData($data)
+     {
+        foreach($this as $c)
+        {
+            if ($c instanceof Control)
+            {
+               $name = strtolower($c->GetName());
+                 if(!empty($name)) $this->SetFieldValue($name, $data->$name) ;
+            } 
+        }$this->SetFieldValue('datanasc',$this->formatarData($data->datanasc));
+        
+     }
+
+    /**
+     * btnCreate click
+     */
+	public function btnCreate_click()
+	{
+		global $MIOLO, $page;
+
+		if( strlen(trim(Form::GetFormValue('nome'))) < 4 )
+		{
+			$this->AddError('O nome deverá possuir pelo menos quatro letras.');
+		}
+		elseif( Form::GetFormValue('sexo') == '' )
+		{
+			$this->AddError('Informe o sexo da pessoa.');
+		}
+		elseif( date('Y/m/d') < $this->invert(Form::GetFormValue('datanasc'),"/") )
+		{		
+			$this->AddError('A data de nascimento informada é inválida.');
+		}
+		elseif( preg_match("/\D/", Form::GetFormValue('cep')) )
+		{
+			$this->AddError('O CEP está inválido.');
+		}
+		elseif( strlen(trim(Form::GetFormValue('cep'))) < 8 )
+		{
+			$this->AddError('O CEP deve possuir oito algarismos.');
+		}
+		elseif( Form::GetFormValue('idpaisnascimento') == '' )
+		{
+			$this->AddError('O país de nascimento deve ser informado.');
+		}
+		elseif( Form::GetFormValue('idpais') == '' )
+		{
+			$this->AddError('A nacionalidade deve ser informada.');
+		}
+		elseif( Form::GetFieldValue('idmunicipio') == '')
+		{
+			$this->AddError('A naturalidade deve ser informada.');
+		}
+		else
+		{
+
+			$this->pessoa->SetData($this->GetData());
+			$this->pessoa->save();
+			if($this->pessoa->CheckError())
+			{
+				$errors = $this->pessoa->GetErrors();
+				$this->MIOLO->Error($errors);
+			}
+			else
+			{
+				$go = $this->manager->GetActionURL('common','main:pessoa',$this->pessoa->idpessoa);
+				$this->page->Redirect($go);
+			}
+		}
+	}
+	function invert($datainv,$sep){//recebe a data e o separador
+
+	$ano=substr("$datainv",6, 4);
+	$mes=substr("$datainv",3, 2);
+	$dia=substr("$datainv",0, 2);
+	$datainv="$ano$sep$mes$sep$dia";
+
+	return $datainv;
+			}
+
+function is_chrome()
+{
+return(eregi("chrome", $_SERVER['HTTP_USER_AGENT']));
+}
+function formatarData($string)
+   {
+      $resultado = '';
+      if($string)
+      {
+         $data =  explode('-',$string);
+         $resultado = $data[2].'/'.$data[1].'/'.$data[0];
+      }
+      return $resultado;
+   }			
+
+}
+?>

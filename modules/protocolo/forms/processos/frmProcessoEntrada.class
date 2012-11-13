@@ -1,0 +1,196 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+MIOLO::Import('extensions::class.phpmailer.php','PHPMailer');
+class frmProcessoEntrada extends MForm
+{
+	protected $processo;
+	protected $setores;
+	protected $setoracesso;
+	protected $perms;
+	function __construct($objProcesso)
+	{
+	//      construct
+		global $MIOLO;
+		$this->processo = $objProcesso;
+		$this->setores = $MIOLO->getBusiness('protocolo','setor');
+		$this->setoracesso = $MIOLO->getBusiness('protocolo','setoracesso');
+		$this->perms  = $MIOLO->getPerms();
+		parent::__construct('Entrada de processo');
+		$this->SetClose($MIOLO->GetActionURL('protocolo','main'));
+		$this->eventHandler();
+	}
+    
+	function CreateFields()
+	{
+		/* IFRO - Controle de segurança de acesso */
+		
+		$setor_usuario = ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS)) ? $this->setores->selAll() : $this->setoracesso->selSetoresAcesso($this->processo->getSetorUsuario());
+		if((
+			$this->processo->retencao->setorDestino
+			&& in_array($this->processo->retencao->setorDestino,$setor_usuario) 
+			&& $this->processo->retencao->status == 'N' ) or ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS))
+		  )
+		{
+			//      setor de entrada
+			$setorEntrada = (!in_array($this->processo->retencao->setorDestino,$this->setores->selAll())) ? $this->processo->getSetorUsuario() : $this->processo->retencao->setorDestino;
+			//$setorEntrada = $this->processo->getSetorUsuario();
+			$setor =  new MTextField('setor',$setorEntrada,'Setor:',15);
+			$setor->setReadOnly(true);
+			$groupEntrada = new MBaseGroup( 'groupEntrada', 'Entrada do processo',array($setor),'horizontal','css');
+			$groupEntrada->addAttribute('style','padding:10px');
+
+			//      fields
+			$fields = array(
+				array(
+					$groupEntrada,
+				),
+			);
+			$this->SetFields($fields);
+
+			//      buttons
+			$buttons = array(
+				new MButton('btnEnviar', 'Executar')
+			);
+			$this->SetButtons($buttons);
+		}
+		else {
+			$msg = 'Este usuário não tem permissão para acessar este Processo/Protocolo';
+			$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+		}
+	}
+
+
+	public function btnEnviar_click()
+	{
+		global $MIOLO, $auth;
+	
+		/* IFRO - Controle de segurança de acesso */
+		$setor_usuario = ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS)) ? $this->setores->selAll() : $this->setoracesso->selSetoresAcesso($this->processo->getSetorUsuario());
+		if((
+			$this->processo->retencao->setorDestino
+			&& in_array($this->processo->retencao->setorDestino,$setor_usuario) 
+			&& 
+            (($this->processo->retencao->status == 'N') || ($this->processo->retencao->status == 'H')))  
+            or ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS))
+		  )
+		{
+			if($this->processo->retencao->status == 'N')
+			{
+				//      data
+				$data = $this->getData();
+				$data->dataEntrada = date("YmdHi");
+				$data->status = 'N';
+			}
+			else if($this->processo->retencao->status == 'H')
+			{
+				//      data
+				$data = $this->getData();
+				$data->dataEntrada = date("YmdHi");
+				$data->status = 'H';
+			}
+			//      set and save
+			try 
+			{
+				$login = $auth->getLogin();
+				$this->processo->beginTransaction();
+				if (!$this->processo->retencao->setorDestino)
+				{
+					$andamento2 = $this->processo->getAndamento($this->processo->retencao->numAndamento);
+					$andamento2->setorDestino = $data->setor;
+					$andamento2->dataSaida = $data->dataEntrada;
+					$this->processo->addAndamento($andamento2);
+				}
+				$this->processo->retencao->numAndamento++;
+				$andamento = $this->processo->getAndamento($this->processo->retencao->numAndamento);
+				$andamento->setData($data, $login->idkey);
+				$this->processo->addAndamento($andamento);
+				$this->processo->retencao->setData($andamento);
+				$this->processo->retencao->setorDestino = null;
+				$this->processo->retencao->dataSaida = null;
+				$this->processo->retencao->dataDespacho = null;
+				$this->processo->save();
+				
+				$dataMail = date("d/m/y");
+				$horaMail = date("H:i");
+				$objMail = $this->processo->getTituloByNumProcesso($this->processo->numProcesso);
+				$mailSender = $this->processo->getMailByNumProcesso($this->processo->numProcesso);
+				$emails = $this->processo->listarEmail();
+				$emails[$emails->length][0] = $mailSender;
+                foreach($emails as $e)
+                {
+                    if($e[1])
+		            {
+		                    $instituicao = $this->processo->instituicaoUsuario($e[1]);
+		                    $pessoa = $e[2];
+		            }
+		            else
+		            {
+		                    $instituicao = $this->processo->instituicaoProcesso();
+		                    $pessoa = $this->processo->solicitante;
+		            }
+					
+					$mail = new PHPMailer();
+					$mail->IsSMTP(); // send via SMTP
+					$mail->Host = $MIOLO->getConf('mail.host');
+					$mail->SMTPAuth = $MIOLO->getConf('mail.auth');
+					$mail->Username = $MIOLO->getConf('mail.user');
+					$mail->Password = $MIOLO->getConf('mail.pass');
+					$mail->From = $MIOLO->getConf('mail.from');
+					$mail->FromName = "SIGA - Sistema Integrado de Gestão Acadêmica";
+					$mail->AddAddress($e[0]);
+					$mail->Port = $MIOLO->getConf('mail.port');
+					$mail->WordWrap = 50;
+					$mail->IsHTML(true);
+					$mail->Subject = "SIGA-ADM(1) - Notificação de Trâmite de Processo";
+	                                $mail->SMTPSecure = $MIOLO->getConf('mail.secure');
+        	                        $mail->Body = "
+                                                <center><h1>TRAMITAÇÃO DO PROCESSO<br /> {$this->processo->numProcessoFormatado()}</h1></center>
+                                                <br /><br />Prezado(a) Sr(a) {$pessoa},
+						<br /><br />O processo {$this->processo->numProcessoFormatado()} deu entrada no setor {$this->processo->retencao->setor}
+                                                <br /><br /><b>Objeto: </b>{$objMail}
+                                                <br /><b>Setor Atual: </b>{$this->processo->retencao->setor}
+                                                <br /><br /><b>Data: </b>{$dataMail}
+                                                <br /><b>Hora: </b>{$horaMail}
+                                                <br /><br /><b>Para maiores informações acesse: </b>{$MIOLO->getConf('home.url')}
+                                                <br /><br />Atenciosamente,
+                                                <br /><br />{$instituicao}
+                                                <br /><br /><b><font color=\"RED\"> Observação: Este email foi enviado automaticamente, não é necessário responder. </font></b>
+                	                ";
+					$mail->Send();
+				}
+				
+				$msg = 'O processo '.$this->processo->numProcessoFormatado().' deu entrada no setor '.$this->processo->retencao->setor.' com sucesso.';
+				$this->processo->Log(OP_UPD,$msg);
+				$this->processo->endTransaction();
+				$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+			}
+			catch(Exception $e) {$this->addError($e->getMessage());}
+		}
+		else {
+			$msg = 'Este usuário não tem permissão para acessar este Processo/Protocolo';
+			$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+		}
+
+	}
+}
+?>

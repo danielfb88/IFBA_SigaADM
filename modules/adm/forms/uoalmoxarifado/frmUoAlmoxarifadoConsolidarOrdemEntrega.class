@@ -1,0 +1,128 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmUoAlmoxarifadoConsolidarOrdemEntrega extends MForm
+{
+    protected $uoalmoxarifado;
+    function __construct($objUO)
+    {
+        $this->uoalmoxarifado = $objUO;
+		parent::__construct('Consolidar');
+        $this->eventHandler();
+    }
+
+    function CreateFields()
+    {
+		$buttons = array(
+        	new MButton('btnConsolidar', 'Consolidar Todas'),
+        );
+		$this->SetButtons($buttons);
+    }
+
+    function btnConsolidar_click()
+    {
+        $movimentos = $this->uoalmoxarifado->getMovimentosAConsolidar();
+        $action_voltar = $this->manager->getActionURL('adm','main:uoalmoxarifado',$this->uoalmoxarifado->idUo,array("form"=>"ordementrega"));
+        if ($movimentos)
+        {
+            try
+            {
+                $movimentos[0]->beginTransaction();
+                foreach ($movimentos as $movimento)
+                {
+                    $movimento->retrieveAssociation('requisicao');
+                    $numOrdens[$movimento->requisicao->idUoRequisitante] = ($numOrdens[$movimento->requisicao->idUoRequisitante]) ? $numOrdens[$movimento->requisicao->idUoRequisitante] : $this->uoalmoxarifado->addNumeroOrdemEntrega();
+                    $movimento->idOrdemEntrega = $numOrdens[$movimento->requisicao->idUoRequisitante];
+                    $movimento->setTransaction($movimentos[0]->getTransaction());
+                    $movimento->save();
+                }
+                $movimentos[0]->endTransaction();
+			    $action_rep = $this->manager->getActionURL('adm','main:uoalmoxarifado',$this->uoalmoxarifado->idUo,array("form"=>"ordementrega","subform"=>"gerar","event"=>"btnRelatorio:click"));
+                $this->manager->Confirmation("Ordens de Entrega geradas com sucesso. Clique em OK para imprimir todas as Ordens de Entrada ou em CANCELAR para voltar.",$action_rep, $action_voltar);
+            }
+            catch (Exception $e)
+            {
+                $this->addError($e->getMessage());
+            }
+        }
+        else $this->manager->information("Não há Ordens de Entrega a serem geradas.",$action_voltar);
+    }
+   
+    function btnRelatorio_click()
+    {   
+		$cf = new MCurrencyFormatter();
+        $report = new MEzPDFReport('2','landscape');
+        $report->pdf->ezText('',20);
+        $cols = array('Código','Material','Unidade','Requisição','Quantidade','Valo Unitário','Valor Total');
+        $options['textCol'] = array(0,0,0);
+        $options['shaded'] = 1;
+        $options['showLines'] = 0;
+        $options['fontSize'] = 10;
+        $options['width'] = 740;
+        $options['xPos'] = 'left';
+        $options['xOrientation'] = 'right';
+        $report->pdf->ezText('',20);
+        $movimentos = $this->uoalmoxarifado->getMovimentosByOENaoImpressas();
+        if ($movimentos)
+        {
+            try
+            {
+                $movimentos[0]->beginTransaction();
+                foreach ($movimentos as $movimento)
+                {
+                    $movimento->retrieveAssociation('requisicao');
+                    $movimento->requisicao->retrieveAssociation('uoRequisitante');
+                    $movimento->retrieveAssociation('itemreq');
+                    $movimento->retrieveAssociation('ordem');
+                    $movimento->ordem->setTransaction($movimentos[0]->getTransaction());
+                    $movimento->ordem->impresso = 1;
+                    $movimento->ordem->save();
+                    $dados[$movimento->requisicao->uoRequisitante->nome][$movimento->idOrdemEntrega][] = array($movimento->idMaterial,$movimento->itemreq->material->descricao,$movimento->itemreq->material->unidade,$movimento->idRequisicao,$movimento->quantidade,$cf->formatWithSymbol($cf->toDecimal($movimento->valorTotal)/$movimento->quantidade),$cf->formatWithSymbol($cf->toDecimal($movimento->valorTotal)));
+                }
+                $movimentos[0]->endTransaction();
+            }
+            catch (Exception $e)
+            {
+                $this->addError($e->getMessage());
+            }
+            foreach ($dados as $nome=>$dadosOE)
+            {
+                foreach ($dadosOE as $oe=>$dado)
+                {
+                    $report->pdf->ezText("UNIVERSIDADE FEDERAL DE JUIZ DE FORA
+CGCO - CENTRO DE GESTÃO DO CONHECIMENTO ORGANIZACIONAL
+SISTEMA INTEGRADO DE GESTÃO ACADÊMICA - SIGA
+COORDENADORIA DE SUPRIMENTOS - SETOR DE ESTOQUE",12,array("spacing"=>"1"));
+                    $report->pdf->ezText('',20);
+                    $report->pdf->ezText("NÚMERO OE: {$oe} - SETOR: {$nome}",16,array("justification"=>"center","spacing"=>"1"));
+                    $report->pdf->ezText('',20);
+                    $report->pdf->ezText('',5);
+                    $report->pdf->ezTable($dado,$cols,'',$options);
+				    $report->pdf->ezNewPage();
+                }
+            }
+	        $report->Execute();
+        }
+    }
+
+ }
+?>

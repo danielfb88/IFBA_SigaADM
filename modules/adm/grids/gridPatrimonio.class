@@ -1,0 +1,112 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+/**
+ * Grid Patrimonio
+ * Grid de uso geral para selecionar itens do patrimonio
+ * @package br.org.miolo.ufjf.adm.grids
+ */
+/**
+ * Use Module Control
+ */
+global $MIOLO;
+$MIOLO->Uses('controls/linkpatrimonio.class','adm');
+
+class gridPatrimonio extends DataGrid2
+{
+
+	/**
+	* Constructor
+	*/
+	function __construct()
+	{
+		global $MIOLO, $self;
+
+		$linkPatrimonio = new LinkPatrimonio('linkpatrimonio','%0%');
+		$columns = array(
+			new DataGridColumn('idItemPatrimonio','Número','center', true,'10%',true,null,true),
+			new DataGridControl($linkPatrimonio,'patrimonio','Descrição','left', false,'60%'),
+			new DataGridColumn('sigla','Setor','left', true,'20%',true,null,true),
+			new DataGridColumn('numero','Empenho','center', true,'10%',true,null,true),
+		);
+
+		$this->SetFilter(false);
+		$idItemPatrimonio = MForm::GetFormValue('idItemPatrimonio');
+		$descricao = strtoupper(MForm::GetFormValue('patrimonio'));
+		$classificador = strtoupper(MForm::GetFormValue('classificador'));
+		$empenho = strtoupper(MForm::GetFormValue('empenho'));
+		$idSetor = MForm::GetFormValue('idSetor');
+		$this->AddFilterText('patrimonio','Item',$patrimonio);
+		$this->SetIndex(1);
+		$objPatrimonio = $MIOLO->GetBusiness('adm','itempatrimonio');
+		$href_grid = $MIOLO->GetActionURL('adm',$self);
+		/*if(($classificador) or ($empenho) or ($descricao) or ($idItemPatrimonio))
+		{
+			$query = $objPatrimonio->ListByClassificadorOuEmpenho($classificador, $empenho, $descricao, $idItemPatrimonio);
+		    parent::__construct($query, $columns, $href_grid,25);
+		}*/
+		if (($idItemPatrimonio>0) and is_numeric($idItemPatrimonio))
+		{
+			    $query = $objPatrimonio->ListById($idItemPatrimonio);
+			parent::__construct($query, $columns, $href_grid,25);
+		}
+		else{
+			if((($idItemPatrimonio!="") and ($idItemPatrimonio!='%')) and (!is_numeric($idItemPatrimonio)))
+			{
+				$MIOLO->Information('O campo número deverá possuir o n° do patrimônio',$MIOLO->GetActionURL($module, $self));
+			
+			}
+			elseif($idItemPatrimonio=='%')
+			{
+				$query = $objPatrimonio->ListByDesc($idItemPatrimonio);
+				parent::__construct($query, $columns, $href_grid,25);
+			
+			}
+			elseif($descricao!="")
+			{
+				$query = $objPatrimonio->ListByDesc($descricao);
+				parent::__construct($query, $columns, $href_grid,25);
+			
+			}
+			elseif(($classificador!='') or ($empenho!='')){
+				$query = $objPatrimonio->ListByClassificadorOuEmpenho($classificador, $empenho, $descricao, $idItemPatrimonio);
+				parent::__construct($query, $columns, $href_grid,25);
+			}
+			elseif($idSetor)
+			{
+				$query = $objPatrimonio->ListByIdSetor($idSetor);
+				parent::__construct($query, $columns, $href_grid,25);
+			}
+		}
+		$this->SetLinkType('hyperlink');
+	}
+
+
+	function GenerateFooter()
+	{
+		if (!$this->data) 
+			$footer[] = $this->GenerateEmptyMsg();
+		$footer[] = new Separator();
+		$footer[] = $this->GenerateControls();
+		return $footer;
+	}
+}

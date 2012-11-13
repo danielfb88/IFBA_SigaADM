@@ -1,0 +1,185 @@
+<?
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+MIOLO::Import('extensions::class.phpmailer.php','PHPMailer');
+class frmPatrimonioTransferir extends MForm
+{
+
+	protected $objPatrimonio;	
+	protected $perms;
+	
+    function __construct($objPatrimonio)
+    {
+		global $MIOLO,$module,$action,$item;
+		
+		$this->objPatrimonio = $objPatrimonio;	
+		$this->perms  = $MIOLO->getPerms();	
+        parent::__construct('Transferir Item');
+		$this->SetClose(null);
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+		global $MIOLO;
+
+		$fields = array
+			(
+				new MLookupTextField('setor','','Setor de Destino',50),
+				new MHiddenField('idSetor'),
+				new MLookupTextField('dependencia','','Dependência de Destino',50),
+				new MHiddenField('idDependencia'),
+				new MCalendarField('dataMovimento',date('d/m/Y'),'Data',20),
+			);
+		
+        $this->SetFields($fields);
+		$this->SetFieldAttr('setor','module','common');
+		$this->SetFieldAttr('setor','item','setor');
+		$this->SetFieldAttr('setor','related','idSetor,setor');
+		$this->SetFieldAttr('dependencia','module','adm');
+		$this->SetFieldAttr('dependencia','item','dependencia');
+		$this->SetFieldAttr('dependencia','related','idDependencia,dependencia');
+		$this->SetFieldAttr('dependencia','filter','dependencia,idSetor,setor');
+
+		$buttons = array
+			(
+        	   new MButton('btnSalvar', 'Transferir')
+            );
+		$this->SetButtons($buttons);
+
+		$validators = array
+			(
+				new MRequiredValidator('idSetor'),
+				new MRequiredValidator('setor'),
+		    );
+		$this->SetValidators($validators);
+    }
+
+	public function btnSalvar_click()
+	{
+		global $MIOLO;
+        /*  IFRO - Alan de Oliveira Silva
+            Controle de Acesso de usuários no Patrimônio
+            -- Inicio --
+        */
+        
+	    $setor = $MIOLO->GetBusiness('common','setor');
+	    $user  = $MIOLO->GetBusiness('common','usuario');
+   		$setorOrigem = $this->objPatrimonio->idSetor;	    
+	    $usuario = $user->GetByLogin($MIOLO->login->id);
+	    $instituicao_usuario = $setor->getById($usuario->idSetor)->idinstituicao;	        
+	    $instituicao_patrimonio = $setor->getById($setorOrigem)->idinstituicao;		        		      
+	    if ($instituicao_usuario == $instituicao_patrimonio || $this->perms->checkAccess('ADM_PATRIMONIOADMIN', A_EXECUTE)) {
+        /* --Fim-- */
+        			
+			$dependenciaOrigem = $this->objPatrimonio->idDependencia;
+			$this->objPatrimonio->SetData($this->GetData());
+	
+	        $data = $this->GetData();
+			$this->objPatrimonio->idDependencia = ($data->idDependencia) ? ($data->idDependencia) : null;
+			$movimentoPat = $this->manager->GetBusiness('adm','movimentopat');
+			$novoIdNumeroTermo = $movimentoPat->GetTermoFormatado($movimentoPat->GetNextIdTermo());
+			$movimentoPat->numeroTermo = $novoIdNumeroTermo . '/' . date('Y');
+			$movimentoPat->tipoMovimento = '2';
+			$movimentoPat->idItemPatrimonio = $this->objPatrimonio->idItemPatrimonio;
+			$movimentoPat->idSetorOrigem = $setorOrigem;
+			$movimentoPat->idSetorDestino = $data->idSetor;
+			$movimentoPat->idDependenciaOrigem = $dependenciaOrigem;
+			$movimentoPat->idDependenciaDestino = ($data->idDependencia) ? ($data->idDependencia) : null;
+	
+			$movimentoPat->dataMovimento = $data->dataMovimento;
+						
+			try
+			{
+				$this->objPatrimonio->save();
+				// Pega o setor de origem e de destino para que possa obter os e-mails
+				$instituicao = $MIOLO->GetBusiness('common','instituicao');
+				$setorOrigem = $MIOLO->GetBusiness('common','setor', $setorOrigem);
+				$setorDestino = $MIOLO->GetBusiness('common','setor', $data->idSetor);
+				if ($setorOrigem->idinstituicao != $setorDestino->idinstituicao)
+				{
+					$dadosOrigem = $setorOrigem->getDadosResponsavel();
+					$dadosDestino = $setorDestino->getDadosResponsavel();
+					$dadosPatrimonioOrigem = $instituicao->getPessoasAcessoPatrimonio($setorOrigem->idinstituicao);
+					$dadosPatrimonioDestino = $instituicao->getPessoasAcessoPatrimonio($setorDestino->idinstituicao);
+					// Guarda os dados que serão utilizados no envio de e-mails em um único array
+					$dadosEmail = array($dadosOrigem->result[0], $dadosDestino->result[0]);
+					foreach ($dadosPatrimonioOrigem->result as $d)
+					{
+						$dadosEmail[] = $d;
+					}
+					foreach ($dadosPatrimonioDestino->result as $d)
+					{
+						$dadosEmail[] = $d;
+					}						
+					// Envio de e-mail avisando os usuário responsável pelos setores, juntamente 
+					// com as pessoas que tem acesso ao patrimônio
+					$dataMail = date("d/m/y");
+					$horaMail = date("H:i");				
+					$setor = $this->manager->getBusiness('common','setor');
+					$setor->getById($user->idSetor);
+					$instituicao = $this->manager->getBusiness('common','instituicao');
+					$instituicao->getById($setor->idinstituicao);
+					foreach ($dadosEmail as $e)
+					{
+						$mail = new PHPMailer();
+						$mail->IsSMTP(); // send via SMTP
+						$mail->Host = $MIOLO->getConf('mail.host');
+						$mail->SMTPAuth = $MIOLO->getConf('mail.auth');
+						$mail->Username = $MIOLO->getConf('mail.user');
+						$mail->Password = $MIOLO->getConf('mail.pass');
+						$mail->From = $MIOLO->getConf('mail.from');
+						$mail->FromName = "SIGA - Sistema Integrado de Gestão Acadêmica";
+						$mail->AddAddress($e[1]);
+						$mail->Port = $MIOLO->getConf('mail.port');
+						$mail->WordWrap = 50;
+						$mail->IsHTML(true);
+						$mail->Subject = "SIGA-ADM(7) - TRANSFERÊNCIA DE ITENS PATRIMONIAIS";
+						$mail->ssl = $MIOLO->getConf('mail.ssl');
+						$mail->Body = "
+								<center><h1>TRANSFERÊNCIA DE ITENS PATRIMONIAIS</h1></center>
+								<br /><br />Prezado(a) Sr(a) {$e[0]},
+								<br /><br />O item a seguir foi transferido do setor {$setorOrigem->sigla} para o setor {$setorDestino->sigla}:
+								<br /><br /><b>Número de patrimônio: </b>{$this->objPatrimonio->idItemPatrimonio}
+								<br /><b>Item: </b>{$this->objPatrimonio->descricao}
+								<br /><br /><b>Data: </b>{$dataMail}										
+								<br /><b>Hora: </b>{$horaMail}						
+								<br /><br /><b>Para maiores informações acesse: </b>{$MIOLO->getConf('home.url')}
+								<br /><br />Atenciosamente,
+								<br /><br />{$instituicao->nome} - {$instituicao->instituicao}						
+								<br /><br /><b><font color=\"RED\"> Observação: Este email foi enviado automaticamente, não é necessário responder. </font></b>
+						";								
+						$mail->Send();
+					}
+				}
+	        	$movimentoPat->save();
+				$this->objPatrimonio->Log(OP_UPD,"Item transferido: " . $this->objPatrimonio->idItemPatrimonio);
+				$this->addInfo("Item Transferido com Sucesso.");
+			}
+			catch (Exception $e)
+			{
+				$this->addError($e->getMessage());
+			}
+		}else {
+		    $msg = 'Este usuário não tem permissão para acessar este Patrimonio';
+			$this->manager->Information($msg,$this->manager->GetActionURL('adm','main:patrimonio'));
+		}
+	}
+ }
+?>

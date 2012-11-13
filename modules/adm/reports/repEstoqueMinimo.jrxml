@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="repEstoqueMinimo" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="786" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="zebra" isDefault="false">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean( $V{REPORT_COUNT}.intValue() % 2 == 0 )]]></conditionExpression>
+			<style isDefault="false" style="zebra" backcolor="#E2E2E2"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="pImg" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="pIdUsuario" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pURL" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String"/>
+	<parameter name="pIdUo" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT ad_material.codmaterial,
+	ad_material.descricao,
+	ad_material.unidade,
+	ad_estoque.estoquemin,
+	ad_estoque.estoque,
+	ad_estoque.valortotal,
+	(select nome from ad_uo where iduo=$P{pIdUo}) as uo
+
+FROM (ad_estoque INNER JOIN ad_material ON ((ad_estoque.idmaterial=ad_material.idmaterial)))
+WHERE (ad_estoque.iduo = $P{pIdUo} and ad_estoque.estoque < ad_estoque.estoquemin)
+ORDER BY ad_material.descricao ASC]]>
+	</queryString>
+	<field name="codmaterial" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="descricao" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="unidade" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="estoquemin" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="estoque" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="valortotal" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="uo" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="totalAtual" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{valortotal}]]></variableExpression>
+	</variable>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="78">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" mode="Transparent" x="0" y="0" width="797" height="77"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA["ESTOQUE MÍNIMO"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} +"/common/reports/CabecalhoPaisagem.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="53">
+			<line>
+				<reportElement key="line-1" x="0" y="1" width="797" height="1"/>
+			</line>
+			<line>
+				<reportElement key="line-1" x="1" y="49" width="796" height="1"/>
+			</line>
+			<line>
+				<reportElement key="line-1" x="0" y="2" width="797" height="1"/>
+			</line>
+			<line>
+				<reportElement key="line-2" x="1" y="50" width="796" height="1"/>
+			</line>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-18" stretchType="RelativeToTallestObject" x="3" y="3" width="790" height="46"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{uo}+" - Lista de Materiais com estoque abaixo do limite").toUpperCase()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="42">
+			<rectangle>
+				<reportElement key="rectangle-1" mode="Opaque" x="0" y="1" width="797" height="38" backcolor="#D7D7D7"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Dotted"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-20" x="693" y="1" width="105" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-21" x="53" y="1" width="362" height="35"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Especificação]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" x="594" y="1" width="95" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Estoque]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" positionType="Float" x="2" y="1" width="49" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Código]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement mode="Transparent" x="415" y="1" width="76" height="37"/>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Transparent" x="491" y="1" width="103" height="37"/>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Transparent" x="2" y="0" width="794" height="38"/>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Transparent" x="2" y="0" width="49" height="38"/>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Transparent" x="51" y="0" width="364" height="38"/>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Transparent" x="689" y="0" width="107" height="38"/>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-24" x="416" y="2" width="75" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Unidade]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" x="492" y="1" width="102" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Estoque Mínimo]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement mode="Transparent" x="594" y="0" width="95" height="38"/>
+			</rectangle>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<frame>
+				<reportElement style="zebra" mode="Opaque" x="2" y="2" width="794" height="18"/>
+				<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
+					<reportElement key="textField" mode="Transparent" x="693" y="2" width="93" height="15"/>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{valortotal} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{valortotal} ))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+					<reportElement key="textField-13" stretchType="RelativeToBandHeight" x="51" y="2" width="364" height="14"/>
+					<textElement verticalAlignment="Top">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{descricao}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-9" x="2" y="3" width="49" height="14"/>
+					<textElement textAlignment="Center">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{codmaterial}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+					<reportElement key="textField" mode="Transparent" x="594" y="2" width="95" height="15"/>
+					<textElement textAlignment="Center">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{estoque}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+					<reportElement key="textField" mode="Transparent" x="415" y="2" width="77" height="15"/>
+					<textElement textAlignment="Center">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{unidade}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+					<reportElement key="textField" mode="Transparent" x="492" y="2" width="102" height="15"/>
+					<textElement textAlignment="Center">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{estoquemin}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="24">
+			<textField pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="false">
+				<reportElement key="textField-16" x="32" y="8" width="161" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="660" y="8" width="85" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Página "+$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="745" y="8" width="35" height="12"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" de "+$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line" x="0" y="3" width="788" height="2"/>
+			</line>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="35">
+			<rectangle>
+				<reportElement key="rectangle-2" x="0" y="4" width="796" height="27" isPrintWhenDetailOverflows="true" backcolor="#FFFFFF"/>
+				<graphicElement>
+					<pen lineWidth="0.1" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-26" x="594" y="8" width="99" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[SALDO ATUAL:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-18" stretchType="RelativeToTallestObject" mode="Opaque" x="693" y="9" width="92" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{totalAtual} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{totalAtual} ))]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

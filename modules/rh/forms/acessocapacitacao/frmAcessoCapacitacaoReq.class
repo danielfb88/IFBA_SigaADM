@@ -1,0 +1,66 @@
+<?
+class frmAcessoCapacitacaoReq extends Form
+{
+
+    function __construct()
+    {
+	global $MIOLO, $module;
+    	parent::__construct('Requisitantes');
+        $this->SetClose($MIOLO->GetActionURL($module,'main:capacitacao:acesso',$item));
+        $this->EventHandler();
+    }
+    function CreateFields()
+    {
+		$fields = array(
+			new LookupTextField('lkpUsuario','','Login'),
+			new TextField('nome','','Nome',50),
+			new HiddenField('idUsuario',''),
+        );
+		
+        $this->SetFields($fields);
+		
+	   $this->SetFieldAttr('lkpUsuario','module','common');
+	   $this->SetFieldAttr('lkpUsuario','item','usuario');
+	   $this->SetFieldAttr('lkpUsuario','event','filler');
+	   $this->SetFieldAttr('lkpUsuario','related','idUsuario,lkpUsuario,NULL,NULL,NULL,NULL,nome');
+		
+		$buttons = array(
+        	new FormButton('btnSalvar', 'Incluir')
+            );
+		$this->SetButtons($buttons);
+
+    }
+	
+	public function btnSalvar_click()
+	{
+		global $MIOLO;
+
+		$idUsuario = $this->GetFormValue('idUsuario');
+		$data = $this->getData();
+		if (!$idUsuario)
+		{
+			$this->addError('Informe o Usuário');
+		}
+		else
+		{
+			$objReq = $MIOLO->GetBusiness('rh','reqcapacitacao');
+			$objReq->setData($data);
+			try
+			{
+				$objReq->save();
+				$objReq->Log(OP_INS,"Novo requisitante de capacitação");
+                        	//$go = $MIOLO->GetActionURL($module,'main:jornada',$jornada->idJornada);
+        	    		//$page->Redirect($go);
+  
+			}
+			catch (Exception $e)
+			{
+				$this->addError($e->getMessage());
+			}
+
+			$this->SetFieldValue('lkpUsuario','');
+			$this->SetFieldValue('nome','');
+		}
+	}
+ }
+?>

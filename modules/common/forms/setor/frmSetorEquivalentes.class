@@ -1,0 +1,98 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmSetorEquivalentes extends MForm
+{
+	private $objSetor;
+
+	function __construct($objSetor)
+	{   
+		$this->objSetor = $objSetor;
+		$situacao = $this->objSetor->dataFim == NULL ? 'Aberto' : 'Fechado';
+		parent::__construct("Setor: {$this->objSetor->sigla} [{$this->objSetor->idSetor}]");
+		$this->EventHandler();
+	}
+
+	function CreateFields()
+	{
+		$lkpSetorId = new MHiddenField('lkpSetorId','','Id Setor Equiv',5);
+		$lkpSetorId->readonly = true;
+		$lkpSetor = new MLookupTextField('lkpSetor','','Setor Equivalente',15);
+		$lkpSetor->module = 'common';
+		$lkpSetor->item = 'setor';
+		$lkpSetor->event = 'filler';
+		$lkpSetor->related = 'lkpSetorId, lkpSetor, none, none';
+
+		$hierarquia = array( 
+			$lkpSetor, $lkpSetorId
+		);     
+
+		$fields = array(
+			new MHiddenField('key',''),
+			array(    
+				new MultiTextField3('mtEquivalencia',null,'Equivalencias',$hierarquia,150,true,'horizontal'),
+			), 
+		);
+		$this->SetFields($fields);
+
+		$buttons = array(
+			new MButton('btnPost',  'Gravar'),
+			new MButton('btnCancel', 'Cancelar'),
+		);
+		$this->SetButtons($buttons);
+
+		$this->setData($this->objSetor);
+
+	}
+
+	function SetData($data)
+	{
+		$this->mtEquivalencia->setCodeValue($data->retrieveEquivalencia());
+	}
+
+	function GetData()
+	{
+		$data = new FormData();
+		$data->equivalencia = $this->mtEquivalencia->getCodeValue();
+		return $data;
+	}
+
+	function btnPost_click($sender, $item=NULL)
+	{
+		try
+		{
+			$data = $this->getData();
+			$this->objSetor->saveEquivalencia($data->equivalencia);
+			$action = $this->manager->GetCurrentURL();
+			$this->manager->Information('Dados cadastrados com sucesso.', $action );
+		}
+		catch (EMioloException $e)
+		{
+			$this->AddError('Erro no cadastramento/alteração das informações do setor');
+		}
+	}
+
+	function btnCancel_click($sender)
+	{   
+	}
+}
+?>

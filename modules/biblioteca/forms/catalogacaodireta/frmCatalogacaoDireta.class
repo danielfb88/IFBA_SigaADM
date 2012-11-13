@@ -1,0 +1,745 @@
+<?PHP
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versÃ£o 2 da Licença.
+ *
+ * Este programa é distribuí­do na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título "LICENCA.txt",
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+<?
+class frmCatalogacaoDireta extends MFormAjax
+{
+    var $objObra;
+    var $objAutor;
+    var $objGenero;
+    var $objSimples;
+    var $objEditora;
+    var $objAssunto;
+    var $obraSalva;
+
+
+    function __construct()  // construtor da Classe
+    {
+        global $MIOLO,$module, $item;
+
+
+        //Instancia o objeto precatalogacao
+        $this->objObra = $MIOLO->GetBusiness($module,'obra');
+        $this->objAutor = $MIOLO->GetBusiness($module,'autor');
+        $this->objGenero = $MIOLO->GetBusiness($module,'genero');
+        $this->objSimples = $MIOLO->GetBusiness($module,'pesquisasimples');
+
+        // Título do Formulário
+        parent::__construct('Catalogação Direta');
+
+        //Chama o CreateFileds, etc.
+        $this->EventHandler();
+
+        // Botão "enviar" não aparece
+        $this->defaultButton = false;
+
+        // Botão 'fechar', direcionando para o handler biblioteca/main/catalogacao
+        $this->SetClose($this->manager->GetActionURL($module, 'main:catalogacao'));
+
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../js/frmPreCatalogacao.js'));
+         
+    }
+     
+    function CreateFields()
+    {
+        global $MIOLO, $module, $item,$action;
+        $generos = $this->pegaListaDeGeneros();
+        //$ui = $MIOLO->GetUI();
+
+        if($item == NULL){ //cria uma nova obra
+            //if($this->GetFieldValue('idobra')== NULL){ //cria uma nova obra
+            $this->obraSalva = false;
+
+        }else{ //obra já criada
+
+            if($this->objObra->obraSalvaNoBanco($item) == false){ //verifica se a obra realmente está salva no banco
+                $MIOLO->Error("Id de obra não encontrado no banco de dados. Id = $item",
+                $MIOLO->GetActionURL( 'biblioteca' , "main:catalogacao:catalogacaodireta"));
+            }else{
+                $this->obraSalva = true;
+
+                $this->objObra->GetById($item);
+                $idobra= $item;
+                $titulo = $this->objObra->titulo;
+                $numerodaobra = $this->objObra->numeroDaObra;
+                $isbn =  $this->objObra->isbn;
+                $issn = $this->objObra->issn;
+                $notaGeral = $this->objObra->notaGeral;
+                $notaConteudo = $this->objObra->notaConteudo;
+                $tituloSerie = $this->objObra->tituloSerie;
+
+                $subtitulo = $this->objObra->subtitulo;
+                $autor = $this->objObra->autor;
+                $idautor = $this->objObra->idautor;
+                $idautor = $this->objObra->idautor;
+                $edicao = $this->objObra->edicao;
+                $localpublicacao = $this->objObra->localPublicacao;
+                $editora = $this->objObra->editora;
+                $ideditora = $this->objObra->ideditora;
+                $idgenero = $this->objObra->idGenero;
+                $cutter  = $this->objObra->cutter;
+                $dataPublicacao  = $this->objObra->dataPublicacao;
+                $descFisica  = $this->objObra->descFisica;
+
+                $chamadaLocal = $this->objObra->chamadaLocal;
+
+                $cdu = $this->objObra->cdu;
+                $cdd = $this->objObra->cdd;
+            }
+        }
+
+        $label = new MLabel( '  ');
+        $url = $this->manager->getActionUrl('biblioteca','ajaxhandler');
+        $isbn = array('ISBN dez digitos','ISBN treze digitos');
+        $fields = Array (
+        new MTextLabel('numero', $numerodaobra , 'Número da Obra'),
+        new HiddenField('idobra',$idobra),
+        new MTextField('edtISBN','','ISBN',20),
+        new TextField('edtCdd',$cdd,'CDD  ',20),
+        new TextField('edtCdu',$cdu,'CDU  ',20),
+        new TextField('edtChamadaLocal',$chamadaLocal,'Localização na estante ',30),
+        new MlookupFieldValue('lkpcatautor',$autor,'Autor Principal',30,'Pesquisar'),
+        new HiddenField('idautor',$idautor ),
+        new TextField('edtTitulo',$titulo , ' Título Principal ',60),
+        new TextField('edtSubtitulo', $subtitulo , 'Subtítulo',60),
+        new TextField('edtCutter',$cutter,'Cutter',6),
+        new MButton('bntGeraCutter','Gerar Cutter',"buscaCutter('$url','lkpcatautor','edtTitulo','idobra');"),
+        new TextField('edtEdicao',$edicao,'Edição',20),
+        new MlookupFieldValue('lkpLocalDePublicacao',$localpublicacao,'Local de Publicação',30,'Pesquisar'),
+        new MlookupFieldValue('lkpEditora',$editora,' Editora',45,''),
+        new HiddenField('ideditora',$ideditora),
+        new TextField('edtDataDePublicacao',$dataPublicacao,' Data de Publicação',4,'Somente o ano. Ex.: 2012'),
+        new TextField('edtDescFisica',$descFisica,' Descrição Física',50),
+        new TextField('edtTituloSerie',$tituloSerie,' Título da Série',50),
+        new TextField('edtNotaGeral',$notaGeral,' Nota Geral',50),
+        new MultiLineField('edtNotaConteudo',$notaConteudo,' Nota de Conteúdo','',10,50),
+        new Selection('selGenero','',' Gênero',$generos),
+
+        //Inclusão CDD e CDU - 30/06/2010
+        new MlookupFieldValue('lkpautorsec','','Autor Secundário',45,'Pesquisar '),
+        new MHiddenField('idetiquetaAutorSec'),
+        new HiddenField('idautorsec'),
+        new FormButton('btnAddAutorSec', 'Incluir Autor Secundário'),
+        new MlookupFieldValue('lkpassunto',$assunto,' Assunto',45,''),
+        new HiddenField('idassunto',$idassunto),
+        new FormButton('btnAddAssunto', 'Incluir Assunto'),
+        new MHiddenField('ocorrenciaAssunto'),
+        new MHiddenField('idetiquetaAssunto'),
+        );
+
+
+        // $this->SetFields($fields);
+
+        //Inclusão de máscara e tamanho do campo ISBN 08/06/2012
+         
+        //$this->edtCdd->addAtribute('maxlength',20);
+         
+        $this->SetFields($fields);
+
+        $this->edtTitulo->addAttribute("onChange","buscaCutter('$url','lkpcatautor','edtTitulo','idobra');");
+        if($numerodaobra ==null)
+        $this->SetFieldAttr('numero','visible',false);
+
+        $this->SetFieldValue('idobra',$item);
+
+        // if($idgenero==null) acrescentar  na validação de obrigatoriedade
+        //   $idgenero = 1;
+        if ($idgenero != null)
+        {
+            $this->SetFieldValue('selGenero',$idgenero);
+        }
+
+        if  ($ideditora != null)
+        {
+            $this->SetFieldValue('ideditora',$ideditora);
+        }
+
+        $this->edtISBN->addAttribute('onKeyUp','makeMask(this, \'###-##-###-####-#\');');
+        $this->edtISBN->addAttribute('onBlur','makeMask(this,  \'###-##-###-####-#\');');
+        $this->edtISBN->addAttribute('maxlength',17);
+        $this->numero->addAttribute('maxlength',4);
+        $this->edtChamadaLocal->addAttribute('maxlength',200);
+        $this->edtTitulo->addAttribute('maxlength',350);
+        $this->edtSubtitulo->addAttribute('maxlength',250);
+        $this->edtEdicao->addAttribute('maxlength',30);
+        $this->lkpLocalDePublicacao->addAttribute('maxlength',200);
+        $this->edtDataDePublicacao->addAttribute('maxlength',4);
+        $this->edtDescFisica->addAttribute('maxlength',80);
+
+        //$this->numero->addAttribute('maxlength',4);
+         
+        //escondendo campos
+        //$this->camposEscondidos();
+
+        //As 4 propriedades de um lookup
+        // module = módulo usado
+        // item = A funcao que chama no arquivo classes/lookup.class
+        // event = O evento relacionado quando o usuário clica em "acao"
+        // related = Os campos retornados após a ação
+
+        $this->SetFieldAttr('lkpautorsec','module','biblioteca');
+        $this->SetFieldAttr('lkpautorsec','item','autorsec');
+        $this->SetFieldAttr('lkpautorsec','event','filler');
+        $this->SetFieldAttr('lkpautorsec','related','idautorsec,lkpautorsec,idetiquetaAutorSec');
+        $this->SetFieldAttr('lkpautorsec','filter','lkpautorsec');
+
+        $this->SetFieldAttr('lkpassunto','module','biblioteca');
+        $this->SetFieldAttr('lkpassunto','item','assunto');
+        $this->SetFieldAttr('lkpassunto','event','filler');
+        $this->SetFieldAttr('lkpassunto','related','idassunto,lkpassunto,ocorrenciaAssunto,idetiquetaAssunto');
+        $this->SetFieldAttr('lkpassunto','filter','lkpassunto');
+
+        $this->SetFieldAttr('lkpcatautor','module','biblioteca');
+        $this->SetFieldAttr('lkpcatautor','item','AutorCat');
+        $this->SetFieldAttr('lkpcatautor','event','filler');
+        $this->SetFieldAttr('lkpcatautor','related','idautor,lkpcatautor,idetiqueta, ocorrencia');
+
+        //Lookup Local de publicacao de obra
+
+        $this->SetFieldAttr('lkpLocalDePublicacao','module','common');
+        $this->SetFieldAttr('lkpLocalDePublicacao','item','municipio');
+        $this->SetFieldAttr('lkpLocalDePublicacao','event','filler');
+        $this->SetFieldAttr('lkpLocalDePublicacao','related','idMunicipio,lkpLocalDePublicacao');
+
+        // 4 propiedades do lookup
+        $this->SetFieldAttr('lkpEditora','module','biblioteca');
+        $this->SetFieldAttr('lkpEditora','item','editora');
+        $this->SetFieldAttr('lkpEditora','event','filler');
+        $this->SetFieldAttr('lkpEditora','related', 'ideditora,lkpEditora');
+
+
+        // validators
+
+        $this->AddValidator(new RequiredValidator('edtChamadaLocal'," Localização na Estante "));
+        $this->AddValidator(new RequiredValidator('edtTitulo'," Título Principal"));
+        $this->AddValidator(new RequiredValidator('edtEdicao'," Edição "));
+        $this->AddValidator(new RequiredValidator('lkpLocalDePublicacao'," Local de Publicação "));
+        $this->AddValidator(new RequiredValidator('lkpEditora'," Editora "));
+        $this->AddValidator(new RequiredValidator('edtDataDePublicacao'," Data de Publicação "));
+        $this->AddValidator(new RequiredValidator('edtDescFisica'," Descrição Física "));
+         
+        $this->AddValidator(new MRequiredValidator('selGenero','Genero',15));
+
+         
+         
+        // Botões Do formulário
+
+        //Insere os Botões
+        if($item != null){ //Alterar uma existente
+            $buttons = Array(
+            new FormButton('btnIncluir', 'Salvar Obra'),
+            );
+        }else{//incluir nova
+            $buttons = Array(
+            new FormButton('btnIncluir', 'Incluir'),
+            );
+        }
+         
+        $this->SetButtons($buttons);
+
+        //Definindo o foco
+        if (!($this->GetFieldValue('edtTitulo')))
+        {
+            $this->page->onLoad("MIOLO_GetElementById('edtISBN').focus();");
+        }
+        if($item!=null){
+            $this->gridAssuntos();
+            $this->gridAutorSecundario();
+        }
+    }
+
+    function camposEscondidos(){
+        $this->setFieldAttr('edtTeste','visible',false);
+        //$this->setFieldAttr('xxn1','visible',false);
+        $this->setFieldAttr('xxn2','visible',false);
+        $this->setFieldAttr('edtNotaGeral','visible',false);
+        $this->setFieldAttr('xxn3','visible',false);
+        $this->setFieldAttr('xxn4','visible',false);
+        $this->setFieldAttr('edtNotaConteudo','visible',false);
+    }
+
+    function btnTeste_Click(){ //descomentar esse botão se quiser usar
+        //$this->setFieldAttr('edtTeste','visible',true);
+        $this->setFieldAttr('xxn1','visible',true);
+        $this->setFieldAttr('xxn2','visible',true);
+        $this->setFieldAttr('edtNotaGeral','visible',true);
+        $this->setFieldAttr('xxn3','visible',true);
+        $this->setFieldAttr('xxn4','visible',true);
+        $this->setFieldAttr('edtNotaConteudo','visible',true);
+
+        $this->setFieldAttr('btnTeste','visible',false);
+        $this->page->onLoad("MIOLO_GetElementById('edtNotaGeral').focus();");
+    }
+
+    // pega os dados que estão no formulário   -DATA: 25/11/2009- Alterado a ordem dos campos, seguindo agora o padrão do MARC
+    function GetData()
+    {
+        $data = new FormData();
+
+        //         if($this->objObra->idObra != null){
+        //             $data->idobra = $this->objObra->idObra;
+        //         }
+        $data->idobra = $this->GetFieldValue('idobra');
+
+        $data->idautor = $this->GetFieldValue('idautor');
+
+        $data->isbn = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtISBN')));
+        $data->issn = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtISSN')));
+        $data->notaGeral = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtNotaGeral')));
+        $data->notaConteudo = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtNotaConteudo')));
+        $data->tituloSerie = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtTituloSerie')));
+
+        $data->titulo = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtTitulo')));
+        $data->subtitulo = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtSubtitulo')));
+        $data->edicao = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtEdicao')));
+
+        $data->localdepublicacao = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('lkpLocalDePublicacao')));
+        $data->editora = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('lkpEditora')));
+        $data->ideditora = $this->GetFieldValue('ideditora');
+        $data->datadepublicacao = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtDataDePublicacao')));
+        $data->descfisica = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtDescFisica')));
+        $data->idgenero  = $this->GetFieldValue('selGenero');
+        $data->keygenero = $this->GetFieldValue('selGenero');
+
+        $data->assunto = $this->GetFieldValue('lkpassunto');
+        $data->idassunto = $this->GetFieldValue('idassunto');
+        $data->ocorrenciaAssunto = $this->GetFieldValue('ocorrenciaAssunto');
+        $data->idetiquetaAssunto = $this->GetFieldValue('idetiquetaAssunto');
+
+        $data->autorsec = $this->GetFieldValue('lkpautorsec');
+        $data->idautorsec = $this->GetFieldValue('idautorsec');
+        $data->ocorrenciaAutorSec = $this->GetFieldValue('ocorrenciaAutorSec');
+        $data->idetiquetaAutorSec= $this->GetFieldValue('idetiquetaAutorSec');
+
+        $data->edicao = eregi_replace("[ªº°]","",$data->edicao);
+
+        $data->chamadaLocal = $this->GetFieldValue('edtChamadaLocal');
+        //Inclusão CDD e CDU
+        // $data->keytipo = $this->objSimples->$this->GetFieldValue('selClass');
+
+        //  Preenche o Tipo de Classificação CDD ou CDU   01/07/2010
+        //$data->keytipo = $this->GetFieldValue('edtTipo');
+        $data->cdu = $this->GetFieldValue('edtCdu');
+        $data->cdd = $this->GetFieldValue('edtCdd');
+        $data->isbn = $this->GetFieldValue('edtISBN');
+        $data->cutter = $this->GetFieldValue('edtCutter');
+
+        return $data;
+    }
+
+
+
+    function pegaListaDeGeneros(){
+        $query = $this->objGenero->ListGenero();
+        if ($query->result == NULL) // Verifica se existe algum gênero já cadastrado.
+        {
+            $go = $this->manager->GetActionURL('biblioteca','main:admin:genero','','');
+            $this->manager->Error("Primeiramente cadastre os Gêneros.", $go);
+        }
+        for($i = 0; $i < count($query->result); $i++)
+        {
+
+            // Periodicos possui um módulo a parte pra catalogar
+
+            if ((strtoupper($query->result[$i][1])  != "PERíODICOS")   and  (strtoupper($query->result[$i][1])  != 'PERíODICO')
+            and    (strtoupper($query->result[$i][1])  != 'PERIODICOS'))  {
+
+                $generos[$query->result[$i][0]] = $query->result[$i][0] . ' - ' . $query->result[$i][1];                 
+            }
+        }
+        return $generos;
+    }
+
+    // Inserir dados
+    function btnIncluir_click()
+    {
+        global $MIOLO,$module,$item;
+        $data = $this->GetData();
+         
+        if( strlen(trim(Form::GetFormValue('edtISBN'))) < 13)
+        {
+            $this->AddError('Informe o campo ISBN corretamente.');
+        }
+        else if (!($this->TestaISBN())     and   ((Form::GetFormValue('edtISBN') == 0 ) ))
+        {
+            $this->AddError('Preencha o campo ISBN.');
+        }
+        elseif( strlen(trim(Form::GetFormValue('edtTitulo'))) < 3 )
+        {
+            $this->AddError('O Titulo precisa ser cadastrado corretamente.');
+        }
+        elseif( (Form::GetFormValue('lkpEditora') == '') or (Form::GetFormValue('ideditora') == ''))
+        {
+            $this->AddError('Selecione o editora.');
+        }
+        elseif( Form::GetFormValue('lkpLocalDePublicacao') == '')
+        {
+            $this->AddError('Selecione o Local de publicação.');
+        }
+        elseif( Form::GetFormValue('edtDataDePublicacao') == '')
+        {
+            $this->AddError('Selecione o Ano de publicação.');
+        }
+        elseif( (Form::GetFormValue('edtDataDePublicacao')!='') and preg_match("/\D/", Form::GetFormValue('edtDataDePublicacao')) )
+        {
+            $this->AddError('O campo Ano deve ser um numerico.');
+        }
+        elseif( strlen(trim(Form::GetFormValue('edtDescFisica'))) < 2 )
+        {
+            $this->AddError('Informe a Descrição Fisica corretamente.');
+        }
+        elseif(Form::GetFormValue('selGenero') == '')
+        {
+            $this->AddError('Selecione o Genero.');
+        }
+
+        if($this->getFormValue('idobra')==null)
+        {
+
+            $data->idobra = $this->objObra->GetNextIdObra();
+            $data->numerodaobra = $this->objObra->GetNextNumeroObra();
+            $ficha008 = date('ymd') . '                 r               d';
+            try
+            {
+                $this->objObra->saveObra($data);
+                $this->objObra->saveSubFicha($ficha008, '008');
+            }
+            catch (Exception $e)
+            {
+                $this->addError($e->getMessage());
+            }
+            $msg = "Obra " . $data->numerodaobra . " inserida com sucesso. Deseja ir para Catalogação?";
+            $MIOLO->Prompt(Prompt::Question($msg,$MIOLO->GetActionURL($module,  'main:catalogacao:catalogacao:catalogacaoobra:catalogacaofichaobra', $data->idobra, ''),        
+            $MIOLO->GetActionURL($module,"main:catalogacao:catalogacaodireta")));
+        }
+        else
+        {
+            try
+            {
+                $this->objObra->updateObra($data);
+            }
+            catch (Exception $e)
+            {
+                $this->addError($e->getMessage());
+            }
+            $msg = "Obra " . $data->numerodaobra . " alterada com sucesso. Deseja ir para Catalogação?";
+            $MIOLO->Prompt(Prompt::Question($msg,$MIOLO->GetActionURL($module,'main:catalogacao:catalogacao:catalogacaoobra:catalogacaofichaobra', $data->idobra, ''),
+            $MIOLO->GetActionURL($module,"main:catalogacao:catalogacaodireta&item=$data->idobra")));
+        }
+    }
+
+    function btnAddAutorSec_click()
+    {
+        global $MIOLO,$module ,$item;
+
+        $data = $this->GetData();
+        $item = $this->getFormValue('idobra');
+
+        if($item == null)
+        {
+            if($this->getFormValue('edtTitulo')==NULL ||$this->getFormValue('edtISBN')==NULL )
+            {
+                $MIOLO->Information("Por favor, Preencha pelo menos o Título e ISBN da obra antes da associar alguma Entrada Secundária.", $MIOLO->GetActionURL('biblioteca',"main:catalogacao:catalogacaodireta&item=$item"));
+            }
+            if($this->getFormValue('lkpautorsec')==NULL)
+            {
+                $MIOLO->Information("Por favor, selecione uma Entrada Secundária a ser adicionada.", $MIOLO->GetActionURL('biblioteca',"main:catalogacao:catalogacaodireta&item=$item"));
+            }
+            if($this->getFormValue('idautorsec')==NULL)//obriga o uso do lookUp
+            {
+                $MIOLO->Information("Por favor, selecione uma Entrada Secundária utilizando a Pesquisa.", $MIOLO->GetActionURL('biblioteca',"main:catalogacao:catalogacaodireta&item=$item"));
+            }
+            $data = $this->GetData();
+            $autorSecTemp = $data->autorsec;//guarda o valor
+            $data->autorsec = null; //para não salvar duas vezes, uma em obra->saveObra e outra aqui em baixo
+            $data = $this->salva($data);
+            $idobra = $data->idobra;
+            $data->autorsec = $autorSecTemp; //resgata o valor
+        }
+
+
+        try
+        {
+            // passar: ($idObra,$ocorrencia,$linha,$value)  //
+            if ($this->getFormValue('idautorsec')==NULL)//obriga o uso do lookUp
+            {
+                $MIOLO->Information("Por favor, selecione um autor utilizando a Pesquisa.", $MIOLO->GetActionURL('biblioteca',"main:catalogacao:catalogacaodireta&item=$item"));
+            }
+
+            $this->objObra->GetById($item);
+            $data->idetiquetaAutorSec = $this->objAutor->TransformaAutorEmSecundario($data->idautorsec, $data->idetiquetaAutorSec);
+            $ocorrencia = $this->objObra->GetNextOcorrencia($item,$data->idetiquetaAutorSec);
+            if($ocorrencia!=null)
+            {
+                $ocorrencia =  ($ocorrencia +1);
+            }
+            else
+            {
+                $ocorrencia = 1;
+            }
+
+            $this->objObra->atualizaMaterialAutor($ocorrencia, $data->idautorsec,true);
+
+            $go = $MIOLO->GetActionURL('biblioteca',"main:catalogacao:catalogacaodireta&item=$item");
+            $this->page->redirect($go);
+        }
+        catch (Exception $e)
+        {
+            $this->addError($e->getMessage());
+        }
+    }
+
+    function salva($data){
+        global $MIOLO,$module ,$item;
+
+        //Nao sei porque, mas esses valores nao estavam sendo obtidos aqui pelo Getdata().
+        //if($data->keytipo == null)
+        //    $data->keytipo = $this->getFormValue('edtTipo');
+        if($data->ideditora == null)
+        $data->ideditora = $this->getFormValue('ideditora');
+         
+        $data->idobra = $this->objObra->GetNextIdObra();
+        $item         = $data->idobra;
+        $idobra       = $data->idobra;
+        $data->numerodaobra = $this->objObra->GetNextNumeroObra();
+
+        //já grava o 008
+        $ficha008 = date('ymd') . '                 r               d';
+        try
+        {
+            $this->objObra->saveObra($data);
+            $this->objObra->saveSubFicha($ficha008, '008');
+        }
+        catch (Exception $e)
+        {
+            $this->addError($e->getMessage());
+        }
+        return $data;
+    }
+     
+
+    function btnAddAssunto_click()
+    {
+        global $MIOLO, $module, $item;
+        $item =$this->getFormValue('idobra');
+        $idobra =$item;
+        if($this->getFormValue('edtTitulo')==NULL ||$this->getFormValue('edtISBN')==NULL )
+        {
+            $MIOLO->Information("Por favor, Preencha pelo menos o Título e ISBN da obra antes da associar algum Assunto.", $MIOLO->GetActionURL('biblioteca',"main:catalogacao:catalogacaodireta&item=$item"));
+        }
+        elseif (!($this->TestaISBN())     and   ((Form::GetFormValue('edtISBN') == 0 ) ))
+        {
+            $this->AddError('Preencha o campo ISBN.');
+        }
+        elseif($this->getFormValue('lkpassunto')==NULL)
+        {
+            $MIOLO->Information("Por favor, selecione um Assunto a ser adicionado.", $MIOLO->GetActionURL('biblioteca',"main:catalogacao:catalogacaodireta&item=$item"));
+        }
+        elseif($this->getFormValue('idassunto')==NULL)//obriga o uso do lookUp
+        {
+            $MIOLO->Information("Por favor, selecione um Assunto utilizando a Pesquisa.", $MIOLO->GetActionURL('biblioteca',"main:catalogacao:catalogacaodireta&item=$item"));
+        }
+        else
+        {
+            if($item <> null)
+            {
+                if($this->objObra->obraSalvaNoBanco($item) == true)
+                {//existe obra salva
+                    $idobra = $item;
+                }
+                else
+                {
+                    $MIOLO->Error("Id de obra não encontrado no banco de dados. Id = $item", $MIOLO->GetActionURL('biblioteca',"main:catalogacao:catalogacaodireta"));
+                }
+            }
+            else
+            {
+                $data = $this->GetData();
+                $assuntoTemp = $data->assunto;//guarda o valor
+                $data->assunto = null;//para não salvar duas vezes, uma em obra->saveObra e outra aqui em baixo
+                $data = $this->salva($data);
+                $data->assunto = $assuntoTemp;//recupera o valor
+                $idobra = $data->idobra;
+            }
+            $this->objAssunto = $MIOLO->GetBusiness($module,'assunto');
+            $idassunto = $this->GetFieldValue('idassunto');
+            $ok = $this->objAssunto->verificar($idobra, $idassunto);
+            if ($ok)
+            {
+                $MIOLO->Error("Assunto já vinculado a obra, por favor, selecione outro Assunto.", $MIOLO->GetActionURL('biblioteca',"main:catalogacao:catalogacaodireta&item=$idobra"));
+            }
+            else
+            {
+                $ocorrencia = $this->GetFieldValue('ocorrenciaAssunto');
+                $idetiqueta = $this->GetFieldValue('idetiquetaAssunto');
+
+                $arrayAssuntos = $this->objAssunto->GetAssuntoCompleto($idetiqueta,$ocorrencia);
+                $arrayIndicadores = $this->objAssunto->GetIndicadorAssunto($idetiqueta,$ocorrencia);
+                $ocorrencia = $this->objObra->GetNextOcorrencia($idobra,$idetiqueta);
+                for ($x=0;$x<sizeof($arrayAssuntos);$x++)
+                {
+                    $idmaterial = $this->objObra->saveMaterialAssunto($idobra,$idetiqueta,$arrayAssuntos[$x][0], $arrayAssuntos[$x][1],$arrayAssuntos[$x][2],$ocorrencia+1);
+                }
+                for ($x=0;$x<sizeof($arrayIndicadores);$x++)
+                {
+                    $this->objObra->saveIndicadorObra($idobra,$idetiqueta,$ocorrencia+1,$arrayIndicadores[$x][0],$arrayIndicadores[$x][1],0);
+                }
+                $this->objAssunto->saveAssuntoObra($idassunto,$idobra,$ocorrencia+1,$idetiqueta);
+
+                $go = $MIOLO->GetActionURL('biblioteca',"main:catalogacao:catalogacaodireta&item=$item");
+                $this->page->redirect($go);
+            }
+        }
+    }
+     
+    function gridAssuntos(){
+        global $MIOLO, $module, $self, $theme, $action, $page, $action, $item;
+        $data = $this->GetData();
+
+        $columns = array(
+        //new DataGridColumn('idmaterial','Código','left',true, '10%',true, null, true,true),
+        new DataGridColumn('idmaterial','Código','left',true, '',false, null, true,true),
+        new DataGridColumn('tag','TAG','center',true, '15%',true, null, true,true),
+        new DataGridColumn('conteudo','Conteúdo','left',true, '75%',true, null, true,true),
+        );
+        $href_datagrid = $MIOLO->GetActionURL($module,$action);
+        
+        $page->SetAction($href_datagrid);
+
+        $query = $this->objObra->GetAssuntosObra($item);
+
+        $datagrid = new DataGrid2($query, $columns, $href_datagrid,20);
+        $datagrid->SetTitle('Relação de Assuntos');
+        $datagrid->SetLinkType('linkbutton');
+        $datagrid->SetWidth('100%');
+        $href_dele = $MIOLO->GetActionURL($module,$self,'%0%',Array('event'=>'btnExcluirAssunto:click'));
+        $datagrid->AddActionIcon('Excluir', 'delete.gif', $href_dele);
+        $this->addField($datagrid);
+
+    }
+
+    function btnExcluirAssunto_click()
+    {
+        global $MIOLO, $module, $item, $action;
+        $idmaterial = $item;
+        $idobra = $this->objObra->GetIdobraByIdmaterial($idmaterial);
+        $this->objAssunto = $this->manager->getBusiness('biblioteca','assunto');
+        $ok = $this->objAssunto->desvinculaObra($idmaterial);
+        $item = $idobra;
+        $go = $MIOLO->GetActionURL('biblioteca',"main:catalogacao:catalogacaodireta&item=$item");
+        if ( $ok )
+        $this->page->redirect($go);
+        else
+        $MIOLO->Error("As informações não foram deletadas", $go);
+        $MIOLO->GetActionURL($module,$action);
+    }
+
+
+    function gridAutorSecundario()
+    {
+        global $MIOLO, $module, $self, $theme, $action, $page,$item;
+        $columns = array(
+        new DataGridColumn('idmaterial','Código','center',true, '',false, null, true,true),
+        new DataGridColumn('conteudo','Conteudo','left',true, '70%',true, null, true,true),
+        new DataGridColumn('ocorrencia','Ocorrencia','center', true, '20%',true, null, true,true)
+        );
+
+
+        $href_datagrid = $MIOLO->GetActionURL($module,$self,'', Array('event'=>'btnAutorSecundario_click()'));
+        $page->SetAction($href_datagrid);
+
+        $query = $this->objAutor->GetAutorSecundarioByObra($item);
+
+        $datagrid = new DataGrid2($query, $columns, $href_datagrid,20);
+        $datagrid->SetTitle('Relação de Autores Secundários');
+        $datagrid->SetLinkType('linkbutton');
+        $datagrid->SetWidth('100%');
+        $href_dele = $MIOLO->GetActionURL($module,$self,'%0%',Array('event'=>'btnExcluirAutorSec:click'));
+        $datagrid->AddActionIcon('Excluir', 'delete.gif', $href_dele);
+        $this->addField($datagrid);
+    }
+    
+    function btnExcluirAutorSec_click()
+    {
+        global $MIOLO, $module, $item, $action;
+        $idmaterial = $item;
+        $idobra = $this->objObra->GetIdobraByIdmaterial($idmaterial);
+        $this->objAutor = $this->manager->getBusiness('biblioteca','autor');
+        $ok = $this->objAutor->desvinculaObra($idmaterial);
+        $item = $idobra;
+        $go = $MIOLO->GetActionURL('biblioteca',"main:catalogacao:catalogacaodireta&item=$item");
+        if ( $ok )
+        {
+            $this->page->redirect($go);
+        }
+        else
+        {
+            $MIOLO->Error("As informações não foram deletadas", $go);
+        }
+        $MIOLO->GetActionURL($module,$action);
+    }
+
+    //Alterado em 08/06/2012 para acrescimo da máscara do campo ISBN
+    function TestaISBN()
+    {
+        $ok = false;
+        if( strlen(trim(Form::GetFormValue('edtISBN'))) == 17)
+        {
+            $this->edtISBN->addAttribute('onKeyUp','makeMask(this, \'###-##-###-####-#\');');
+            $this->edtISBN->addAttribute('onBlur','makeMask(this,  \'###-##-###-####-#\');');
+            $this->edtISBN->addAttribute('maxlength',17);
+            $this->numero->addAttribute('maxlength',4);
+            $ok = true;             
+        }
+        else
+        {
+            $this->edtISBN->addAttribute('onKeyUp','makeMask(this, \'##-###-####-#\');');
+            $this->edtISBN->addAttribute('onBlur','makeMask(this,  \'##-###-####-#\');');
+            $this->edtISBN->addAttribute('maxlength',14);
+            $this->numero->addAttribute('maxlength',4);
+            $ok = true;
+        }
+        return $ok;
+    }
+}
+
+function TestaISBN2()
+{
+    if    (preg_match("/[a-z]/",Form::GetFormValue('')))
+    {
+        $ok = false;
+    }
+    else
+    {
+        if( (Form::GetFormValue('selClass') == 0 )  and  (substr_count(Form::GetFormValue(''),".") != 0))
+        {             
+            $ok = true;            
+        }
+        else
+        {
+            $ok = true;
+        }
+    }
+
+    return $ok;
+
+}
+
+?>

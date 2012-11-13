@@ -1,0 +1,123 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmMunicipioNew extends MFormAjax
+{
+
+	function __construct()
+	{
+		parent::__construct('Incluir Novo Municipio');
+		$this->eventHandler();
+		$this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/js/frmMunicipio.js'));
+	}
+
+	function createFields()
+	{
+		$pais = $this->manager->getBusiness('common', 'pais');
+		$fields = array(
+			//new MTextField('idMunicipio','','Código', 5),
+			new MTextField('municipio','','Municipio', 50),
+			array(
+				new MSelection('idPais','','País',$pais->ListAll()->result),
+				new MSelection('idUF','','Estado',array(''=>'--Selecione o País--'))
+			),
+			new MTextField('categoriaDiaria','','Categoria Diária', 1),
+			new MTextField('populacao','','População', 10),
+		);
+		
+		$this->SetFields($fields);
+		$this->categoriaDiaria->addAttribute('maxlength',1);
+		$aguarde = $this->manager->getUI()->getImage('miolo','aguarde.gif');
+		$urlAjaxHandler = $this->manager->getActionURL('common','ajaxhandler');
+		$this->idPais->addAttribute('onChange',"doSelUF('$urlAjaxHandler','$aguarde');");
+
+		$buttons = array(
+			new MButton('btnNew', 'Incluir')
+		);
+		$this->SetButtons($buttons);
+
+		$validators = array(
+		//	new MRequiredValidator('idMunicipio'),
+			new MRequiredValidator('municipio')
+		);
+		$this->SetValidators($validators);
+	}
+
+	function btnNew_click()
+	{
+		$data = $this->getData();
+		$municipio = $this->manager->getBusiness('common','municipio');
+		$municipio->SetData($data);
+
+		//if( strlen(trim(Form::GetFormValue('idMunicipio'))) < 3 )
+		//{
+		//	$this->addError('Informe o código do município.');
+		//}
+		//elseif( preg_match("/[\W|_]+/", Form::GetFormValue('idMunicipio')) ) 
+		//{
+		//	$this->addError('O código do município deve ser alfanumérico, evite colocar outros caracteres.');
+		//}
+		if( strlen(trim(Form::GetFormValue('municipio'))) < 3 )
+		{
+			$this->addError('O nome do município precisa ter mais caracteres.');
+		}
+		elseif(Form::GetFormValue('populacao') < 0)
+		{
+			$this->addError('A população não pode ser negativa');
+		}
+		elseif($this->getFieldValue('idPais') == '')
+		{
+			$this->addError('Por favor, selecione um país');
+		}
+		elseif($this->getFieldValue('idUF') == '')
+		{
+			if(trim($this->getFieldValue('idPais')) == '024')
+			{
+				$estado = $this->manager->getBusiness('common', 'uf');
+				$this->setFieldAttr('idUF', 'options', $estado->ListAll()->result);
+			}
+			else
+			{
+				$this->setFieldAttr('idUF', 'options', array('FB'=>'FORA DO BRASIL'));
+			}
+			$this->addError('Por favor, selecione um estado');
+		}
+		elseif($municipio->isPersistent())
+		{
+			$this->addError('Código de país já existente');
+		}
+		else
+		{
+			try
+			{
+				$municipio->save();
+				$this->manager->information('Municipio cadastrado com sucesso.',$this->manager->getActionUrl('common','main:municipio:find'));
+			}
+			catch ( Exception $e )
+			{
+				$this->addError($e->getMessage());
+			}
+		}
+	}
+
+}
+?>

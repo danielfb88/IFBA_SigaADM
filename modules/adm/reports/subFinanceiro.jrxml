@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="subFinanceiro" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="20" bottomMargin="20">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="IDUO" class="java.math.BigDecimal"/>
+	<parameter name="ANO" class="java.lang.Integer"/>
+	<parameter name="RUBRICA" class="java.lang.String"/>
+	<parameter name="TIPO_LANCAMENTO" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT DISTINCT ad_lancamentoint.idrequisicao,ad_tiporeq.descricao,ad_lancamentoint.valor,
+ad_orcamentointerno.credito, ad_orcamentointerno.debito, ad_orcamentointerno.previsaodebito,
+(ad_orcamentointerno.credito - ad_orcamentointerno.debito - ad_orcamentointerno.previsaodebito)as "saldo"
+FROM ((ad_lancamentoint
+INNER JOIN ad_requisicao ON ((ad_lancamentoint.idrequisicao=ad_requisicao.idrequisicao)))
+INNER JOIN ad_tiporeq ON ((ad_requisicao.tiporequisicao=ad_tiporeq.idtiporeq)))
+INNER JOIN ad_orcamentointerno ON (ad_lancamentoint.iduoreq = ad_orcamentointerno.iduo
+AND ad_lancamentoint.ano = ad_orcamentointerno.ano
+AND ad_lancamentoint.idrubrica = ad_orcamentointerno.idrubrica  )
+WHERE ((ad_lancamentoint.iduoreq = CAST($P{IDUO} AS integer) ) AND (ad_lancamentoint.ano = CAST($P{ANO} AS integer) )
+AND (ad_lancamentoint.idrubrica = $P{RUBRICA} )
+AND (ad_lancamentoint.tipolancamento = $P{TIPO_LANCAMENTO} )) ORDER BY ad_lancamentoint.idrequisicao ASC]]>
+	</queryString>
+	<field name="idrequisicao" class="java.math.BigDecimal"/>
+	<field name="descricao" class="java.lang.String"/>
+	<field name="valor" class="java.math.BigDecimal"/>
+	<field name="credito" class="java.math.BigDecimal"/>
+	<field name="debito" class="java.math.BigDecimal"/>
+	<field name="previsaodebito" class="java.math.BigDecimal"/>
+	<field name="saldo" class="java.math.BigDecimal"/>
+	<variable name="SUBTOTAL" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{valor}]]></variableExpression>
+	</variable>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band/>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band height="52" isSplitAllowed="false">
+			<rectangle>
+				<reportElement key="rectangle" mode="Opaque" x="32" y="31" width="493" height="20" forecolor="#FFFFFF" backcolor="#C0C0C0"/>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText" x="33" y="31" width="150" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Nº da Requisição]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="196" y="31" width="167" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tipo de Requisição]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="376" y="31" width="149" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="33" y="3" width="50" height="20"/>
+				<textElement verticalAlignment="Bottom">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[Rubrica:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="83" y="3" width="62" height="20"/>
+				<textElement verticalAlignment="Bottom">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{RUBRICA}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line" x="33" y="23" width="109" height="1"/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="23">
+			<rectangle>
+				<reportElement key="rectangle" mode="Opaque" x="32" y="2" width="493" height="20" forecolor="#FFFFFF" backcolor="#E2E2E2">
+					<printWhenExpression><![CDATA[new Boolean(((($V{COLUMN_COUNT}.intValue()) % 2) == 0))]]></printWhenExpression>
+				</reportElement>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="32" y="2" width="150" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{idrequisicao}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="196" y="2" width="167" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{descricao}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="376" y="2" width="109" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["R$ " + ($F{valor}.setScale(2,2)).toString().replace(".",",")]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+	<summary>
+		<band height="72">
+			<rectangle>
+				<reportElement key="rectangle" x="32" y="2" width="344" height="20"/>
+			</rectangle>
+			<rectangle>
+				<reportElement key="rectangle" x="374" y="2" width="151" height="20"/>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText" x="32" y="2" width="342" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Subtotal da Rubrica]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="377" y="2" width="148" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["R$ " + ($V{SUBTOTAL}.setScale(2,2)).toString().replace(".",",")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText" x="58" y="29" width="102" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom" lineSpacing="Single">
+					<font size="12" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Crédito:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="299" y="29" width="54" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom" lineSpacing="Single">
+					<font size="12" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Débito:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="298" y="50" width="55" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom" lineSpacing="Single">
+					<font size="12" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Saldo:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="58" y="49" width="102" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom" lineSpacing="Single">
+					<font size="12" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Prev. Débito:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="360" y="30" width="112" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["R$ " + ($F{debito}.setScale(2,2)).toString().replace(".",",")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="165" y="30" width="112" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["R$ " + ($F{credito}.setScale(2,2)).toString().replace(".",",")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="167" y="51" width="112" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["R$ " + ($F{previsaodebito}.setScale(2,2)).toString().replace(".",",")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="362" y="51" width="112" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["R$ " + ($F{saldo}.setScale(2,2)).toString().replace(".",",")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line" mode="Transparent" x="32" y="32" width="493" height="1" forecolor="#E2E2E2"/>
+			</line>
+			<line>
+				<reportElement key="line" mode="Transparent" x="32" y="69" width="493" height="1" forecolor="#E2E2E2"/>
+			</line>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,95 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+global $MIOLO;
+$MIOLO->Uses('controls/linkobject.class','adm');
+
+class LinkLicitacao extends LinkObject
+{
+    public function __construct($name='', $uo)
+    {
+		global $MIOLO;
+        $MIOLO->UsesBusiness('adm','licitacao');
+        parent::__construct($name,$uo,'nothing.jpg');
+    }
+
+    public function setObjectByValue($value)
+    {
+        $this->object = $this->manager->GetBusiness('adm','licitacao');
+        $this->object->GetById((int)$value);
+    }
+
+    public function setAction()
+    {
+        $this->hyperlink->SetAction('adm','main:licitacoes',$this->object->idLicitacao);
+        $this->imagelink->SetAction('adm','main:licitacoes',$this->object->idLicitacao);
+    }
+
+    public function setText()
+    {
+        $this->hyperlink->SetText($this->object->numero);
+    }
+
+    public function setNew($aux = 0)
+    {
+        // UO do HU
+        $uoHU = 325;
+
+		//var_dump($aux);
+        if ($aux == "LIVRO") //Licitação de livro
+        {
+            $this->isNewLink = TRUE;
+            $this->hyperlink->SetAction('adm','main:licitacoes:new','',array('item'=>'LIVRO'));
+            $this->hyperlink->SetText('Abrir Nova Licitação');
+            $this->imagelink->SetAction('adm','main:licitacao:new','',array('item'=>'LIVRO'));
+        }
+        if ($aux == "PERMANENTE") //Material Permanente 
+        {
+            $this->isNewLink = TRUE;
+            $this->hyperlink->SetAction('adm','main:licitacoes:new','',array('item'=>'PERMANENTE'));
+            $this->hyperlink->SetText('Abrir Nova Licitação');
+            $this->imagelink->SetAction('adm','main:licitacao:new','',array('item'=>'PERMANENTE'));
+        }
+        else if ($aux == "SERVICO") //Licitação de serviço
+        {
+            $this->isNewLink = TRUE;
+            $this->hyperlink->SetAction('adm','main:licitacoes:new','',array('item'=>'SERVICO'));
+            $this->hyperlink->SetText('Abrir Nova Licitação');
+            $this->imagelink->SetAction('adm','main:licitacao:new','',array('item'=>'SERVICO'));
+        }
+        else if ($aux == $uoHU) //Licitação de compra do HU
+        {
+            $this->isNewLink = TRUE;
+            $this->hyperlink->SetAction('adm','main:licitacoes:new','',array('item'=>$uoHU));
+            $this->hyperlink->SetText('Abrir Nova Licitação do HU');
+            $this->imagelink->SetAction('adm','main:licitacao:new','',array('item'=>$uoHU));
+        }
+        else if ($aux == 1) //Licitacao de compra de outras UOs
+        {
+            $this->isNewLink = TRUE;
+            $this->hyperlink->SetAction('adm','main:licitacoes:new');
+            $this->hyperlink->SetText('Abrir Nova Licitação');
+            $this->imagelink->SetAction('adm','main:licitacao:new');
+        }       
+    }
+}
+?>

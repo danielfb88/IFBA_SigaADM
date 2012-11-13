@@ -1,0 +1,268 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+/**
+ * Grid Uo
+ * Grid de uso geral para selecionar requisicoes
+ * @package br.org.miolo.ufjf.adm.grids
+ */
+/**
+ * Use Module Control
+ */
+global $MIOLO;
+$MIOLO->Uses('controls/linkrequisicao.class','adm');
+
+class gridRequisicoes extends DataGrid2
+{
+
+    /**
+     * Constructor
+     */
+    function __construct()
+    {
+        global $MIOLO, $self, $page;
+        
+        $linkRequisicao = new LinkRequisicao('linkrequisicao','%0%');
+        
+		$idUoGestor = Form::GetFormValue('idUoGestor');
+		$idUoExecutor = Form::GetFormValue('idUoExecutor');
+	    $filter = Form::GetFormValue('requisicao');
+		
+        $opcao = Form::GetFormValue('opcao');
+        $opcao2 = Form::GetFormValue('opcao2');
+        $opcao3 = Form::GetFormValue('opcao3');
+		$opcaoTipoReq = Form::GetFormValue('opcaoTipoReq');
+		$idDestino = Form::GetFormValue('idMunicipio');
+		$lkpDestino = Form::GetFormValue('lkpMunicipio');
+		$dataPesq = Form::GetFormValue('dataPesq');
+        
+        $btnPost = Form::GetFormValue('btnPost');
+        $btnPost2 = Form::GetFormValue('btnPost2');
+        $btnPost3 = Form::GetFormValue('btnPost3');
+        $btnPost4 = Form::GetFormValue('btnPost4');
+        $btnPost5 = Form::GetFormValue('btnPost5');
+
+        $idUsuario = $MIOLO->GetLogin()->idkey;
+    
+    	if( $btnPost4 && $opcaoTipoReq ) //Filtro por tipo de requisição
+    	{
+    		$columns = array(
+            	new DataGridControl($linkRequisicao,'idrequisicao','Número','left', true,'10%'),
+            	new DataGridColumn('datahorareq','Data/Hora','left', true,'10%'),
+            	new DataGridColumn('item2','Status','center', true,'40%'),
+            	new DataGridColumn('sigla','Unidade Orçamentária','center', true,'40%'),
+    		     );
+	    	$objRequisicao = $MIOLO->GetBusiness('adm','requisicao');
+    		$query = $objRequisicao->listByTipoRequisicao($opcaoTipoReq);
+    		$href_grid = $MIOLO->GetActionURL('adm',$self,'',array("opcaoTipoReq"=>$opcaoTipoReq, "idMunicipio"=>$idDestino, "opcaoGestor"=>$opcaoGestor,"idUoGestor"=>$idUoGestor,"idUoExecutor"=>$idUoExecutor,"requisicao"=>$filter,"opcao"=>$opcao,"opcao2"=>$opcao2,"opcao3"=>$opcao3,"btnPost"=>$btnPost,"btnPost2"=>$btnPost2,"btnPost3"=>$btnPost3, "btnPost4"=>$btnPost4, "btnPost5"=>$btnPost5));
+    	}
+    	else
+    	{
+			if(	($btnPost5 && $idDestino && $dataPesq) || ($btnPost5 && $dataPesq) || ($btnPost5 && $idDestino) ) //Filtro por Destino
+			{
+				$columns = array(
+				    	new DataGridControl($linkRequisicao,'idrequisicao','Número','left', true,'10%'),
+				    	new DataGridColumn('datahorareq','Data/Hora','left', true,'10%'),
+				    	new DataGridColumn('nome','Beneficiário','left', true,'30%'),
+				    	new DataGridColumn('item2','Status','center', true,'25%'),
+				    	new DataGridColumn('sigla','Unidade Orçamentária','center', true,'25%'),
+						 );
+						if($lkpDestino == '')
+							$idDestino = null;
+					$objRequisicao = $MIOLO->GetBusiness('adm','requisicao');
+					$query = $objRequisicao->listReqVeiculoPeloDestino($idDestino, $dataPesq);
+					$href_grid = $MIOLO->GetActionURL('adm',$self,'',array("opcaoTipoReq"=>$opcaoTipoReq, "idMunicipio"=>$idDestino, "opcaoGestor"=>$opcaoGestor,"idUoGestor"=>$idUoGestor,"idUoExecutor"=>$idUoExecutor,"requisicao"=>$filter,"opcao"=>$opcao,"opcao2"=>$opcao2,"opcao3"=>$opcao3,"btnPost"=>$btnPost,"btnPost2"=>$btnPost2,"btnPost3"=>$btnPost3, "btnPost4"=>$btnPost4, "btnPost5"=>$btnPost5));
+			}
+			else
+			{
+				if ( $btnPost && $opcao )  // Gestores
+				{
+					$columns = array(
+				    	new DataGridControl($linkRequisicao,'requisicao','Número','left', true,'10%'),
+				    	new DataGridColumn('datahorareq','Data/Hora','right', true,'20%'),
+				    	new DataGridColumn('nome','Realizada por','left', true,'60%'),
+				    	new DataGridColumn('tipo','Tipo','left', true,'10%'),
+					);
+				    
+				    if ($idUoGestor == 'X')
+				    {
+				        $uo = $MIOLO->GetBusiness('adm','uo');
+				        $query = $uo->ListRequisicoes($opcao,true,$idUsuario);
+				    }
+				    else
+				    {
+						$uo = $MIOLO->GetBusiness('adm','uo',$idUoGestor);
+						$query = $uo->ListRequisicoes($opcao);
+				    }
+
+				    $href_grid = $MIOLO->GetActionURL('adm',$self,'',array("opcaoTipoReq"=>$opcaoTipoReq, "idMunicipio"=>$idDestino, "opcaoGestor"=>$opcaoGestor,"idUoGestor"=>$idUoGestor,"idUoExecutor"=>$idUoExecutor,"requisicao"=>$filter,"opcao"=>$opcao,"opcao2"=>$opcao2,"opcao3"=>$opcao3,"btnPost"=>$btnPost,"btnPost2"=>$btnPost2,"btnPost3"=>$btnPost3, "btnPost4"=>$btnPost4, "btnPost5"=>$btnPost5));
+				}
+				elseif ( $btnPost2 && $opcao2 ) //Executores
+				{
+				    $idUsuario = $MIOLO->GetLogin()->idkey;
+					$uoGaragem = $MIOLO->GetBusiness('adm','uo',65);
+				    $uoDiaria = $MIOLO->GetBusiness('adm','uo',327);
+				    
+				    // Se for o executor de Veiculo, mostra um grid com data da Viagem
+				    if ($uoGaragem->isExecutorOf($idUsuario))
+				    {
+				        $columns = array(
+				            new DataGridControl($linkRequisicao,'requisicao','Número','left', true,'10%'),
+				            new DataGridColumn('datahorasaida','Data/Hora da Viagem','right', true,'20%'),
+				            new DataGridColumn('nome','Realizada por','left', true,'60%'),
+				            new DataGridColumn('tipo','Tipo','left', true,'10%'),
+				        );
+				        $uo = $MIOLO->GetBusiness('adm','uo',$idUoExecutor);
+				        $query = $uo->ListRequisicoesDeVeiculo($opcao2);
+					    $href_grid = $MIOLO->GetActionURL('adm',$self,'',array("opcaoTipoReq"=>$opcaoTipoReq, "idMunicipio"=>$idDestino, "opcaoGestor"=>$opcaoGestor,"idUoGestor"=>$idUoGestor,"idUoExecutor"=>$idUoExecutor,"requisicao"=>$filter,"opcao"=>$opcao,"opcao2"=>$opcao2,"opcao3"=>$opcao3,"btnPost"=>$btnPost,"btnPost2"=>$btnPost2,"btnPost3"=>$btnPost3, "btnPost4"=>$btnPost4, "btnPost5"=>$btnPost5));
+				    }
+				    // Se for o executor de Diária, mostra um grid com o beneficiário da diária
+				    else if ($uoDiaria->isExecutorOf($idUsuario))
+				    {
+				        $columns = array(
+				            new DataGridControl($linkRequisicao,'requisicao','Número','left', true,'10%'),
+				            new DataGridColumn('datahorareq','Data/Hora','right', true,'20%'),
+				            new DataGridColumn('nome','Beneficiário','left', true,'60%'),
+				            new DataGridColumn('tipo','Tipo','left', true,'10%'),
+				        );
+				        $uo = $MIOLO->GetBusiness('adm','uo',$idUoExecutor);
+				        $query = $uo->ListRequisicoesDeDiaria($opcao2);
+					    $href_grid = $MIOLO->GetActionURL('adm',$self,'',array("opcaoTipoReq"=>$opcaoTipoReq, "idMunicipio"=>$idDestino, "opcaoGestor"=>$opcaoGestor,"idUoGestor"=>$idUoGestor,"idUoExecutor"=>$idUoExecutor,"requisicao"=>$filter,"opcao"=>$opcao,"opcao2"=>$opcao2,"opcao3"=>$opcao3,"btnPost"=>$btnPost,"btnPost2"=>$btnPost2,"btnPost3"=>$btnPost3, "btnPost4"=>$btnPost4, "btnPost5"=>$btnPost5));
+				    }
+				    else
+				    {
+				        $columns = array(
+				            new DataGridControl($linkRequisicao,'requisicao','Número','left', true,'10%'),
+				            new DataGridColumn('datahorareq','Data/Hora','right', true,'20%'),
+				            new DataGridColumn('nome','Realizada por','left', true,'60%'),
+				            new DataGridColumn('tipo','Tipo','left', true,'10%'),
+				             );
+				        $uo = $MIOLO->GetBusiness('adm','uo',$idUoExecutor);
+				        $query = $uo->ListRequisicoes($opcao2);
+						$href_grid = $MIOLO->GetActionURL('adm',$self,'',array("opcaoTipoReq"=>$opcaoTipoReq, "idMunicipio"=>$idDestino, "opcaoGestor"=>$opcaoGestor,"idUoGestor"=>$idUoGestor,"idUoExecutor"=>$idUoExecutor,"requisicao"=>$filter,"opcao"=>$opcao,"opcao2"=>$opcao2,"opcao3"=>$opcao3,"btnPost"=>$btnPost,"btnPost2"=>$btnPost2,"btnPost3"=>$btnPost3, "btnPost4"=>$btnPost4, "btnPost5"=>$btnPost5));
+					} 
+				}  
+				elseif ( $btnPost3 && $opcao3 ) //Opções do Requisitante
+				{        
+				 	$objRequisicao = $MIOLO->GetBusiness('adm','requisicao');
+					$columns = array(
+				    	new DataGridControl($linkRequisicao,'requisicao','Número','left', true,'10%'),
+				    	new DataGridColumn('datahorareq','Data/Hora','left', true,'10%'),
+				    	new DataGridColumn('sigla','Unidade Orçamentária','center', true,'40%'),
+				    	new DataGridColumn('tiporequisicao','Tipo','center', true,'40%'),
+						 );
+					$this->SetFilter(false);
+					$this->AddFilterText('requisicao','Requisição',$uo);
+					$this->SetIndex(1);
+
+					$query = $objRequisicao->ListByStatusUsuario($opcao3,$idUsuario);
+				   
+					if ( count($query->result) == 1 )
+					{
+				        $objRequisicao->getById($query->result[0][0]);
+						$go = $MIOLO->GetActionURL('adm','main:requisicoes',$objRequisicao->idRequisicao,array("form"=>"item","tipoReq"=>$objRequisicao->idTipoReq));
+						$page->Redirect($go);
+					}
+					$href_grid = $MIOLO->GetActionURL('adm',$self,'',array("opcaoTipoReq"=>$opcaoTipoReq, "idMunicipio"=>$idDestino, "opcaoGestor"=>$opcaoGestor,"idUoGestor"=>$idUoGestor,"idUoExecutor"=>$idUoExecutor,"requisicao"=>$filter,"opcao"=>$opcao,"opcao2"=>$opcao2,"opcao3"=>$opcao3,"btnPost"=>$btnPost,"btnPost2"=>$btnPost2,"btnPost3"=>$btnPost3, "btnPost4"=>$btnPost4, "btnPost5"=>$btnPost5));
+				}
+				else
+				{
+					$objRequisicao = $MIOLO->GetBusiness('adm','requisicao');
+					$this->SetFilter(false);
+					$requisicao = empty($filter) ? '-' : $filter;
+
+					$this->AddFilterText('requisicao','Requisição',$uo);
+					$this->SetIndex(1);
+
+			 		$executor = $MIOLO->GetBusiness('adm','executor');
+					$uoExec = $executor->listUoByUsuario($idUsuario);
+
+
+
+
+				if((!is_numeric($requisicao)) and (!empty($requisicao)))
+				{
+					if($requisicao=='%')
+						$requisicao=0;
+					else
+					{
+						$query = $objRequisicao->ListInicio($idUsuario);
+		//				var_dump($query);
+						//$go = $MIOLO->GetActionURL($module,$action);
+						//$MIOLO->Error('Digite o "número" da requisição ou "%" para listar todas', $go );
+					}
+				}
+
+				if(is_numeric($requisicao))
+				{
+					$columns = array(
+				    	new DataGridControl($linkRequisicao,'requisicao','Número','left', true,'10%'),
+				    	new DataGridColumn('datahorareq','Data/Hora','left', true,'10%'),
+				    	new DataGridColumn('status','Status','center', true,'40%'),
+				    	new DataGridColumn('tiporequisicao','Tipo','center', true,'40%'),
+						 );
+				    // Se o usuário for executor de pelo menos uma UO então ele poder ver qualquer requisicao.
+				    if ($uoExec->result)
+				    {
+						$query = $objRequisicao->ListByNumeroUsuario($requisicao);
+				    }
+				    else
+				    {
+						$query = $objRequisicao->ListByNumeroUsuario($requisicao, $idUsuario);
+				    }
+				}
+				else
+				{
+					$columns = array(
+				    	new DataGridControl($linkRequisicao,'requisicao','Número','left', true,'5%'),
+				    	new DataGridColumn('datahorareq','Data','left', true,'10%'),
+				    	new DataGridColumn('nome','Beneficiário','left', true,'40%'),
+				    	new DataGridColumn('status','Status','center', true,'10%'),
+						new DataGridColumn('sigla','Unidade Orçamentária','center', true,'15%'),
+				    	new DataGridColumn('tiporequisicao','Tipo','center', true,'20%'),
+						 );
+				}
+				/*	if ( count($query->result) == 1 )
+					{
+						$objRequisicao->getById($query->result[0][0]);
+						$go = $MIOLO->GetActionURL('adm','main:requisicoes',$objRequisicao->idRequisicao,array("form"=>"item","tipoReq"=>$objRequisicao->idTipoReq));
+						$page->Redirect($go);
+					}
+		*/
+					$href_grid = $MIOLO->GetActionURL('adm',$self,'',array("opcaoTipoReq"=>$opcaoTipoReq, "idMunicipio"=>$idDestino, "opcaoGestor"=>$opcaoGestor,"idUoGestor"=>$idUoGestor,"idUoExecutor"=>$idUoExecutor,"requisicao"=>$filter,"opcao"=>$opcao,"opcao2"=>$opcao2,"opcao3"=>$opcao3,"btnPost"=>$btnPost,"btnPost2"=>$btnPost2,"btnPost3"=>$btnPost3, "btnPost4"=>$btnPost4, "btnPost5"=>$btnPost5));
+				}
+			}
+		}
+        parent::__construct($query, $columns, $href_grid,100);
+        $this->SetLinkType('hyperlink');
+    }
+
+    function GenerateFooter()
+    {
+        if (!$this->data) 
+        $footer[] = $this->GenerateEmptyMsg();
+        $footer[] = new Separator();
+        $footer[] = $this->GenerateControls();
+        return $footer;
+    }
+
+}

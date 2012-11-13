@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="repItensTransferidos" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="pIdSetor" class="java.lang.Integer">
+		<parameterDescription><![CDATA[Identiticação do setor]]></parameterDescription>
+	</parameter>
+	<parameter name="pIdUsuario" class="java.lang.Integer"/>
+	<parameter name="pURL" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String"/>
+	<parameter name="itens" class="java.lang.String"/>
+	<parameter name="numItens" class="java.lang.Integer"/>
+	<parameter name="dataTransferencia" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select s.nomesetor,
+     i.descricao,
+     TO_CHAR(i.DATAAQUISICAO,'DD/MM/YYYY') as data,
+     i.valor,
+     i.iditempatrimonio,
+     s_1.nomesetor as setororigem
+
+from ad_itempatrimonio as i inner join cm_setor as s on (i.idsetor = s.idsetor)
+inner join ad_movimentopat as m on (m.iditempatrimonio = i.iditempatrimonio)
+inner join cm_setor as s_1 on (m.idsetororigem = s_1.idsetor)
+
+
+where i.idsetor = $P{pIdSetor}
+    and i.ativo ilike('S')
+    and i.iditempatrimonio in ($P!{itens})
+    and m.tipomovimento = '2'
+    and m.data = to_date($P{dataTransferencia},'DD/MM/YYYY')
+
+order by idmovimentacao desc limit $P{numItens}]]>
+	</queryString>
+	<field name="nomesetor" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="descricao" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="data" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="valor" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="iditempatrimonio" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="setororigem" class="java.lang.String"/>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="210">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport" mode="Transparent" x="4" y="8" width="551" height="96"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA["Itens Transferidos"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} +"/common/reports/Cabecalho.jasper"]]></subreportExpression>
+			</subreport>
+			<line>
+				<reportElement key="line" x="0" y="109" width="555" height="1"/>
+			</line>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="7" y="184" width="62" height="21"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$P{pIdSetor}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="71" y="184" width="324" height="21"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nomesetor}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="435" y="185" width="43" height="20"/>
+				<box topPadding="3"/>
+				<textElement>
+					<font fontName="Times New Roman" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Data:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="481" y="185" width="68" height="20"/>
+				<box topPadding="3"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{dataTransferencia}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText" mode="Opaque" x="6" y="113" width="549" height="71" forecolor="#030A03"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="12" pdfFontName="Times-Roman" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[Declaro receber, sob minha guarda e responsabilidade, os bens patrimoniais abaixo relacionados, observando rigorosa consistência entre estes e os registros da Divisão de Patrimônio e me comprometo, ainda, a zelar para que permaneçam no/na setor/seção/departamento: ]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band height="35">
+			<staticText>
+				<reportElement key="staticText" x="56" y="8" width="183" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Descrição]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="0" y="8" width="50" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Código]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="248" y="8" width="106" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Data Aquisição]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line" x="0" y="-1" width="555" height="1"/>
+			</line>
+			<line>
+				<reportElement key="line" x="0" y="30" width="555" height="1"/>
+			</line>
+			<staticText>
+				<reportElement key="staticText" x="449" y="8" width="106" height="20"/>
+				<box topPadding="3"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="11" isBold="true" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[Setor Antigo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="363" y="8" width="78" height="20"/>
+				<box topPadding="3"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="11" isBold="true" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[Valor]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="26">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-2" stretchType="RelativeToTallestObject" x="0" y="3" width="50" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="10" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{iditempatrimonio}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-3" stretchType="RelativeToTallestObject" x="56" y="3" width="183" height="19"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="10" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{descricao}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-4" stretchType="RelativeToTallestObject" x="248" y="3" width="106" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="10" pdfFontName="Times-Roman" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{data}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="449" y="3" width="106" height="20"/>
+				<box topPadding="3"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{setororigem}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="363" y="3" width="78" height="20"/>
+				<box topPadding="3"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="11" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{valor} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{valor}))]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="21">
+			<textField pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="false">
+				<reportElement key="textField-16" x="4" y="7" width="161" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="513" y="2" width="36" height="19" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+					<font fontName="sansserif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="339" y="2" width="170" height="19"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="sansserif" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="90">
+			<staticText>
+				<reportElement key="staticText" x="6" y="-4" width="542" height="90"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="12" isBold="false" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[
+
+--------------------------------------------------------            --------------------------------------------------------
+                  Chefe do Patrimônio                                                       Responsável pelos bens
+]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="false">
+				<reportElement key="textField-16" x="4" y="75" width="161" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="515" y="68" width="36" height="19" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+					<font fontName="sansserif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="341" y="68" width="170" height="19"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="sansserif" size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

@@ -1,0 +1,333 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+MIOLO::Import('extensions::class.phpmailer.php','PHPMailer'); 
+class frmProcessoSeparar extends MForm
+{
+	protected $processo;
+	protected $setor;
+	protected $setoracesso;
+	protected $processoPai;
+	protected $perms;
+
+	function __construct($objProcesso)
+	{
+		    //      construct
+		    global $MIOLO;
+		    $this->processo = $objProcesso;
+		    $this->setor = $MIOLO->getBusiness('protocolo','setor');
+		    $this->setoracesso = $MIOLO->getBusiness('protocolo','setoracesso');
+		    $this->processoPai = $MIOLO->getBusiness('protocolo','processo');
+		    $this->perms  = $MIOLO->getPerms();
+		    parent::__construct('Separar processo');
+		    $this->SetClose($MIOLO->GetActionURL('protocolo','main'));
+		    $this->eventHandler();
+	}
+
+
+	function CreateFields()
+	{
+		/* IFRO - Controle de segurança de acesso */
+		$setores = ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS)) ? $this->setor->selAll() : $this->setoracesso->selSetoresAcesso($this->processo->getSetorUsuario());
+
+		if (
+			$this->processo->retencao->setorDestino
+			&& in_array($this->processo->retencao->setorDestino,$setores) 
+		  )
+		{
+		//      processo a separar
+			$andamento = $this->processo->getAndamento($this->processo->retencao->numAndamento);
+			$numFormatado = trim(substr($andamento->decisao,20,14));
+			$numFormatado = str_repeat('0',14-strlen($numFormatado)).$numFormatado;
+			$serie = substr($numFormatado,0,6);
+			$ano = substr($numFormatado,7,4);
+			$codigo = substr($numFormatado,12,2);
+			$num = $ano.$serie.$codigo;
+			$numProcessoFormatado = new MTextField('numProcessoFormatado',$numFormatado,'Processo:',14);
+			$numProcessoFormatado->setReadOnly(true);
+			$autor = new MTextField('autor','','Autor:',40);
+			$autor->addAttribute('maxlength','40');
+			$groupSeparar = new MBaseGroup('groupSeparar', 'Selecionar processo',array($numProcessoFormatado,$autor),'vertical','css');
+			$groupSeparar->addAttribute('style','padding:10px');
+		//      fields
+			$fields = array(
+				array(
+					new MHiddenField('numProcesso',$num),
+					$groupSeparar,
+				),
+			);
+			$this->SetFields($fields);
+		//      required fields
+			$validators = array(
+				new MRequiredValidator('autor'),
+			);
+			$this->setValidators($validators);
+		//      buttons
+			$buttons = array(
+				new MButton('btnSeparar', 'Separar'),
+			);
+			$this->SetButtons($buttons);
+		}else{
+			$msg = 'Este usuário não tem permissão para acessar este Processo/Protocolo';
+			$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+		}
+	}
+
+
+	public function btnSeparar_click()
+	{
+		global $MIOLO, $auth;
+	
+		/* IFRO - Controle de segurança de acesso */
+		$setores = ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS)) ? $this->setor->selAll() : $this->setoracesso->selSetoresAcesso($this->processo->getSetorUsuario());
+		
+		
+		if (
+			$this->processo->retencao->setor
+			&& in_array($this->processo->retencao->setor,$setores) 
+			
+		  )
+		{
+			//      data
+			$data = $this->getData();
+			//      get processo pai
+			$this->processoPai->getByNumero($data->numProcesso);
+			//      números de processo iguais
+			if ($this->processoPai->numProcesso == $this->processo->numProcesso)
+			{
+				$this->addError('O processo '.$this->processo->numProcessoFormatado().' não pode ser separado dele mesmo.');
+				return;
+			}
+			//      status do processo pai
+			switch ($this->processoPai->retencao->status)
+			{
+				case 'N':
+				case 'H':
+				//        set and save
+					try 
+					{
+						$login = $auth->getLogin();
+						$this->processo->beginTransaction();
+						$this->processo->retencao->numAndamento++;
+						$andamento = $this->processo->getAndamento($this->processo->retencao->numAndamento);
+						$andamento->setor = $this->processo->retencao->setor;
+						$andamento->dataEntrada = date("YmdHi");
+						$andamento->setorDestino = $this->processo->retencao->setorDestino;
+						$andamento->dataSaida = $andamento->dataEntrada;
+						$andamento->idUsuario = $login->idkey;
+						$andamento->decisao = 'SEPARADO DO PROCESSO '.$this->processoPai->numProcessoFormatado();
+						$andamento->dataDespacho = $andamento->dataSaida;
+						$andamento->autor = $data->autor;
+						$andamento->status = 'N';
+						$this->processo->addAndamento($andamento);
+						$this->processo->retencao->numAndamento++;
+						$andamento2 = $this->processo->getAndamento($this->processo->retencao->numAndamento);
+						$andamento2->setor = $andamento->setorDestino;
+						$andamento2->dataEntrada = $andamento->dataSaida;
+						$andamento2->idUsuario = $login->idkey;	
+						$andamento2->status = 'N';
+						$this->processo->addAndamento($andamento2);
+						$this->processo->retencao->setData($andamento2);
+						$this->processo->retencao->setorDestino = null;
+						$this->processo->retencao->dataSaida = null;
+						$this->processo->retencao->dataDespacho = null;
+						unset($andamento,$andamento2);
+						$andamento = $this->processoPai->getAndamento($this->processoPai->retencao->numAndamento);
+						$this->processoPai->retencao->numAndamento++;
+						$andamento2 = $this->processoPai->getAndamento($this->processoPai->retencao->numAndamento);
+						$andamento2->setData($andamento, $login->idkey);
+						$andamento->dataEntrada = date("YmdHi");
+						$andamento->setorDestino = $this->processoPai->retencao->setor;
+						$andamento->dataSaida = $andamento->dataEntrada;
+						$andamento->decisao = 'SEPAROU-SE DO PROCESSO '.$this->processo->numProcessoFormatado();
+						$andamento->dataDespacho = $andamento->dataSaida;
+						$andamento->autor = $data->autor;
+						$this->processoPai->addAndamento($andamento);
+						$this->processoPai->addAndamento($andamento2);
+						$this->processoPai->retencao->setorDestino = null;
+						$this->processoPai->retencao->setData($andamento4);
+						$this->processoPai->retencao->status = 'N';
+						unset($andamento,$andamento2);
+						$this->processoPai->setTransaction($this->processo->getTransaction());
+						$this->processoPai->save();
+						$this->processo->save();
+						$this->processo->endTransaction();
+						
+				$dataMail = date("d/m/y");
+				$horaMail = date("H:i");
+				$objMail = $this->processo->getTituloByNumProcesso($this->processo->numProcesso);
+				$mailSender = $this->processo->getMailByNumProcesso($this->processo->numProcesso);
+				$emails = $this->processo->listarEmail();
+				$emails[$emails->length][0] = $mailSender;
+                foreach($emails as $e)
+                {
+                    if($e[1])
+		            {
+		                    $instituicao = $this->processo->instituicaoUsuario($e[1]);
+		                    $pessoa = $e[2];
+		            }
+		            else
+		            {
+		                    $instituicao = $this->processo->instituicaoProcesso();
+		                    $pessoa = $this->processo->solicitante;
+		            }
+					$mail = new PHPMailer();
+					$mail->IsSMTP(); // send via SMTP
+					$mail->Host = $MIOLO->getConf('mail.host');
+					$mail->SMTPAuth = $MIOLO->getConf('mail.auth');
+					$mail->Username = $MIOLO->getConf('mail.user');
+					$mail->Password = $MIOLO->getConf('mail.pass');
+					$mail->From = $MIOLO->getConf('mail.from');
+					$mail->FromName = "SIGA - Sistema Integrado de Gestão Acadêmica";
+					$mail->AddAddress($e[0]);
+					$mail->Port = $MIOLO->getConf('mail.port');
+					$mail->WordWrap = 50;
+					$mail->IsHTML(true);
+					$mail->Subject = "SIGA-ADM(1) - Notificação de Trâmite de Processo";
+                                        $mail->ssl = $MIOLO->getConf('mail.ssl');
+                                        $mail->Body = "
+                                                <center><h1>TRAMITAÇÃO DO PROCESSO<br /> {$this->processo->numProcessoFormatado()}</h1></center>
+                                                <br /><br />Prezado(a) Sr(a) {$pessoa},
+                                                <br /><br />O processo {$this->processo->numProcessoFormatado()} foi separado do processo {$this->processoPai->numProcessoFormatado()}
+                                                <br /><br /><b>Objeto: </b>{$objMail}
+                                                <br /><b>Setor Atual: </b>{$this->processo->retencao->setor}
+                                                <br /><br /><b>Data: </b>{$dataMail}
+                                                <br /><b>Hora: </b>{$horaMail}
+                                                <br /><br /><b>Para maiores informações acesse: </b>{$MIOLO->getConf('home.url')}
+                                                <br /><br />Atenciosamente,
+                                                <br /><br />{$instituicao}
+                                                <br /><br /><b><font color=\"RED\"> Observação: Este email foi enviado automaticamente, não é necessário responder. </font></b>
+                                        ";
+					$mail->Send();
+				}
+						
+						$msg = 'O processo '.$this->processo->numProcessoFormatado().' foi separado do processo '.$this->processoPai->numProcessoFormatado().' com sucesso.';
+						$this->processo->Log(OP_UPD,$msg);
+						$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+					}
+					catch(Exception $e) {$this->addError($e->getMessage());}
+				break;
+	
+				case 'J':
+					//        set and save
+					try 
+					{
+						$this->processo->beginTransaction();
+						$this->processo->retencao->numAndamento++;
+						$andamento = $this->processo->getAndamento($this->processo->retencao->numAndamento);
+						$andamento->setor = $this->processo->retencao->setor;
+						$andamento->dataEntrada = date("YmdHi");
+						$andamento->setorDestino = $this->processo->retencao->setorDestino;
+						$andamento->dataSaida = $andamento->dataEntrada;
+						$andamento->decisao = 'SEPARADO DO PROCESSO '.$this->processoPai->numProcessoFormatado();
+						$andamento->dataDespacho = $andamento->dataSaida;
+						$andamento->autor = $data->autor;
+						$andamento->status = 'N';
+						$this->processo->addAndamento($andamento);
+						$this->processo->retencao->numAndamento++;
+						$andamento2 = $this->processo->getAndamento($this->processo->retencao->numAndamento);
+						$andamento2->setor = $andamento->setorDestino;
+						$andamento2->dataEntrada = $andamento->dataSaida;
+						$andamento2->status = 'N';
+						$this->processo->addAndamento($andamento2);
+						$this->processo->retencao->setData($andamento2);
+						$this->processo->retencao->setorDestino = null;
+						$this->processo->retencao->dataSaida = null;
+						$this->processo->retencao->dataDespacho = null;
+						unset($andamento,$andamento2);
+						$andamento = $this->processoPai->getAndamento($this->processoPai->retencao->numAndamento);
+						$this->processoPai->retencao->numAndamento++;
+						$andamento2 = $this->processoPai->getAndamento($this->processoPai->retencao->numAndamento);
+						$andamento2->setData($andamento);
+						$andamento->dataEntrada = date("YmdHi");
+						$andamento->setorDestino = $this->processoPai->retencao->setor;
+						$andamento->dataSaida = $andamento->dataEntrada;
+						$andamento->decisao = 'SEPAROU-SE DO PROCESSO '.$this->processo->numProcessoFormatado();
+						$andamento->dataDespacho = $andamento->dataSaida;
+						$andamento->autor = $data->autor;
+						$this->processoPai->addAndamento($andamento);
+						$this->processoPai->addAndamento($andamento2);
+						$this->processoPai->retencao->setorDestino = null;
+						$this->processoPai->retencao->setData($andamento4);
+						unset($andamento,$andamento2);
+						$this->processoPai->setTransaction($this->processo->getTransaction());
+						$this->processoPai->save();
+						$this->processo->save();
+						$this->processo->endTransaction();
+						
+				$dataMail = date("d/m/y");
+				$horaMail = date("H:i");
+				$objMail = $this->processo->getTituloByNumProcesso($this->processo->numProcesso);
+				//$mailSender = $this->processo->getMailByNumProcesso($this->processo->numProcesso);
+				$emails = $this->processo->listarEmail();
+                                foreach($emails as $e)
+                                {
+					$instituicao = $this->processo->instituicaoUsuario($e[1]);
+					$mail = new PHPMailer();
+					$mail->IsSMTP(); // send via SMTP
+					$mail->Host = $MIOLO->getConf('mail.host');
+					$mail->SMTPAuth = $MIOLO->getConf('mail.auth');
+					$mail->Username = $MIOLO->getConf('mail.user');
+					$mail->Password = $MIOLO->getConf('mail.pass');
+					$mail->From = $MIOLO->getConf('mail.from');
+					$mail->FromName = "SIGA - Sistema Integrado de Gestão Acadêmica";
+					$mail->AddAddress($e[0]);
+					$mail->Port = $MIOLO->getConf('mail.port');
+					$mail->WordWrap = 50;
+					$mail->IsHTML(true);
+					$mail->Subject = "SIGA-ADM(1) - Notificação de Trâmite de Processo";
+                                        $mail->ssl = $MIOLO->getConf('mail.ssl');
+                                        $mail->Body = "
+                                                <center><h1>TRAMITAÇÃO DO PROCESSO<br /> {$this->processo->numProcessoFormatado()}</h1></center>
+                                                <br /><br />Prezado(a) Sr(a) {$e[2]},
+                                                <br /><br />O processo {$this->processo->numProcessoFormatado()} foi separado do processo {$this->processoPai->numProcessoFormatado()}
+                                                <br /><br /><b>Objeto: </b>{$objMail}
+                                                <br /><b>Setor Atual: </b>{$this->processo->retencao->setor}
+                                                <br /><br /><b>Data: </b>{$dataMail}
+                                                <br /><b>Hora: </b>{$horaMail}
+                                                <br /><br /><b>Para maiores informações acesse: </b>{$MIOLO->getConf('home.url')}
+                                                <br /><br />Atenciosamente,
+                                                <br /><br />{$instituicao}
+                                                <br /><br /><b><font color=\"RED\"> Observação: Este email foi enviado automaticamente, não é necessário responder. </font></b>
+                                        ";
+					$mail->Send();
+				}
+						
+						$msg = 'O processo '.$this->processo->numProcessoFormatado().' foi separado do processo '.$this->processoPai->numProcessoFormatado().' com sucesso.';
+						$this->processo->Log(OP_UPD,$msg);
+						$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+					}
+					catch(Exception $e) {$this->addError($e->getMessage());}
+				break;
+				case 'A':
+					$this->addError('O processo '.$this->processo->numProcessoFormatado().' não pode ser separado de um processo arquivado ('.$this->processoPai->numProcessoFormatado().').');
+					break;
+				default:
+					$this->addError('Houve um erro desconhecido e o processo '.$this->processo->numProcessoFormatado().' não pode ser separado. Procure a área de TI.');
+			}
+		}else{
+			$msg = 'Este usuário não tem permissão para acessar este Processo/Protocolo';
+			$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+		}
+	}
+}
+?>

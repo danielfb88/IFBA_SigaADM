@@ -1,0 +1,167 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmFornecedorEdit extends Form
+{
+    protected $objFornecedor;
+	
+    function __construct($fornecedor)
+    {
+        global $MIOLO;
+        $this->objFornecedor = $fornecedor;
+        $this->objFornecedor->retrieveAssociation('instituicao');
+        $this->Form($this->objFornecedor->instituicao->nome);
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+        $sexos = array("M"=>"MASCULINO","F"=>"FEMININO");
+        
+        $objBanco = $this->manager->GetBusiness('common','banco');
+        $objQuery = $objBanco->ListAll();
+        array_unshift($objQuery->result,Array('0'=>'','1'=>''));
+        
+        $this->objFornecedor->retrieveAssociation('instituicao');
+        $municipio = $this->manager->getBusiness('common','municipio',$this->objFornecedor->instituicao->idmunicipio);
+        
+        $fields = array(
+            array(
+                new MTextField('cnpj', $this->objFornecedor->instituicao->cgc,'CNPJ (Somente números)',22),
+                new TextField('empresa',$this->objFornecedor->instituicao->nome,'Empresa',40)
+            ),
+
+            new HiddenField('idBanco',$this->objFornecedor->idBanco,'idBanco'),            
+			
+            array(
+                new MSelection('selBanco',$this->objFornecedor->idBanco,'Banco', $objQuery->result, true),
+                new LookupTextField('idAgencia',$this->objFornecedor->idAgencia,'Agência',10),
+                new TextField('contaCorrente',$this->objFornecedor->contaCorrente,'Conta',10)
+            ),
+            
+            array(
+                new LookupTextField('lkpMunicipio',$municipio->municipio,'Município',40),
+                new MHiddenField('idmunicipio',$this->objFornecedor->instituicao->idmunicipio),
+            ),
+
+            array(
+                $rua = new MTextField('rua',$this->objFornecedor->instituicao->rua, 'Endereço',50),
+                new TextField('cep',$this->objFornecedor->instituicao->cep, 'CEP (só números)',15)
+            ),
+            
+            array(
+                new TextField('fax',$this->objFornecedor->instituicao->fax, 'FAX',15),
+                new TextField('telefone',$this->objFornecedor->instituicao->telefone,'Telefone',15),
+                new TextField('email',$this->objFornecedor->instituicao->email,'E-Mail',30)
+            ),
+
+            new HiddenField('idPessoa',$this->objFornecedor->idPessoa,'idPessoa'),
+        );
+		
+        $this->SetFields($fields);
+        $validators = array(new MIntegerValidator('cnpj','','required'));
+        $this->SetValidators($validators);
+        $rua->AddAttribute('maxlength','80');
+        
+        $this->SetFieldAttr('idAgencia','module','common');
+        $this->SetFieldAttr('idAgencia','item','bancoAgencia');
+        $this->SetFieldAttr('idAgencia','event','preencherBanco');
+        $this->SetFieldAttr('idAgencia','filter','selBanco,idAgencia');
+
+        $this->SetFieldAttr('lkpMunicipio','module','common');
+        $this->SetFieldAttr('lkpMunicipio','item','municipio');
+        $this->SetFieldAttr('lkpMunicipio','event','filler');
+        $this->SetFieldAttr('lkpMunicipio','related','idmunicipio,lkpMunicipio');
+
+        $buttons = Array(
+            new FormButton('btnCadastraNovoFornecedor','Salvar Fornecedor')
+        );
+        $this->SetButtons($buttons);
+    }
+
+    function preencherBanco($sender='',$key="")
+    {
+        $dadosBanco = split("_",$key);
+        $this->SetFieldValue('idAgencia', $dadosBanco[0]);
+        $this->SetFieldValue('selBanco', $dadosBanco[1]);
+        $this->SetFieldValue('idBanco', $dadosBanco[1]);
+    }
+
+    function btnCadastraNovoFornecedor_click()	
+    {
+        global $MIOLO, $module,$item, $page, $theme, $action;
+
+        $data = $this->GetData();
+        $municipio = $this->manager->getBusiness('common','municipio');
+        $municipio->GetById($data->idmunicipio);
+        
+        //aplicando a máscara no cnpj
+        $mascara = array(".","/","-");
+        $cnpj = str_replace($mascara, "", $data->cnpj);
+        $data->cnpj =  $cnpj;
+        $action = $this->manager->GetActionURL($module,'main:fornecedor:edit&item='.$item);
+            
+			
+        try
+        {
+            if ($data->cnpj)
+            {
+                if ((strlen($data->cnpj)==11) || (strlen($data->cnpj)==14)){
+                    $instituicao = $this->manager->getBusiness('common','instituicao',$this->objFornecedor->idInstituicao);
+                    $data->empresa = strtoupper($data->empresa);
+                    $instituicao->cgc = $data->cnpj;
+                    $instituicao->nome = $data->empresa;
+                    $instituicao->idpais = '024';
+                    $instituicao->idmunicipio = $data->idmunicipio;
+                    $instituicao->telefone = $data->telefone;
+                    $instituicao->rua = $data->rua;
+                    $instituicao->cep = $data->cep;
+                    $instituicao->fax = $data->fax;
+                    $instituicao->email = $data->email;
+
+                    $instituicao->Update();
+					
+                }
+                else $MIOLO->Error("Número inválido de caracteres no campo CNPJ",$action);
+            }
+			
+            $fornecedor = $this->manager->getBusiness('adm','fornecedor',$this->objFornecedor->idFornecedor);
+            $fornecedor->contaCorrente = $data->contaCorrente;
+            $fornecedor->idInstituicao = $this->objFornecedor->idInstituicao;
+            $fornecedor->idPessoa = $data->idPessoa;
+            $fornecedor->idBanco = $data->idBanco;
+            $fornecedor->idAgencia = $data->idAgencia;
+            $fornecedor->save();
+            $fornecedor->Log(OP_INS,"Fornecedor Alterado. idInstituicao: ".$instiuicao->idinstituicao.", idFornecedor: ".$fornecedor->idFornecedor);
+
+            $idFornecedor = $fornecedor->idFornecedor;
+
+            $href = $MIOLO->getActionURL('adm', 'main:fornecedor:saldoempenho','', '');
+            $this->manager->information("Alteração de fornecedor efetuada com sucesso.",$href);
+        }
+        catch (Exception $e)
+        {
+            $this->AddError("Informe o seguinte erro a equipe do CGCO: ".$e->getMessage());
+        }
+    }
+}
+?>

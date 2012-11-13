@@ -1,0 +1,208 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+MIOLO::Import('extensions::class.phpmailer.php','PHPMailer');
+class frmProcessoDecisao extends MFormAjax
+{
+	protected $processo;
+	protected $perms;
+	protected $setor;
+	protected $setoracesso;
+	protected $session;
+	function __construct($objProcesso)
+	{
+		//      construct
+		global $MIOLO;
+		$this->processo = $objProcesso;
+		$this->setor  = $MIOLO->GetBusiness('protocolo','setor');
+		$this->setoracesso = $MIOLO->getBusiness('protocolo','setoracesso');
+		$this->perms  = $MIOLO->getPerms();
+		$this->session = $MIOLO->session;
+		parent::__construct('Decidir processo');
+		$this->SetClose($MIOLO->GetActionURL('protocolo','main'));
+		$this->page->addJsCode(file_get_contents(dirname(__FILE__).'/js/frmProcessoDecisao.js'));
+		$this->eventHandler();
+	}
+
+
+	function CreateFields()
+	{
+		/* IFRO - Controle de segurança de acesso */
+		$setores = ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS)) ? $this->setor->selAll() : $this->setoracesso->selSetoresAcesso($this->processo->getSetorUsuario());
+		if (
+			$this->processo->retencao->setor
+			&& in_array($this->processo->retencao->setor,$setores) 
+			&& 
+		    (($this->processo->retencao->status == 'N') || ($this->processo->retencao->status == 'H'))
+		   )
+		{
+			if ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS))
+			{
+				$url = $this->manager->getActionUrl('protocolo','ajaxhandler');
+				$destinoExterno  = new MCheckBox( 'destinoExterno','value','&nbsp;',false, _M('externo') );
+				$destinoExterno->addAttribute("onchange","doTextDestino('$url');");
+			}
+			
+			//      get andamento
+			$andamento = $this->processo->getAndamento($this->processo->retencao->numAndamento);
+			//      decisão do processo
+			$setorDestino = new MComboBox('setorDestino',$this->session->getValue('sSetorDestino'),'Setor de Destino (opcional):',$this->setor->selAll(),'','',15);
+			$setorDestino->addAttribute("onkeyup","toUpperCase('setorDestino')");
+			$setorDestino->addAttribute('style','text-transform:uppercase');
+			$decisao = new MMultiLineField('decisao',$this->session->getValue('sDecisao'),'Decisão:',1000,8,78);
+			$decisao = new MMultiLineField('decisao',$andamento->decisao,'Decisão:',1000,8,78);
+			$autor = new MTextField('autor',$andamento->autor,'Autor:',40);
+			$autor->addAttribute('maxlength','40');
+			$clearSaida = ($this->session->IsRegistered('sSetorDestino') && $this->session->IsRegistered('sDecisao') && $this->session->IsRegistered('sAutor')) ? new MButton('limparSaida','Limpar',"javascript:doLimparSaida()") : null;
+			$groupDecisao = new MBaseGroup('groupDecisao', 'Decisão do processo',array($setorDestino,$destinoExterno,$decisao,$autor,$clearSaida),'horizontal','css');
+			$groupDecisao->addAttribute('style','padding:10px');
+
+			//      fields
+			$fields = array(
+				array($groupDecisao,),
+			);
+			$this->SetFields($fields);
+
+			//      required fields
+			$validators = array(
+				new MRequiredValidator('decisao'),
+				new MRequiredValidator('autor'),
+			);
+			$this->SetValidators($validators);
+
+			//      buttons
+			$buttons = array(
+				new MButton('btnEnviar', 'Decidir')
+			);
+			$this->SetButtons($buttons);
+
+		}else{
+			$msg = 'Este usuário não tem permissão para acessar este Processo/Protocolo';
+			$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+		}
+	}
+
+	public function btnEnviar_click()
+	{
+		global $MIOLO, $auth;
+	
+		/* IFRO - Controle de segurança de acesso */
+		$setores = ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS)) ? $this->setor->selAll() : $this->setoracesso->selSetoresAcesso($this->processo->getSetorUsuario());
+		if (
+			$this->processo->retencao->setor
+			&& in_array($this->processo->retencao->setor,$setores) 
+			&& 
+		    (($this->processo->retencao->status == 'N') || ($this->processo->retencao->status == 'H')) 
+		  )
+		{
+			//      data
+			$data = $this->getData();
+			if ((trim($data->autor) == null))  
+			{
+				$msg = 'Foram encontrados espaços em branco no campo AUTOR e a operação foi cancelada';          
+				$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));	
+			}
+			elseif ((trim($data->decisao) == null))
+			{
+				$msg = 'Foram encontrados espaços em branco no campo DECISÃO e a operação foi cancelada';          
+				$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));	     
+			}elseif(strlen(trim($data->decisao)) > 1000)
+	                {
+        	                $this->AddError('O campo decisão deve conter, no máximo, 1000 caracteres.');
+	                }else
+			{
+				$data->dataDespacho = date("YmdHi");
+				$data->dataSaida = date("YmdHi");        
+			//      set and save
+				try 
+				{
+					$login = $auth->getLogin();
+					$this->processo->beginTransaction();
+					$andamento = $this->processo->getAndamento($this->processo->retencao->numAndamento);
+					$andamento->setData($data, $login->idkey);
+					$this->processo->addAndamento($andamento);
+					$this->processo->retencao->setData($andamento);
+					$this->processo->save();
+					
+				$dataMail = date("d/m/y");
+				$horaMail = date("H:i");
+				$objMail = $this->processo->getTituloByNumProcesso($this->processo->numProcesso);
+				$mailSender = $this->processo->getMailByNumProcesso($this->processo->numProcesso);
+				$emails = $this->processo->listarEmail();
+				$emails[$emails->length][0] = $mailSender;
+                foreach($emails as $e)
+                {
+                    if($e[1])
+		            {
+		                    $instituicao = $this->processo->instituicaoUsuario($e[1]);
+		                    $pessoa = $e[2];
+		            }
+		            else
+		            {
+		                    $instituicao = $this->processo->instituicaoProcesso();
+		                    $pessoa = $this->processo->solicitante;
+		            }
+					$mail = new PHPMailer();
+					$mail->IsSMTP(); // send via SMTP
+					$mail->Host = $MIOLO->getConf('mail.host');
+					$mail->SMTPAuth = $MIOLO->getConf('mail.auth');
+					$mail->Username = $MIOLO->getConf('mail.user');
+					$mail->Password = $MIOLO->getConf('mail.pass');
+					$mail->From = $MIOLO->getConf('mail.from');
+					$mail->FromName = "SIGA - Sistema Integrado de Gestão Acadêmica";
+					$mail->AddAddress($e[0]);
+					$mail->Port = $MIOLO->getConf('mail.port');
+					$mail->WordWrap = 50;
+					$mail->IsHTML(true);
+					$mail->Subject = "SIGA-ADM(1) - Notificação de Trâmite de Processo";
+	                                $mail->ssl = $MIOLO->getConf('mail.ssl');
+        	                        $mail->Body = "
+                                                <center><h1>TRAMITAÇÃO DO PROCESSO<br /> {$this->processo->numProcessoFormatado()}</h1></center>
+                                                <br /><br />Prezado(a) Sr(a) {$pessoa},
+						<br /><br />A decisão do processo {$this->processo->numProcessoFormatado()} foi alterada
+                                                <br /><br /><b>Objeto: </b>{$objMail}
+                                                <br /><b>Setor Atual: </b>{$this->processo->retencao->setor}
+                                                <br /><br /><b>Data: </b>{$dataMail}
+                                                <br /><b>Hora: </b>{$horaMail}
+                                                <br /><br /><b>Para maiores informações acesse: </b>{$MIOLO->getConf('home.url')}
+                                                <br /><br />Atenciosamente,
+                                                <br /><br />{$instituicao}
+                                                <br /><br /><b><font color=\"RED\"> Observação: Este email foi enviado automaticamente, não é necessário responder. </font></b>
+                                ";
+					$mail->Send();
+				}
+					
+					$msg = 'A decisão do processo '.$this->processo->numProcessoFormatado().' foi alterada com sucesso.';
+					$this->processo->Log(OP_UPD,$msg);
+					$this->processo->endTransaction();
+					$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+				}
+				catch(Exception $e) {$this->addError($e->getMessage());}
+			}
+		}else{
+			$msg = 'Este usuário não tem permissão para acessar este Processo/Protocolo';
+			$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+		}
+	}
+
+}
+?>

@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="RelatorioDeFechamento" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="DATAINI" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/01/2010"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="DATAFIM" class="java.lang.String">
+		<defaultValueExpression><![CDATA["01/01/2010"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="LOGO" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ID_USUARIO" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select cm_tabelageral.item2 as tipolicitacao, ad_uo.sigla as uo,
+SUM(ad_itemreq.quantpedida*precoestimado) as valorlicitado,
+SUM(ad_itemreq.quantempenhada*ad_itemreq.valorreal) as valorempenhado, cm_instituicao.nome
+FROM cm_instituicao,((cm_tabelageral INNER JOIN (ad_itemreq INNER JOIN ad_licitacao ON ((ad_itemreq.idlicitacao=ad_licitacao.idlicitacao))) ON cm_tabelageral.item1=ad_licitacao.idtipolicitacao INNER JOIN ad_requisicao ON ((ad_itemreq.idrequisicao=ad_requisicao.idrequisicao))) INNER JOIN ad_uo ON ((ad_requisicao.iduoreq=ad_uo.iduo)))
+WHERE ((ad_licitacao.status = '4') AND (ad_licitacao.idTipoLicitacao IN ('1','2','4')) 
+AND (ad_requisicao.iduoreq 
+IN (SELECT DISTINCT iduo as uo 
+FROM ad_uo WHERE ((iduo IN (SELECT DISTINCT iduo as uo 
+FROM (((ad_uo INNER JOIN ad_requisicao ON ((ad_uo.iduo=ad_requisicao.iduoreq))) 
+INNER JOIN ad_itemreq ON ((ad_requisicao.idrequisicao=ad_itemreq.idrequisicao))) 
+INNER JOIN ad_licitacao ON ((ad_itemreq.idlicitacao=ad_licitacao.idlicitacao))) 
+WHERE (cm_tabelageral.tabela='AD_TIPOLICITACAO' AND (ad_licitacao.status = '4') 
+AND (ad_itemreq.idlicitacao = ad_licitacao.idlicitacao) 
+AND (ad_itemreq.idrequisicao = ad_requisicao.idrequisicao) 
+AND (ad_requisicao.datahorareq >= '$P!{DATAINI}') 
+AND (ad_requisicao.datahorareq <= '$P!{DATAFIM}')))) OR (iduo IN 
+(SELECT DISTINCT iduo as uo FROM (((ad_uo INNER JOIN ad_requisicao 
+ON ((ad_uo.iduo=ad_requisicao.iduoreq))) INNER JOIN ad_itemreqservext 
+ON ((ad_requisicao.idrequisicao=ad_itemreqservext.idrequisicao))) 
+INNER JOIN ad_licitacao ON ((ad_itemreqservext.idlicitacao=ad_licitacao.idlicitacao))) 
+WHERE ((ad_licitacao.status = '4') AND (ad_licitacao.idTipoLicitacao = '2') 
+AND (ad_itemreqservext.idlicitacao = ad_licitacao.idlicitacao) 
+AND (ad_itemreqservext.idrequisicao = ad_requisicao.idrequisicao) 
+AND (ad_requisicao.datahorareq >= '$P!{DATAINI}') AND (ad_requisicao.datahorareq <= '$P!{DATAFIM}'))))))) 
+AND (ad_requisicao.datahorareq >= '$P!{DATAINI}') AND (ad_requisicao.datahorareq <= '$P!{DATAFIM}'))
+AND cm_instituicao.idinstituicao=(SELECT cm_setor.idinstituicao FROM cm_setor WHERE cm_setor.idsetor=
+(SELECT  cm_usuario.idsetor FROM cm_usuario WHERE cm_usuario.idusuario= CAST($P{ID_USUARIO} AS integer)))
+group by ad_uo.sigla, cm_tabelageral.item2,cm_instituicao.nome]]>
+	</queryString>
+	<field name="tipolicitacao" class="java.lang.String"/>
+	<field name="uo" class="java.lang.String"/>
+	<field name="valorlicitado" class="java.math.BigDecimal"/>
+	<field name="valorempenhado" class="java.math.BigDecimal"/>
+	<field name="nome" class="java.lang.String"/>
+	<variable name="TOTAL_VALOR_LICITADO" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{valorlicitado}]]></variableExpression>
+	</variable>
+	<variable name="VALOR_A_LICITAR" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{valorlicitado}.subtract($F{valorempenhado}==null?new BigDecimal(0.0):$F{valorempenhado})]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_VALOR_EMPENHADO" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{valorempenhado}]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_VALOR_A_LICITAR" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{TOTAL_VALOR_EMPENHADO}==null?$V{TOTAL_VALOR_LICITADO}:$V{TOTAL_VALOR_LICITADO}.subtract($V{TOTAL_VALOR_EMPENHADO})]]></variableExpression>
+	</variable>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="102">
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField" x="194" y="79" width="93" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date($P{DATAINI})]]></textFieldExpression>
+			</textField>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport" x="1" y="0" width="554" height="66"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA["Fechamento"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{LOGO}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[new java.lang.Integer($P{ID_USUARIO})]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "Cabecalho.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement key="staticText" x="106" y="79" width="88" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14"/>
+				</textElement>
+				<text><![CDATA[Período de:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="287" y="79" width="17" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14"/>
+				</textElement>
+				<text><![CDATA[a]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField" x="304" y="79" width="100" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date($P{DATAFIM})]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band height="34">
+			<rectangle>
+				<reportElement key="rectangle" x="1" y="1" width="553" height="33" backcolor="#C0C0C0"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText" positionType="Float" x="1" y="2" width="141" height="32"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[UO Requisitante]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" positionType="Float" x="276" y="3" width="74" height="31"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Valor Licitado]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" positionType="Float" x="154" y="2" width="94" height="32"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Tipo Licitação]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" positionType="Float" x="369" y="2" width="93" height="32"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Valor Empenhado]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" positionType="Float" x="466" y="2" width="88" height="32"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Valor a Licitar]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<rectangle radius="0">
+				<reportElement key="rectangle" positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="1" y="0" width="553" height="20" isPrintWhenDetailOverflows="true" backcolor="#E2E2E2">
+					<printWhenExpression><![CDATA[new Boolean(((($V{COLUMN_COUNT}.intValue()) % 2) == 0))]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField" positionType="Float" x="149" y="0" width="113" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tipolicitacao}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField" positionType="Float" x="5" y="0" width="137" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{uo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" positionType="Float" x="262" y="0" width="89" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{valorlicitado} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{valorlicitado} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField" positionType="Float" x="352" y="0" width="100" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{valorempenhado} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{valorempenhado} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" positionType="Float" x="453" y="0" width="100" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{VALOR_A_LICITAR} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{VALOR_A_LICITAR} ))]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="18">
+			<line>
+				<reportElement key="line" x="0" y="1" width="555" height="1"/>
+			</line>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="433" y="2" width="80" height="16"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Página "+$V{PAGE_NUMBER}+" de"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField" x="513" y="2" width="40" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="1" y="1" width="422" height="17"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nome}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="29">
+			<line>
+				<reportElement key="line" x="194" y="3" width="361" height="1"/>
+			</line>
+			<staticText>
+				<reportElement key="staticText" x="194" y="5" width="36" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Total:]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="241" y="6" width="89" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font pdfFontName="Times-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{TOTAL_VALOR_LICITADO} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{TOTAL_VALOR_LICITADO} ))]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="347" y="6" width="100" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font pdfFontName="Times-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{TOTAL_VALOR_EMPENHADO} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{TOTAL_VALOR_EMPENHADO} ))]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="453" y="6" width="100" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font pdfFontName="Times-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{TOTAL_VALOR_A_LICITAR} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{TOTAL_VALOR_A_LICITAR} ))]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,208 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmUoAlmoxarifado extends MCompoundForm
+{
+    protected $oid;
+    protected $uoalmoxarifado;
+
+    function __construct($objUoAlmoxarifado)
+    {
+        $this->uoalmoxarifado = $objUoAlmoxarifado;
+        parent::__construct($this->uoalmoxarifado->nome);
+        $this->SetTitle($this->uoalmoxarifado->nome);
+        $this->SetIcon($this->manager->GetUi()->GetImage('adm','almoxarifado_mini.png'));
+    }
+
+    function CreateFields()
+    {
+		 global $MIOLO, $page, $module, $context, $action, $history;
+
+        $uoalmoxarifado = $this->uoalmoxarifado;
+        if ($this->oid == NULL) $this->oid = $uoalmoxarifado->idUo;
+        //Util::SetIfNull($this->oid, $uoalmoxarifado->idUo);
+        parent::CreateFields();
+
+//form
+        $ui = $this->manager->GetUI();
+        $form = Form::GetFormValue('form');
+        switch ($form)
+        {
+        	
+        	case 'entrada2006':
+				if ( ($id = Form::GetFormValue('id')) != NULL )
+				{
+					$material = $uoalmoxarifado->GetMaterial($id);
+					$this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEntrada2006',$material,'uoalmoxarifado');
+				}
+				else
+				{
+					$this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEntrada2006Find',$uoalmoxarifado,'uoalmoxarifado');
+				}
+            break;
+            case 'estorno2006':
+				if ( ($id = Form::GetFormValue('id')) != NULL )
+				{
+					$material = $uoalmoxarifado->GetMaterial($id);
+					$this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEstorno2006',$material,'uoalmoxarifado');
+				}
+				else
+				{
+					$this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEstorno2006Find',$uoalmoxarifado,'uoalmoxarifado');
+				}
+            break;
+            case 'estoqueinicial':
+				if ( ($id = Form::GetFormValue('id')) != NULL )
+				{
+					$material = $uoalmoxarifado->GetMaterial($id);
+					$this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEstoqueInicial',$material,'uoalmoxarifado');
+				}
+				else
+				{
+					$this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEstoqueInicialFind',$uoalmoxarifado,'uoalmoxarifado');
+				}
+            break;
+            case 'entradamaterial':
+                if (Form::getFormValue('idEmpenho'))
+                {
+				    $this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEntradaMaterialEmpenho',$uoalmoxarifado,'uoalmoxarifado');
+                }
+                else
+                {
+				    $this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEntradaMaterialEmpenhosFind',$uoalmoxarifado,'uoalmoxarifado');
+                }
+            break;
+            case 'entradamaterial2':
+                if (Form::getFormValue('idEmpenho'))
+                {
+				    $this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEntradaMaterialEmpenho2',$uoalmoxarifado,'uoalmoxarifado');
+                }
+                else
+                {
+				    $this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEntradaMaterialEmpenhosFind2',$uoalmoxarifado,'uoalmoxarifado');
+                }
+            break;
+            case 'estornoentradamaterial':
+                if (Form::getFormValue('idEmpenho'))
+                {
+				    $this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEstornoEntrada',$uoalmoxarifado,'uoalmoxarifado');
+                }
+                else
+                {
+				    $this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEstornoEntradaEmpenhosFind',$uoalmoxarifado,'uoalmoxarifado');
+                }
+            break;           
+            case 'saidamaterial':
+                if (Form::getFormValue('idRequisicao'))
+                {
+				    $this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoSaidaMaterial',$uoalmoxarifado,'uoalmoxarifado');
+                }
+                else
+                {
+				    $this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoSaidaMaterialRequisicoesFind',$uoalmoxarifado,'uoalmoxarifado');
+                }
+            break;
+            case 'estornosaidamaterial':
+                if (Form::getFormValue('idRequisicao'))
+                {
+				    $this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEstornoSaida',$uoalmoxarifado,'uoalmoxarifado');
+                }
+                else
+                {
+				    $this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoEstornoSaidaRequisicoesFind',$uoalmoxarifado,'uoalmoxarifado');
+                }
+            break;
+            case 'ordementrega':
+                if (Form::getFormValue('idOrdemEntrega'))
+                {
+				    $this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoOrdemEntrega',$uoalmoxarifado,'uoalmoxarifado');
+                }
+                else
+                {
+				    $this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoOrdemEntregaRequisicoesFind',$uoalmoxarifado,'uoalmoxarifado');
+                }
+            break;
+            case 'tomadadeconta':
+				$this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoRepTomadaDeConta',$uoalmoxarifado,'uoalmoxarifado');
+            break;
+			case 'listamateriais':
+				$this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoRepListaMateriais',$uoalmoxarifado,'uoalmoxarifado');
+            break;
+            case 'movimentacao':
+				$this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoRepMovimentacao',$uoalmoxarifado,'uoalmoxarifado');
+            break;
+            case 'bd':
+				$this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoBoletimDiario',$uoalmoxarifado,'uoalmoxarifado');
+            break;
+            case 'resumoPorEmpenho':
+				$this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoRepResumoPorEmpenho',$uoalmoxarifado,'uoalmoxarifado');
+            break;
+            case 'resumoPorUo':
+				$this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoRepResumoPorUo',$uoalmoxarifado,'uoalmoxarifado');
+            break;
+	    case 'estoqueMinimo': 
+				$this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoRepEstoqueMinimo',$uoalmoxarifado,'uoalmoxarifado');
+            break;
+	    case 'tomadadecontamaterial':
+                                $this->_form[0] = $ui->GetForm('adm','frmUoAlmoxarifadoRepTomadaDeContaPorMaterial',$uoalmoxarifado,'uoalmoxarifado');
+            break;
+
+        }
+        /*
+        if ($this->_form[0])
+        {
+            $this->_form[0]->SetClose($this->manager->GetActionURL('adm','main:uoalmoxarifado', $uoalmoxarifado->idUo));
+        }
+        */
+
+//panel
+        $action = $this->manager->context->action;
+        $this->_panel[0] = $panel = new ActionPanel('pnlCompound','Opções','Operações',false);
+        $panel->SetIconType('small');
+        $login = $MIOLO->GetLogin();
+        $panel->SetTitle('Opções para '.$login->user);
+        $panel->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Estorno Entrada Anos Anteriores',$ui->GetImage('','default.png'),'adm',$action, $this->oid, array("form"=>"estorno2006"));
+		$panel->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Entrada Anos Anteriores',$ui->GetImage('','default.png'),'adm',$action, $this->oid, array("form"=>"entrada2006"));
+        $panel->InsertUserAction(0,'ADM_ESTOQUEINICIAL',A_EXECUTE,'Estoque',$ui->GetImage('','default.png'),'adm',$action, $this->oid, array("form"=>"estoqueinicial"));
+		$panel->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Estorno de Entrada',$ui->GetImage('','default.png'),'adm',$action, $this->oid, array("form"=>"estornoentradamaterial"));		
+		$panel->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Entrada de Material Especial',$ui->GetImage('','default.png'),'adm',$action, $this->oid, array("form"=>"entradamaterial2"));
+		$panel->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Entrada de Material',$ui->GetImage('','default.png'),'adm',$action, $this->oid, array("form"=>"entradamaterial"));
+		$panel->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Estorno de Saída',$ui->GetImage('','default.png'),'adm',$action, $this->oid, array("form"=>"estornosaidamaterial"));
+		$panel->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Saída de Material',$ui->GetImage('','default.png'),'adm',$action, $this->oid, array("form"=>"saidamaterial"));
+
+		
+//Retira os relatórios com problemas
+// Adicionando os relatórios corrigidos - Diogo
+        $this->_panel[1] = $panel2 = new ActionPanel('pnlRepCompras','Relatórios');
+        $panel2->SetIconType('small');
+		 $panel2->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Estoque mínimo',$ui->GetImage('adm','pdf.png'),'adm',$action, $this->oid, array("form"=>"estoqueMinimo"));
+		$panel2->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Boletim Diário',$ui->GetImage('adm','pdf.png'),'adm',$action,$this->oid,array('form'=>'bd'));	
+		$panel2->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'RMA',$ui->GetImage('adm','pdf.png'),'adm',$action, $this->oid, array("form"=>"movimentacao"));
+		$panel2->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Lista de Materiais',$ui->GetImage('adm','pdf.png'),'adm',$action, $this->oid, array("form"=>"listamateriais"));
+		 $panel2->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Tomada de Conta por Material',$ui->GetImage('adm','pdf.png'),'adm',$action, $this->oid, array("form"=>"tomadadecontamaterial"));
+		$panel2->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Tomada Conta',$ui->GetImage('adm','pdf.png'),'adm',$action, $this->oid, array("form"=>"tomadadeconta"));
+		$panel2->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Ordem Entrega',$ui->GetImage('adm','pdf.png'),'adm',$action, $this->oid, array("form"=>"ordementrega"));
+		$panel2->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Resumo por Empenho',$ui->GetImage('adm','pdf.png'),'adm',$action, $this->oid, array("form"=>"resumoPorEmpenho"));
+		$panel2->InsertUserAction(0,'ADM_ALMOXARIFADO',A_EXECUTE,'Resumo por Uo',$ui->GetImage('adm','pdf.png'),'adm',$action, $this->oid, array("form"=>"resumoPorUo"));
+	}
+}
+?>

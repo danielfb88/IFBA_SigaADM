@@ -1,0 +1,388 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+MIOLO::Import('extensions::class.phpmailer.php','PHPMailer');
+class frmRequisicaoAlmoxarifado extends MForm
+{
+	protected $objRequisicao;
+    function __construct($objRequisicao)
+    {
+		$this->objRequisicao = $objRequisicao;
+        parent::__construct('Requisição de Almoxarifado');
+        $this->eventHandler();
+    }
+    function CreateFields()
+    {
+        $ui = $this->manager->getUi();
+        $login = $this->manager->GetLogin();
+        $idUsuario = $login->idkey;
+
+        $objUO = $this->manager->GetBusiness('adm','uo');
+		$opt = $objUO->listUosOrdemNome();
+
+        switch ($this->objRequisicao->status)
+        {
+            case '1':
+                if ($this->objRequisicao->idUsuarioRequisitante == $idUsuario)
+                {
+                    $this->AddField($ui->GetGrid('adm','gridRequisicaoAlmoxarifadoPendente',$this->objRequisicao));
+                    $this->addField(new MSeparator('DADOS DE ENTREGA'));
+                    $this->addField(new MMultiLineField('localEntrega','','Local',200,3,50));
+                    $this->AddButton(new MButton('btnConfirmarSolicitar', 'Enviar'));
+                }
+                else
+                {
+                    $this->AddField($ui->GetGrid('adm','gridRequisicaoAlmoxarifado',$this->objRequisicao));
+                    $this->addField(new MSeparator('DADOS DE ENTREGA'));
+                    $this->addField(new MMultiLineField('localEntrega','','Local',200,3,50));
+                    $this->setFieldAttr('localEntrega','readonly',true);
+                }
+            break;
+            case '2':
+                $this->AddField($ui->GetGrid('adm','gridRequisicaoAlmoxarifado',$this->objRequisicao));
+                $this->addField(new MSeparator('DADOS DE ENTREGA'));
+                $this->addField(new MMultiLineField('localEntrega',$this->objRequisicao->localEntrega,'Local',200,3,50));
+                $this->setFieldAttr('localEntrega','readonly',true);
+			    $this->objRequisicao->getUoRequisitante();
+                if ($this->objRequisicao->uoRequisitante->isGestorOf($idUsuario))
+                {
+                    $tipoAcao = array(""=>"","4"=>"AUTORIZAR","5"=>"DEVOLVER","6"=>"RECUSAR");
+                    $this->AddField(New MSeparator('AÇÕES DO GESTOR DA UO REQUISITANTE'));
+                    $this->AddField(New MSelection('acaoGestorUoReq','','Ação',$tipoAcao));
+                    $this->AddField(new MMultiLineField('motivoRejeicao','','Motivo da recusa','',3,50));
+                    $this->AddButton(new MButton('btnConfirmarAutorizar','Enviar'));
+                }
+                else
+                {
+                    $url = $this->manager->GetActionURL('adm','main:requisicoes:find');
+                    $this->AddButton(new MButton('btnSair','Voltar',$url));
+                }
+            break;
+            case 4:
+            case 7:
+                $this->AddField($ui->GetGrid('adm','gridRequisicaoAlmoxarifado',$this->objRequisicao));
+                $this->addField(new MSeparator('DADOS DE ENTREGA'));
+                $this->addField(new MMultiLineField('localEntrega',$this->objRequisicao->localEntrega,'Local',200,3,50));
+                $this->setFieldAttr('localEntrega','readonly',true);
+                $url = $this->manager->GetActionURL('adm','main:requisicoes:find');
+                $this->AddButton(new MButton('btnSair','Voltar',$url));
+            break;
+            case 5:
+            case 6:
+                if ($this->objRequisicao->status == 6)
+                {
+                    $this->AddField($ui->GetGrid('adm','gridRequisicaoAlmoxarifado',$this->objRequisicao));
+                    $this->addField(new MSeparator('DADOS DE ENTREGA'));
+                    $this->addField(new MMultiLineField('localEntrega',$this->objRequisicao->localEntrega,'Local',200,3,50));
+                    $this->setFieldAttr('localEntrega','readonly',true);
+                    $url = $this->manager->GetActionURL('adm','main:requisicoes:find');
+                    $this->AddButton(new MButton('btnSair','Voltar',$url));
+                }
+                else
+                {
+                    if ($this->objRequisicao->idUsuarioRequisitante == $idUsuario)
+                    {
+                        $this->AddField($ui->GetGrid('adm','gridRequisicaoAlmoxarifadoPendente',$this->objRequisicao));
+                        $this->addField(new MSeparator('DADOS DE ENTREGA'));
+                        $this->addField(new MMultiLineField('localEntrega',$this->objRequisicao->localEntrega,'Local',200,3,50));
+                        $this->AddButton(new MButton('btnConfirmarSolicitar', 'Enviar'));
+                    }
+                    else
+                    {
+                        $this->AddField($ui->GetGrid('adm','gridRequisicaoAlmoxarifado',$this->objRequisicao));
+                        $this->addField(new MSeparator('DADOS DE ENTREGA'));
+                        $this->addField(new MMultiLineField('localEntrega',$this->objRequisicao->localEntrega,'Local',200,3,50));
+                        $this->setFieldAttr('localEntrega','readonly',true);
+                    }
+                }
+                $tipoAcao = array(""=>"","4"=>"AUTORIZAR","5"=>"DEVOLVER","6"=>"RECUSAR");
+                $this->AddField(New MSeparator('AÇÕES DO GESTOR DA UO REQUISITANTE'));
+                $this->AddField(New MSelection('acaoGestorUoReq','','Ação',$tipoAcao));
+                $this->AddField(new MMultiLineField('motivoRejeicao','','Motivo da recusa','',3,50));
+                $this->setFieldValue('acaoGestorUoReq',$this->objRequisicao->status);
+                $this->setFieldValue('motivoRejeicao',$this->objRequisicao->motivoRejeicao);
+                $this->setFieldAttr('acaoGestorUoReq','readonly',true);
+                $this->setFieldAttr('motivoRejeicao','readonly',true);
+            break;
+            case 8:
+            case 9:
+                $this->AddField($ui->GetGrid('adm','gridRequisicaoAlmoxarifadoAutorizada',$this->objRequisicao));
+                $this->addField(new MSeparator('DADOS DE ENTREGA'));
+                $this->addField(new MMultiLineField('localEntrega',$this->objRequisicao->localEntrega,'Local',200,3,50));
+                $this->setFieldAttr('localEntrega','readonly',true);
+                $url = $this->manager->GetActionURL('adm','main:requisicoes:find');
+                $this->AddButton(new MButton('btnSair','Voltar',$url));
+            break;
+        }
+	}
+    
+    function btnConfirmarSolicitar_click(){
+		$data = $this->getData();
+		$data->localEntrega = str_replace("; ; ","; ", str_replace("
+","; ",trim($data->localEntrega))) ;
+        	if (!is_array($this->objRequisicao->materialAlmoxarifado))
+        	{
+        	    $url = $this->manager->GetActionURL('adm','main:requisicoes',$this->objRequisicao->idRequisicao,array('form'=>'item'));
+        	    $this->manager->Error('Não há materiais em sua requisição.',$url);
+        	    return;
+        	}        
+        	$msg = 'Confirmar esta requisição?';
+        	$url = $this->manager->GetActionURL('adm','main:requisicoes',$this->objRequisicao->idRequisicao,array('form'=>'item','tipoReq'=>$this->objRequisicao->idTipoReq,"localEntrega"=>$data->localEntrega));
+
+        	$eventYes = "btnSolicitar:click";
+        	$this->manager->Question($msg, $url, $url, $eventYes, $eventNo);
+	}
+    function btnSolicitar_click()
+    {
+    	global $MIOLO;
+		$data = $this->getData();
+
+        //TODO Voltar essa parte quando o sistema entrar no ar
+        $this->objRequisicao->getUoRequisitante();
+        $ui = $this->manager->getUi();
+        $login = $this->manager->GetLogin();
+        $idUsuario = $login->idkey;
+        if ($this->objRequisicao->uoRequisitante->isGestorOf($idUsuario)) 
+        {
+            if ($this->objRequisicao->status == 1 || $this->objRequisicao->status == 5)
+            {
+                $cf = new MCurrencyFormatter();
+                $idRequisicao = $this->objRequisicao->idRequisicao;
+                $uoRequisitante = $this->objRequisicao->uoRequisitante;
+                $url = $this->manager->GetActionURL('adm','main:requisicoes',$this->objRequisicao->idRequisicao,array('form'=>'item','tipoReq'=>$this->objRequisicao->idTipoReq));
+                if ($this->objRequisicao->getSaldo() < $valor = $this->objRequisicao->getValorEstimadoReqAlmoxarifado()) $this->addError('Saldo insuficiente.');
+                else
+                {
+                    try
+                    {
+                        $this->objRequisicao->setStatus('4');
+                        $this->objRequisicao->dataHoraAut = date('d/m/Y');
+                        $this->objRequisicao->setLocalEntrega($data->localEntrega);
+                        $this->objRequisicao->save();
+                        $materiais = $this->objRequisicao->getMaterialCompra();
+                        if ($materiais)
+                        {
+                            foreach ($materiais as $material)
+                            {
+                                $material->setStatus(0);
+                                $material->save();
+                            }
+                        }
+                        $this->objRequisicao->addPrevisaoDebitoAlmoxarifado();
+                        $this->objRequisicao->addLancamentoInternoAlmoxarifado(4,$valor);
+                        $this->manager->information("Requisição ".$idRequisicao." autorizada com sucesso.",$url);
+                    }
+                    catch (Exception $e) {$this->addError($e->getMessage());}
+                }
+            }
+            else
+            {
+                if ($this->objRequisicao->status == 4)
+                {
+                    $this->manager->information("Solicitação criada e autorizada. O número da requisição é ".$this->objRequisicao->idRequisicao.".",$this->manager->getActionUrl('adm','main:requisicoes:find') );
+                }
+                else
+                {
+                    $this->addError('Não foi possível efetuar a transação. Tente novamente.');
+                }
+            }
+        }
+        else
+        {
+            try
+            {
+                $this->objRequisicao->setStatus('2');
+                $this->objRequisicao->setLocalEntrega($data->localEntrega);
+                $this->objRequisicao->save();
+                
+                $cf = new MCurrencyFormatter();
+				$valortotal = 0;
+				$materiais = $this->objRequisicao->getMaterialCompra();
+				$dadosMateriais = "<table border='1'><tr><td>Quantidade Pedida</td><td>Unidade</td><td>Elemento</td><td>Código</td><td>Material</td><td>Situação</td><td>Valor Unitário</td><td>Valor Total</td></tr>";
+				if ($materiais)
+				{
+					foreach ($materiais as $material)
+					{
+						$subtotal = round($cf->toDecimal($material->precoEstimado) * $cf->toDecimal($material->quantPedida),2);
+				        $valortotal += $subtotal;
+						$dadosMateriais .= "<tr><td>{$material->quantPedida}</td><td>{$material->material->unidade}</td><td>{$material->material->idelemento}.{$material->material->idsubelemento}</td><td>{$material->material->codmaterial}</td><td>{$material->material->descricao}</td><td>PENDENTE</td><td>{$cf->formatWithSymbol($material->precoEstimado)}</td><td>{$cf->formatWithSymbol($subtotal)}</td></tr>";
+				
+					}
+				}       
+				$dadosMateriais .= "<tr><td colspan=\"8\" align= \"right\">Valor Total:  {$cf->formatWithSymbol($valortotal)}</td></tr></table>";
+       
+                //Envia e-mail para os gestores pertencentes à UO do requisitante
+			    $dataMail = date("d/m/y");
+				$horaMail = date("H:i");
+				$user = $this->manager->getBusiness('common','usuario');				
+				$user->getById($this->objRequisicao->idUsuarioRequisitante);					
+				$setor = $this->manager->getBusiness('common','setor');
+				$setor->getById($user->idSetor);
+				$instituicao = $this->manager->getBusiness('common','instituicao');
+				$instituicao->getById($setor->idinstituicao);
+			    $dadosGestores = $this->objRequisicao->GetEmailGestores();
+				foreach($dadosGestores as $e)
+				{
+					$mail = new PHPMailer();
+					$mail->IsSMTP(); // send via SMTP
+					$mail->Host = $MIOLO->getConf('mail.host');
+					$mail->SMTPAuth = $MIOLO->getConf('mail.auth');
+					$mail->Username = $MIOLO->getConf('mail.user');
+					$mail->Password = $MIOLO->getConf('mail.pass');
+					$mail->From = $MIOLO->getConf('mail.from');
+					$mail->FromName = "SIGA - Sistema Integrado de Gestão Acadêmica";
+					$mail->AddAddress($e[0]);
+					$mail->Port = $MIOLO->getConf('mail.port');
+					$mail->WordWrap = 50;
+					$mail->IsHTML(true);
+					$mail->Subject = "SIGA-ADM(4) - Requisição de Almoxarifado";
+				    $mail->ssl = $MIOLO->getConf('mail.ssl');
+					$mail->Body = "
+							<center><h1>REQUISIÇÃO DE ALMOXARIFADO - {$this->objRequisicao->idRequisicao}</h1></center>
+							<br /><br />Prezado(a) Sr(a) {$e[1]},
+							<br /><br />A requisição {$this->objRequisicao->idRequisicao} foi criada. Aguardando sua avaliação.
+							<br /><br /><b>Itens da Requisição:</b>
+							<br />{$dadosMateriais}
+							<br /><br /><b>Data: </b>{$dataMail}										
+							<br /><b>Hora: </b>{$horaMail}						
+							<br /><br /><b>Para maiores informações acesse: </b>{$MIOLO->getConf('home.url')}
+							<br /><br />Atenciosamente,
+							<br /><br />{$instituicao->nome} - {$instituicao->instituicao}						
+							<br /><br /><b><font color=\"RED\"> Observação: Este email foi enviado automaticamente, não é necessário responder. </font></b>
+					";								
+					$mail->Send();	
+				}
+                $this->objRequisicao->Log(OP_INS,"Requisicão de almoxarifado número ".$this->objRequisicao->idRequisicao." solicitada com sucesso.");
+                $msg = "Requisição ".$this->objRequisicao->idRequisicao." solicitada com sucesso.";
+		$url = $this->manager->getActionUrl('adm','main:requisicoes:find');
+                $this->manager->Information($msg, $url);
+
+            }
+            catch (Exception $e) {$this->addError($e->getMessage());}
+        }
+    }
+
+    function btnConfirmarAutorizar_click()
+    {
+        $data = $this->getData();
+        // Se selecionou recusar ou devolver
+        if (($data->acaoGestorUoReq == '5') || ($data->acaoGestorUoReq == '6'))
+        {
+            /*if ($data->motivoRejeicao == '')
+            {
+                $this->manager->Error("Você precisa informar o motivo.",'');
+            }*/
+	    $motivoRejeicao = (strlen(trim(Form::GetFormValue('motivoRejeicao'))));
+	    if ($motivoRejeicao < 4) 
+	    {
+		$this->manager->Error("Você precisa informar o motivo corretamente.",'');
+            }
+	    else
+	    {
+		switch ($data->acaoGestorUoReq)
+	        {
+	            case 4:
+	                $msg = 'Deseja autorizar esta requisição?';
+	            break;
+	            case 5:
+	                $msg = 'Deseja devolver esta requisição?';
+	            break;
+	            case 6:
+	                $msg = 'Deseja recusar esta requisição?';
+	            break;
+	        }
+	        $url = $this->manager->GetActionURL('adm','main:requisicoes',$this->objRequisicao->idRequisicao,array('form'=>'item','motivoRejeicao'=>$data->motivoRejeicao,'acaoGestorUoReq'=>$data->acaoGestorUoReq));
+        	$eventYes = "btnAutorizar:click";
+	        $this->manager->Question($msg, $url, $url, $eventYes, $eventNo);
+            }
+        }
+	elseif(Form::GetFormValue('acaoGestorUoReq') == '' )
+	{
+			$this->addError("Favor selecionar uma ação.");
+	}
+	elseif($data->acaoGestorUoReq == '4')
+	{
+	        $msg = 'Deseja autorizar esta requisição?';   
+		$url = $this->manager->GetActionURL('adm','main:requisicoes',$this->objRequisicao->idRequisicao,array('form'=>'item','motivoRejeicao'=>$data->motivoRejeicao,'acaoGestorUoReq'=>$data->acaoGestorUoReq));
+        	$eventYes = "btnAutorizar:click";
+	        $this->manager->Question($msg, $url, $url, $eventYes, $eventNo);
+	        
+	}
+    }
+
+    function btnAutorizar_click()
+    {
+		$data = $this->getData();
+        if (!$data->acaoGestorUoReq) $this->addError('Você deve escolher uma ação.');
+        else
+        {
+            $idRequisicao = $this->objRequisicao->idRequisicao;
+            $uoRequisitante = $this->objRequisicao->uoRequisitante;
+			$proximaRequisicao = $this->manager->getBusiness('adm','requisicao',$this->objRequisicao->getProximaASerAtendida());
+			if ($proximaRequisicao->idRequisicao){
+				$url = $this->manager->getActionUrl('adm','main:requisicoes',$proximaRequisicao->idRequisicao,array("form"=>"item","tipoReq"=>$proximaRequisicao->idTipoReq)); 
+			}
+			else {
+				$url = $this->manager->GetActionURL('adm','main:requisicoes',$idRequisicao,array('form'=>'item','tipoReq'=>$this->objRequisicao->idTipoReq));
+			}
+            $this->objRequisicao->setStatus($data->acaoGestorUoReq);
+            switch ($data->acaoGestorUoReq)
+            {
+                case 4:
+                    $cf = new MCurrencyFormatter();
+                    if ($this->objRequisicao->getSaldo() < $this->objRequisicao->getValorEstimadoReqAlmoxarifado()) $this->addError('Saldo insuficiente.');
+                    else
+                    {
+                        try
+                        {
+                            $this->objRequisicao->dataHoraAut = date('d/m/Y');
+                            $this->objRequisicao->save();
+                            $this->objRequisicao->addPrevisaoDebitoAlmoxarifado();
+                            $this->objRequisicao->addLancamentoInternoAlmoxarifado(4,$this->objRequisicao->getValorEstimadoReqAlmoxarifado());
+                            $this->manager->information("Requisição ".$idRequisicao." autorizada com sucesso.",$url);
+                        }
+                        catch (Exception $e) {$this->addError($e->getMessage());}
+                    }
+                break;
+                case 5:
+                    try
+                    {
+                        $this->objRequisicao->motivoRejeicao = $data->motivoRejeicao;
+                        $this->objRequisicao->save();
+                        $this->manager->information("Requisição ".$idRequisicao." devolvida com sucesso.",$url);
+                    }
+                    catch (Exception $e) {$this->addError($e->getMessage());}
+                break;
+                case 6:
+                    try
+                    {
+                        $this->objRequisicao->motivoRejeicao = $data->motivoRejeicao;
+                        $this->objRequisicao->save();
+                        $this->manager->information("Requisição ".$idRequisicao." recusada com sucesso.",$url);
+                    }
+                    catch (Exception $e) {$this->addError($e->getMessage());}
+                break;
+            }
+        }
+    }
+}
+?>

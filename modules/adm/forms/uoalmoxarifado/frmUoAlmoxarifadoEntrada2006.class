@@ -1,0 +1,254 @@
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+class frmUoAlmoxarifadoEntrada2006 extends Form
+{
+    protected $objEstoque;
+
+    function __construct($objEstoque)
+    {
+        $this->objEstoque = $objEstoque;
+        $this->Form('Dados de Entrada de Material');
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+        $this->objEstoque->retrieveAssociation('material');
+        
+        /**
+         * Zera os itens para gravação
+         */
+        $this->objEstoque->estoque = 0;
+        $this->objEstoque->valorTotal = 0;
+        
+        //$radio  = new MRadioButton( 'radio', '1', '', true, _M('Entrada') );
+		//$radio1 = new MRadioButton( 'radio', '2', '', false, _M('Extorno') ); 
+        
+        
+		$fields = array(
+			new MText('txtObs',"Para definir o estoque inicial (materiais adquiridos antes da implantação do SIGA), preencha a Data de Entrada com a data da última Nota Fiscal do  material a ser inserido e a Quantidade com o total disponível no estoque.",'blue',TRUE),
+			new Spacer('10px'),
+			new MHiddenField('idMaterial',$this->objEstoque->idMaterial,'Idmaterial'),
+			new MLookupTextField('lkpMaterial',$this->objEstoque->material->descricao,'Material',40),
+			//array( $radio,
+			//$radio1),
+			new MTextField('estoque',$this->objEstoque->estoque,'Quantidade Total',10,'Ex: 1000'),
+			new MTextField('estoqueMin',$this->objEstoque->estoqueMin,'Estoque Mínimo',10,'Ex: 500'),
+			new CalendarField('calData','','Data de Entrada'),
+			new MCurrencyField('valorTotal',$this->objEstoque->valorTotal,'Valor Total',10,'Ex: 45,00'),
+        );
+		
+        $this->SetFields($fields);
+                
+        $this->SetFieldAttr('lkpMaterial','module','adm');
+        $this->SetFieldAttr('lkpMaterial','item','material');
+        $this->SetFieldAttr('lkpMaterial','event','filler');
+        $this->SetFieldAttr('lkpMaterial','related','idMaterial,lkpMaterial');
+		$validators = array(
+			new MRequiredValidator('calData'),
+			new MRequiredValidator('idMaterial', 'Material', 0, 'Selecione o campo material.'),
+			new MIntegerValidator('estoque', '', 'required'),
+			new MRequiredValidator('valorTotal'),
+			new MCompareValidator('estoqueMin','','>=','0','i','required','É necessário informar Estoque Mínimo maior ou igual a zero!'),
+		);
+		$this->SetValidators($validators);
+		
+		$buttons = array(
+        	new FormButton('btnPost', 'Enviar'),
+            );
+		$this->SetButtons($buttons);
+    }
+
+    function btnPost_click()
+    {
+        global $item,$MIOLO,$module;
+        
+        $data = $this->getData();      	
+      	
+      	$cf = new MCurrencyFormatter();
+		$valorTot = $cf->toDecimal(Form::GetFormValue('valorTotal'));   
+
+		if( Form::GetFormValue('estoque') <= 0 )
+		{
+			$this->AddError('A quantidade não pode ser menor ou igual a zero.');
+		}
+		if( Form::GetFormValue('estoqueMin') < 0 )
+		{
+			$this->AddError('O estoque mínimo não pode ser menor que zero.');
+		}
+		elseif ($valorTot <= 0 )
+        {
+			$this->AddError('O valor total deve ser maior que zero !');
+		}
+		else
+		{
+
+      	 $go = $this->manager->GetActionURL($module,'main:uoalmoxarifado',$item, array('form'=>'entrada2006'));
+      	 if($data->estoque > 0) 
+	 {    
+		//if ($data->radio == "1")
+		//{//entrada de material
+			
+			/**
+			* Gera uma alteração no AD ESTOQUE
+			*/
+			$this->objEstoque->getById($item,$data->idMaterial);
+			
+			$this->objEstoque->estoque = $data->estoque+$this->objEstoque->estoque;
+			$this->objEstoque->estoqueMin = $data->estoqueMin;		
+			$this->objEstoque->valorTotal = $cf->toDecimal($data->valorTotal) + $cf->toDecimal($this->objEstoque->valorTotal);
+			 
+			try
+        		{
+        			$this->objEstoque->save();
+        		
+        		/**
+        		 * Adiciona o movimento na AD_MOVIMENTO
+        		 */
+        			$objMovimento = $MIOLO->GetBusiness($module,'movimento');
+	        		$objMovimento->tipoMovimento = "1";
+	        		$objMovimento->dataMovimento =  $data->calData;
+	        		$objMovimento->quantidade = $data->estoque;
+	        		$objMovimento->valorTotal = $cf->toDecimal($data->valorTotal);
+	        		$objMovimento->idMaterial = $data->idMaterial;
+				$objMovimento->idUoAlmoxarifado = $this->objEstoque->idUo;
+				
+        			$objMovimento->save();
+      		
+
+        		$this->manager->Information('Entrada de Material realizada com sucesso.', $go );
+        		
+			 
+        	}
+			catch ( Exception $e )
+	        {
+	            $this->AddError('Não foi possível realizar a operação. Motivo: ' . $e->getMessage());
+	        }
+		
+	}
+	else
+	{
+		$this->AddError('A quantidade deve ser maior do que zero');
+	}		  
+			
+		//}
+/*
+		elseif ($data->radio == "2")
+		{//estorno
+			
+			/**
+			 * Antes de tudo, deve haver um movimento igual ao movimento
+			 * criado anteriormente
+			 *
+			$objMovimento = $MIOLO->GetBusiness($module,'movimento');
+			
+			$movAntigo = $objMovimento->getByValorQuantidade($cf->toDecimal($data->valorTotal),
+																$data->estoque,
+																$data->idMaterial);
+			
+			if ($movAntigo->result)
+			{// existe movimento 
+				
+					/**
+					* Gera uma alteração no AD ESTOQUE
+					*
+					$this->objEstoque->getById($item,$data->idMaterial);
+					
+					$this->objEstoque->estoque = $this->objEstoque->estoque-$data->estoque;
+					$this->objEstoque->valorTotal = $cf->toDecimal($this->objEstoque->valorTotal-$data->valorTotal);
+					 
+					try
+		        	{
+		        		$this->objEstoque->save();
+		        		
+		        		/**
+		        		 * Adiciona o movimento na AD_MOVIMENTO
+		        		 *
+		        		$objMovimento = $MIOLO->GetBusiness($module,'movimento');
+			        		$objMovimento->tipoMovimento = "2";
+			        		$objMovimento->dataMovimento =  $data->calData;
+			        		$objMovimento->quantidade = $data->estoque;
+			        		$objMovimento->valorTotal =$cf->toDecimal($data->valorTotal);
+			        		$objMovimento->idMaterial = $data->idMaterial;
+						$objMovimento->idUoAlmoxarifado = $this->objEstoque->idUo;
+		        		$objMovimento->save();
+		      		
+		        		
+		        		$this->manager->Information('Estorno de Material realizado com sucesso.', $go );
+		        		
+					 
+		        	}
+					catch ( Exception $e )
+			        {
+			            $this->AddError('Não foi possível realizar a operação. Motivo: ' . $e->getMessage());
+			        }
+				
+				
+				
+				
+			}
+			else 
+			{// não existe movimento
+				$this->AddError("Não existe um movimento com estes valores para ser extornado.",$go);
+			}
+			
+			
+			
+			
+			
+			
+			
+		}
+*/
+        
+        
+        
+        /**
+        $data = $this->getData();
+        $this->objEstoque->getById($item,$data->idMaterial);
+		$update = $this->objEstoque->isPersistent();
+        $cf = new MCurrencyFormatter();
+        $data->valorTotal = $cf->toDecimal($data->valorTotal);
+        $this->objEstoque->estoque = $data->estoque;
+        $this->objEstoque->valorTotal = $cf->toDecimal($data->valorTotal);
+        $this->objEstoque->estoqueMin = $data->estoqueMin;
+        try
+        {
+            $this->objEstoque->save();
+            $go = $this->manager->GetActionURL('adm','main:uoalmoxarifado',$this->objEstoque->idUo, array('form'=>'estoqueinicial'));
+			if ($update)
+			{
+	            $this->manager->Information('Material atualizado com sucesso.', $go );
+			}
+			else
+			{
+	            $this->manager->Information('Material inserido com sucesso.', $go );
+			}
+        }
+        catch ( Exception $e )
+        {
+            $this->AddError('Este material já consta no estoque.');
+        }
+        */
+	}
+    }
+
+ }
+?>

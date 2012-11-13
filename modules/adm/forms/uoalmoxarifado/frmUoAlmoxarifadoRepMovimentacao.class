@@ -1,0 +1,204 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmUoAlmoxarifadoRepMovimentacao extends MForm
+{
+    var $uoalmoxarifado;
+    function __construct($uoalmoxarifado)
+    {
+ 	    global $MIOLO, $module, $self;
+        $this->uoalmoxarifado = $uoalmoxarifado;
+ 	    parent::__construct('Relatório de Movimentação de Almoxarifado');
+ 	    $this->eventHandler();
+    }
+    function CreateFields()
+    {
+        $fields = array
+        (			
+			new CalendarField('calDataInicial','','Data Inicial',10,'informe a data inicial do relatório.'),
+			new CalendarField('calDataFinal','','Data Final',10,'informe a data final do relatório.'),			
+        );
+        $this->setFields($fields);
+	    $buttons = array
+        (
+	        new MButton('btnRelatorioJasper','Gerar Relatório','PDF'),
+	    );
+        $this->setButtons($buttons);
+    }
+
+    function btnRelatorioJasper_click()
+    {
+                global $MIOLO, $item;
+
+                $inicio = $this->getFieldValue('calDataInicial');
+                $final = $this->getFieldValue('calDataFinal');
+				
+                $partes_da_data = explode('/',$inicio);
+                $datainicial =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+                $partes_da_data = explode('/',$final);
+                $datafinal =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+
+				if (( $inicio == "") ||($final==""))
+                        $this->addError('É necessário informar as duas datas!');
+                else if ($datainicial > $datafinal)
+                        $this->addError('É necessário que a data inicial seja inferior a final!');
+                else {
+                        //$inicio = substr($inicio,6,4).'/'.substr($inicio,3,2).'/'.substr($inicio,0,2);
+                        //$final = substr($final,6,4).'/'.substr($final,3,2).'/'.substr($final,0,2);
+
+                        $report = new MJasperReport('sigaept');
+                        $parameters['SUBREPORT_DIR']    = $MIOLO->GetConf('home.modules');
+                        $parameters['pURL']             = $MIOLO->GetConf('home.url');
+                        $parameters['int_pIdUsuario']       = $MIOLO->login->idkey;
+                        $parameters['str_pDataIni']  = $inicio;
+                        $parameters['str_pDataFim']    = $final;
+                        $parameters['int_pIdUo']         = $item;
+
+                        $report->Execute('adm', 'repRMA', $parameters);
+                }
+    }
+    /*
+    function GeneratePageHeader($report)
+    {
+        $data = $this->getData();
+        $date = date('d/m/Y');
+        $x0 = $report->pdf->left-5;
+        $x1 = $report->pdf->right-5;
+        $h = $report->pdf->getFontHeight(10);
+        $header = $report->pdf->openObject();
+        $report->pdf->saveState();
+        $report->pdf->addPngFromFile($this->manager->getUI()->GetImageSrc('logonet.png','adm'), $x0, 760, 50, 50);
+        $alturaCabecalho = $x0 + 70;
+        $report->pdf->SetStrokeColor(0, 0, 0);
+        $report->pdf->addText($alturaCabecalho, 800, 9,"UNIVERSIDADE FEDERAL DE JUIZ DE FORA                            {$this->uoalmoxarifado->nome}");
+        $report->pdf->addText($alturaCabecalho, 800 - $h, 9,"SETOR DE ESTOQUE                                                                   TIPO DE MATERIAL: CONSUMO");
+        $report->pdf->addText($alturaCabecalho, 800 - $h - $h, 9,"COORDENADORIA DE SUPRIMENTOS                                       PERÍODO: {$data->dataInicio} A {$data->dataFim}");
+        $report->pdf->addText($alturaCabecalho, 800 - $h - $h- $h, 9,"RELATÓRIO DE MOVIMENTAÇÃO DE ALMOXARIFADO            DATA:{$date}");
+        $report->pdf->restoreState();
+        $report->pdf->closeObject();
+        $report->pdf->addObject($header, 'all');
+        $report->pdf->ezSetDy(+15);
+    }
+    function btnRelatorio_click()
+    {   
+	    $k = new MKrono();
+
+        switch (true)
+        {
+            case (!Form::getFormValue('dataInicio')):
+                $this->addInfo('Selecione a data inicial.');
+            return;
+            case (!Form::getFormValue('dataFim')):
+                $this->addInfo('Selecione a data final.');
+            return;
+            
+            case ($k->DaysDiff(Form::getFormValue('dataInicio'),Form::getFormValue('dataFim')) > 31):
+                $this->addInfo('O período deve ser menor que 31 dias.');
+            return;
+            
+        }
+		
+        $ui = $this->manager->GetUI();
+        $report = $ui->GetReport('adm','repUoAlmoxarifadoMovimentacao',$this->uoalmoxarifado);
+        $report->Generate();
+        
+        $data = $this->getData();
+		$cf = new MCurrencyFormatter();
+        $report = new MEzPDFReport('2','portrait');
+	    $report->pdf->ezSetMargins(80,180,32,32);
+        $cols = array('Código','Especificação','Saldo Anterior','Entradas','Saidas','Saldo Atual');
+        $options['textCol'] = array(0,0,0);
+        $options['shaded'] = 1;
+        $options['showLines'] = 0;
+        $options['fontSize'] = 10;
+        $options['width'] = 540;
+        $options['xPos'] = 'left';
+        $options['xOrientation'] = 'right';
+        $report->pdf->ezText('',20);
+        $movimentos = $this->uoalmoxarifado->getMovimentos($data->dataInicio,$data->dataFim);
+        if ($movimentos)
+        {
+            foreach ($movimentos as $movimento)
+            {
+                $movimento->retrieveAssociation('material');
+                $movimento->material->retrieveAssociation('subelemento');
+                $dados[$movimento->material->idsubelemento][0] = (!$dados[$movimento->material->idsubelemento][0]) ? $movimento->material->idelemento.".".$movimento->material->idsubelemento : $dados[$movimento->material->idsubelemento][0];
+                $dados[$movimento->material->idsubelemento][1] = (!$dados[$movimento->material->idsubelemento][1]) ? $movimento->material->subelemento->descricao : $dados[$movimento->material->idsubelemento][1];
+                switch ($movimento->tipoMovimento)
+                {
+                    case 1:
+                        $dados[$movimento->material->idsubelemento][3] += $movimento->valorTotal;
+                    break;
+                    case 3:
+                        $dados[$movimento->material->idsubelemento][4] += $movimento->valorTotal;
+                    break;
+                    case 5:
+                        $dados[$movimento->material->idsubelemento][3] += $movimento->valorTotal;
+                        $dados[$movimento->material->idsubelemento][4] += $movimento->valorTotal;
+                    break;
+                }
+                $dados[$movimento->material->idsubelemento][5] = (!$dados[$movimento->material->idsubelemento][5]) ? $this->uoalmoxarifado->getSaldoEstoquePorSubelemento($movimento->material->idsubelemento) : $dados[$movimento->material->idsubelemento][5];
+            }
+            $descontos = $this->uoalmoxarifado->getMovimentos($data->dataFim);
+            if ($descontos)
+            {
+                foreach ($descontos as $desconto)
+                {
+                    switch ($desconto->tipoMovimento)
+                    {
+                        case 1:
+                            $descontoEntrada += $desconto->valorTotal;
+                        break;
+                        case 3:
+                            $descontoSaida += $desconto->valorTotal;
+                        break;
+                        case 5:
+                            $descontoEntrada += $movimento->valorTotal;
+                            $descontoSaida += $movimento->valorTotal;
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            $this->addError('Não há movimentação no período.');
+            return;
+        }
+
+        ksort($dados);
+        foreach ($dados as $key=>$dado)
+        {
+            $resultado[] = array($dado[0],$dado[1],$cf->formatWithSymbol($cf->toDecimal($dado[5])+$cf->toDecimal($dado[4])-$cf->toDecimal($dado[3])),$cf->formatWithSymbol($cf->toDecimal($dado[3])),$cf->formatWithSymbol($cf->toDecimal($dado[4])),$cf->formatWithSymbol($cf->toDecimal($dado[5])));
+            $totalSaldoAnterior += $cf->toDecimal($dado[5])+$cf->toDecimal($dado[4])-$cf->toDecimal($dado[3]);
+            $totalEntradas += $cf->toDecimal($dado[3]);
+            $totalSaidas += $cf->toDecimal($dado[4]);
+            $totalSaldoAtual += $cf->toDecimal($dado[5]);
+        }
+        $resultado[] = array('TOTAIS','',$cf->formatWithSymbol($totalSaldoAnterior),$cf->formatWithSymbol($totalEntradas),$cf->formatWithSymbol($totalSaidas),$cf->formatWithSymbol($cf->toDecimal($totalSaldoAtual) + $cf->toDecimal($descontoEntrada) - $cf->toDecimal($descontoSaida)));
+        $this->generatePageHeader($report);
+        $report->pdf->ezTable($resultado,$cols,'',$options);
+	    $report->Execute();
+        
+    }*/
+}
+?>

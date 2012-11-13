@@ -1,0 +1,80 @@
+<?
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+class gridGestorCapacitacao extends MObjectGrid
+{
+	protected $objGestor;
+    /**
+     * Constructor
+     */
+    function __construct($objGestor)
+    {
+        global $MIOLO;
+        $perms = $MIOLO->getPerms();
+
+		$this->objGestor = $objGestor;
+		$result = $this->objGestor->listAll();
+		$x = 0;
+		$resultado = $result->result;
+		while($resultado[$x])
+		{
+			$obj = $MIOLO->GetBusiness('rh','gestorcapacitacao');		
+			$gestores[$x] = $obj->getById($resultado[$x][0]);
+			$x ++;
+		}
+	
+		
+        $columns = array(
+		new MObjectGridColumn('idUsuario','idUsuario','left', false,'25%',true),
+            	new MObjectGridColumn('login','Login','left', false,'25%',true),
+		new MObjectGridColumn('dataInicio','Inicio','left', false,'25%',true),
+           	new MObjectGridColumn('dataFim','Fim','left', false,'25%',true),
+        );
+
+
+        $href_grid = $MIOLO->GetActionURL('rh','main:vinculo');
+        parent::__construct($gestores, $columns, $href_grid,25);
+        $this->SetTitle("Gestores");
+        $this->SetFilter(false);
+        $this->SetIndex(1);
+        $this->SetWidth('100%');
+        $this->SetLinkType('hyperlink');
+	$href_update = $MIOLO->GetActionURL('rh','main:capacitacao:acessocapacitacao','',array('form'=>'gestorEdit','idUsuario'=>'%0%'));
+	$this->AddActionUpdate($href_update);
+	//$href_update = $MIOLO->GetActionURL('rh','main:capacitacao',$this->objRequisicao->idRequisicao,array('form'=>'gestorDelete','idUsuario'=>'%0%'));
+	//$this->AddActionDelete($action);
+	$href_dele = $MIOLO->getActionURL( $module, "main:capacitacao:acessocapacitacao", '',array('form'=>'gestorDel','idUsuario'=>'%0%'));
+        $this->addActionDelete( $href_dele );
+
+    }
+
+    function GenerateHeader()
+    {
+        return NULL;
+    }
+
+    function GenerateFooter()
+    {
+        if (!$this->data) 
+        $footer[] = $this->GenerateEmptyMsg();
+        $footer[] = new Separator();
+        $footer[] = $this->GenerateControls();
+        return $footer;
+    }
+}
+?>

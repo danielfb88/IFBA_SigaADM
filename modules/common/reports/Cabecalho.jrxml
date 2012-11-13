@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Cabecalho" pageWidth="535" pageHeight="100" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="pURL" class="java.lang.String"/>
+	<parameter name="pTitulo" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pConsulta" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[select	i.instituicao, i.nome, i.campus
+from	cm_usuario u, cm_setor s, cm_instituicao i
+where	u.idsetor = s.idsetor
+and	s.idinstituicao = i.idinstituicao
+and	u.idusuario = $P{pConsulta}]]>
+	</queryString>
+	<field name="instituicao" class="java.lang.String"/>
+	<field name="nome" class="java.lang.String"/>
+	<field name="campus" class="java.lang.String"/>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="80">
+			<image scaleImage="FillFrame" onErrorType="Blank">
+				<reportElement key="image-1" x="2" y="21" width="53" height="53"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{pURL} +"/images/logoADM.png"]]></imageExpression>
+			</image>
+			<frame>
+				<reportElement key="frame-1" x="158" y="18" width="0" height="0"/>
+			</frame>
+			<staticText>
+				<reportElement key="staticText-1" x="3" y="1" width="325" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[SIGA - SISTEMA INTEGRADO DE GESTÃO ACADÊMICA]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="108" y="18" width="408" height="28" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center">
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["RELATÓRIO DE " + $P{pTitulo}.toUpperCase() + "  -  " + new SimpleDateFormat( "dd/MM/yyyy" ).format( new Date( ) )]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-5" x="57" y="46" width="145" height="19"/>
+				<textElement verticalAlignment="Bottom" markup="html">
+					<font fontName="MyriadBold" size="6" isUnderline="false" isStrikeThrough="false" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nome}.toUpperCase()]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-7" x="57" y="65" width="142" height="14" forecolor="#90A93E"/>
+				<textElement markup="html">
+					<font fontName="MyriadBold" size="6" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{campus}.toUpperCase()]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="1" y="15" width="535" height="1"/>
+			</line>
+		</band>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band/>
+	</columnHeader>
+	<detail>
+		<band/>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

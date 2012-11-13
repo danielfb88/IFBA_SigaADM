@@ -1,0 +1,203 @@
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+class frmRelatorioManutencoesVeiculo extends Form
+{
+	function frmRelatorioManutencoesVeiculo()
+    {
+		global $MIOLO, $action, $module, $item;
+			    
+		$this->Form("Manutenções");
+		$this->EventHandler();
+  		$this->defaultButton = false;
+		$this->SetClose($this->manager->GetActionURL($module, 'main:relatorios'));  	
+		$this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../ui/js/mask.js'));		
+	}
+
+	function CreateFields()
+	{
+		global $MIOLO, $action, $module, $item, $page;
+
+		$meses = array(
+			"JANEIRO-01"=>"JANEIRO",
+			"FEVEREIRO-02"=>"FEVEREIRO",
+			"MARCO-03"=>"MARCO",
+			"ABRIL-04"=>"ABRIL",
+			"MAIO-05"=>"MAIO",
+			"JUNHO-06"=>"JUNHO",
+			"JULHO-07"=>"JULHO",
+			"AGOSTO-08"=>"AGOSTO",
+			"SETEMBRO-09"=>"SETEMBRO",
+			"OUTUBRO-10"=>"OUTUBRO",
+			"NOVEMBRO-11"=>"NOVEMBRO",
+			"DEZEMBRO-12"=>"DEZEMBRO"
+				);
+		$opcoes = array(
+			"0"=>"ANUAL",
+			"1"=>"MENSAL",
+			"2"=>"TOTAL");
+
+		$fields = Array (
+			new MSelection('op','','Opção',$opcoes),
+			new LookupTextField('lkpVeiculo','','Veiculo','20'),
+			new MHiddenField('placa'),
+			new MSelection('mes','','Mes',$meses),
+			new MTextField('ano','','Ano',4)
+				);						
+		
+        $this->SetValidators(new MRequiredValidator('ano'));
+		$this->SetFields($fields);
+		$this->ano->addAttribute('onKeyUp','makeMask(this, \'####\');');
+        $this->ano->addAttribute('onBlur','makeMask(this, \'####\');');
+        $this->ano->AddAttribute('maxlength','4');
+        
+        $this->mes->addAttribute('onKeyUp','makeMask(this, \'##\');');
+        $this->mes->addAttribute('onBlur','makeMask(this, \'##\');');
+        $this->mes->AddAttribute('maxlength','2');
+
+		$buttons = Array(			
+			new FormButton('btnRelatorio', 'Gerar Relatório', 'PDF'),
+			new MButton('btnEnviar','Enviar'),
+			new MButton('btnEnviar2','Enviar'),
+			
+   		    );
+		$this->SetButtons($buttons);
+
+		$this->SetButtonAttr('btnRelatorio','visible',false);
+		$this->SetButtonAttr('btnEnviar2','visible',false);
+				
+		$this->SetFieldAttr('lkpVeiculo','module','adm');
+		$this->SetFieldAttr('lkpVeiculo','item','veiculo');
+		$this->SetFieldAttr('lkpVeiculo','event','filler');
+		$this->SetFieldAttr('lkpVeiculo','related','null,placa,null,lkpVeiculo');			
+		
+		$this->SetFieldAttr('lkpVeiculo','visible',false);
+		$this->SetFieldAttr('mes','visible',false);
+		$this->SetFieldAttr('ano','visible',false);
+$this->SetFieldAttr('ano','required',true);
+	}	
+	function btnEnviar_click()
+	{
+		$op = $this->GetFormValue('op');
+		$this->SetFieldAttr('op','readonly',true);
+		$this->SetButtonAttr('btnEnviar','visible',false);
+		switch($op)
+		{
+			//Relatório Anual
+			case "0": 
+				$this->SetFieldAttr('ano','visible',true);
+				$this->SetButtonAttr('btnRelatorio','visible',true);
+			break;
+			//Relatório Mensal
+			case "1":
+				$ano = date("Y");
+				$this->SetFieldAttr('mes','visible',true);
+				$this->SetFieldAttr('ano','visible',true);
+				$this->SetFieldValue('ano',$ano);
+				$this->SetButtonAttr('btnRelatorio','visible',true);
+			break;
+			//Relatório Total 
+			case "2":
+				$this->SetButtonAttr('btnRelatorio','visible',true);
+			break;
+			case null:
+				$msg = "Favor, escolha uma opção";
+				$this->manager->Information($msg,$this->manager->GetActionURL('adm','main:relmanutencaoveiculo'));
+			break;
+		}
+		
+	}
+	function btnRelatorio_click()
+	{
+		/*global $MIOLO,$module;
+		
+		$data = $this->getData();
+		$ui = $MIOLO->GetUI();
+	  	$report = $ui->GetReport($module,'repManutencoesVeiculo',$data);
+    		$report->Generate();		 */
+
+		global $MIOLO, $module, $item;
+
+                $data = $this->getData();
+                $report = new MJasperReport('sigaept');
+                $parameters['SUBREPORT_DIR']    = $MIOLO->GetConf('home.modules');
+                $parameters['int_pIdUsuario']   = $MIOLO->login->idkey;
+                $parameters['pURL']             = $MIOLO->GetConf('home.url');
+
+                $op = $this->GetFormValue('op');
+                switch($op)
+                {
+                        //Relatório Anual
+                        case "0":
+							$valorAno = (strlen(trim(Form::GetFormValue('ano'))));
+							if ($valorAno == 4)
+							{
+							                    $parameters['pAno']   = $this->GetFormValue('ano');
+							                    $report->Execute($module, 'repGastosManutencaoAnual', $parameters);
+							}
+							else
+							{
+								$this->manager->Error("Você precisa informar o ano corretamente. Exemplo: '2008'",'');
+							}
+                        	break;
+                        //Relatório Mensal
+                        case "1":	
+							$valorAno = (strlen(trim(Form::GetFormValue('ano'))));
+							if ($valorAno != 4)
+							{
+								$this->manager->Error("Você precisa informar o ano corretamente. Exemplo: '2008'",'');
+							}						
+							$valorMes = Form::GetFormValue('mes');
+							if($valorMes)
+							{
+							                    $parameters['pAno']   = $this->GetFormValue('ano');
+	
+							                    //var_dump($data->mes);
+							                    $mes = explode("-",$data->mes);
+							                    $mes = ($mes[1]);
+							                    $parameters['int_pMes']   = $mes;
+						                    	$report->Execute($module, 'repGastosManutencaoMensal', $parameters);
+							}
+							else
+							{
+								$this->manager->Error("Você precisa informar o mês corretamente.",'');
+							}
+							
+                       		break;
+                        //Relatório Total 
+                        case "2":
+                            $report->Execute($module, 'repGastosManutencaoTotal', $parameters);
+                    		break;
+
+                }
+
+       
+	}
+	function btnRelatorio2_click()
+	{
+		global $MIOLO,$module;
+		
+		$data = $this->getData();
+		$ui = $MIOLO->GetUI();
+	  	$report = $ui->GetReport($module,'repManutencoesVeiculo',$data);
+	    	$report->Generate();
+	}
+	
+}
+?>

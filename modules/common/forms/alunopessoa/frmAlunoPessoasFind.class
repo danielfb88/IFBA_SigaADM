@@ -1,0 +1,70 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmAlunoPessoasFind extends MForm
+{
+    var $pessoa;
+
+    function __construct()
+    {
+        global $MIOLO;
+    
+        parent::__construct('Consulta Dados Aluno');
+        $this->SetClose($MIOLO->GetActionURL('common','main'));
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+        $ui = $this->manager->GetUI();
+        
+        $grid = $ui->GetGrid('common','gridAlunoPessoas','');
+        $grid->SetTitle(NULL);
+
+        $opcoes = array(
+            new MOption('',"É possível buscar por partes do nome utilizando o caracter coringa: %"),
+            new MOption('',"Exemplo: Joao%Silva, retorna todas os nomes que começam com Joao e terminam com Silva."),
+            new MOption('',"Quando encontrar a pessoa desejada clique no nome para consultar os dados do aluno."),
+            );
+            
+        $dicas = new MThemeBox('Dicas',array(new MUnorderedList('',$opcoes)));
+
+        $dadosPessoas = new MThemeBox('Nome (ou parte do nome)',array(new MTextField('nome','','Nome',45),new MButtonFind('')));
+        
+        
+        $fields = array(
+            $dicas,
+            $dadosPessoas,
+            $grid,
+                       
+        );
+        $this->SetFields($fields);
+        $this->defaultButton = false;
+    }
+
+    function btnPost_click()
+    {
+        $matricula = $this->getFormValue('matricula');
+         $this->page->redirect($this->manager->getActionUrl('ensino','main:cdara:aluno'.$matricula,array('event'=>'btnEdit:click')));
+    }
+ }
+?>

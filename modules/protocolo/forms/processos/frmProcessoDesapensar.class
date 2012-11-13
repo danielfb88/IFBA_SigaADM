@@ -1,0 +1,242 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+MIOLO::Import('extensions::class.phpmailer.php','PHPMailer');
+class frmProcessoDesapensar extends MForm
+{
+	protected $processo;
+	protected $processoPai;
+	protected $setor;
+	protected $setoracesso;
+	protected $perms;
+    function __construct($objProcesso)
+    {
+//      construct
+        global $MIOLO;
+		$this->processo = $objProcesso;
+        $this->processoPai = $MIOLO->getBusiness('protocolo','processo');
+	$this->setor = $MIOLO->getBusiness('protocolo','setor');
+	$this->setoracesso = $MIOLO->getBusiness('protocolo','setoracesso');
+        $this->perms  = $MIOLO->getPerms();
+        parent::__construct('Desapensar processo');
+        $this->SetClose($MIOLO->GetActionURL('protocolo','main'));
+        $this->eventHandler();
+    }
+    function CreateFields()
+    {
+	/* IFRO - Controle de segurança de acesso */
+	$setores = ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS)) ? $this->setor->selAll() : $this->setoracesso->selSetoresAcesso($this->processo->getSetorUsuario());
+	if (
+                $this->processo->retencao->setor
+                && in_array($this->processo->retencao->setor,$setores)
+           )
+	{
+	//      processo a desapensar
+		$processo = $this->processo;
+		foreach ($processo->andamento as $andamento)
+		{
+		    $decisao = substr($andamento->decisao,0,11);
+		    switch ($decisao)
+		    {
+		        case 'APENSADO AO':
+		            $apensados[] = $andamento->numAndamento;
+		        break;
+		        case 'DESAPENSADO':
+		            array_shift($apensados);
+		        break;
+		    }
+		}
+		foreach ($apensados as $apensado)
+		{
+		    $andamento = $processo->getAndamento($apensado);
+		    $numFormatado = substr($andamento->decisao,21,14);
+		    $serie = substr($numFormatado,0,6);
+		    $ano = substr($numFormatado,7,4);
+		    $codigo = substr($numFormatado,12,2);
+		    $num = $ano.$serie.$codigo;
+		    $numProcessos = array($num=>$numFormatado);
+		}
+		$numProcesso = new MSelection('numProcesso',$num,'Processo:',$numProcessos);
+		$autor = new MTextField('autor','','Autor:',40);
+		$autor->addAttribute('maxlength','40');
+		$groupDesapensar = new MBaseGroup('groupDesapensar', 'Selecionar processo',array($numProcesso,$autor),'vertical','css');
+		$groupDesapensar->addAttribute('style','padding:10px');
+	//      fields
+		$fields = array(
+		    array(
+		        $groupDesapensar,
+		    ),
+		);
+		$this->SetFields($fields);
+		$this->setFieldAttr('numProcessoFormatado','readonly',true);
+	//      required fields
+		$validators = array(
+				new MRequiredValidator('autor'),
+		);
+		$this->setValidators($validators);
+	//      buttons
+		$buttons = array(
+			new MButton('btnDesapensar', 'Desapensar'),
+		);
+			$this->SetButtons($buttons);
+	}
+	else {
+		$msg = 'Este usuário não tem permissão para acessar este Processo/Protocolo';
+		$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+	}
+    }
+
+    public function btnDesapensar_click()
+    {
+    
+    global $MIOLO, $auth;
+	/* IFRO - Controle de segurança de acesso */
+	$setores = ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS)) ? $this->setor->selAll() : $this->setoracesso->selSetoresAcesso($this->processo->getSetorUsuario());
+	if (
+                $this->processo->retencao->setor
+                && in_array($this->processo->retencao->setor,$setores)
+           )
+	{
+	//      data
+		$data = $this->getData();
+	//      get processo pai
+		$this->processoPai->getByNumero($data->numProcesso);
+	//      números de processo iguais
+		if ($this->processoPai->numProcesso == $this->processo->numProcesso)
+		{
+		    $this->addError('O processo '.$this->processo->numProcessoFormatado().' não pode ser desapensado dele mesmo.');
+		    return;
+		}
+	//      status do processo pai
+		switch ($this->processoPai->retencao->status)
+		{
+		    case 'A':
+		        $this->addError('O processo '.$this->processo->numProcessoFormatado().' não pode ser desapensado de um processo arquivado ('.$this->processoPai->numProcessoFormatado().').');
+		    break;
+		    case 'J':
+		        $this->addError('O processo '.$this->processo->numProcessoFormatado().' não pode ser desapensado de um processo anexado ('.$this->processoPai->numProcessoFormatado().').');
+		    break;
+		    case 'N':
+	//              set and save
+		        try 
+		        {
+					$login = $auth->getLogin();
+		            $this->processo->beginTransaction();
+		            $andamento = $this->processo->getAndamento($this->processo->retencao->numAndamento);
+		            $this->processo->retencao->numAndamento++;
+		            $andamento2 = $this->processo->getAndamento($this->processo->retencao->numAndamento);
+		            $andamento2->setData($andamento, $login->idkey);
+		            $andamento->setorDestino = $this->processo->retencao->setor;
+		            $andamento->dataSaida = date("YmdHi");
+		            $andamento->decisao = 'DESAPENSADO DO PROCESSO '.$this->processoPai->numProcessoFormatado();
+		            $andamento->dataDespacho = $andamento->dataSaida;
+		            $andamento->autor = $data->autor;
+		            $andamento->status = 'N';
+		            $this->processo->addAndamento($andamento);
+		            $this->processo->addAndamento($andamento2);
+		            $this->processo->retencao->setData($andamento2);
+		            $this->processo->retencao->setorDestino = null;
+		            $this->processo->retencao->dataSaida = null;
+		            $this->processo->retencao->dataDespacho = null;
+		            unset($andamento,$andamento2);
+		            $andamento = $this->processoPai->getAndamento($this->processoPai->retencao->numAndamento);
+		            $this->processoPai->retencao->numAndamento++;
+		            $andamento2 = $this->processoPai->getAndamento($this->processoPai->retencao->numAndamento);
+		            $andamento2->setData($andamento, $login->idkey);
+		            $andamento->dataEntrada = date("YmdHi");
+		            $andamento->setorDestino = $this->processoPai->retencao->setor;
+		            $andamento->dataSaida = $andamento->dataEntrada;
+		            $andamento->decisao = 'DESAPENSOU-SE DO PROCESSO '.$this->processo->numProcessoFormatado();
+		            $andamento->dataDespacho = $andamento->dataDespacho;
+		            $andamento->autor = $andamento->autor;
+		            $this->processoPai->addAndamento($andamento);
+		            $this->processoPai->addAndamento($andamento2);
+		            $this->processoPai->setTransaction($this->processo->getTransaction());
+		            $this->processoPai->save();
+		            $this->processo->save();
+		            $this->processo->endTransaction();
+		            
+		        $dataMail = date("d/m/y");
+				$horaMail = date("H:i");
+				$objMail = $this->processo->getTituloByNumProcesso($this->processo->numProcesso);
+				$mailSender = $this->processo->getMailByNumProcesso($this->processo->numProcesso);
+				$emails = $this->processo->listarEmail();
+				$emails[$emails->length][0] = $mailSender;
+                foreach($emails as $e)
+                {
+                    if($e[1])
+		            {
+		                    $instituicao = $this->processo->instituicaoUsuario($e[1]);
+		                    $pessoa = $e[2];
+		            }
+		            else
+		            {
+		                    $instituicao = $this->processo->instituicaoProcesso();
+		                    $pessoa = $this->processo->solicitante;
+		            }
+					$mail = new PHPMailer();
+					$mail->IsSMTP(); // send via SMTP
+					$mail->Host = $MIOLO->getConf('mail.host');
+					$mail->SMTPAuth = $MIOLO->getConf('mail.auth');
+					$mail->Username = $MIOLO->getConf('mail.user');
+					$mail->Password = $MIOLO->getConf('mail.pass');
+					$mail->From = $MIOLO->getConf('mail.from');
+					$mail->FromName = "SIGA - Sistema Integrado de Gestão Acadêmica";
+					$mail->AddAddress($e[0]);
+					$mail->Port = $MIOLO->getConf('mail.port');
+					$mail->WordWrap = 50;
+					$mail->IsHTML(true);
+					$mail->Subject = "SIGA-ADM(1) - Notificação de Trâmite de Processo";
+	                                $mail->ssl = $MIOLO->getConf('mail.ssl');
+        	                        $mail->Body = "
+                                                <center><h1>TRAMITAÇÃO DO PROCESSO<br /> {$this->processo->numProcessoFormatado()}</h1></center>
+                                                <br /><br />Prezado(a) Sr(a) {$pessoa},
+						<br /><br />O processo {$this->processo->numProcessoFormatado()} foi desapensado do processo {$this->processoPai->numProcessoFormatado()}
+                                                <br /><br /><b>Objeto: </b>{$objMail}
+                                                <br /><b>Setor Atual: </b>{$this->processo->retencao->setor}
+                                                <br /><br /><b>Data: </b>{$dataMail}
+                                                <br /><b>Hora: </b>{$horaMail}
+                                                <br /><br /><b>Para maiores informações acesse: </b>{$MIOLO->getConf('home.url')}
+                                                <br /><br />Atenciosamente,
+                                                <br /><br />{$instituicao}
+                                                <br /><br /><b><font color=\"RED\"> Observação: Este email foi enviado automaticamente, não é necessário responder. </font></b>
+                                ";
+					$mail->Send();
+				}
+		            
+		            $msg = 'O processo '.$this->processo->numProcessoFormatado().' foi desapensado do processo '.$this->processoPai->numProcessoFormatado().' com sucesso.';
+		            $this->processo->Log(OP_UPD,$msg);
+		            $this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+		        }
+		        catch(Exception $e) {$this->addError($e->getMessage());}
+		    break;
+		    default:
+		        $this->addError('Houve um erro desconhecido e o processo '.$this->processo->numProcessoFormatado().' não pode ser desapensado. Procure a área de TI.');
+		}
+	}
+	else {
+		$msg = 'Este usuário não tem permissão para acessar este Processo/Protocolo';
+		$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+	}
+    }
+ }
+?>

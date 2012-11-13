@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="repTomadaContaPorMaterial" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="786" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="zebra" isDefault="false" backcolor="#D7D7D7">
+		<box>
+			<pen lineWidth="0.0" lineStyle="Dotted"/>
+			<topPen lineWidth="0.0" lineStyle="Dotted"/>
+			<leftPen lineWidth="0.0" lineStyle="Dotted"/>
+			<bottomPen lineWidth="0.0" lineStyle="Dotted"/>
+			<rightPen lineWidth="0.0" lineStyle="Dotted"/>
+		</box>
+	</style>
+	<style name="pageHeader" isDefault="false">
+		<box>
+			<leftPen lineWidth="0.0" lineColor="#FFFFFF"/>
+			<rightPen lineWidth="0.0" lineColor="#FFFFFF"/>
+		</box>
+	</style>
+	<parameter name="pImg" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="pIdUsuario" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pURL" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String"/>
+	<parameter name="pIdUo" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pDataIni" class="java.lang.String"/>
+	<parameter name="pDataFim" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT  idmaterial,
+	codmaterial,
+	descricao,
+	unidade,
+	estoque,
+	estoquemin,
+	uo,
+	COALESCE(quantatual,0) + COALESCE(quantsaida,0) - COALESCE(quantentrada,0) as quantanterior,
+	COALESCE(saldoatual,0.00) + COALESCE(saidas,0.00) - COALESCE(entrada,0.00) as saldoanterior,
+	COALESCE(quantentrada,0) + COALESCE(quantextra,0) as quantentrada,
+	COALESCE(entrada,0.00) as entrada,
+	COALESCE(extraorcamentaria,0.00) as extraorcamentaria,
+	COALESCE(saidas,0.00) + COALESCE(extraorcamentaria,0.00) as saidas,
+	COALESCE(quantsaida,0.00) as quantsaida,
+	COALESCE(saldoatual,0.00) as saldoatual,
+	COALESCE(quantatual,0) as quantatual,
+	CASE quantatual WHEN  null THEN
+                               0.00
+                      WHEN 0 then
+                               0.00
+                     ELSE
+                              saldoatual/quantatual
+                     END as valorunitario
+FROM
+(
+SELECT  idmaterial,
+	codmaterial,
+	descricao,
+	unidade,
+	uo,
+	estoque,
+	estoquemin,
+	COALESCE(saldoatual,0.00) - COALESCE(entrada,0.00) + COALESCE(saidas,0.00) as SaldoAtual,
+	COALESCE(quantatual,0) - COALESCE(quantentrada,0) + COALESCE(quantsaidas,0) as QuantAtual
+from
+(
+SELECT ad_estoque.idmaterial,
+	ad_material.codmaterial,
+	ad_material.descricao,
+	ad_material.unidade,
+	ad_estoque.estoque,
+	ad_estoque.estoquemin,
+	sum(ad_estoque.valortotal) as SaldoAtual,
+	sum(ad_estoque.estoque) as quantAtual,
+	ad_uo.nome as uo
+FROM ((ad_estoque INNER JOIN ad_material ON ((ad_estoque.idmaterial=ad_material.idmaterial)))
+	INNER JOIN ad_uo ON ((ad_estoque.iduo=ad_uo.iduo)))
+WHERE (ad_estoque.iduo = $P{pIdUo})
+GROUP BY ad_estoque.idmaterial, ad_material.codmaterial, ad_material.descricao,ad_material.unidade,ad_estoque.estoque, ad_estoque.estoquemin, ad_uo.nome
+ORDER BY ad_material.descricao ASC
+) consulta1 LEFT JOIN
+(select idmaterial,
+	COALESCE(valorentradas,0.00)  as Entrada,
+	COALESCE(quantentradas,0)  as quantEntrada,
+	saidas,
+	quantsaidas
+from
+(SELECT ad_material.idmaterial,
+	sum(ad_movimento.valortotal ) as valorentradas,
+	sum(ad_movimento.quantidade ) as quantentradas
+FROM ((ad_movimento INNER JOIN ad_material ON ((ad_movimento.idmaterial=ad_material.idmaterial))))
+WHERE (to_date(TO_CHAR(AD_MOVIMENTO.DATAMOV,'DD/MM/YYYY') ,'DD/MM/YYYY') > to_date($P{pDataFim},'DD/MM/YYYY')
+	AND (ad_movimento.iduoalmox = $P{pIdUo})
+	AND (ad_movimento.tipomovimento = '1')
+	AND (ad_movimento.idmovimentoref is null))
+GROUP BY ad_material.idmaterial
+) as entrada1 LEFT JOIN
+(SELECT ad_material.idmaterial,
+	sum(ad_movimento.valortotal) as saidas,
+	sum(ad_movimento.quantidade) as quantsaidas
+FROM (((ad_movimento
+	INNER JOIN ad_requisicao ON ((ad_movimento.idrequisicao=ad_requisicao.idrequisicao)))
+	INNER JOIN ad_material ON ((ad_movimento.idmaterial=ad_material.idmaterial))))
+WHERE (to_date(TO_CHAR(AD_MOVIMENTO.DATAMOV,'DD/MM/YYYY') ,'DD/MM/YYYY') > to_date($P{pDataFim},'DD/MM/YYYY')
+	AND (ad_requisicao.iduoexec = $P{pIdUo})
+	AND (ad_movimento.tipomovimento = '3')
+	AND (ad_movimento.idmovimentoref is null))
+GROUP BY ad_material.idmaterial
+) as saida USING (idmaterial)
+
+) as entrada USING (idmaterial)
+
+
+) consulta1 LEFT JOIN
+(
+select idmaterial,
+	COALESCE(valorentradas,0.00) as Entrada,
+	COALESCE(quantentradas,0) as quantEntrada
+from
+(SELECT ad_material.idmaterial,
+	sum(ad_movimento.valortotal ) as valorentradas,
+	sum(ad_movimento.quantidade ) as quantentradas
+FROM ((ad_movimento INNER JOIN ad_material ON ((ad_movimento.idmaterial=ad_material.idmaterial))))
+WHERE (to_date(TO_CHAR(AD_MOVIMENTO.DATAMOV,'DD/MM/YYYY') ,'DD/MM/YYYY') >= to_date($P{pDataIni},'DD/MM/YYYY')
+	AND (to_date(TO_CHAR(AD_MOVIMENTO.DATAMOV,'DD/MM/YYYY') ,'DD/MM/YYYY') <= to_date($P{pDataFim},'DD/MM/YYYY'))
+	AND (ad_movimento.iduoalmox = $P{pIdUo})
+	AND (ad_movimento.tipomovimento = '1')
+	AND (ad_movimento.idmovimentoref is null))
+GROUP BY ad_material.idmaterial
+) as entrada1
+) as consulta2 USING (idmaterial)
+FULL JOIN
+(
+SELECT 	ad_material.idmaterial,
+	ad_material.codmaterial,
+	ad_material.unidade,
+	ad_material.descricao,
+	ad_uo.nome as uo,
+	sum (ad_movimento.valortotal) as extraorcamentaria,
+	sum (ad_movimento.quantidade) as quantextra
+FROM (((((ad_movimento INNER JOIN ad_itemnota ON ((ad_movimento.iditemnota=ad_itemnota.iditemnota)))
+	INNER JOIN ad_empenhado ON ((ad_itemnota.idempenhado=ad_empenhado.idempenhado)))
+	INNER JOIN ad_empenho ON ((ad_empenhado.idempenho=ad_empenho.idempenho)))
+	INNER JOIN ad_uo ON ((ad_movimento.iduoalmox=ad_uo.iduo))
+	INNER JOIN ad_material ON ((ad_movimento.idmaterial=ad_material.idmaterial))))
+WHERE (to_date(TO_CHAR(AD_MOVIMENTO.DATAMOV,'DD/MM/YYYY') ,'DD/MM/YYYY') >= to_date($P{pDataIni},'DD/MM/YYYY')
+	AND (to_date(TO_CHAR(AD_MOVIMENTO.DATAMOV,'DD/MM/YYYY') ,'DD/MM/YYYY') <= to_date($P{pDataFim},'DD/MM/YYYY'))
+	AND (ad_empenho.iduo = $P{pIdUo})
+	AND (ad_movimento.tipomovimento = '5')
+	AND (ad_movimento.idmovimentoref is null))
+GROUP BY ad_material.idmaterial, ad_material.descricao,ad_uo.nome, ad_material.codmaterial, ad_material.unidade
+
+) as consulta3 USING (idmaterial,descricao,uo,codmaterial, unidade) LEFT JOIN
+(--***********************************************************************
+--(SAÍDA MATERIAL)
+--***********************************************************************
+SELECT 	ad_material.idmaterial,
+	sum(ad_movimento.quantidade) as quantsaida,
+	sum(ad_movimento.valortotal) as saidas
+FROM (((ad_movimento
+	INNER JOIN ad_requisicao ON ((ad_movimento.idrequisicao=ad_requisicao.idrequisicao)))
+	INNER JOIN ad_material ON ((ad_movimento.idmaterial=ad_material.idmaterial))))
+WHERE (to_date(TO_CHAR(AD_MOVIMENTO.DATAMOV,'DD/MM/YYYY') ,'DD/MM/YYYY') >= to_date($P{pDataIni},'DD/MM/YYYY')
+	AND (to_date(TO_CHAR(AD_MOVIMENTO.DATAMOV,'DD/MM/YYYY') ,'DD/MM/YYYY') <= to_date($P{pDataFim},'DD/MM/YYYY'))
+	AND (ad_requisicao.iduoexec = $P{pIdUo})
+	AND (ad_movimento.tipomovimento = '3')
+	AND (ad_movimento.idmovimentoref is null))
+GROUP BY ad_material.idmaterial
+) as consulta4 USING (idmaterial)]]>
+	</queryString>
+	<field name="idmaterial" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="codmaterial" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="descricao" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="unidade" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="estoque" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="uo" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="quantanterior" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="saldoanterior" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="quantentrada" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="entrada" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="extraorcamentaria" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="saidas" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="quantsaida" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="saldoatual" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="quantatual" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="estoquemin" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="valorunitario" class="java.math.BigDecimal"/>
+	<variable name="totalAtual" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{saldoatual}]]></variableExpression>
+	</variable>
+	<variable name="totalAnterior" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{saldoanterior}]]></variableExpression>
+	</variable>
+	<variable name="totalEntradas" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{entrada}]]></variableExpression>
+	</variable>
+	<variable name="totalExtras" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{extraorcamentaria}]]></variableExpression>
+	</variable>
+	<variable name="totalSaidas" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{saidas}]]></variableExpression>
+	</variable>
+	<variable name="totalQuantAnterior" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{quantanterior}]]></variableExpression>
+	</variable>
+	<variable name="totalQuantEntradas" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{quantentrada}]]></variableExpression>
+	</variable>
+	<variable name="totalQuantSaidas" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{quantsaida}]]></variableExpression>
+	</variable>
+	<variable name="totalQuantAtual" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{quantatual}]]></variableExpression>
+	</variable>
+	<variable name="totalEstoqueMinimo" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{estoquemin}]]></variableExpression>
+	</variable>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="78">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" mode="Transparent" x="0" y="0" width="797" height="77"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA["TOMADA DE CONTA POR MATERIAL"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} +"/common/reports/CabecalhoPaisagem.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="31">
+			<line>
+				<reportElement key="line-1" x="0" y="1" width="797" height="1"/>
+			</line>
+			<line>
+				<reportElement key="line-1" x="1" y="28" width="796" height="1"/>
+			</line>
+			<line>
+				<reportElement key="line-1" x="0" y="2" width="797" height="1"/>
+			</line>
+			<line>
+				<reportElement key="line-2" x="1" y="29" width="796" height="1"/>
+			</line>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-18" stretchType="RelativeToTallestObject" x="6" y="3" width="790" height="22"/>
+				<textElement verticalAlignment="Bottom">
+					<font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{uo}.toString()).toUpperCase()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="42">
+			<rectangle>
+				<reportElement key="rectangle-1" style="zebra" mode="Opaque" x="0" y="1" width="797" height="38" backcolor="#D7D7D7"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Dotted"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-20" x="736" y="1" width="62" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Atual]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-21" x="53" y="1" width="140" height="35"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Especificação]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" x="285" y="1" width="48" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Anterior]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" x="333" y="1" width="131" height="17"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Entradas]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" x="466" y="1" width="49" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Saídas]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" positionType="Float" x="394" y="19" width="72" height="17"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Extras Orçam.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" positionType="Float" x="2" y="1" width="49" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Código]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" x="336" y="19" width="54" height="17"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Orçam.]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement mode="Transparent" x="334" y="19" width="58" height="19"/>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Transparent" x="392" y="19" width="74" height="19"/>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Transparent" x="334" y="1" width="132" height="17"/>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Transparent" x="2" y="0" width="794" height="38"/>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Transparent" x="2" y="0" width="49" height="38"/>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Transparent" x="51" y="0" width="142" height="38"/>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Transparent" x="565" y="0" width="52" height="38"/>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Transparent" x="736" y="0" width="60" height="38"/>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-24" x="237" y="1" width="47" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Unidade]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement mode="Transparent" x="284" y="0" width="50" height="38"/>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-24" x="515" y="1" width="52" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Qtde Anterior]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" x="566" y="2" width="50" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Qtde Entradas]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" x="618" y="1" width="38" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Qtde Saídas]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" x="698" y="1" width="38" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Qtde Atual]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement mode="Transparent" x="515" y="0" width="50" height="38"/>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-24" x="656" y="0" width="42" height="35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Estoque Min.]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement mode="Transparent" x="654" y="0" width="44" height="38"/>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Transparent" x="193" y="0" width="44" height="38"/>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-24" x="193" y="2" width="44" height="33"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Unitário]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="736" y="1" width="60" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{saldoatual} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{saldoatual} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-13" stretchType="RelativeToBandHeight" x="51" y="1" width="142" height="14"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{descricao}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-9" x="2" y="1" width="49" height="14"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{codmaterial}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="283" y="1" width="45" height="15"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{saldoanterior} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{saldoanterior} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="true">
+				<reportElement key="textField" mode="Opaque" x="332" y="1" width="59" height="15"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{entrada} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{entrada}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="466" y="1" width="49" height="15"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{saidas} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{saidas}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="394" y="1" width="71" height="15"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{extraorcamentaria} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{extraorcamentaria}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="235" y="1" width="47" height="15"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{unidade}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="515" y="1" width="53" height="15"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{quantanterior}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="562" y="1" width="49" height="15"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{quantentrada}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="620" y="1" width="35" height="15"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{quantsaida}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="698" y="1" width="35" height="15"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{quantatual}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+				<reportElement key="textField" mode="Opaque" x="660" y="1" width="35" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{estoquemin}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-13" stretchType="RelativeToBandHeight" x="193" y="1" width="44" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{valorunitario} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{valorunitario} ))]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="24">
+			<textField pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="false">
+				<reportElement key="textField-16" x="32" y="6" width="161" height="12"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-19" x="751" y="6" width="25" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-27" x="711" y="6" width="40" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Página ]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="124">
+			<rectangle>
+				<reportElement key="rectangle-2" x="0" y="4" width="798" height="24" isPrintWhenDetailOverflows="true" backcolor="#FFFFFF"/>
+				<graphicElement>
+					<pen lineWidth="0.1" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-26" x="234" y="10" width="36" height="16"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Total:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-18" stretchType="RelativeToTallestObject" mode="Opaque" x="736" y="10" width="60" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{totalAtual} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{totalAtual} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="274" y="10" width="47" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{totalAnterior} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{totalAnterior} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="321" y="10" width="62" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{totalEntradas} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{totalEntradas} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="383" y="10" width="66" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{totalExtras} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{totalExtras} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="449" y="10" width="64" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{totalSaidas} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{totalSaidas} ))]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="168" y="98" width="444" height="20"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[("Responsável pelo(a) "+$F{uo}).toUpperCase()]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="166" y="93" width="446" height="1"/>
+			</line>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="518" y="10" width="48" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{totalQuantAnterior}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="574" y="10" width="38" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{totalQuantEntradas}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="658" y="10" width="38" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{totalEstoqueMinimo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="false">
+				<reportElement key="textField" mode="Opaque" x="698" y="10" width="38" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{totalQuantAtual}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="false">
+				<reportElement mode="Opaque" x="620" y="7" width="34" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{totalQuantSaidas}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

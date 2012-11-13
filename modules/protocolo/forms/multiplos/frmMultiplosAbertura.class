@@ -1,0 +1,362 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+class frmMultiplosAbertura extends MFormAjax
+{
+    protected $processo;
+    protected $perms;
+    protected $setor;
+    protected $setorAcesso;
+    protected $session;
+    public function __construct()
+    {
+		//      construct
+        global $MIOLO;
+        $this->processo  	= $MIOLO->GetBusiness('protocolo','processo');
+        $this->setor  	 	= $MIOLO->GetBusiness('protocolo','setor');
+        $this->setorAcesso  = $MIOLO->GetBusiness('protocolo','setoracesso');
+        $this->perms  		= $MIOLO->getPerms();
+        $this->session 		= $MIOLO->session;
+        parent::__construct('Abertura Múltiplos Processos');
+        $this->SetClose($MIOLO->GetActionURL('protocolo','main'));
+        $this->page->addJsCode(file_get_contents(dirname(__FILE__).'/js/frmMultiplosAbertura.js'));        
+        $this->EventHandler();
+    }    
+    
+    public function CreateFields()
+    {
+    	global $MIOLO;
+    	
+		//      ano do processo
+        if ($this->perms->checkAccess('PROT_ANO', A_ACCESS))
+        { 
+            $ano = array('last'=>date('Y')-1,'this'=>date('Y'));
+            $value = ($this->session->isRegistered('sAno')) ? $this->session->getValue('sAno') : $ano['this'];
+            $opt1 = new MOption( 'opt1', $ano['last'],$ano['last'].'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', false, 'id1' );
+            $opt2 = new MOption( 'opt2', $ano['this'],$ano['this'].'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', false, 'id2' ); 
+            $groupAno = new MRadioButtonGroup('anoCorrente','Ano do processo',array($opt1,$opt2),$value,'','horizontal','css'); 
+            $groupAno->addAttribute('style','padding:10px');
+        }
+        else
+        {
+            $ano = date('Y');
+            $groupAno = new MHiddenField('anoCorrente',$ano);
+        }
+        
+        if($this->perms->checkAccess('PROT_DIR', A_EXECUTE)){ 
+			$permissao = 'dir'; 
+		}elseif ($this->perms->checkAccess('PROT_GER', A_EXECUTE)){
+			$permissao = 'ger'; 
+		}elseif ($this->perms->checkAccess('PROT_COORD', A_EXECUTE)){ 
+			$permissao = 'coord'; 
+		}else{ 
+			$permissao = 'false'; 
+		}
+
+		//      dados do processo
+		$url = $this->manager->getActionUrl('protocolo','ajaxhandler'); 
+			
+		if (($this->perms->checkAccess('PROT_ADMIN', A_EXECUTE)) || (($this->perms->checkAccess('PROT_PC',A_EXECUTE)) && ($this->perms->checkAccess('PROT_PT',A_EXECUTE)))){
+			$tipo = new Mselection('tipo',$this->session->getValue('sTipo'),'Tipo:',array('P'=>'Processo','A'=>'Protocolado'));
+		}elseif ($this->perms->checkAccess('PROT_PC',A_EXECUTE)){
+			$tipo = new Mselection('tipo',$this->session->getValue('sTipo'),'Tipo:',array('P'=>'Processo'));
+		}elseif ($this->perms->checkAccess('PROT_PT',A_EXECUTE)){
+			$tipo = new Mselection('tipo',$this->session->getValue('sTipo'),'Tipo:',array('A'=>'Protocolado'));
+		}
+		
+		MIOLO::GetPage()->OnLoad("doTextTipo('$url');"); // IF Sudeste MG
+		$tipo->addAttribute("onchange","doTextTipo('$url');");
+
+		$titulo = new MTextField('titulo','','Titulo',90);
+		$titulo->addAttribute('maxlength','80');
+        
+        $solicitante = new MTextField('solicitante','','Solicitante:',69);
+        $solicitante->addAttribute('maxlength','69');
+        
+        $solicitante->addAttribute('onkeypress',"return&nbsp;setValue(this,event)");        
+        $solicitantes = new MMultiTextField3( 'solicitantes', null, 'Solicitantes',array($solicitante), 680, true, 'vertical2' );
+        $solicitantes->fieldWidth = 200;      
+        
+        $receberEmail = new Selection('receberEmail','','<br>Deseja receber informações sobre o processo por e-mail?',array('S'=>'Sim','N'=>'Não'));
+		$email = new TextField('email','','<br>Informe o e-mail do interessado apenas se não for o autor do processo. Caso seja autor do processo, utilize o campo abaixo para informar se deseja ou não acompanhar o processo por e-mail.',70, '');
+		
+		$assunto = new MMultiLineField('assunto','','Assunto:',240,5,69);
+		
+		$publico = new Selection('publico','','<br>Tornar processo público:',array('S'=>'Sim','N'=>'Não'));
+		$espaco = new MSpacer(2);
+		
+		$clearProcesso = new MButton('limparProcesso','Limpar',"javascript:doLimparDadosProcesso('$url')");
+		
+		$groupDadosProcesso = new MBaseGroup( 'groupTipoProcesso', 'Dados do processo',array($tipo,$titulo,$solicitantes,$email, $assunto,$receberEmail,$espaco,$publico,$espaco,$clearProcesso),'horizontal','css');        
+        $groupDadosProcesso->addAttribute('style','padding:10px');
+        
+		//      origem do processo
+        $msg_tst = $MIOLO->login->idkey;
+        $uasg 	 = $this->processo->getUASG($msg_tst);
+		$value 	 = ($this->session->IsRegistered('sInstituicao')) ? $this->session->getValue('sInstituicao') : $uasg->fields('uasg');
+ 
+        $instituicao =  new MTextField('instituicao',$value,'Instituição:',15);
+        $instituicao->addAttribute('maxlength','5');
+        $numProcesso = new MDiv('m_numProcesso','');
+        
+        if (!$this->perms->checkAccess('PROT_ADMIN', A_ACCESS))
+        {
+            $instituicao->setReadOnly(true);
+        }
+        else
+        {
+            $url 			= $this->manager->getActionUrl('protocolo','ajaxhandler');
+            $origemExterna  = new MCheckBox( 'origemExterna','value','&nbsp;',false, _M('externo') );
+            $origemExterna->addAttribute("onchange","doTextInstituicao('$url');doTextOrigem('$url');");
+            $destinoExterno = new MCheckBox( 'destinoExterno','value','&nbsp;',false, _M('externo') );
+            $destinoExterno->addAttribute("onchange","doTextDestino('$url');");
+        }
+        
+        $setorOrigem = $this->session->IsRegistered("setorOrigem") ? $this->session->GetValue("setorOrigem") : $this->processo->getSetorUsuario();
+        $setoresAcesso = ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS)) ? $this->setor->selAll() : $this->setorAcesso->selSetoresAcesso($this->processo->getSetorUsuario());
+        
+        $setor = $MIOLO->GetBusiness('common', 'setor');
+		$setor->idSetor = $setor->getIdBySigla($setorOrigem);
+		$equivalentes[] = array($setorOrigem, $setorOrigem);
+		
+		$result = $setor->retrieveEquivalencia();
+
+        foreach($result as $e)
+        {
+            $equivalentes[] = array($e[0], $e[0]);
+        }
+		
+		$siglaOrigem = new MHiddenField('siglaOrigem',$setorOrigem);
+		$setorOrigem = new MComboBox('setorOrigem','','Setor de Origem:',$equivalentes,'','',15);
+		$setorOrigem->addAttribute('readonly',true);
+		$setorOrigem->addAttribute("onkeyup","toUpperCase('setorDestino')");
+		$setorOrigem->addAttribute('style','text-transform:uppercase');
+        
+        $groupOrigem = new MBaseGroup('groupOrigem', 'Origem do processo',array($siglaOrigem,$instituicao,$numProcesso,$setorOrigem,$origemExterna,new MSpacer(),$clearOrigem),'horizontal','css');
+		$groupOrigem->addAttribute('style','padding:10px');
+        
+		//      arquivo do proceso
+
+        $arquivo 	  = new MTextField('arquivo','','Caixa Arquivo:',15);
+        $arquivo->addAttribute('maxlength','7');
+        
+        $clearArquivo = ($this->session->IsRegistered('sArquivo')) ? new MButton('limparArquivo','Limpar',"javascript:doLimparArquivo()") : null;
+        $groupArquivo = new MBaseGroup('groupArquivo', 'Arquivo do processo (opcional)',array($arquivo,$clearArquivo),'vertical','css');
+        $groupArquivo->addAttribute('style','padding:10px');
+        
+		//      saída do processo
+        $setorDestino = new MComboBox('setorDestino','','Setor de Destino:',$this->setor->selAll(),'','',15);
+        $setorDestino->addAttribute("onkeyup","toUpperCase('setorDestino')");
+        $setorDestino->addAttribute('style','text-transform:uppercase');
+        
+        $decisao 	  = new MMultiLineField('decisao','','Decisão:',1000,8,69);
+        $clearSaida = new MButton('limparSaida','Limpar',"javascript:doLimparSaida()");		
+        
+		$groupSaida = new MBaseGroup('groupSaida', 'Saída do processo (opcional)',array($setorDestino,$destinoExterno,$decisao,$autor,$tornaPublico,$clearSaida),'horizontal','css');
+		$groupSaida->addAttribute('style','padding:10px');
+
+		//      fields
+        $fields = array(
+            new MHiddenField('numProcesso'),
+            new MHiddenField('user',$permissao), 
+            $groupAno,
+            array($groupDadosProcesso),
+            array($groupOrigem),
+            array($groupArquivo),
+            array($groupSaida),
+        );
+        $this->SetFields($fields);
+       
+		//      required fields
+        $validators = array(
+			new EMAILValidator('email','','teste','E-mail inválido'),
+        );
+        $this->setValidators($validators);
+      	
+		//      buttons
+        $buttons = array(
+            new MButton('btnAbrir','Abrir'),
+        );
+        $this->SetButtons($buttons);
+    }
+    
+    public function btnAbrir_click()
+    {
+    	global $MIOLO, $auth;
+        $data = $this->getData();
+  
+        if(Form::getFormValue('origemExterna') != NULL)
+		{
+			$data->setorOrigem = (substr($data->setorOrigem,0,1) == '*') ? $data->setorOrigem : '*'."$data->setorOrigem";
+		}
+        
+        if ($data->tipo == 'A') 
+    	{ 
+			$processoClass = $MIOLO->getBusiness('protocolo','processo'); 
+			$id  		   = $data->titulo; 
+			$tit 		   = $processoClass->getTitulo($id); 
+			$res 		   = $tit->result; 
+			$data->titulo  = $res[0][0]; 
+    	}
+    	$data->titulo = trim($data->titulo);
+        $data->solicitante = trim($data->solicitante);
+        $data->assunto = trim($data->assunto);
+        $data->solicitantes = $this->solicitantes->getCodeValue();
+		
+		if ($data->setorOrigem == NULL){
+        	$this->addError('Selecione o Setor de Origem.');
+		}
+		if (strlen($data->titulo) == 0){
+        	 $this->addError('O campo "Título" deve ser preenchido.');
+        }
+        if (count($data->solicitantes) == 0){
+        	 $this->addError('Deve-se informar quais são os solicitantes.');
+        }
+        if (strlen($data->assunto) == 0){
+        	 $this->addError('O campo "Assunto" deve ser preenchido.');
+        }
+		if(strlen(trim($data->decisao)) > 1000)
+        {
+	        $this->AddError('O campo decisão deve conter, no máximo, 1000 caracteres.');
+        }
+		if (!$data->tipo)
+		{
+			$this->addError('Você deve escolher um tipo de processo.');
+		}
+		if(!$data->receberEmail)
+		{
+			$this->addError('Você deve escolher se deseja ou não receber informações sobre o processo por email.');
+		}
+		if(!$data->publico)
+		{
+			$this->addError('Você deve escolher se quer tornar o processo público ou não.');
+		}
+		if ($this->errors != '') //Caso haja algum erro, exibe na tela.
+		{
+			$this->GenerateErrors();
+			return;
+		}
+		$this->setData($data);
+        
+        $data->dataAbertura = ($data->anoCorrente == date('Y')) ? date("YmdHi") : $data->anoCorrente.'12311200';
+        $data->dataSaida    = ($data->setorDestino) ? $data->dataAbertura : null;
+        $data->dataDespacho = ($data->decisao) ? $data->dataAbertura : null;
+        $this->processo->beginTransaction();
+		$login = $auth->GetLogin();
+		$user = $MIOLO->getBusiness('common', 'usuario');
+		$result = $user->GetById($login->idkey);
+		$msg = 'Processo(s):<br>';
+        foreach ($data->solicitantes as $solicitante)
+        {
+            unset($andamento);
+            try 
+            {
+                $processo  = $this->manager->getBusiness('protocolo','processo');
+                $processo->setData($data);
+                $processo->solicitante = $solicitante[0];
+                $processo->setTransaction($this->processo->getTransaction());
+                $processo->setNewNumProcesso($data->anoCorrente);
+                $processo->iduser = $login->idkey;
+                $andamento = $processo->getAndamento(1);
+                $andamento->setData($data,$login->idkey);
+                $andamento->status = 'N';
+                $andamento->setor = $data->setorOrigem;
+				$andamento->autor = $result->nome; 
+                $andamento->dataEntrada = $data->dataAbertura;
+                $processo->addAndamento($andamento);
+                $processo->retencao = $this->manager->getBusiness('protocolo','retencao');
+                $processo->retencao->setData($andamento);
+                $processo->save();
+                $numProcessosFormatados[] = $processo->numProcessoFormatado();
+                $numProcessos[] = $processo->numProcesso;
+                $processo->Log(OP_INS,"Processo ".$processo->numProcessoFormatado()." criado com sucesso.");
+                $msg .= $processo->numProcessoFormatado().'<br>';
+            }
+            catch(Exception $e) {$this->manager->Error($e->getMessage());}
+        }
+
+        $msg.= "Criado(s) com sucesso.<br>";
+        $this->processo->endTransaction();
+        $objProcesso = $MIOLO->getBusiness('protocolo','processo');
+        $cont = 0;
+        if($data->receberEmail == 'S')
+        {
+        	foreach($numProcessos as $n)
+        	{
+				$objProcesso->numProcesso = $n;
+				$insert = $objProcesso->salvarEmail();
+		        if($insert)
+		        	$cont ++;
+			}
+			if ($cont == count($data->solicitantes))
+				$msg .= "<br>A partir de agora, você receberá informações por e-mail de todos os processos criados.";
+	        else
+	            $msg .= "<br>Devido a algum problema, você não receberá informações por e-mail de todos os processos criados.";
+			
+        }
+		$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:multiplos'));
+    }
+    
+    public function btnCapa_click()
+    {
+        $inicio = $this->getFormValue('inicio');
+        $fim = $this->getFormValue('f6.614.158/0001-im');
+        $ano = substr($inicio,0,4);
+//      report
+        $report = new MEzPDFReport('2','portrait');
+        $report->pdf->ezSetCmMargins(8.5,2.5,3.5,2.5);
+//      text report
+        $tipo = array('P'=>'PROCESSO','A'=>'PROTOCOLADO');
+//      table report
+        $options['textCol'] = array(0,0,0);
+        $options['shaded'] = 0;
+        $options['showLines'] = 0;
+        $options['fontSize'] = 12;
+        $options['maxWidth'] = 480;
+        $options['xPos'] = 'left';
+        $options['xOrientation'] = 'right';
+        $cols = array('','');
+        for ($i=intval(substr($inicio,4,6));$i<=intval(substr($fim,4,6));$i++)
+        {
+            $serie = str_repeat("0",6-strlen($i)).$i;
+            $this->processo->getByPartNumero($ano.$serie);
+            $report->pdf->ezText($tipo[$this->processo->tipo],12);
+            $report->pdf->ezText($this->processo->instituicao.'.'.$this->processo->numProcessoFormatado(),24);
+            $dataRel[] = array('INTERESSADO:',$this->processo->solicitante);
+            $dataRel[] = array('','');
+            $dataRel[] = array('ENTRADA SISTEMA:',$this->processo->dataFormatada($this->processo->dataAbertura));
+            $dataRel[] = array('','');
+            $dataRel[] = array('SETOR ORIGEM:',$this->processo->setorOrigem);
+            $dataRel[] = array('','');
+            $dataRel[] = array('TÍTULO:',$this->processo->titulo);
+            $dataRel[] = array('','');
+            $dataRel[] = array('','');
+            $dataRel[] = array('ASSUNTO:',$this->processo->assunto);
+            $report->pdf->ezTable($dataRel,$cols,'',$options);
+			if ($i != intval(substr($fim,4,6))) $report->pdf->ezNewPage();
+            unset($dataRel);
+        }
+//      report
+        $report->Execute();
+    }
+}
+?>

@@ -1,0 +1,226 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class BusinessAdmMovimento extends Business
+{
+	var $idMovimento;
+	var $tipoMovimento;
+	var $dataMovimento;
+	var $quantidade;
+	var $valorTotal;
+	var $idOrdemEntrega;
+	var $idRequisicao;
+	var $idMaterial;
+	var $idItemNota;
+	var $idUoAlmoxarifado;
+	var $itemreq;
+	var $idMovimentoRef;
+	
+    var $material;
+	var $tabelaGeral;
+
+	function __construct($data = null)
+	{
+		parent::__construct('sigaept', $data);
+	}
+	
+    function getById($id)
+	{
+		$this->idMovimento = $id;
+		$this->retrieve();
+		return $this;
+	}
+	
+    function ListMovimentosByOrdemEntregaNaoImpressa($ordem)
+	{
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('idMaterial');
+        $criteria->addColumnAttribute('itemreq.material.descricao');
+        $criteria->addColumnAttribute('itemreq.material.unidade');
+        $criteria->addColumnAttribute('idRequisicao');
+        $criteria->addColumnAttribute('quantidade');
+        $criteria->addColumnAttribute('(valorTotal / quantidade)','valorunitario');
+        $criteria->addColumnAttribute('valorTotal');
+        $criteria->addColumnAttribute('ordem.numero');
+        $criteria->addColumnAttribute('itemreq.requisicao.idUoRequisitante');
+        $criteria->addCriteria('ordem.impresso','=', "'0'");
+        $criteria->addCriteria('ordem.numero','=', "$ordem");
+        return $criteria->retrieveAsQuery();
+	}
+
+	function ListMovimentosByOrdemEntrega($ordem)
+	{
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('idMaterial');
+        $criteria->addColumnAttribute('itemreq.material.descricao');
+        $criteria->addColumnAttribute('itemreq.material.unidade');
+        $criteria->addColumnAttribute('idRequisicao');
+        $criteria->addColumnAttribute('quantidade');
+        $criteria->addColumnAttribute('(valorTotal / quantidade)','valorunitario');
+        $criteria->addColumnAttribute('valorTotal');
+        $criteria->addColumnAttribute('ordem.numero');
+        $criteria->addColumnAttribute('itemreq.requisicao.idUoRequisitante');
+        $criteria->addCriteria('ordem.numero','=', "$ordem");
+        return $criteria->retrieveAsQuery();
+	}
+    
+	/*
+    function ListMovimentosByOrdemEntregaNaoImpressa($ordem)
+	{
+		$sql = new sql('mat.idmaterial, mat.descricao, mat.unidade, mov.idrequisicao, mov.quantidade, mov.valortotal / mov.quantidade as valorunitario, mov.valortotal, ord.numeroordem, ord.iduoexec','ad_movimento mov, ad_material mat, ad_ordentrega ord', "mov.idmaterial = mat.idmaterial and ord.idordement = mov.idordement and ord.impresso = '0'");
+
+		$sql->SetWhere('ord.numeroordem = ?');
+		$args = array($ordem);
+		$query = $this->ObjQuery($sql->Select($args));
+
+		return $query;
+	}
+
+	function ListMovimentosByOrdemEntrega($ordem)
+	{
+		$sql = new sql('mat.idmaterial, mat.descricao, mat.unidade, mov.idrequisicao, mov.quantidade, mov.valortotal / mov.quantidade as valorunitario, mov.valortotal, ord.numeroordem, ord.iduoexec','ad_movimento mov, ad_material mat, ad_ordentrega ord', "mov.idmaterial = mat.idmaterial and ord.idordement = mov.idordement");
+
+		$sql->SetWhere('ord.numeroordem = ?');
+		$args = array($ordem);
+		$query = $this->ObjQuery($sql->Select($args));
+
+		return $query;
+	}
+    */
+	
+	
+	function getByValorQuantidade($valor,$quantidade,$idmaterial)
+	{
+		/**
+		 * Uma pequena verificação
+		 */
+		$valor = str_replace(",",".",$valor);
+		
+		
+		
+		$criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('idMaterial');
+        $criteria->addCriteria('valortotal','=', "$valor");
+        $criteria->addCriteria('quantidade','=', "$quantidade");
+        $criteria->addCriteria('idMaterial','=', "$idmaterial");
+        return $criteria->retrieveAsQuery();
+	}
+	
+	function GetByRequisicaoMaterialTipo($requisicao,$idmaterial=null,$tipo=null)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->addCriteria('idRequisicao','=', "$requisicao");
+		if($idmaterial)
+		{
+			$criteria->addCriteria('idMaterial','=', "$idmaterial");
+		}
+		if($tipo)
+		{
+			$criteria->addCriteria('tipoMovimento','in', "$tipo");
+		}
+		$criteria->addCriteria('idMovimentoRef','IS', "null");
+		return $criteria->retrieveAsQuery();
+	}
+
+	function ListByRequisicaoTipo($requisicao, $tipo)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->addColumnAttribute('idMovimento');
+		$criteria->addColumnAttribute('dataMovimento');
+		$criteria->addColumnAttribute('quantidade');
+		$criteria->addColumnAttribute('valorTotal');
+		$criteria->addColumnAttribute('material.codmaterial');
+		$criteria->addColumnAttribute('material.descricao');
+		$criteria->addCriteria('idRequisicao','=', "$requisicao");
+		$criteria->addCriteria('tipoMovimento','=', "'$tipo'");
+		$criteria->addCriteria('idMovimentoRef','IS', "null");
+		return $criteria->retrieveAsQuery();
+	}
+
+	function ListByEmpenhoTipos($empenho, $tipos)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->addColumnAttribute('idMovimento');
+		$criteria->addColumnAttribute('dataMovimento');
+		$criteria->addColumnAttribute('quantidade');
+		$criteria->addColumnAttribute('valorTotal');
+		$criteria->addColumnAttribute('itemNota.notaFiscal.notaFiscal');
+		$criteria->addColumnAttribute('material.codmaterial');
+		$criteria->addColumnAttribute('material.descricao');
+		$criteria->addColumnAttribute('tabelaGeral.item2');
+		$criteria->addCriteria('itemNota.notaFiscal.idEmpenho','=', "$empenho");
+		$criteria->addCriteria('tipoMovimento','in', "$tipos");
+		$criteria->addCriteria('tabelaGeral.tabela','=', "'AD_ALMOXTIPOMOVTO'");
+		return $criteria->retrieveAsQuery();
+	}
+	
+	function ListByMaterial($material,$uo)
+	{
+		$criteria = $this->getCriteria();		
+		$criteria->addColumnAttribute('idMovimento');
+		$criteria->addColumnAttribute('dataMovimento');
+		$criteria->addColumnAttribute('quantidade');
+		$criteria->addColumnAttribute('valorTotal');		
+		$criteria->addColumnAttribute('material.codmaterial');
+		$criteria->addColumnAttribute('material.descricao');
+		$criteria->addColumnAttribute('tabelaGeral.item2');
+		$criteria->addCriteria('idMaterial','=', "$material");
+		$criteria->addCriteria('idUoAlmoxarifado','=', "$uo");
+		$criteria->addCriteria('idRequisicao','is', "null");
+		$criteria->addCriteria('idMovimentoRef','is', "null");		
+		$criteria->addCriteria('tipoMovimento','=', "'1'");
+		$criteria->addCriteria('tabelaGeral.tabela','=', "'AD_ALMOXTIPOMOVTO'");
+		return $criteria->retrieveAsQuery();
+	}	
+	
+
+	function GetQuantidadeByRequisicaoIdEmpenhado($idRequisicao, $idEmpenhado)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->addColumnAttribute('sum(quantidade)');
+		$criteria->addCriteria('itemNota.idEmpenhado', '=', "$idEmpenhado");
+		$criteria->addCriteria('idRequisicao', '=', "$idRequisicao");
+		$criteria->addCriteria('tipoMovimento','in', "('1','5')");
+		$criteria->addCriteria('idMovimentoRef','is', "null");
+		$query = $criteria->retrieveAsQuery();
+		return $query->result[0][0];
+	}
+
+	function ListItensMovimento($idRequisicao,$idOrdemEnt)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->addColumnAttribute('material.idMaterial');
+		$criteria->addColumnAttribute('material.descricao');
+		$criteria->addColumnAttribute('material.codmaterial');	
+		$criteria->addColumnAttribute('quantidade');
+		$criteria->addColumnAttribute('valortotal');
+		
+		$criteria->addCriteria('idrequisicao','=', "$idRequisicao");
+		$criteria->addCriteria('idordement','=', "$idOrdemEnt");
+		$criteria->addOrderAttribute('material.descricao');
+		return $criteria->retrieveAsQuery();
+	}
+}
+?>
+
+
+

@@ -1,0 +1,182 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+
+class BusinessCommonGrupo extends MBusiness  implements IGroup
+{
+    var $idGrupo;
+    var $grupo;
+    var $acesso; // array
+    var $usuarios;  // array
+    var $dataAcesso; 
+
+    function __construct($data=null)
+    {
+       parent::__construct('common',$data);
+    }
+
+	function SetData($data)
+	{
+		$this->idGrupo = $data->idGrupo;
+		$this->grupo = strtoupper($data->grupo);        
+        $this->dataAcesso = $data->acesso;
+	}
+
+    function GetById($id)
+    {
+        $this->idGrupo = $id; 
+        $this->retrieve();
+        $this->retrieveAssociation('acesso');
+        return $this;
+    }
+
+    function GetByGroup($grupo)
+    {
+        $grupo = strtoupper($grupo);
+        $criteria =  $this->getCriteria();
+        $criteria->addCriteria('grupo','=', "'$grupo'");
+        $this->retrieveFromCriteria($criteria);
+        $this->retrieveAssociation('acesso');
+        return $this;
+    }    
+    
+    function Delete()
+    {
+        parent::delete();
+        $this->Log(OP_DEL,"idgrupo = $this->idGrupo");
+    }
+
+	function ListAll()
+    {
+        $criteria =  $this->getCriteria();
+        $criteria->addOrderAttribute('grupo');
+        return $criteria->retrieveAsQuery();
+    }
+
+    function ListUsuariosByIdGrupo($idGrupo)
+    {
+        $criteria =  $this->getCriteria();
+        $criteria->setDistinct(true);
+        $criteria->AddColumnAttribute('usuarios.login');
+        $criteria->AddColumnAttribute('grupo');
+        $criteria->AddColumnAttribute('usuarios.pessoa.nome');
+        $criteria->addCriteria('idGrupo','=', "$idGrupo");
+        $criteria->addOrderAttribute('usuarios.login');
+        return $criteria->retrieveAsQuery();
+    }
+
+    function ListAcessoByIdGrupo($idGrupo)
+    {
+        $criteria =  $this->getCriteria();
+        $criteria->AddColumnAttribute('acesso.idTransacao');
+        $criteria->AddColumnAttribute('acesso.direito');
+        $criteria->AddColumnAttribute('acesso.transacao.transacao');
+        $criteria->addCriteria('idGrupo','=', "$idGrupo");
+        $criteria->addOrderAttribute('acesso.transacao.transacao');
+        return $criteria->retrieveAsQuery();
+    }
+
+    function SetAcesso($acesso)
+    {
+        $this->acesso = NULL;
+        if (count($acesso))
+        {
+            foreach($acesso as $a)
+            {
+                $this->acesso[] = $obj = $this->_miolo->GetBusiness('common','acesso');
+                $obj->idGrupo = $this->idGrupo;
+                $obj->idTransacao = $a[0];
+                $obj->direito = $a[1];
+            }
+        }
+    }   
+    
+    function getAcesso($idTransacao)
+    {
+        if ( $this->acesso != NULL )
+        {
+            foreach ( $this->acesso as $acesso )
+            {
+                if ( $acesso->idTransacao == $idTransacao )
+                {
+                    return $acesso;
+                }
+            }
+        }
+
+        $acesso = $this->_miolo->getBusiness('common','acesso');
+        $acesso->idGrupo = $this->idGrupo;
+        return $acesso;
+        
+    }
+
+    function listByModule($module)
+    {
+        //metodo para encapsular a listagem de grupos por modulo
+        $criteria = $this->getCriteria();
+        
+        switch(strtoupper($module))
+        {
+            case 'BIBLIOTECA':
+                $criteria->addCriteria('grupo','LIKE',"'BIB%'");
+                break;
+
+            default:
+                break;
+        }
+        return $criteria->retrieveAsQuery();
+    }
+
+    function isGroupModule($module)
+    {
+        //metodo para encapsular se o grupo é de um módulo específico
+
+        
+        switch(strtoupper($module))
+        {
+            case 'BIBLIOTECA':
+                return substr($this->grupo,0,3) == 'BIB';
+                break;
+                
+            default:
+                break;
+            
+        }
+        return FALSE;
+    }
+    
+    function ListByGroup($group='')
+    {
+        $criteria =  $this->getCriteria();
+        $criteria->addCriteria('grupo','LIKE', "'%$group%'");
+        $criteria->addOrderAttribute('grupo');
+        return $criteria->retrieveAsQuery();
+    }
+
+    function findByNome($nome)
+    {
+	$busca = "select count(*) as total from cm_grupoacesso where grupo = '$nome'";					
+	return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
+
+}
+?>

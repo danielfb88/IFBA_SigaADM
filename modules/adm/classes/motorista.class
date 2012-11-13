@@ -1,0 +1,123 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class BusinessAdmMotorista extends Business
+{
+	public $idMotorista;
+	public $carteiraHab;
+	public $dataValidade;
+    	public $categoria;
+	public $idPessoa;
+	public $ativo;
+	public $nomeId;
+
+	function __construct($data = null)
+	{
+		parent::__construct('sigaept', $data);
+	}
+
+    function OnCreate($data)
+    {
+        if (empty($data))
+        {
+
+        }
+        else
+        {
+            $this->GetById($data);
+        }
+    }
+
+	function GetById($id)
+	{
+		$this->idMotorista = $id;
+		$this->retrieve();
+		return $this;
+	}
+
+	function ListAll()
+	{
+        	$criteria =  $this->getCriteria();
+		$criteria->addCriteria('ativo','NOT LIKE', "'N'"); 
+                $criteria->addOrCriteria('ativo','is null');
+        	return $criteria->retrieveAsQuery();
+	}
+
+	function ListByNome($nome)
+	{
+	        $criteria =  $this->getCriteria();
+        	$criteria->addCriteria('pessoa.nome','LIKE', "$nome");
+		$cc = new CriteriaCondition();
+                $cc->addCriteria($criteria->getCriteria('ativo','NOT LIKE', "'N'"));
+                $cc->addOrCriteria($criteria->getCriteria('ativo','is null'));
+		$criteria->addCriteria($cc);
+	        $criteria->addOrderAttribute('pessoa.nome');
+        	return $criteria->retrieveAsQuery();
+	}
+	
+	function ListByNomeInativos($nome)
+	{
+	        $criteria =  $this->getCriteria();
+        	$criteria->addCriteria('pessoa.nome','LIKE', "$nome");
+	        $criteria->addOrderAttribute('pessoa.nome');
+        	return $criteria->retrieveAsQuery();
+	}
+	function ListById()
+	{
+		$criteria = $this->getCriteria();
+		$criteria->addCriteria('ativo','NOT LIKE', "'N'"); 
+                $criteria->addOrCriteria('ativo','is null');
+		$criteria->addColumnAttribute('idPessoa');
+		$criteria->addOrderAttribute('idPessoa');
+		return $criteria->retrieveAsQuery();
+	}	
+	function ListNomeById()
+	{
+		global $MIOLO;
+		$criteria = $this->getCriteria();
+		$criteria->addCriteria('ativo','NOT LIKE', "'N'"); 
+                $criteria->addOrCriteria('ativo','is null');
+		$criteria->addColumnAttribute('pessoa.nome');//linha 0
+		$criteria->addColumnAttribute('idMotorista');//linha 1		
+		$criteria->addOrderAttribute('pessoa.nome');
+		return $criteria->retrieveAsQuery();
+		
+	}
+	
+	
+
+	function GetByCarteiraHab($carteiraHab)
+	{
+		$criteria =  $this->getCriteria();
+	        $criteria->addCriteria('carteirahab','=', "'$carteiraHab'");
+		$cc = new CriteriaCondition();
+                $cc->addCriteria($criteria->getCriteria('ativo','NOT LIKE', "'N'"));
+                $cc->addOrCriteria($criteria->getCriteria('ativo','is null'));
+                $criteria->addCriteria($cc);
+
+        	return $criteria->retrieveAsQuery();
+	}
+	
+}
+
+	
+?>

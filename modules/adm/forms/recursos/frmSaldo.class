@@ -1,0 +1,118 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+/**
+/**
+ * Formulário básico para seleção de uos
+ * 
+ */
+class frmSaldo extends Form
+{
+    function __construct()
+    {
+        $this->Form('Escolher UO');
+		$this->SetClose($this->manager->GetActionURL('adm','main'));
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+		$idUsuario = $this->manager->GetLogin()->idkey;
+		$uo = $this->manager->GetBusiness('adm','uo');
+		$gestor = $this->manager->GetBusiness('adm','gestor');
+
+		$result = $gestor->listUoByUsuario($idUsuario);
+		if ( $result )
+		{
+            /*
+			while ( $obj = $result->getObject() )
+			{
+				$uos[$obj->idUo] = $obj->sigla;
+				$idUo = $obj->idUo;
+			}
+            */
+			$fields = array(
+				new Selection('idUo','','Sigla',$result->chunkResult()),
+			);
+        	$this->SetFields($fields);
+			$button = array(
+				new FormButton('btnPost','Listar')
+			);
+        	$this->SetButtons($button);
+            /*
+			if ($result->getSize() == 1)
+			{
+				$this->exibirSaldo($idUo);
+			}
+            */
+		}
+		else
+		{
+				$this->manager->Error("Informe o seguinte erro à equipe do CGCO: ".$e,$this->manager->GetActionURL('adm','main:recursos',$uo->idUo));
+		}
+        $this->defaultButton = false;
+    }
+	function exibirSaldo($idUo)
+	{
+		$this->setTitle('Recursos da UO');
+		$uos = $this->manager->GetBusiness('adm','uo');
+		$uo = $uos->GetById($idUo);
+		$uo->getOrcamentos();
+	      	
+		If($idUo==0)
+		{
+		    $this->manager->Error("Selecione uma unidade orçamentária.",$this->manager->GetActionURL('adm','main:recursos:saldo'));
+		}
+		elseif ( !$uo->orcamento )
+		{
+		    $this->manager->Error("Informe o seguinte erro à equipe do CGCO: Unidade Orçamentária sem recursos",$this->manager->GetActionURL('adm','main:recursos'));
+		}
+        $columns = array(
+            new ObjectGridColumn('rubrica->descricao','Rubrica','left', false,'55%',true),
+			new ObjectGridColumn('ano','Ano','left', false,'10%',true),
+            new ObjectGridColumn('credito','Credito','left', false,'10%',true),
+            new ObjectGridColumn('debito','Debito','left', false,'10%',true),
+            new ObjectGridColumn('previsaoDebito','Prev Debito','left', false,'15%',true),
+            new ObjectGridColumn('saldo','Saldo','left', false,'10%',true),
+        );
+		$grid = new ObjectGrid($uo->orcamento,$columns,'',0);
+		$this->setButtonAttr('btnPost','visible',FALSE);
+		$this->addField(new TextField('nome','','Nome'));
+		$this->addField(new TextField('gestor','','Gestor'));
+		$this->addField($grid);
+		$this->addField(new CurrencyField('saldao',$uo->getSaldoTotal(),'Saldo Total Disponível'));
+		$this->setFieldValue('idUo',$uo->idUo);
+		$this->setFieldValue('nome',$uo->nome);
+		$this->setFieldValue('gestor',$uo->gestor->pessoa->nome);
+		$this->setFieldAttr('idUo','readonly',TRUE);
+		$this->setFieldAttr('gestor','readonly',TRUE);
+		$this->setFieldAttr('nome','readonly',TRUE);
+		$this->setFieldAttr('saldao','readonly',TRUE);
+	}
+	function btnPost_click()
+	{
+		
+		$idUO = $this->getFormValue('idUo');
+		$this->exibirSaldo($idUO);
+	}
+ }
+?>

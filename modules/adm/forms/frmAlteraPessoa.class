@@ -1,0 +1,94 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+global $MIOLO;
+/**
+ * Use Module Control
+ */
+$MIOLO->Uses('controls/linkpessoa.class','adm');
+
+/**
+ * Formulário básico para seleção de uos
+ * 
+ */
+class frmAlteraPessoa extends Form
+{
+    var $pessoa;
+
+    function frmPessoasFind()
+    {
+        global $MIOLO;
+    
+        $this->Form('Pessoas');
+        $this->SetClose($MIOLO->GetActionURL('rh','main'));
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+        global $MIOLO, $module, $page, $item;
+
+      if(!$item)
+      {  
+         $ui = $MIOLO->GetUI();
+         $grid = $ui->GetGrid('adm','gridPessoas');
+         $grid->SetTitle(NULL);
+
+         $btnFind = new ButtonFind('');
+         $fields = array(
+             array(
+                 new MTextField('nome','','Nome',45),
+                 new MTextField('cpf','','CPF',20),
+                 $btnFind,
+             ),
+             $grid
+         );
+         $this->SetFields($fields);
+         $this->defaultButton = false;
+      }
+      else
+      {
+         $funcionario = $MIOLO->GetBusiness('rh','funcionario');
+         if($funcionario->isFuncionario($item))
+         {
+            $pessoa = $MIOLO->GetBusiness('common','pessoa');
+            $pessoa = $pessoa->GetById($item);
+            if($pessoa->sexo == 'M'){$mensagem = ' ele é um funcionário.';}else{$mensagem = ' ela é uma funcionária.';} 
+         	$this->manager->information($pessoa->nome." não pode ter seus dados alterados pois".$mensagem,$this->manager->getActionUrl('adm','main:altera:find') );
+         }
+         elseif($funcionario->isAluno($item))
+         {
+            $pessoa = $MIOLO->GetBusiness('common','pessoa');
+            $pessoa = $pessoa->GetById($item);
+            if($pessoa->sexo == 'M'){$mensagem = ' ele é um aluno.';}else{$mensagem = ' ela é uma aluna.';} 
+        	$this->manager->information($pessoa->nome." não pode ter seus dados alterados pois".$mensagem,$this->manager->getActionUrl('adm','main:altera:find') );
+         }
+         else
+         {
+            $go = $this->manager->getActionUrl('adm','main:pessoa',$item);
+         	$this->page->Redirect($go);
+         }
+         
+      }
+    }
+ }
+?>

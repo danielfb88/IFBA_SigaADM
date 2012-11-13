@@ -1,0 +1,206 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+MIOLO::Import('extensions::class.phpmailer.php','PHPMailer');
+class frmProcessoEditar extends MForm
+{
+    protected $processo;
+    protected $setor;
+    protected $setoracesso;
+    protected $perms;
+    function __construct($objProcesso)
+    {
+//      construct
+        global $MIOLO;
+		$this->processo = $objProcesso;
+		$this->setor = $MIOLO->getBusiness('protocolo','setor');
+		$this->setoracesso = $MIOLO->getBusiness('protocolo','setoracesso');
+        $this->perms = $MIOLO->getPerms();
+        parent::__construct('Alterar processo');
+        $this->SetClose($MIOLO->GetActionURL('protocolo','main'));
+        $this->eventHandler();
+    }
+
+    function CreateFields()
+    {
+	/* IFRO - Controle de segurança de acesso */
+	$setores = ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS)) ? $this->setor->selAll() : $this->setoracesso->selSetoresAcesso($this->processo->getSetorUsuario());
+	if (
+                $this->processo->retencao->setor
+                && in_array($this->processo->retencao->setor,$setores) 
+           )
+	{
+	
+	//      dados do processo
+		$titulo = new MTextField('titulo',$this->processo->titulo,'Titulo:',90);
+		$titulo->addAttribute('maxlength','80');
+		$solicitante = new MTextField('solicitante',$this->processo->solicitante,'Solicitante:',90);
+		$solicitante->addAttribute('maxlength','80');
+		$assunto = new MMultiLineField('assunto',$this->processo->assunto,'Assunto:',240,5,88);
+		$assunto->addAttribute('maxlength','240');
+		$groupDadosProcesso = new MBaseGroup( 'groupTipoProcesso', 'Dados do processo',array($titulo,$solicitante,$assunto),'vertical','css');
+		$groupDadosProcesso->addAttribute('style','padding:10px');
+	//      origem do processo
+		$instituicao =  new MTextField('instituicao',$this->processo->instituicao,'Instituição:',15);
+		$instituicao->setReadOnly(true);
+		$setorOrigem = new MTextField('setorOrigem',$this->processo->setorOrigem,'Setor:',15);
+		$setorOrigem->setReadOnly(true);
+		$groupOrigem = new MBaseGroup('groupOrigem', 'Origem do processo',array($instituicao,$setorOrigem),'horizontal','css');
+		$groupOrigem->addAttribute('style','padding:10px');
+	//      arquivo do processo 
+		$arquivo = new MTextField('arquivo',$this->processo->arquivo,'Caixa Arquivo:',15);
+		$arquivo->addAttribute('maxlength','7');
+		$groupArquivo = new MBaseGroup('groupArquivo', 'Arquivo do processo',array($arquivo),'horizontal','css');
+		$groupArquivo->addAttribute('style','padding:10px');
+	//      fields
+		      $fields = array(
+		    array(
+		        $groupDadosProcesso,
+		        $groupOrigem,
+		        $groupArquivo
+		    ),
+		);
+		$this->SetFields($fields);
+		
+	    	if ($this->processo->tipo == 'A')
+		{
+			$this->setFieldAttr('titulo','readonly',true);   
+		}
+
+	//      required fields
+		$validators = array(
+				new MRequiredValidator('titulo'),
+				new MRequiredValidator('solicitante'),
+				new MRequiredValidator('assunto'),
+			);
+			$this->SetValidators($validators);
+	//      buttons
+			$buttons = array(
+			new MButton('btnSalvar', 'Alterar')
+		    );
+			$this->SetButtons($buttons);
+	}
+	else {
+		$msg = 'Este usuário não tem permissão para alterar este Processo/Protocolo';
+		$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+	}
+	
+    }
+    public function btnSalvar_click()
+    {
+    global $MIOLO;
+	/* IFRO - Controle de segurança de acesso */
+	$setores = ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS)) ? $this->setor->selAll() : $this->setoracesso->selSetoresAcesso($this->processo->getSetorUsuario());
+	if (
+                $this->processo->retencao->setor
+                && in_array($this->processo->retencao->setor,$setores) 
+                && $this->processo->retencao->status == 'N' 
+           )
+	{
+	//      data
+		$data = $this->getData();
+		if ($data->titulo == "")
+		{
+			$this->addError('O campo "Título" deve ser preenchido.');
+		}
+		if (strlen($data->solicitante) == 0){
+        	 $this->addError('O campo "Solicitante" deve ser preenchido.');
+        }
+        if (strlen($data->assunto) == 0){
+        	 $this->addError('O campo "Assunto" deve ser preenchido.');
+        }
+	//      set and save
+		if ($this->errors != '') //Caso haja algum erro, exibe na tela todos os erros
+       		$this->GenerateErrors();
+		else{
+			try 
+			{
+				$this->processo->beginTransaction();
+				$this->processo->setData($data);
+				$this->processo->save();
+				
+					$dataMail = date("d/m/y");
+					$horaMail = date("H:i");
+					$objMail = $this->processo->getTituloByNumProcesso($this->processo->numProcesso);
+					$mailSender = $this->processo->getMailByNumProcesso($this->processo->numProcesso);
+					$emails = $this->processo->listarEmail();
+					$emails[$emails->length][0] = $mailSender;
+		            foreach($emails as $e)
+		            {
+		                if($e[1])
+				        {
+				                $instituicao = $this->processo->instituicaoUsuario($e[1]);
+				                $pessoa = $e[2];
+				        }
+				        else
+				        {
+				                $instituicao = $this->processo->instituicaoProcesso();
+				                $pessoa = $this->processo->solicitante;
+				        }
+						$mail = new PHPMailer();
+						$mail->IsSMTP(); // send via SMTP
+						$mail->Host = $MIOLO->getConf('mail.host');
+						$mail->SMTPAuth = $MIOLO->getConf('mail.auth');
+						$mail->Username = $MIOLO->getConf('mail.user');
+						$mail->Password = $MIOLO->getConf('mail.pass');
+						$mail->From = $MIOLO->getConf('mail.from');
+						$mail->FromName = "SIGA - Sistema Integrado de Gestão Acadêmica";
+						$mail->AddAddress($e[0]);
+						$mail->Port = $MIOLO->getConf('mail.port');
+						$mail->WordWrap = 50;
+						$mail->IsHTML(true);
+						$mail->Subject = "SIGA-ADM(1) - Notificação de Trâmite de Processo";
+		                                    $mail->ssl = $MIOLO->getConf('mail.ssl');
+		                                    $mail->Body = "
+		                                            <center><h1>TRAMITAÇÃO DO PROCESSO<br /> {$this->processo->numProcessoFormatado()}</h1></center>
+		                                            <br /><br />Prezado(a) Sr(a) {$pessoa},
+		                                            <br /><br />O processo {$this->processo->numProcessoFormatado()} foi editado.
+		                                            <br /><br /><b>Objeto: </b>{$objMail}
+		                                            <br /><b>Setor Atual: </b>{$this->processo->retencao->setor}
+		                                            <br /><br /><b>Data: </b>{$dataMail}
+		                                            <br /><b>Hora: </b>{$horaMail}
+		                                            <br /><br /><b>Para maiores informações acesse: </b>{$MIOLO->getConf('home.url')}
+		                                            <br /><br />Atenciosamente,
+		                                            <br /><br />{$instituicao}
+		                                            <br /><br /><b><font color=\"RED\"> Observação: Este email foi enviado automaticamente, não é necessário responder. </font></b>
+		                                    ";
+						$mail->Send();
+					}
+				
+				$msg = "Processo ".$this->processo->numProcessoFormatado()." alterado com sucesso.";
+				$this->processo->Log(OP_UPD,$msg);
+				$this->processo->endTransaction();
+				$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+			}
+			catch(Exception $e)
+				{$this->addError($e->getMessage());
+			}
+		}//fim else do if ($this->errors != '')
+	}
+	else {
+		$msg = 'Este usuário não tem permissão para alterar este Processo/Protocolo';
+		$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+	}
+    }
+
+ }
+?>

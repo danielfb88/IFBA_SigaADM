@@ -1,0 +1,1599 @@
+      127.0.0.1 - admin      - [16/03/2012 15:01:52] "File not found by Uses: /home/siga/workspace/trunk/miolo/modules/%3Ca%20href=index.php?module=biblioteca/handlers/handler.class"
+      127.0.0.1 - admin      - [16/03/2012 15:02:06] "File not found by Uses: /home/siga/workspace/trunk/miolo/modules/%3Ca%20href=index.php?module=biblioteca/handlers/handler.class"
+      127.0.0.1 - admin      - [16/03/2012 15:59:44] "Error in Database: sigaept; ERROR:  value too long for type character varying(6)"
+      127.0.0.1 - admin      - [19/03/2012 10:44:31] "Error in Database: sigaept; ;ERROR:  syntax error at or near "AND"
+LINE 1: ...ERE e.idetiqueta=a.idetiqueta AND e.idetiqueta=   AND a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [19/03/2012 11:01:28] "Error in Database: sigaept; ERROR:  update or delete on table "bt_material" violates foreign key constraint "fk_bt_autor_obra_mat" on table "bt_autorobra"
+DETAIL:  Key (idmaterial)=(1242782) is still referenced from table "bt_autorobra"."
+      127.0.0.1 - admin      - [19/03/2012 14:56:37] "Error in Database: sigaept; ;ERROR:  column e.subcampo does not exist
+LINE 1: ...and (m.idobra = '73158') and (e.tag = '100') and (e.subcampo...
+                                                             ^"
+      127.0.0.1 - admin      - [20/03/2012 16:23:09] "Error in Database: sigaept; ERROR:  value too long for type character varying(6)"
+      127.0.0.1 - admin      - [20/03/2012 16:27:11] "Error in Database: sigaept; ERROR:  null value in column "idmaterial" violates not-null constraint"
+      127.0.0.1 - admin      - [20/03/2012 16:30:40] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [20/03/2012 16:31:30] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [20/03/2012 16:37:27] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - patricia.fonseca - [20/03/2012 16:42:16] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - patricia.fonseca - [20/03/2012 16:42:27] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - patricia.fonseca - [20/03/2012 16:46:40] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: SELECT idexemplar FROM   bt_exemplar WHERE numerodotombo = ?
+                                                                    ^"
+      127.0.0.1 - patricia.fonseca - [20/03/2012 16:46:46] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: SELECT idexemplar FROM   bt_exemplar WHERE numerodotombo = ?
+                                                                    ^"
+      127.0.0.1 - patricia.fonseca - [20/03/2012 16:52:06] "Error in Database: sigaept; ;ERROR:  function to_number(double precision, unknown) does not exist
+LINE 1: SELECT to_number(extract (day from(datahoraprevisaodevolucao...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - patricia.fonseca - [20/03/2012 16:52:11] "Error in Database: sigaept; ;ERROR:  function to_number(double precision, unknown) does not exist
+LINE 1: SELECT to_number(extract (day from(datahoraprevisaodevolucao...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - admin      - [21/03/2012 11:46:57] "Error in Database: sigaept; <br>ERROR:  null value in column "idunidade" violates not-null constraint"
+      127.0.0.1 - admin      - [21/03/2012 11:47:27] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [21/03/2012 15:13:13] "Error in Database: sigaept; ERROR:  duplicate key value violates unique constraint "pk_bt_operacao""
+      127.0.0.1 - admin      - [21/03/2012 15:13:56] "Error in Database: sigaept; ERROR:  duplicate key value violates unique constraint "pk_bt_colecao""
+      127.0.0.1 - admin      - [21/03/2012 15:25:55] "Error in Database: sigaept; ERROR:  value too long for type character varying(6)"
+      127.0.0.1 - admin      - [21/03/2012 16:32:58] "Error in Database: sigaept; ERROR:  invalid input syntax for type numeric: "-9,00""
+      127.0.0.1 - admin      - [21/03/2012 16:49:26] "Error in Database: sigaept; ERROR:  duplicate key value violates unique constraint "pk_bt_operacao""
+      127.0.0.1 - admin      - [22/03/2012 10:04:19] "Error in Database: sigaept; ERROR:  insert or update on table "bt_direito" violates foreign key constraint "fk_bt_direito2_bt_op"
+DETAIL:  Key (idoperacao)=(0) is not present in table "bt_operacao"."
+      127.0.0.1 - admin      - [22/03/2012 10:12:10] "Error in Database: sigaept; ERROR:  duplicate key value violates unique constraint "pk_bt_operacao""
+      127.0.0.1 - admin      - [22/03/2012 10:12:33] "Error in Database: sigaept; ERROR:  duplicate key value violates unique constraint "pk_bt_operacao""
+      127.0.0.1 - admin      - [22/03/2012 10:13:06] "Error in Database: sigaept; ERROR:  duplicate key value violates unique constraint "pk_bt_operacao""
+      127.0.0.1 - admin      - [22/03/2012 10:13:32] "Error in Database: sigaept; ERROR:  duplicate key value violates unique constraint "pk_bt_operacao""
+      127.0.0.1 - admin      - [22/03/2012 10:15:51] "Error in Database: sigaept; ERROR:  null value in column "idoperacao" violates not-null constraint"
+      127.0.0.1 - admin      - [22/03/2012 10:17:10] "Error in Database: sigaept; ERROR:  duplicate key value violates unique constraint "pk_bt_operacao""
+      127.0.0.1 -            - [22/03/2012 11:04:51] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [22/03/2012 11:05:16] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ha FROM   bt_genero WHERE ( upper(descricao) LIKE upper(?) )
+                                                                    ^"
+      127.0.0.1 - admin      - [22/03/2012 14:49:15] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [22/03/2012 14:49:26] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [22/03/2012 14:50:13] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [22/03/2012 15:16:03] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [22/03/2012 15:17:37] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [22/03/2012 15:19:32] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [22/03/2012 15:20:19] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [23/03/2012 15:53:40] "Error in Database: sigaept; ERROR:  value too long for type character(3)"
+      127.0.0.1 - admin      - [23/03/2012 15:56:09] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "testando""
+      127.0.0.1 - admin      - [23/03/2012 15:56:40] "Error in Database: sigaept; ERROR:  value too long for type character(3)"
+      127.0.0.1 - admin      - [23/03/2012 16:00:57] "Error in Database: sigaept; ERROR:  duplicate key value violates unique constraint "bt_etiqueta_idetiqueta_key""
+      127.0.0.1 - admin      - [23/03/2012 16:01:23] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "teste""
+      127.0.0.1 -            - [23/03/2012 17:25:18] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [26/03/2012 15:26:15] "Error in Database: sigaept; ;ERROR:  value "11111111111" is out of range for type integer"
+      127.0.0.1 - admin      - [26/03/2012 15:50:26] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [26/03/2012 15:51:23] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [26/03/2012 15:51:54] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [26/03/2012 15:52:07] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [26/03/2012 16:40:33] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [26/03/2012 16:41:33] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 16:41:44] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 16:43:39] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 16:44:08] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 16:44:59] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 16:45:22] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...es,bt_exemplar e,bt_obra o WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+      127.0.0.1 - admin      - [26/03/2012 16:45:27] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 16:49:05] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 16:49:16] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 16:52:07] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 16:52:26] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 16:52:38] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 16:52:44] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...es,bt_exemplar e,bt_obra o WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+      127.0.0.1 - admin      - [26/03/2012 16:53:07] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 16:59:39] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 17:00:09] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 17:00:25] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 17:01:42] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 17:03:22] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [26/03/2012 17:22:03] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: SELECT idobra FROM   bt_obra WHERE numerodaobra = 
+                                                          ^"
+      127.0.0.1 - admin      - [26/03/2012 17:35:46] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...ditora,idautor,editora FROM   bt_obra WHERE numerodaobra = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [26/03/2012 17:35:55] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...ditora,idautor,editora FROM   bt_obra WHERE numerodaobra = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [26/03/2012 17:38:32] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: SELECT idobra FROM   bt_obra WHERE numerodaobra = 
+                                                          ^"
+      127.0.0.1 - admin      - [27/03/2012 11:08:49] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ..._pessoa p WHERE  (u.idpessoa = p.idpessoa) and (u.login = ?)
+                                                                      ^"
+      127.0.0.1 - admin      - [27/03/2012 13:58:36] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [27/03/2012 14:06:14] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [27/03/2012 14:12:05] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [27/03/2012 14:28:24] "Error in Database: sigaept; ERROR:  null value in column "idgrupo" violates not-null constraint"
+      127.0.0.1 - admin      - [27/03/2012 14:31:39] "Error in Database: sigaept; ERROR:  null value in column "idgrupo" violates not-null constraint"
+      127.0.0.1 - admin      - [27/03/2012 14:31:47] "Error in Database: sigaept; ERROR:  null value in column "idgrupo" violates not-null constraint"
+      127.0.0.1 - admin      - [27/03/2012 14:34:41] "Error in Database: sigaept; ERROR:  null value in column "idgrupo" violates not-null constraint"
+      127.0.0.1 - admin      - [27/03/2012 14:35:59] "Error in Database: sigaept; ERROR:  null value in column "idgrupo" violates not-null constraint"
+      127.0.0.1 - admin      - [27/03/2012 14:44:34] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE (idusuario = ?)
+                                                             ^"
+      127.0.0.1 - admin      - [27/03/2012 15:05:08] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ..._pessoa p WHERE  (u.idpessoa = p.idpessoa) and (u.login = ?)
+                                                                      ^"
+      127.0.0.1 - admin      - [27/03/2012 15:05:17] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ..._pessoa p WHERE  (u.idpessoa = p.idpessoa) and (u.login = ?)
+                                                                      ^"
+      127.0.0.1 - admin      - [27/03/2012 15:19:02] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [27/03/2012 15:28:50] "Error in Database: sigaept; ERROR:  null value in column "tag" violates not-null constraint"
+      127.0.0.1 - admin      - [27/03/2012 15:37:16] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [27/03/2012 15:37:49] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [27/03/2012 15:39:39] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [27/03/2012 15:40:22] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 -            - [27/03/2012 18:35:09] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ... e,bt_multa m,bt_exemplar ex WHERE (e.idusuario = ) and (e.i...
+                                                             ^"
+      127.0.0.1 - admin      - [28/03/2012 13:39:21] "Error in Database: common; ;ERROR:  syntax error at or near "ORDER"
+LINE 2: ...                        upper('JOSE DA SILVA%') ) ORDER BY u...
+                                                             ^"
+      127.0.0.1 - admin      - [28/03/2012 16:36:20] "Error in Database: common; ;ERROR:  syntax error at or near "ORDER"
+LINE 2: ...                        upper('JOSE DA SILVA%') ) ORDER BY u...
+                                                             ^"
+      127.0.0.1 - admin      - [28/03/2012 16:36:35] "Error in Database: common; ;ERROR:  syntax error at or near "ORDER"
+LINE 2:                             upper('%%') ) ORDER BY u.login
+                                                  ^"
+      127.0.0.1 - admin      - [28/03/2012 16:37:18] "Error in Database: common; ;ERROR:  syntax error at or near "ORDER"
+LINE 2:                             upper('%%') ) ORDER BY u.login
+                                                  ^"
+      127.0.0.1 -            - [29/03/2012 11:00:30] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [29/03/2012 13:57:17] "Error in Database: sigaept; <br>ERROR:  null value in column "idobra" violates not-null constraint"
+      127.0.0.1 - admin      - [29/03/2012 14:03:22] "Error in Database: sigaept; <br>ERROR:  null value in column "idobra" violates not-null constraint"
+      127.0.0.1 - admin      - [29/03/2012 14:10:17] "Error in Database: sigaept; <br>ERROR:  null value in column "idobra" violates not-null constraint"
+      127.0.0.1 - admin      - [29/03/2012 14:13:49] "Error in Database: sigaept; <br>ERROR:  null value in column "idobra" violates not-null constraint"
+      127.0.0.1 - admin      - [29/03/2012 14:22:24] "Error in Database: sigaept; <br>ERROR:  null value in column "idobra" violates not-null constraint"
+      127.0.0.1 - admin      - [29/03/2012 14:41:39] "Error in Database: sigaept; <br>ERROR:  null value in column "idobra" violates not-null constraint"
+      127.0.0.1 - admin      - [29/03/2012 14:46:03] "Error in Database: sigaept; <br>ERROR:  null value in column "idobra" violates not-null constraint"
+      127.0.0.1 - admin      - [29/03/2012 14:49:43] "Error in Database: sigaept; <br>ERROR:  null value in column "idobra" violates not-null constraint"
+      127.0.0.1 - admin      - [29/03/2012 14:55:13] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...t(ocorrencia)) FROM   bt_material WHERE (idobra = ) and (ide...
+                                                             ^"
+      127.0.0.1 - admin      - [29/03/2012 14:57:10] "Error in Database: sigaept; ERROR:  null value in column "idmaterial" violates not-null constraint"
+      127.0.0.1 - admin      - [29/03/2012 14:57:25] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [29/03/2012 14:57:25] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [29/03/2012 14:57:39] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [29/03/2012 15:32:42] "UI::GetForm() : File not found: forms/frmEmprestimoPendente.class"
+      127.0.0.1 - patricia.fonseca - [29/03/2012 19:54:01] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...ditora,idautor,editora FROM   bt_obra WHERE numerodaobra = ?
+                                                                       ^"
+      127.0.0.1 - patricia.fonseca - [29/03/2012 20:18:44] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: ...) and (e.idestado = c.idestado) and (p.idperiodico=?) ORDER ...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - patricia.fonseca - [29/03/2012 20:19:14] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: ...) and (e.idestado = c.idestado) and (p.idperiodico=?) ORDER ...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - patricia.fonseca - [29/03/2012 20:22:49] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: ...) and (e.idestado = c.idestado) and (p.idperiodico=?) ORDER ...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [30/03/2012 11:30:32] "Error in Database: common; ;ERROR:  syntax error at or near ")"
+LINE 1: ...is = p.idpais and ucwords(strtolower(m.municipio))) LIKE upp...
+                                                             ^"
+      127.0.0.1 - admin      - [30/03/2012 13:52:12] "File not found by Uses: /home/siga/workspace/trunk/miolo//classes//classes/lookup.class"
+      127.0.0.1 - admin      - [30/03/2012 15:21:56] "Error in Database: common; ;ERROR:  syntax error at or near "."
+LINE 1: SELECT m.idmunicipio,lower(m.municipio) as m.municipio,m.idu...
+                                                    ^"
+      127.0.0.1 - admin      - [30/03/2012 15:22:21] "Error in Database: common; ;ERROR:  syntax error at or near "m"
+LINE 1: SELECT m.idmunicipio,lower(m.municipio)  m.municipio,m.iduf,...
+                                                 ^"
+      127.0.0.1 - admin      - [30/03/2012 16:14:47] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [30/03/2012 16:15:01] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [30/03/2012 16:15:12] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [30/03/2012 16:15:54] "Error in Database: sigaept; ;ERROR:  syntax error at or near "AND"
+LINE 1: ...  bt_exemplar WHERE cast(numerodotombo as int) BETWEEN  AND 
+                                                                   ^"
+      127.0.0.1 -            - [02/04/2012 11:07:21] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [02/04/2012 13:54:39] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [02/04/2012 15:16:36] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [02/04/2012 15:17:00] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [02/04/2012 15:20:47] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [03/04/2012 11:08:20] "Error in Database: sigaept; ERROR:  update or delete on table "bt_material" violates foreign key constraint "fk_bt_autor_obra_mat" on table "bt_autorobra"
+DETAIL:  Key (idmaterial)=(1242895) is still referenced from table "bt_autorobra"."
+      127.0.0.1 - admin      - [03/04/2012 11:11:18] "Error in Database: sigaept; ERROR:  update or delete on table "bt_material" violates foreign key constraint "fk_bt_autor_obra_mat" on table "bt_autorobra"
+DETAIL:  Key (idmaterial)=(1242895) is still referenced from table "bt_autorobra"."
+      127.0.0.1 - admin      - [03/04/2012 11:36:17] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [03/04/2012 11:40:08] "Error in Database: common; ;ERROR:  syntax error at or near "."
+LINE 1: SELECT m.idmunicipio,lower(m.municipio)  as m.municipio,m.id...
+                                                     ^"
+      127.0.0.1 - admin      - [03/04/2012 11:44:54] "Error in Database: common; ;ERROR:  function ucfirst(character varying) does not exist
+LINE 1: SELECT m.idmunicipio,ucfirst(m.municipio)  as municipio,m.id...
+                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - admin      - [03/04/2012 11:46:01] "Error in Database: common; ;ERROR:  function uc_first(character varying) does not exist
+LINE 1: SELECT m.idmunicipio,UC_FIRST(m.municipio)  as municipio,m.i...
+                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 -            - [03/04/2012 13:39:19] "Error in Database: common; ;ERROR:  function ucfirst(character varying) does not exist
+LINE 1: SELECT m.idmunicipio,ucfirst(m.municipio)  as municipio,m.id...
+                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - admin      - [03/04/2012 13:40:11] "Error in Database: common; ;ERROR:  function ucfirst(character varying) does not exist
+LINE 1: SELECT m.idmunicipio,ucfirst(m.municipio)  as municipio,m.id...
+                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - admin      - [03/04/2012 13:52:49] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "a""
+      127.0.0.1 - admin      - [03/04/2012 15:11:41] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = bt_autor
+LINE 1: ...idautor=o.idautor and a.idetiqueta = 53 and a.subcampo ="a" 
+                                                                  ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [03/04/2012 15:11:50] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = bt_autor
+LINE 1: ...a.idautor=o.idautor and a.idetiqueta = 53 and a.subcampo =a 
+                                                                    ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [03/04/2012 15:13:19] "Error in Database: sigaept; ;ERROR:  operator does not exist: character varying = integer
+LINE 1: ...tor=o.idautor and a.idetiqueta = 53   and e.numerodotombo =9
+                                                                     ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [03/04/2012 15:18:00] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...es,bt_exemplar e,bt_obra o WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+      127.0.0.1 - admin      - [03/04/2012 15:18:12] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...es,bt_exemplar e,bt_obra o WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+      127.0.0.1 - admin      - [03/04/2012 15:40:12] "Error in Database: sigaept; ;ERROR:  schema "a" does not exist"
+      127.0.0.1 - admin      - [03/04/2012 15:40:24] "Error in Database: sigaept; ;ERROR:  schema "a" does not exist"
+      127.0.0.1 - admin      - [03/04/2012 15:46:16] "Error in Database: sigaept; ;ERROR:  schema "a" does not exist"
+      127.0.0.1 - admin      - [03/04/2012 15:46:42] "Error in Database: sigaept; ;ERROR:  schema "a" does not exist"
+      127.0.0.1 - admin      - [04/04/2012 10:45:29] "Error in Database: sigaept; <br>ERROR:  null value in column "idunidade" violates not-null constraint"
+      127.0.0.1 - admin      - [04/04/2012 10:51:07] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 11:10:24] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 11:11:52] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 11:13:42] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 11:20:08] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "aaa""
+      127.0.0.1 - admin      - [04/04/2012 11:20:25] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "    ""
+      127.0.0.1 - admin      - [04/04/2012 11:20:36] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "aaaa""
+      127.0.0.1 - admin      - [04/04/2012 11:21:20] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 11:26:57] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "aaa""
+      127.0.0.1 - admin      - [04/04/2012 11:27:04] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "aaaa""
+      127.0.0.1 - admin      - [04/04/2012 11:28:15] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 11:36:33] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 11:40:43] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 11:40:57] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 11:44:48] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 11:45:30] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: ... and (e.idestado = c.idestado) and (o.numerodaobra=?) ORDER ...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [04/04/2012 11:52:58] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 14:35:19] "Error in Database: sigaept; ;ERROR:  syntax error at or near "e"
+LINE 1: ... FROM   bt_estado es,a.conteudo WHERE bt_exemplar e, bt_obra...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 14:36:03] "Error in Database: sigaept; ;ERROR:  syntax error at or near "e"
+LINE 1: ...ROM   bt_estado es,a.conteudo WHERE   bt_exemplar e  , bt_ob...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 14:37:30] "Error in Database: sigaept; ;ERROR:  syntax error at or near "es"
+LINE 1: ...o FROM   bt_estado es,a.conteudo WHERE  bt_estado es, bt_exe...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 14:37:48] "Error in Database: sigaept; ;ERROR:  syntax error at or near "es"
+LINE 1: ...o FROM   bt_estado es,a.conteudo WHERE  bt_estado es    , bt...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 14:38:52] "Error in Database: sigaept; ;ERROR:  syntax error at or near "es"
+LINE 1: ...o FROM   bt_estado es,a.conteudo WHERE  bt_estado es    , bt...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 14:40:26] "Error in Database: sigaept; ;ERROR:  syntax error at or near "es"
+LINE 1: ...dcolecao,es.mnemonico,a.conteudo WHERE  bt_estado es    , bt...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 14:55:46] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [04/04/2012 14:56:07] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 -            - [04/04/2012 16:06:07] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [04/04/2012 16:06:57] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [09/04/2012 13:52:59] "Error in Database: sigaept; ;ERROR:  operator does not exist: character varying =?
+LINE 1: ....idetiqueta = 53 and a.subcampo ='a' and e.numerodotombo =? 
+                                                                    ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [09/04/2012 13:53:06] "Error in Database: sigaept; ;ERROR:  operator does not exist: character varying =?
+LINE 1: ....idetiqueta = 53 and a.subcampo ='a' and e.numerodotombo =? 
+                                                                    ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [09/04/2012 14:14:20] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: ... and (e.idestado = c.idestado) and (o.numerodaobra=?) ORDER ...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [09/04/2012 14:48:41] "Error in Database: sigaept; ERROR:  update or delete on table "bt_genero" violates foreign key constraint "fk_bt_obra1_bt_ge" on table "bt_obra"
+DETAIL:  Key (idgenero)=(81) is still referenced from table "bt_obra"."
+      127.0.0.1 - admin      - [09/04/2012 15:09:16] "Error in Database: sigaept; ERROR:  value too long for type character varying(6)"
+      127.0.0.1 - admin      - [09/04/2012 15:33:06] "Error in Database: sigaept; ERROR:  insert or update on table "bt_direito" violates foreign key constraint "fk_bt_direito2_bt_op"
+DETAIL:  Key (idoperacao)=(0) is not present in table "bt_operacao"."
+      127.0.0.1 - admin      - [09/04/2012 16:01:34] "Error in Database: sigaept; ERROR:  insert or update on table "bt_direito" violates foreign key constraint "fk_bt_direito2_bt_op"
+DETAIL:  Key (idoperacao)=(0) is not present in table "bt_operacao"."
+      127.0.0.1 - admin      - [09/04/2012 16:25:28] "Error in Database: sigaept; ERROR:  null value in column "idestadofuturo" violates not-null constraint"
+      127.0.0.1 - admin      - [09/04/2012 16:33:32] "Error in Database: sigaept; ERROR:  null value in column "idestadofuturo" violates not-null constraint"
+      127.0.0.1 - admin      - [10/04/2012 11:33:08] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "1677-7069""
+      127.0.0.1 - admin      - [10/04/2012 12:58:06] "Error in Database: sigaept; ;ERROR:  syntax error at or near "AND"
+LINE 1: ...bt_logoperacao l,cm_usuario u WHERE l.idoperacao= AND (l.dat...
+                                                             ^"
+      127.0.0.1 -            - [11/04/2012 15:16:42] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [11/04/2012 16:08:30] "Error in Database: sigaept; ERROR:  duplicate key value violates unique constraint "pk_bt_subcampo""
+      127.0.0.1 - admin      - [11/04/2012 16:08:35] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [11/04/2012 16:08:37] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [11/04/2012 16:08:39] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [11/04/2012 16:08:42] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [11/04/2012 16:09:33] "Error in Database: sigaept; ERROR:  duplicate key value violates unique constraint "pk_bt_subcampo""
+      127.0.0.1 - admin      - [11/04/2012 16:11:24] "Error in Database: sigaept; ERROR:  update or delete on table "bt_etiqueta" violates foreign key constraint "bt_materialperiodico_idetiqueta_fkey" on table "bt_materialperiodico"
+DETAIL:  Key (idetiqueta)=(213) is still referenced from table "bt_materialperiodico"."
+      127.0.0.1 - admin      - [11/04/2012 16:13:46] "Error in Database: sigaept; ERROR:  update or delete on table "bt_etiqueta" violates foreign key constraint "bt_materialperiodico_idetiqueta_fkey" on table "bt_materialperiodico"
+DETAIL:  Key (idetiqueta)=(213) is still referenced from table "bt_materialperiodico"."
+      127.0.0.1 - admin      - [11/04/2012 19:32:36] "Error in Database: sigaept; ERROR:  update or delete on table "bt_editora" violates foreign key constraint "fk_bt_obra2_bt_ed" on table "bt_obra"
+DETAIL:  Key (ideditora)=(30) is still referenced from table "bt_obra"."
+      127.0.0.1 - admin      - [12/04/2012 15:09:26] "Error in Database: sigaept; ERROR:  update or delete on table "bt_etiqueta" violates foreign key constraint "bt_materialperiodico_idetiqueta_fkey" on table "bt_materialperiodico"
+DETAIL:  Key (idetiqueta)=(213) is still referenced from table "bt_materialperiodico"."
+      127.0.0.1 - admin      - [12/04/2012 15:14:58] "Error in Database: sigaept; ERROR:  update or delete on table "bt_etiqueta" violates foreign key constraint "bt_materialperiodico_idetiqueta_fkey" on table "bt_materialperiodico"
+DETAIL:  Key (idetiqueta)=(213) is still referenced from table "bt_materialperiodico"."
+      127.0.0.1 -            - [12/04/2012 16:32:46] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [13/04/2012 15:32:57] "Error in Database: sigabib; Configuration in miolo.conf is missing login for this database!"
+      127.0.0.1 - admin      - [13/04/2012 15:33:08] "Error in Database: sigabib; Configuration in miolo.conf is missing login for this database!"
+      127.0.0.1 - admin      - [16/04/2012 16:20:49] "Error in Database: sigabib; Configuration in miolo.conf is missing login for this database!"
+      127.0.0.1 - admin      - [16/04/2012 16:27:24] "Error in Database: sigaept; ERROR:  update or delete on table "bt_etiqueta" violates foreign key constraint "bt_materialperiodico_idetiqueta_fkey" on table "bt_materialperiodico"
+DETAIL:  Key (idetiqueta)=(213) is still referenced from table "bt_materialperiodico"."
+      127.0.0.1 -            - [17/04/2012 14:59:35] "Sessão encerrada por timeout."
+      127.0.0.1 -            - [17/04/2012 15:33:35] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [17/04/2012 16:28:46] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...soa p WHERE  (u.idpessoa = p.idpessoa) and (u.idusuario = ?)
+                                                                      ^"
+      127.0.0.1 - admin      - [17/04/2012 16:29:27] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [17/04/2012 16:36:21] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 09:49:06] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 09:49:14] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE idusuario=?
+                                                        ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 09:50:16] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE idusuario=?
+                                                        ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 10:07:13] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE idusuario=?
+                                                        ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 10:12:12] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE idusuario=?
+                                                        ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 10:13:43] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE idusuario=?
+                                                        ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 10:14:47] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE idusuario=?
+                                                        ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 10:14:59] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE idusuario=?
+                                                        ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 10:15:24] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 10:15:34] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE idusuario=?
+                                                        ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 10:15:51] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 10:15:59] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE idusuario=?
+                                                        ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 10:17:55] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE idusuario=?
+                                                        ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 10:20:14] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE idusuario=?
+                                                        ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [18/04/2012 11:20:39] "Error in Database: sigaept; ;ERROR:  relation "bt_emprestimo_temp" does not exist"
+      127.0.0.1 - admin      - [18/04/2012 11:21:05] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE idusuario=?
+                                                        ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [19/04/2012 16:41:29] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ... m,bt_exemplar ex,bt_obra o WHERE (e.idusuario = ?) and (e.i...
+                                                             ^"
+      127.0.0.1 -            - [20/04/2012 09:29:33] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [20/04/2012 11:23:08] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer =?
+LINE 1: SELECT idgrupo FROM   bt_vinculo WHERE idusuario=?
+                                                        ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [20/04/2012 11:48:54] "Error in Database: sigaept; ;ERROR:  column "idusuario" does not exist
+LINE 1: SELECT idusuario FROM   bt_emprestimo_temp WHERE idemprestim...
+               ^"
+      127.0.0.1 - admin      - [20/04/2012 15:19:12] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [20/04/2012 15:20:08] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [20/04/2012 15:26:46] "Error in Database: sigaept; ;ERROR:  function to_number(double precision, unknown) does not exist
+LINE 1: SELECT to_number(extract (day from(datahoraprevisaodevolucao...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [20/04/2012 15:37:22] "Error in Database: sigaept; ;ERROR:  function to_number(double precision, unknown) does not exist
+LINE 1: SELECT to_number(extract (day from(datahoraprevisaodevolucao...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [20/04/2012 15:41:00] "Error in Database: sigaept; ;ERROR:  function to_number(double precision, unknown) does not exist
+LINE 1: SELECT to_number(extract (day from(datahoraprevisaodevolucao...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [20/04/2012 15:50:21] "Error in Database: sigaept; ;ERROR:  function to_number(double precision, unknown) does not exist
+LINE 1: SELECT to_number(extract (day from(datahoraprevisaodevolucao...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [20/04/2012 15:54:37] "Error in Database: sigaept; ;ERROR:  function to_number(double precision, unknown) does not exist
+LINE 1: SELECT to_number(extract (day from(datahoraprevisaodevolucao...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [20/04/2012 15:55:51] "Error in Database: sigaept; ;ERROR:  function to_number(double precision, unknown) does not exist
+LINE 1: SELECT to_number(extract (day from(datahoraprevisaodevolucao...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [20/04/2012 15:55:55] "Error in Database: sigaept; ;ERROR:  function to_number(double precision, unknown) does not exist
+LINE 1: SELECT to_number(extract (day from(datahoraprevisaodevolucao...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [20/04/2012 15:56:02] "Error in Database: sigaept; ;ERROR:  function to_number(double precision, unknown) does not exist
+LINE 1: SELECT to_number(extract (day from(datahoraprevisaodevolucao...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [20/04/2012 15:57:04] "Error in Database: sigaept; ;ERROR:  function to_number(double precision, unknown) does not exist
+LINE 1: SELECT to_number(extract (day from(datahoraprevisaodevolucao...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [20/04/2012 15:58:39] "Error in Database: sigaept; ;ERROR:  syntax error at or near "-$"
+LINE 1: SELECT datahoraprevisaodevolucao-$datar FROM   bt_emprestimo...
+                                        ^"
+      127.0.0.1 - admin      - [24/04/2012 11:03:00] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ... m,bt_exemplar ex,bt_obra o WHERE (e.idusuario = ?) and (e.i...
+                                                             ^"
+      127.0.0.1 - admin      - [24/04/2012 11:04:37] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ... m,bt_exemplar ex,bt_obra o WHERE (e.idusuario = ?) and (e.i...
+                                                             ^"
+      127.0.0.1 - admin      - [24/04/2012 11:05:35] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...soa p WHERE  (u.idpessoa = p.idpessoa) and (u.idusuario = ?)
+                                                                      ^"
+      127.0.0.1 - admin      - [24/04/2012 11:30:49] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [24/04/2012 11:31:23] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [24/04/2012 11:31:40] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [24/04/2012 11:38:51] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [24/04/2012 11:40:36] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [24/04/2012 16:34:39] "Error in Database: sigaept; ;ERROR:  function upper(integer) does not exist
+LINE 1: ...utor,o.idobra FROM   bt_autor a,bt_obra o WHERE ( upper(nume...
+                                                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [24/04/2012 16:37:29] "Error in Database: sigaept; ;ERROR:  column "nnumerodaobra" does not exist
+LINE 1: ....idobra FROM   bt_obra o,bt_autor a WHERE ( upper(nnumerodao...
+                                                             ^"
+      127.0.0.1 - sandala    - [24/04/2012 16:37:48] "Error in Database: sigaept; ;ERROR:  function upper(integer) does not exist
+LINE 1: ...utor,o.idobra FROM   bt_obra o,bt_autor a WHERE ( upper(nume...
+                                                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [24/04/2012 16:38:42] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer ~~ unknown
+LINE 1: ...ROM   bt_obra o,bt_autor a WHERE ( (numerodaobra) like ('976...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 -            - [25/04/2012 15:06:35] "Sessão encerrada por timeout."
+      127.0.0.1 - sandala    - [25/04/2012 15:41:26] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [25/04/2012 16:18:16] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [25/04/2012 16:22:37] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [25/04/2012 16:26:31] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [26/04/2012 15:39:15] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [26/04/2012 15:53:52] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [27/04/2012 15:26:31] "Error in Database: sigaept; ;ERROR:  column "emprhoras" does not exist
+LINE 1: SELECT emprhoras FROM   bt_emprestimo_temp WHERE idemprestim...
+               ^"
+      127.0.0.1 - admin      - [30/04/2012 13:39:21] "Error in Database: sigaept; ERROR:  value too long for type character varying(6)"
+      127.0.0.1 - admin      - [02/05/2012 09:17:26] "Error in Database: sigaept; ERROR:  syntax error at end of input
+LINE 1: DELETE FROM bt_colecao WHERE idcolecao = ?
+                                                  ^"
+      127.0.0.1 - admin      - [02/05/2012 09:56:23] "Error in Database: sigaept; ERROR:  value too long for type character(1)"
+      127.0.0.1 -            - [02/05/2012 11:05:35] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [02/05/2012 11:37:24] "Error in Database: sigaept; ERROR:  null value in column "idestadofuturo" violates not-null constraint"
+      127.0.0.1 - admin      - [02/05/2012 12:25:51] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...icador1,indicador2 FROM   bt_etiqueta WHERE (idetiqueta = ?)
+                                                                      ^"
+      127.0.0.1 - admin      - [02/05/2012 12:25:59] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...icador1,indicador2 FROM   bt_etiqueta WHERE (idetiqueta = ?)
+                                                                      ^"
+      127.0.0.1 - admin      - [03/05/2012 16:39:44] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "2222-3333""
+      127.0.0.1 - admin      - [09/05/2012 11:20:57] "Error in Database: sigaept; ;ERROR:  relation "ad_processoemail" does not exist"
+      127.0.0.1 - admin      - [09/05/2012 11:21:18] "Error in Database: sigaept; ;ERROR:  relation "ad_processoemail" does not exist"
+      127.0.0.1 - admin      - [09/05/2012 11:22:34] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for type numeric: "ifba""
+      127.0.0.1 - admin      - [09/05/2012 11:50:09] "Error in Database: sigaept; ;ERROR:  column em.idexemplar does not exist
+LINE 1: ...  bt_exemplar e,bt_estado em WHERE e.idexemplar = em.idexemp...
+                                                             ^"
+      127.0.0.1 - admin      - [09/05/2012 11:51:27] "Error in Database: sigaept; ;ERROR:  column em.idexemplar does not exist
+LINE 1: ...  bt_exemplar e,bt_estado em WHERE e.idexemplar = em.idexemp...
+                                                             ^"
+      127.0.0.1 -            - [09/05/2012 13:51:18] "Error in Database: common; ERROR:  null value in column "idusuario" violates not-null constraint"
+      127.0.0.1 - admin      - [09/05/2012 15:55:43] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...lar e,bt_obra o,bt_autor a WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+      127.0.0.1 -            - [10/05/2012 11:22:16] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [10/05/2012 11:23:53] "Error in Database: sigaept; ERROR:  update or delete on table "bt_material" violates foreign key constraint "fk_bt_autor_obra_mat" on table "bt_autorobra"
+DETAIL:  Key (idmaterial)=(1242760) is still referenced from table "bt_autorobra"."
+      127.0.0.1 - admin      - [10/05/2012 11:25:04] "Error in Database: sigaept; ERROR:  update or delete on table "bt_material" violates foreign key constraint "fk_bt_autor_obra_mat" on table "bt_autorobra"
+DETAIL:  Key (idmaterial)=(1242760) is still referenced from table "bt_autorobra"."
+      127.0.0.1 - admin      - [10/05/2012 15:45:10] "Error in Database: sigaept; ERROR:  update or delete on table "bt_material" violates foreign key constraint "fk_bt_autor_obra_mat" on table "bt_autorobra"
+DETAIL:  Key (idmaterial)=(1242716) is still referenced from table "bt_autorobra"."
+      127.0.0.1 - admin      - [10/05/2012 16:31:34] "Error in Database: sigaept; ;ERROR:  relation "ad_processoemail" does not exist"
+      127.0.0.1 - admin      - [10/05/2012 16:31:38] "Error in Database: sigaept; ;ERROR:  relation "ad_processoemail" does not exist"
+      127.0.0.1 - admin      - [10/05/2012 16:31:44] "Error in Database: sigaept; ;ERROR:  relation "ad_processoemail" does not exist"
+      127.0.0.1 - admin      - [10/05/2012 16:34:07] "Error in Database: sigaept; ERROR:  relation "ad_processoemail" does not exist"
+      127.0.0.1 - admin      - [11/05/2012 10:50:39] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [11/05/2012 10:50:50] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [11/05/2012 10:51:07] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 -            - [11/05/2012 11:23:53] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [11/05/2012 11:33:05] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [11/05/2012 15:49:54] "Error in Database: sigaept; ERROR:  syntax error at or near "and"
+LINE 1: ..._material WHERE idetiqueta = 53 and ocorrencia =  and idobra...
+                                                             ^"
+      127.0.0.1 - admin      - [11/05/2012 15:50:02] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [11/05/2012 15:50:05] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [11/05/2012 15:50:07] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [11/05/2012 16:20:11] "Error in Database: sigaept; ERROR:  syntax error at or near "and"
+LINE 1: ..._material WHERE idetiqueta = 53 and ocorrencia =  and idobra...
+                                                             ^"
+      127.0.0.1 - admin      - [11/05/2012 16:20:13] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [11/05/2012 16:20:27] "Error in Database: sigaept; ERROR:  syntax error at or near "and"
+LINE 1: ..._material WHERE idetiqueta = 54 and ocorrencia =  and idobra...
+                                                             ^"
+      127.0.0.1 - admin      - [11/05/2012 16:20:28] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [11/05/2012 16:20:52] "Error in Database: sigaept; ERROR:  syntax error at or near "and"
+LINE 1: ..._material WHERE idetiqueta = 53 and ocorrencia =  and idobra...
+                                                             ^"
+      127.0.0.1 - admin      - [11/05/2012 16:54:09] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [11/05/2012 16:54:55] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - admin      - [11/05/2012 17:11:27] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [14/05/2012 09:52:00] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...lar e,bt_obra o,bt_autor a WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+      127.0.0.1 - sandala    - [14/05/2012 10:30:08] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...tado,descricao,mnemonico FROM   bt_estado WHERE idestado = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [14/05/2012 10:54:18] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [14/05/2012 11:14:05] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [14/05/2012 11:14:35] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [14/05/2012 11:15:05] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [14/05/2012 11:15:54] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [14/05/2012 11:27:04] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [14/05/2012 13:39:02] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - alisson    - [14/05/2012 14:53:51] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - otavio     - [14/05/2012 15:13:27] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...iqueta e WHERE e.idetiqueta=m.idetiqueta and e.tag=700 and m...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [14/05/2012 15:27:13] "Error in Database: sigaept; ERROR:  update or delete on table "bt_genero" violates foreign key constraint "fk_bt_obra1_bt_ge" on table "bt_obra"
+DETAIL:  Key (idgenero)=(81) is still referenced from table "bt_obra"."
+      127.0.0.1 - sandala    - [14/05/2012 15:30:48] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [14/05/2012 15:31:24] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [14/05/2012 16:01:49] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - sandala    - [14/05/2012 16:02:13] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+      127.0.0.1 - sandala    - [14/05/2012 16:14:23] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [14/05/2012 16:15:20] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 -            - [15/05/2012 10:56:38] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...iqueta e WHERE e.idetiqueta=m.idetiqueta and e.tag=700 and m...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 -            - [15/05/2012 11:06:51] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...,bt_exemplar e,bt_situacao s WHERE (r.idusuario = ) and (r.i...
+                                                             ^"
+      127.0.0.1 - otavio     - [15/05/2012 11:11:42] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ... bt_reserva r,bt_situacao s WHERE (r.idexemplar = ) and (r.i...
+                                                             ^"
+      127.0.0.1 - otavio     - [15/05/2012 11:15:57] "Error in Database: sigaept; ;ERROR:  column m.autor does not exist
+LINE 1: SELECT r.idreserva,e.numerodotombo,o.titulo,m.autor as autor...
+                                                    ^"
+      127.0.0.1 - otavio     - [15/05/2012 11:16:08] "Error in Database: sigaept; ;ERROR:  column m.autor does not exist
+LINE 1: SELECT r.idreserva,e.numerodotombo,o.titulo,m.autor as autor...
+                                                    ^"
+      127.0.0.1 - otavio     - [15/05/2012 11:54:20] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - otavio     - [15/05/2012 11:57:18] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 -            - [15/05/2012 12:59:18] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...mo e,bt_exemplar x,bt_obra o WHERE (e.idusuario = ) AND (e.d...
+                                                             ^"
+      127.0.0.1 - sandala    - [15/05/2012 13:29:35] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [15/05/2012 13:41:10] "Error in Database: sigaept; ;ERROR:  column e.idobra does not exist
+LINE 1: ...dobra = o.idobra)  and (m.idetiqueta = 53)   and (e.idobra=o...
+                                                             ^"
+      127.0.0.1 - sandala    - [15/05/2012 13:41:12] "Error in Database: sigaept; ;ERROR:  column e.idobra does not exist
+LINE 1: ...dobra = o.idobra)  and (m.idetiqueta = 53)   and (e.idobra=o...
+                                                             ^"
+      127.0.0.1 - sandala    - [15/05/2012 13:49:22] "Error in Database: sigaept; ;ERROR:  column o.idexemplar does not exist
+LINE 1: ...is null) AND (e.idexemplar = x.idexemplar)   AND (o.idexempl...
+                                                             ^"
+      127.0.0.1 - sandala    - [15/05/2012 13:49:24] "Error in Database: sigaept; ;ERROR:  column o.idexemplar does not exist
+LINE 1: ...is null) AND (e.idexemplar = x.idexemplar)   AND (o.idexempl...
+                                                             ^"
+      127.0.0.1 - sandala    - [15/05/2012 14:07:40] "Error in Database: sigaept; ;ERROR:  syntax error at or near "AND"
+LINE 2:           AND (m.idobra = o.idobra)  and (m.idetiqueta = 53)...
+                  ^"
+      127.0.0.1 -            - [15/05/2012 14:52:32] "Sessão encerrada por timeout."
+     10.1.14.17 - sandala    - [15/05/2012 15:55:38] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+     10.1.14.17 - sandala    - [15/05/2012 16:25:53] "Error in Database: sigaept; ERROR:  duplicate key value violates unique constraint "pk_bt_subcampo""
+     10.1.14.17 - sandala    - [15/05/2012 16:46:03] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...bt_exemplar x,bt_etiqueta e WHERE (x.idexemplar = ) AND (e.t...
+                                                             ^"
+     10.1.14.17 - sandala    - [15/05/2012 16:54:33] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+     10.1.14.17 - sandala    - [15/05/2012 17:16:42] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: SELECT idexemplar FROM   bt_exemplar WHERE numerodotombo = ?
+                                                                    ^"
+     10.1.14.17 - sandala    - [15/05/2012 17:16:47] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: SELECT idexemplar FROM   bt_exemplar WHERE numerodotombo = ?
+                                                                    ^"
+     10.1.14.17 - sandala    - [15/05/2012 17:31:49] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...rmissaoemprestimo FROM   bt_validacao WHERE codigoacesso = ?
+                                                                       ^"
+     10.1.14.17 - sandala    - [16/05/2012 09:40:14] "Error in Database: sigabib; Configuration in miolo.conf is missing login for this database!"
+     10.1.14.17 - sandala    - [16/05/2012 09:40:51] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...rmissaoemprestimo FROM   bt_validacao WHERE codigoacesso = ?
+                                                                       ^"
+     10.1.14.17 - otavio     - [16/05/2012 09:42:25] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+     10.1.14.17 - sandala    - [16/05/2012 11:15:59] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...tado,descricao,mnemonico FROM   bt_estado WHERE idestado = ?
+                                                                       ^"
+    10.101.15.8 - sandala    - [16/05/2012 11:58:59] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+    10.101.15.8 - sandala    - [16/05/2012 12:02:21] "Error in Database: sigaept; ERROR:  update or delete on table "bt_material" violates foreign key constraint "fk_bt_autor_obra_mat" on table "bt_autorobra"
+DETAIL:  Key (idmaterial)=(1243256) is still referenced from table "bt_autorobra"."
+    10.101.15.8 - alisson    - [16/05/2012 13:36:59] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+    10.101.15.8 - alisson    - [16/05/2012 13:48:56] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+    10.101.15.8 - alisson    - [16/05/2012 13:49:44] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+    10.101.15.8 - alisson    - [16/05/2012 13:58:26] "Error in Database: sigaept; ERROR:  update or delete on table "bt_unidade" violates foreign key constraint "fk_bt_exemplar3_bt_un" on table "bt_exemplar"
+DETAIL:  Key (idunidade)=(46) is still referenced from table "bt_exemplar"."
+     10.1.14.17 - sandala    - [16/05/2012 15:05:14] "Error in Database: sigaept; ERROR:  syntax error at or near "and"
+LINE 1: ..._material WHERE idetiqueta = 53 and ocorrencia =  and idobra...
+                                                             ^"
+     10.1.14.17 - otavio     - [16/05/2012 15:37:45] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+     10.1.14.17 - sandala    - [17/05/2012 14:33:23] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...lar e,bt_obra o,bt_autor a WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+     10.1.14.17 - sandala    - [17/05/2012 15:05:52] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...lar e,bt_obra o,bt_autor a WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+    10.101.15.8 - sandala    - [18/05/2012 10:20:18] "Error in Database: sigaept; ERROR:  duplicate key value violates unique constraint "pk_bt_direito""
+    10.101.15.8 - sandala    - [18/05/2012 11:10:57] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+    10.101.15.8 - sandala    - [18/05/2012 11:43:32] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...lar e,bt_obra o,bt_autor a WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+    10.101.15.8 - sandala    - [18/05/2012 11:43:39] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...lar e,bt_obra o,bt_autor a WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+    10.101.15.8 - sandala    - [18/05/2012 11:43:49] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...lar e,bt_obra o,bt_autor a WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+    10.101.15.8 -            - [18/05/2012 15:06:57] "Sessão encerrada por timeout."
+    10.101.15.8 - sandala    - [18/05/2012 15:23:22] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+    10.101.15.8 - sandala    - [18/05/2012 15:23:55] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...OM   bt_obra o,bt_autor a WHERE numerodaobra = ?  and a.idau...
+                                                             ^"
+    10.101.15.8 - sandala    - [18/05/2012 15:54:31] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...lar e,bt_obra o,bt_autor a WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+    10.101.15.8 - sandala    - [21/05/2012 14:42:53] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...lar e,bt_obra o,bt_autor a WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+    10.101.15.8 - sandala    - [21/05/2012 15:45:52] "Error in Database: sigabib; Configuration in miolo.conf is missing login for this database!"
+    10.101.15.8 -            - [21/05/2012 17:08:09] "Sessão encerrada por timeout."
+     10.1.14.17 -            - [22/05/2012 12:52:00] "Sessão encerrada por timeout."
+     10.1.14.17 -            - [23/05/2012 10:28:51] "Sessão encerrada por timeout."
+     10.1.14.17 - sandala    - [25/05/2012 10:08:54] "Error in Database: sigaept; ERROR:  update or delete on table "bt_unidade" violates foreign key constraint "fk_bt_exemplar3_bt_un" on table "bt_exemplar"
+DETAIL:  Key (idunidade)=(46) is still referenced from table "bt_exemplar"."
+     10.1.14.17 - sandala    - [25/05/2012 11:15:19] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...lar e,bt_obra o,bt_autor a WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+     10.1.14.17 - sandala    - [25/05/2012 11:15:31] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...lar e,bt_obra o,bt_autor a WHERE e.idexemplar = ? and e.idob...
+                                                             ^"
+    10.101.15.8 - sandala    - [25/05/2012 14:34:19] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+    10.101.15.8 - sandala    - [25/05/2012 14:34:29] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+    10.101.15.8 - sandala    - [25/05/2012 14:34:36] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+    10.101.15.8 - sandala    - [25/05/2012 15:24:35] "Error in Database: sigaept; ERROR:  update or delete on table "bt_unidade" violates foreign key constraint "fk_bt_exemplar3_bt_un" on table "bt_exemplar"
+DETAIL:  Key (idunidade)=(46) is still referenced from table "bt_exemplar"."
+      127.0.0.1 - admin      - [28/05/2012 10:19:46] "File not found by Uses: /home/siga/workspace/trunk/miolo/modules/biblioteca/handlers/handler.class"
+      127.0.0.1 - admin      - [28/05/2012 10:20:43] "File not found by Uses: /home/siga/workspace/trunk/miolo/modules/biblioteca/handlers/handler.class"
+      127.0.0.1 - admin      - [28/05/2012 10:20:48] "File not found by Uses: /home/siga/workspace/trunk/miolo/modules/biblioteca/handlers/handler.class"
+      127.0.0.1 - admin      - [28/05/2012 10:22:14] "File not found by Uses: /home/siga/workspace/trunk/miolo/modules/biblioteca/handlers/handler.class"
+      127.0.0.1 - admin      - [28/05/2012 10:22:52] "File not found by Uses: /home/siga/workspace/trunk/miolo/modules/biblioteca/handlers/handler.class"
+      127.0.0.1 - admin      - [28/05/2012 10:22:57] "File not found by Uses: /home/siga/workspace/trunk/miolo/modules/biblioteca/handlers/handler.class"
+      127.0.0.1 - admin      - [28/05/2012 10:23:33] "File not found by Uses: /home/siga/workspace/trunk/miolo/modules/biblioteca/handlers/handler.class"
+      127.0.0.1 - admin      - [28/05/2012 10:26:25] "File not found by Uses: /home/siga/workspace/trunk/miolo/modules/biblioteca/handlers/handler.class"
+      127.0.0.1 - admin      - [28/05/2012 14:29:25] "Error in Database: sigaept; ;ERROR:  function sem_acentos(character varying) does not exist
+LINE 1: ...4,'t'),(159,'a'),(140,'t'),(62,'b')) AND (((upper(sem_acento...
+                                                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - admin      - [28/05/2012 14:29:37] "Error in Database: sigaept; ;ERROR:  function sem_acentos(character varying) does not exist
+LINE 1: ...4,'t'),(159,'a'),(140,'t'),(62,'b')) AND (((upper(sem_acento...
+                                                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - admin      - [28/05/2012 14:29:46] "Error in Database: sigaept; ;ERROR:  function sem_acentos(character varying) does not exist
+LINE 1: ...4,'t'),(159,'a'),(140,'t'),(62,'b')) AND (((upper(sem_acento...
+                                                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+      127.0.0.1 - admin      - [30/05/2012 11:59:06] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [30/05/2012 15:54:13] "Error in Database: sigaept; ;ERROR:  column ad_processo.idusuario does not exist
+LINE 1: SELECT ad_processo.numpro,ad_processo.idusuario,ad_processo....
+                                  ^"
+      127.0.0.1 - sandala    - [30/05/2012 16:13:20] "Error in Database: sigaept; ;ERROR:  column ad_processo.idusuario does not exist
+LINE 1: SELECT ad_processo.numpro,ad_processo.idusuario,ad_processo....
+                                  ^"
+      127.0.0.1 - sandala    - [30/05/2012 16:13:25] "Error in Database: sigaept; ;ERROR:  column ad_processo.idusuario does not exist
+LINE 1: SELECT ad_processo.numpro,ad_processo.idusuario,ad_processo....
+                                  ^"
+      127.0.0.1 - sandala    - [30/05/2012 16:19:10] "Error in Database: sigaept; ;ERROR:  column ad_processo.idusuario does not exist
+LINE 1: SELECT ad_processo.numpro,ad_processo.idusuario,ad_processo....
+                                  ^"
+      127.0.0.1 - sandala    - [30/05/2012 16:21:47] "Error in Database: sigaept; ;ERROR:  column ad_processo.idusuario does not exist
+LINE 1: SELECT ad_processo.numpro,ad_processo.idusuario,ad_processo....
+                                  ^"
+      127.0.0.1 - sandala    - [30/05/2012 16:41:53] "Error in Database: sigaept; ;ERROR:  column ad_processo.idusuario does not exist
+LINE 1: SELECT ad_processo.numpro,ad_processo.idusuario,ad_processo....
+                                  ^"
+      127.0.0.1 - sandala    - [30/05/2012 16:49:15] "Error in Database: sigaept; ;ERROR:  column ad_processo.idusuario does not exist
+LINE 1: SELECT ad_processo.numpro,ad_processo.idusuario,ad_processo....
+                                  ^"
+      127.0.0.1 - sandala    - [30/05/2012 17:04:14] "Error in Database: sigaept; ;ERROR:  column ad_processo.idusuario does not exist
+LINE 1: SELECT ad_processo.numpro,ad_processo.idusuario,ad_processo....
+                                  ^"
+      127.0.0.1 - sandala    - [01/06/2012 15:49:41] "Error in Database: sigaept; ERROR:  update or delete on table "bt_unidade" violates foreign key constraint "fk_bt_exemplar3_bt_un" on table "bt_exemplar"
+DETAIL:  Key (idunidade)=(46) is still referenced from table "bt_exemplar"."
+      127.0.0.1 - sandala    - [01/06/2012 16:36:12] "File not found by Uses: /home/siga/workspace/trunk/miolo//classes//classes/lookup.class"
+      127.0.0.1 - sandala    - [04/06/2012 15:35:41] "UI::GetForm() : File not found: forms/municipio:frmMunicipio.class"
+      127.0.0.1 - sandala    - [04/06/2012 15:37:31] "UI::GetForm() : File not found: forms/frmMunicipio.class"
+      127.0.0.1 - sandala    - [04/06/2012 15:37:38] "UI::GetForm() : File not found: forms/frmMunicipio.class"
+      127.0.0.1 - sandala    - [04/06/2012 15:46:26] "UI::GetForm() : File not found: forms/frmMunicipio.class"
+      127.0.0.1 - sandala    - [04/06/2012 15:47:58] "UI::GetForm() : File not found: forms/frmMunicipio.class"
+      127.0.0.1 - sandala    - [04/06/2012 16:20:31] "Error in Database: sigaept; ;ERROR:  relation "bt_municipio" does not exist"
+      127.0.0.1 - sandala    - [04/06/2012 16:38:06] "Error in Database: common; ;ERROR:  column p.nome does not exist
+LINE 1: ...nicipio,INITCAP(m.municipio)  as municipio,m.iduf,p.nome as ...
+                                                             ^"
+      127.0.0.1 - sandala    - [04/06/2012 16:45:04] "Error in Database: sigaept; ;ERROR:  relation "bt_municipio" does not exist"
+      127.0.0.1 - sandala    - [05/06/2012 14:13:28] "Error in Database: sigaept; ERROR:  syntax error at or near "and"
+LINE 1: ..._material WHERE idetiqueta = 53 and ocorrencia =  and idobra...
+                                                             ^"
+      127.0.0.1 - sandala    - [05/06/2012 14:21:04] "Error in Database: sigaept; ERROR:  syntax error at or near "and"
+LINE 1: ..._material WHERE idetiqueta = 53 and ocorrencia =  and idobra...
+                                                             ^"
+      127.0.0.1 -            - [05/06/2012 16:23:15] "Sessão encerrada por timeout."
+      127.0.0.1 - sandala    - [06/06/2012 14:59:37] "Error in Database: sigaept; <br>ERROR:  insert or update on table "bt_material" violates foreign key constraint "fk_bt_material1_bt_su"
+DETAIL:  Key (idetiqueta,subcampo)=(53,1) is not present in table "bt_subcampo"."
+      127.0.0.1 - sandala    - [06/06/2012 15:42:53] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = bt_autor
+LINE 1: ...ROM   bt_autor a WHERE (a.idautor = '17')  and (subcampo=a )
+                                                                   ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [06/06/2012 15:42:59] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = bt_autor
+LINE 1: ...ROM   bt_autor a WHERE (a.idautor = '17')  and (subcampo=a )
+                                                                   ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [06/06/2012 15:43:00] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = bt_autor
+LINE 1: ...ROM   bt_autor a WHERE (a.idautor = '17')  and (subcampo=a )
+                                                                   ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [06/06/2012 15:43:01] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = bt_autor
+LINE 1: ...ROM   bt_autor a WHERE (a.idautor = '17')  and (subcampo=a )
+                                                                   ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [06/06/2012 15:43:32] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = bt_autor
+LINE 1: ...M   bt_autor a WHERE (a.idautor = '17')  and (a.subcampo=a )
+                                                                   ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [06/06/2012 16:28:39] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [06/06/2012 16:31:49] "Error in Database: sigaept; ;ERROR:  syntax error at or near "and"
+LINE 1: ...   bt_material WHERE idobra=73225 and ocorrencia= and idetiq...
+                                                             ^"
+      127.0.0.1 - sandala    - [06/06/2012 16:35:48] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [06/06/2012 16:39:14] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [06/06/2012 16:47:20] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [06/06/2012 16:49:17] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [06/06/2012 16:53:53] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [08/06/2012 09:49:53] "Error in Database: sigaept; <br>ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [08/06/2012 10:40:43] "Error in Database: sigaept; ERROR:  update or delete on table "bt_unidade" violates foreign key constraint "fk_bt_exemplar3_bt_un" on table "bt_exemplar"
+DETAIL:  Key (idunidade)=(46) is still referenced from table "bt_exemplar"."
+      127.0.0.1 - sandala    - [08/06/2012 10:43:22] "Error in Database: sigaept; ERROR:  update or delete on table "bt_unidade" violates foreign key constraint "fk_bt_exemplar3_bt_un" on table "bt_exemplar"
+DETAIL:  Key (idunidade)=(46) is still referenced from table "bt_exemplar"."
+      127.0.0.1 -            - [08/06/2012 11:34:42] "Sessão encerrada por timeout."
+      127.0.0.1 - sandala    - [08/06/2012 15:24:00] "Error in Database: sigaept; ERROR:  update or delete on table "bt_unidade" violates foreign key constraint "fk_bt_exemplar3_bt_un" on table "bt_exemplar"
+DETAIL:  Key (idunidade)=(46) is still referenced from table "bt_exemplar"."
+      127.0.0.1 - sandala    - [08/06/2012 16:41:57] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [08/06/2012 16:50:56] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 -            - [12/06/2012 16:01:10] "Sessão encerrada por timeout."
+      127.0.0.1 - sandala    - [12/06/2012 16:46:59] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...unto FROM   bt_assuntoobra WHERE idobra=73167 and idassunto=
+                                                                       ^"
+      127.0.0.1 - sandala    - [12/06/2012 16:47:06] "Error in Database: sigaept; <br>ERROR:  duplicate key value violates unique constraint "pk_bt_indicadores""
+      127.0.0.1 - sandala    - [12/06/2012 16:47:31] "Error in Database: sigaept; <br>ERROR:  duplicate key value violates unique constraint "pk_bt_indicadores""
+      127.0.0.1 - sandala    - [12/06/2012 16:47:44] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 - sandala    - [12/06/2012 16:48:09] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 - sandala    - [12/06/2012 16:53:41] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...t(ocorrencia)) FROM   bt_material WHERE (idobra = ) and (ide...
+                                                             ^"
+      127.0.0.1 - sandala    - [12/06/2012 16:54:11] "Error in Database: sigaept; ERROR:  null value in column "idassunto" violates not-null constraint"
+      127.0.0.1 - sandala    - [12/06/2012 16:54:17] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [12/06/2012 16:54:19] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [12/06/2012 16:54:21] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [12/06/2012 16:54:37] "Error in Database: sigaept; ERROR:  null value in column "idassunto" violates not-null constraint"
+      127.0.0.1 - sandala    - [12/06/2012 16:57:37] "Error in Database: sigaept; ERROR:  value too long for type character(1)"
+      127.0.0.1 - sandala    - [12/06/2012 16:58:00] "Error in Database: sigaept; ERROR:  value too long for type character(1)"
+      127.0.0.1 - sandala    - [13/06/2012 11:41:11] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 -            - [13/06/2012 12:32:14] "Sessão encerrada por timeout."
+      127.0.0.1 -            - [13/06/2012 12:36:39] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "Array""
+      127.0.0.1 -            - [13/06/2012 12:37:23] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "Array""
+      127.0.0.1 -            - [13/06/2012 12:43:55] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: SELECT conteudo FROM   bt_autor WHERE (idautor = ) and indic...
+                                                         ^"
+      127.0.0.1 -            - [13/06/2012 12:48:46] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: SELECT conteudo FROM   bt_autor WHERE (idautor = ) and indic...
+                                                         ^"
+      127.0.0.1 -            - [13/06/2012 12:59:05] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 -            - [13/06/2012 13:00:56] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 -            - [13/06/2012 13:01:02] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 -            - [13/06/2012 13:01:24] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 -            - [13/06/2012 13:01:38] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 -            - [13/06/2012 13:02:24] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 -            - [13/06/2012 13:04:18] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 - sandala    - [13/06/2012 14:47:41] "Error in Database: sigaept; ;ERROR:  column "idobra" does not exist
+LINE 1: SELECT idassunto FROM   bt_assunto WHERE (idobra = 73158)
+                                                  ^"
+      127.0.0.1 - sandala    - [13/06/2012 15:33:43] "Error in Database: sigaept; ;ERROR:  column "$idetiqueta" does not exist
+LINE 1: ...T conteudo FROM   bt_material WHERE (idetiqueta = "$idetique...
+                                                             ^"
+      127.0.0.1 - sandala    - [13/06/2012 15:39:18] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...teudo FROM   bt_material WHERE (idetiqueta = Array) and subc...
+                                                             ^"
+      127.0.0.1 - sandala    - [13/06/2012 16:12:11] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 - sandala    - [13/06/2012 16:12:37] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 - sandala    - [13/06/2012 16:12:48] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 - sandala    - [13/06/2012 16:13:09] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 -            - [14/06/2012 11:02:50] "Sessão encerrada por timeout."
+      127.0.0.1 -            - [14/06/2012 14:21:36] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [14/06/2012 14:23:27] "Error in Database: sigaept; <br>ERROR:  null value in column "idgenero" violates not-null constraint"
+      127.0.0.1 - admin      - [14/06/2012 14:23:27] "Error in Database: sigaept; ERROR:  null value in column "idgenero" violates not-null constraint;ERROR:  syntax error at or near "AND"
+LINE 1: ...ERE e.idetiqueta=a.idetiqueta AND e.idetiqueta=   AND a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [14/06/2012 14:26:49] "Error in Database: sigaept; ;ERROR:  syntax error at or near "AND"
+LINE 1: ...ERE e.idetiqueta=a.idetiqueta AND e.idetiqueta=   AND a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [14/06/2012 14:26:49] "Error in Database: sigaept; ;ERROR:  syntax error at or near "AND"
+LINE 1: ...ERE e.idetiqueta=a.idetiqueta AND e.idetiqueta=   AND a.idau...
+                                                             ^"
+      127.0.0.1 - admin      - [14/06/2012 15:56:32] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...LECT cutter FROM   bt_autor WHERE (idautor = Array) and cutt...
+                                                             ^"
+      127.0.0.1 - admin      - [14/06/2012 16:39:56] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 -            - [18/06/2012 11:38:01] "Sessão encerrada por timeout."
+      127.0.0.1 - sandala    - [19/06/2012 14:42:51] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [19/06/2012 14:46:16] "Error in Database: sigaept; <br>ERROR:  insert or update on table "bt_material" violates foreign key constraint "fk_bt_material1_bt_su"
+DETAIL:  Key (idetiqueta,subcampo)=(154,1) is not present in table "bt_subcampo"."
+      127.0.0.1 - sandala    - [19/06/2012 14:51:59] "Error in Database: sigaept; ;ERROR:  column "indicador" does not exist
+LINE 1: ...d (idetiqueta = 53) and subcampo is NULL  order by indicador
+                                                              ^"
+      127.0.0.1 - admin      - [19/06/2012 15:56:16] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 15:57:15] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 16:12:51] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 16:56:00] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 16:56:09] "Error in Database: sigaept; ;ERROR:  syntax error at or near "AND"
+LINE 1: ...erial m,bt_etiqueta e,bt_autor a where m.idobra=  AND m.idet...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 17:00:31] "Error in Database: sigaept; ;ERROR:  syntax error at or near "AND"
+LINE 1: ...erial m,bt_etiqueta e,bt_autor a where m.idobra=  AND m.idet...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 17:57:27] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 18:06:29] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 18:07:46] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 18:12:58] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 18:13:30] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 18:13:44] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 18:16:43] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 18:18:16] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 18:23:23] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 18:27:02] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 18:27:16] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ... idautor FROM   bt_autorobra WHERE idobra=73167 and idautor=
+                                                                       ^"
+      127.0.0.1 - admin      - [19/06/2012 18:27:18] "Error in Database: sigaept; ;ERROR:  syntax error at or near "AND"
+LINE 1: ...erial m,bt_etiqueta e,bt_autor a where m.idobra=  AND m.idet...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 18:30:36] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - admin      - [19/06/2012 18:32:37] "Error in Database: sigaept; ;ERROR:  syntax error at or near "a"
+LINE 1: ...T a.idautor,a.conteudo,a.idetiqueta,a.ocorrencia  a.cutter a...
+                                                             ^"
+      127.0.0.1 - sandala    - [20/06/2012 15:10:05] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [20/06/2012 15:12:41] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [20/06/2012 15:12:48] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [20/06/2012 15:13:16] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [20/06/2012 15:14:35] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [20/06/2012 15:33:10] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - admin      - [21/06/2012 15:11:15] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 - admin      - [21/06/2012 15:12:12] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - admin      - [21/06/2012 15:14:26] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - admin      - [21/06/2012 15:17:46] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 - admin      - [21/06/2012 15:18:22] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 - admin      - [21/06/2012 15:19:22] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...ECT conteudo FROM   bt_assunto WHERE (idassunto = ) and indi...
+                                                             ^"
+      127.0.0.1 - admin      - [21/06/2012 15:50:20] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - admin      - [21/06/2012 15:51:44] "Error in Database: sigaept; ERROR:  null value in column "subcampo" violates not-null constraint"
+      127.0.0.1 - sandala    - [22/06/2012 14:34:20] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [22/06/2012 14:35:40] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [22/06/2012 14:40:00] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [22/06/2012 14:40:45] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [22/06/2012 14:41:38] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [22/06/2012 14:43:26] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [22/06/2012 14:43:39] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [22/06/2012 14:45:45] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [22/06/2012 14:45:57] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [22/06/2012 14:46:09] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [22/06/2012 14:46:16] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [22/06/2012 14:50:17] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [22/06/2012 14:51:00] "Error in Database: sigaept; <br>ERROR:  operator does not exist: character = integer
+LINE 1: ...po='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [22/06/2012 15:36:03] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [22/06/2012 15:41:24] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...emonstracao,obsoleto FROM   bt_etiqueta WHERE idetiqueta = ?
+                                                                       ^"
+      127.0.0.1 - sandala    - [22/06/2012 15:54:10] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "Barbosa, Rosana""
+      127.0.0.1 - admin      - [27/06/2012 16:04:28] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...icadores WHERE (idobra = 73233) and (idetiqueta = ) and indi...
+                                                             ^"
+      127.0.0.1 - admin      - [27/06/2012 16:04:45] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...icadores WHERE (idobra = 73233) and (idetiqueta = ) and indi...
+                                                             ^"
+      127.0.0.1 - admin      - [27/06/2012 16:06:02] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...icadores WHERE (idobra = 73233) and (idetiqueta = ) and indi...
+                                                             ^"
+      127.0.0.1 - admin      - [27/06/2012 16:17:42] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...icadores WHERE (idobra = 73233) and (idetiqueta = ) and indi...
+                                                             ^"
+      127.0.0.1 - admin      - [27/06/2012 16:18:17] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...icadores WHERE (idobra = 73233) and (idetiqueta = ) and indi...
+                                                             ^"
+      127.0.0.1 - admin      - [27/06/2012 16:45:36] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...CT conteudo FROM   bt_autor WHERE (idautor = Array) and indi...
+                                                             ^"
+      127.0.0.1 - admin      - [27/06/2012 16:47:26] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...CT conteudo FROM   bt_autor WHERE (idautor = Array) and indi...
+                                                             ^"
+      127.0.0.1 - admin      - [27/06/2012 17:01:13] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ... = 73233) and (idetiqueta = 53) and (ocorrencia = ) and subc...
+                                                             ^"
+      127.0.0.1 - admin      - [27/06/2012 17:35:51] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...a = 73233) and (a.conteudo = b.conteudo) and a.etiqueta = 1%
+                                                                       ^"
+      127.0.0.1 - admin      - [27/06/2012 17:36:02] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...= 73233) and (a.conteudo = b.conteudo) and a.idetiqueta = 1%
+                                                                       ^"
+      127.0.0.1 - admin      - [27/06/2012 17:37:07] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "1%""
+      127.0.0.1 - admin      - [27/06/2012 17:37:56] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer ~~ unknown
+LINE 1: ...33) and (a.conteudo = b.conteudo) and a.idetiqueta LIKE '1%'
+                                                              ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [27/06/2012 17:38:06] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: ...3233) and (a.conteudo = b.conteudo) and a.idetiqueta LIKE 1%
+                                                                       ^"
+      127.0.0.1 - admin      - [27/06/2012 17:38:48] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer ~~ unknown
+LINE 1: ...33) and (a.conteudo = b.conteudo) and a.idetiqueta LIKE '1%'
+                                                              ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [27/06/2012 17:39:05] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer ~~ unknown
+LINE 1: ...3) and (a.conteudo = b.conteudo) and a.idetiqueta LIKE '15%'
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [27/06/2012 17:39:09] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer ~~ unknown
+LINE 1: ...33) and (a.conteudo = b.conteudo) and a.idetiqueta LIKE '1%'
+                                                              ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [27/06/2012 17:40:04] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer ~~ unknown
+LINE 1: ...73233 and a.conteudo = b.conteudo and a.idetiqueta LIKE '1%'
+                                                              ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [27/06/2012 17:40:24] "Error in Database: sigaept; ;ERROR:  operator does not exist: integer ~~ unknown
+LINE 1: ...3233 and a.conteudo = b.conteudo and a.idetiqueta like '154'
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [27/06/2012 17:52:16] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: SELECT conteudo FROM   bt_autor WHERE (ocorrencia = )
+                                                            ^"
+      127.0.0.1 - admin      - [27/06/2012 17:52:26] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: SELECT conteudo FROM   bt_autor WHERE (ocorrencia = )
+                                                            ^"
+      127.0.0.1 - sandala    - [28/06/2012 14:32:35] "Error in Database: sigaept; ;ERROR:  relation "bt_municipio" does not exist"
+      127.0.0.1 -            - [29/06/2012 17:03:38] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [03/07/2012 17:20:09] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 17:37:41] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 17:38:56] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 17:39:33] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 17:40:16] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 17:43:11] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 17:44:12] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 17:45:13] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 17:45:44] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 17:56:57] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:06:13] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:07:19] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:08:28] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:10:04] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:11:35] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:15:30] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:17:52] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:18:21] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:19:24] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:19:56] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:20:36] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:22:21] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:49:00] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:49:55] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:50:36] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:51:12] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [03/07/2012 18:52:39] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [05/07/2012 11:20:45] "Error in Database: sigaept; ;ERROR:  syntax error at or near "AND"
+LINE 1: ...  bt_exemplar WHERE cast(numerodotombo as int) BETWEEN  AND 
+                                                                   ^"
+      127.0.0.1 - admin      - [05/07/2012 11:21:02] "Error in Database: sigaept; ;ERROR:  syntax error at or near "AND"
+LINE 1: ...  bt_exemplar WHERE cast(numerodotombo as int) BETWEEN  AND 
+                                                                   ^"
+      127.0.0.1 - sandala    - [06/07/2012 14:47:46] "Error in Database: sigaept; ;ERROR:  relation "bt_municipio" does not exist"
+      127.0.0.1 -            - [09/07/2012 15:29:09] "Sessão encerrada por timeout."
+      127.0.0.1 - sandala    - [10/07/2012 10:38:01] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ....idetiqueta) and (m.idobra = '73158') and (e.tag = '090')  )
+                                                                      ^"
+      127.0.0.1 - sandala    - [10/07/2012 15:38:32] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Allan""
+      127.0.0.1 -            - [12/07/2012 14:30:48] "Sessão encerrada por timeout."
+      127.0.0.1 -            - [13/07/2012 16:21:40] "Sessão encerrada por timeout."
+      127.0.0.1 - admin      - [13/07/2012 16:22:39] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [13/07/2012 17:34:17] "Error in Database: sigaept; ;ERROR:  invalid input syntax for integer: "2222-3333""
+      127.0.0.1 - admin      - [13/07/2012 18:19:39] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - admin      - [13/07/2012 18:20:42] "Error in Database: sigaept; ERROR:  insert or update on table "bt_notainfracao" violates foreign key constraint "fk_bt_notainfracao2_bt_in"
+DETAIL:  Key (idinfracao)=(0) is not present in table "bt_infracao"."
+      127.0.0.1 - sandala    - [16/07/2012 15:55:56] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Bragança , Luis""
+      127.0.0.1 - sandala    - [16/07/2012 15:58:56] "Error in Database: sigaept; ;ERROR:  syntax error at or near "AND"
+LINE 1: ...ERE e.idetiqueta=a.idetiqueta AND e.idetiqueta=   AND a.idau...
+                                                             ^"
+      127.0.0.1 - sandala    - [16/07/2012 16:01:51] "Error in Database: sigaept; <br>ERROR:  insert or update on table "bt_material" violates foreign key constraint "fk_bt_material1_bt_su"
+DETAIL:  Key (idetiqueta,subcampo)=(154,1) is not present in table "bt_subcampo"."
+      127.0.0.1 - sandala    - [18/07/2012 10:28:28] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [18/07/2012 10:29:50] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [18/07/2012 10:30:04] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [18/07/2012 10:30:17] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [18/07/2012 10:32:24] "Error in Database: sigaept; ;ERROR:  column "idusuario" does not exist
+LINE 1: ...demprestimo_temp FROM   bt_emprestimo_temp WHERE (idusuario ...
+                                                             ^"
+      127.0.0.1 - sandala    - [18/07/2012 10:38:25] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - sandala    - [18/07/2012 10:38:58] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 - admin      - [23/07/2012 16:43:11] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ... m,bt_exemplar ex,bt_obra o WHERE (e.idusuario = ?) and (e.i...
+                                                             ^"
+      127.0.0.1 - admin      - [23/07/2012 16:43:16] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ... m,bt_exemplar ex,bt_obra o WHERE (e.idusuario = ?) and (e.i...
+                                                             ^"
+      127.0.0.1 - admin      - [23/07/2012 16:43:20] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ... m,bt_exemplar ex,bt_obra o WHERE (e.idusuario = ?) and (e.i...
+                                                             ^"
+      127.0.0.1 - admin      - [23/07/2012 16:43:27] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...soa p WHERE  (u.idpessoa = p.idpessoa) and (u.idusuario = ?)
+                                                                      ^"
+      127.0.0.1 - admin      - [23/07/2012 16:43:40] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...soa p WHERE  (u.idpessoa = p.idpessoa) and (u.idusuario = ?)
+                                                                      ^"
+      127.0.0.1 - admin      - [23/07/2012 16:43:54] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...soa p WHERE  (u.idpessoa = p.idpessoa) and (u.idusuario = ?)
+                                                                      ^"
+      127.0.0.1 -            - [23/07/2012 17:45:03] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...uo FROM   ad_acessouoreq WHERE (ad_acessouoreq.idusuario = )
+                                                                      ^"
+      127.0.0.1 -            - [23/07/2012 17:45:05] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...uo FROM   ad_acessouoreq WHERE (ad_acessouoreq.idusuario = )
+                                                                      ^"
+      127.0.0.1 -            - [23/07/2012 17:45:06] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...uo FROM   ad_acessouoreq WHERE (ad_acessouoreq.idusuario = )
+                                                                      ^"
+      127.0.0.1 -            - [23/07/2012 17:45:07] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ...uo FROM   ad_acessouoreq WHERE (ad_acessouoreq.idusuario = )
+                                                                      ^"
+      127.0.0.1 - admin      - [02/08/2012 16:08:48] "Error in Database: sigaept; ;ERROR:  operator does not exist: character varying = integer
+LINE 1: ...eicao FROM   ad_restaurante WHERE (ad_restaurante.ativo = 1)
+                                                                   ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 -            - [02/08/2012 16:41:04] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ....iduo=ad_uo.iduo))) WHERE ((ad_gestor.idusuario = ) AND (((T...
+                                                             ^"
+      127.0.0.1 -            - [02/08/2012 16:41:09] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ....iduo=ad_uo.iduo))) WHERE ((ad_gestor.idusuario = ) AND (((T...
+                                                             ^"
+      127.0.0.1 -            - [02/08/2012 16:41:10] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ....iduo=ad_uo.iduo))) WHERE ((ad_gestor.idusuario = ) AND (((T...
+                                                             ^"
+      127.0.0.1 -            - [02/08/2012 16:41:11] "Error in Database: sigaept; ;ERROR:  syntax error at or near ")"
+LINE 1: ....iduo=ad_uo.iduo))) WHERE ((ad_gestor.idusuario = ) AND (((T...
+                                                             ^"
+      127.0.0.1 - admin      - [02/08/2012 18:12:34] "Error in Database: sigaept; ;ERROR:  column ad_processo.idusuario does not exist
+LINE 1: SELECT ad_processo.numpro,ad_processo.idusuario,ad_processo....
+                                  ^"
+      127.0.0.1 - admin      - [15/08/2012 13:06:51] "Error in Database: sigaept; <br>ERROR:  null value in column "notacirculacao" violates not-null constraint"
+      127.0.0.1 - admin      - [15/08/2012 13:22:21] "Error in Database: sigaept; <br>ERROR:  column "idusuario" of relation "ad_processo" does not exist
+LINE 1: ...,tipo,interes,titulo,assunto,publico,emailinteres,idusuario ...
+                                                             ^"
+      127.0.0.1 - admin      - [15/08/2012 13:24:07] "Error in Database: sigaept; <br>ERROR:  column "idusuario" of relation "ad_processo" does not exist
+LINE 1: ...,tipo,interes,titulo,assunto,publico,emailinteres,idusuario ...
+                                                             ^"
+      127.0.0.1 - admin      - [17/08/2012 16:19:54] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Barbosa, Rosa""
+      127.0.0.1 - admin      - [17/08/2012 16:40:39] "UI::GetForm() : File not found: forms//frmUsuario.class"
+      127.0.0.1 - admin      - [17/08/2012 16:54:30] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 16:57:51] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 16:59:03] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 17:00:06] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 17:00:43] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 17:01:34] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 17:02:06] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 17:02:35] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 17:03:18] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 17:05:39] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 17:16:45] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 17:18:13] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 17:23:52] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 17:25:40] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 17:26:13] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Aristóteles""
+      127.0.0.1 - admin      - [17/08/2012 17:37:05] "Error in Database: sigaept; <br>ERROR:  invalid input syntax for integer: "Barbosa, Rosa""
+      127.0.0.1 - admin      - [17/08/2012 17:39:33] "Error in Database: sigaept; <br>ERROR:  syntax error at or near "WHERE"
+LINE 1: UPDATE bt_obra SET  WHERE (idobra = null)
+                            ^"
+      127.0.0.1 - sandala    - [09/10/2012 10:55:50] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
+      127.0.0.1 -            - [09/10/2012 12:31:03] "Error in Database: sigaept; ;ERROR:  query has no destination for result data
+HINT:  If you want to discard the results of a SELECT, use PERFORM instead.
+CONTEXT:  PL/pgSQL function "sem_acentos" line 2 at SQL statement"
+      127.0.0.1 -            - [09/10/2012 12:31:26] "Error in Database: sigaept; ;ERROR:  query has no destination for result data
+HINT:  If you want to discard the results of a SELECT, use PERFORM instead.
+CONTEXT:  PL/pgSQL function "sem_acentos" line 2 at SQL statement"
+      127.0.0.1 - josesilva  - [09/10/2012 12:32:36] "Error in Database: sigaept; ;ERROR:  query has no destination for result data
+HINT:  If you want to discard the results of a SELECT, use PERFORM instead.
+CONTEXT:  PL/pgSQL function "sem_acentos" line 2 at SQL statement"
+      127.0.0.1 - josesilva  - [09/10/2012 12:33:30] "Error in Database: sigaept; ;ERROR:  query has no destination for result data
+HINT:  If you want to discard the results of a SELECT, use PERFORM instead.
+CONTEXT:  PL/pgSQL function "sem_acentos" line 2 at SQL statement"
+      127.0.0.1 - josesilva  - [09/10/2012 12:34:00] "Error in Database: sigaept; ;ERROR:  query has no destination for result data
+HINT:  If you want to discard the results of a SELECT, use PERFORM instead.
+CONTEXT:  PL/pgSQL function "sem_acentos" line 2 at SQL statement"
+      127.0.0.1 - josesilva  - [09/10/2012 12:48:55] "Error in Database: sigaept; ;ERROR:  query has no destination for result data
+HINT:  If you want to discard the results of a SELECT, use PERFORM instead.
+CONTEXT:  PL/pgSQL function "sem_acentos" line 2 at SQL statement"
+      127.0.0.1 - josesilva  - [09/10/2012 12:49:36] "Error in Database: sigaept; ;ERROR:  query has no destination for result data
+HINT:  If you want to discard the results of a SELECT, use PERFORM instead.
+CONTEXT:  PL/pgSQL function "sem_acentos" line 2 at SQL statement"
+      127.0.0.1 - josesilva  - [09/10/2012 12:49:41] "Error in Database: sigaept; ;ERROR:  query has no destination for result data
+HINT:  If you want to discard the results of a SELECT, use PERFORM instead.
+CONTEXT:  PL/pgSQL function "sem_acentos" line 2 at SQL statement"
+      127.0.0.1 - josesilva  - [09/10/2012 12:49:52] "Error in Database: sigaept; ;ERROR:  query has no destination for result data
+HINT:  If you want to discard the results of a SELECT, use PERFORM instead.
+CONTEXT:  PL/pgSQL function "sem_acentos" line 2 at SQL statement"
+      127.0.0.1 - josesilva  - [09/10/2012 12:50:08] "Error in Database: sigaept; ;ERROR:  query has no destination for result data
+HINT:  If you want to discard the results of a SELECT, use PERFORM instead.
+CONTEXT:  PL/pgSQL function "sem_acentos" line 2 at SQL statement"
+      127.0.0.1 - josesilva  - [09/10/2012 13:01:13] "Error in Database: sigaept; ;ERROR:  syntax error at end of input
+LINE 1: SELECT idexemplar FROM   bt_exemplar WHERE numerodotombo = ?
+                                                                    ^"
+      127.0.0.1 - josesilva  - [10/10/2012 12:42:57] "Error in Database: sigaept; ;ERROR:  relation "bt_municipio" does not exist"
+      127.0.0.1 - josesilva  - [10/10/2012 13:07:40] "UI::GetForm() : File not found: forms/frmMunicipio.class"
+      127.0.0.1 - josesilva  - [10/10/2012 13:08:50] "UI::GetForm() : File not found: forms/municipio.class"
+      127.0.0.1 - josesilva  - [10/10/2012 13:09:57] "Error in Database: sigaept; ;ERROR:  relation "bt_municipio" does not exist"
+      127.0.0.1 - josesilva  - [11/10/2012 11:55:07] "UI::GetForm() : File not found: forms/municipioBiblioteca/frmMunicipioBiblioteca.class"
+      127.0.0.1 - josesilva  - [11/10/2012 12:49:54] "UI::GetForm() : File not found: forms/municipioBiblioteca/teste.class"
+      127.0.0.1 - josesilva  - [11/10/2012 13:10:17] "Error in Database: sigaept; ;ERROR:  relation "bt_municipio" does not exist"
+      127.0.0.1 -            - [16/10/2012 11:00:52] "Sessão encerrada por timeout."
+      127.0.0.1 - josesilva  - [16/10/2012 11:21:15] "Error in Database: sigaept; ERROR:  update or delete on table "bt_unidade" violates foreign key constraint "bt_exemplarperiodico_idunidade_fkey" on table "bt_exemplarperiodico"
+DETAIL:  Key (idunidade)=(45) is still referenced from table "bt_exemplarperiodico"."

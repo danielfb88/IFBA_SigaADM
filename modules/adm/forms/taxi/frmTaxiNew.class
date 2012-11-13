@@ -1,0 +1,101 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+MIOLO::Import('modules::adm::forms::taxi::frmTaxiPai');
+
+class frmTaxiNew extends frmTaxiPai
+{
+	function __construct()
+	{
+		$this->Form('Incluir Novo Taxi');
+		$this->EventHandler();
+	}
+
+	function CreateFields()
+	{
+		$this->CommonFields();
+		$buttons = array
+		(
+			new FormButton("btnNew","Cadastrar Valor")
+		);
+
+		$this->SetButtons($buttons);
+	}
+
+	function btnNew_click()
+	{
+		$data = $this->GetData();
+		$taxi = $this->manager->GetBusiness('adm','taxi');
+		$taxi->SetData($data);
+                $cf = new MCurrencyFormatter();
+                
+		if (substr_count($taxi->valor, ",") == 0)
+                {
+                        $taxi->valor = str_replace(".",",",$taxi->valor);
+                }
+                else
+                {
+                        $taxi->valor = str_replace(".","",$taxi->valor);
+                }
+
+                $taxi->valor = $cf->toDecimal($taxi->valor);
+
+		$inicio = $taxi->dataIni;
+                $final = $taxi->dataFim;
+
+                $partes_da_data = explode('/',$inicio);
+                $datainicial =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+                $partes_da_data = explode('/',$final);
+                $datafinal =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+
+		if($taxi->dataIni == ''){
+			$this->AddError("Selecione a Data Início.");
+		}
+		elseif($taxi->dataFim == ''){
+			$this->AddError("Selecione a Data Fim.");
+		}
+		elseif($taxi->valor == ''){
+			$this->AddError("Informe o valor do Taxi.");
+		}
+		elseif ($datafinal < $datainicial){
+			$this->AddError("A Data fim não deve ser anterior a Data Início.");
+		}
+		elseif($taxi->valor < 0){
+			$this->AddError("O valor do Taxi não pode ser negativo.");
+		}
+		else
+		{
+			try
+			{
+				$taxi->save();
+				$taxi->Log(OP_INS,"Novo Taxi criado");
+				$go = $this->manager->GetActionURL('adm','main:taxi:find',$taxi->dataIni);
+				$this->manager->information("Valor de taxi cadastrado com sucesso.",$this->manager->getActionUrl('adm','main:taxi:find') );
+			}
+			catch (Exception $e)
+			{
+				$this->addError($e->getMessage());
+			}
+		}
+	}
+}
+?>

@@ -1,0 +1,117 @@
+<?
+
+class frmPatrimonioReavaliar extends MForm
+{
+
+	protected $objPatrimonio;
+	protected $perms;
+	
+    function __construct($objPatrimonio)
+    {
+		global $MIOLO,$module,$action,$item;
+		
+		$this->objPatrimonio = $objPatrimonio;
+		$this->perms  = $MIOLO->getPerms();
+        parent::__construct('Reavaliar Item');
+		$this->SetClose(null);
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+		global $MIOLO;
+
+		$fields = array
+			(
+	            new MCurrencyField('valorReavaliado', $this->objPatrimonio->valorReavaliado,'Valor',10),
+				new MCalendarField('dataReavaliacao',date('d/m/Y'),'Data de Reavaliação',20),
+			);
+		
+        $this->SetFields($fields);
+		
+		$buttons = array
+			(
+        	   new MButton('btnSalvar', 'Atualizar')
+            );
+		$this->SetButtons($buttons);
+    }
+
+	public function btnSalvar_click()
+	{        
+        $data = $this->GetData();
+        global $MIOLO;
+		
+		if ($instituicao_usuario == $instituicao_patrimonio || $this->perms->checkAccess('ADM_PATRIMONIOADMIN', A_EXECUTE)) 
+		{
+			$partes_da_data = explode('/',$data->dataReavaliacao);
+            $datareavaliacao =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+
+            $partes_da_data = explode('/',$this->objPatrimonio->dataReavaliacao);
+            $dataultimareavaliacao =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+
+            $partes_da_data = explode('/',$this->objPatrimonio->dataAquisicao);
+            $dataaquisicao =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+
+			if($datainicial > $datafinal)
+            {
+                  $this->addError('É necessário que a data inicial seja inferior a final!');
+            }
+			$cf = new MCurrencyFormatter();
+			if (substr_count($data->valorReavaliado, ",") == 0) 
+			{
+					$data->valorReavaliado = str_replace(".",",",$data->valorReavaliado);
+			}
+			else
+			{
+					$data->valorReavaliado = str_replace(".","",$data->valorReavaliado);
+			}
+	
+			$data->valorReavaliado = $cf->toDecimal($data->valorReavaliado);			
+			
+			if($data->valorReavaliado == "") 
+			{
+				$this->addError('Informe um novo valor para o item.');
+			}
+			elseif($data->valorReavaliado <= 0) 
+			{
+				$this->addError('Informe um valor válido para o item.');
+			}
+			if($data->dataReavaliacao == "")
+			{
+				$this->addError('Informe a data da reavaliação.');
+			}
+			elseif($datareavaliacao < $dataultimareavaliacao)
+			{
+				$this->addError('A data de reavaliação deve ser maior ou igual a data da última reavaliação ( '.$this->objPatrimonio->dataReavaliacao. ' ).');
+			}
+			elseif($datareavaliacao < $dataaquisicao)
+			{
+				$this->addError('A data de reavaliação deve ser maior ou igual a data de aquisição do item ( '.$this->objPatrimonio->dataAquisicao. ' ).');
+			}
+
+			if($this->errors == '')
+			{
+				$this->objPatrimonio->valorReavaliado = $data->valorReavaliado;
+				$this->objPatrimonio->dataReavaliacao = $data->dataReavaliacao;
+	
+				try 
+				{
+					$this->objPatrimonio->save();
+					$this->addInfo("Item Reavaliado com Sucesso.");
+				}	
+				catch(Exception $e)
+				{
+					$this->addError($e->getMessage());
+				} 
+			}else 
+				return;
+		}
+		else 
+		{
+		    $msg = 'Este usuário não tem permissão para acessar este Patrimonio';
+			$this->manager->Information($msg,$this->manager->GetActionURL('adm','main:patrimonio'));
+		}
+	}
+
+ }
+?>

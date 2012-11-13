@@ -1,0 +1,56 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class gridEmpenho extends MDataGrid
+{
+    function __construct($param)
+    {
+        global $MIOLO, $page,$self;
+        $href = $MIOLO->getActionURL('adm','main:empenho:new','#0#');
+        $columns = array(
+			new MDataGridColumn('idEmpenho','Referência','center','true','10%'),
+            new MDataGridHyperlink('licitacao','Licitação',$href,'20%'),
+			new MDataGridColumn('fornecedor','Fornecedor','left','true','70%'),
+		);
+		$this->SetLinkType('hyperlink');
+        $this->setFilter(false);
+        $objEmpenho = $MIOLO->GetBusiness('adm','empenho');
+		$licitacaoEmpenho = trim(strtoupper($param[1]));
+		$fornecedorEmpenho = trim(strtoupper($param[2]));
+		$status = trim(strtoupper($param[3]));
+		if ($status<>''){
+			$query = $objEmpenho->ListByStatus($status);//padrão da página
+		}else{
+			$query = $objEmpenho->ListByStatus('1');
+		}
+			
+		if($fornecedorEmpenho<>''){
+			$query = $objEmpenho->ListByFornecedor($fornecedorEmpenho,$status);
+		}else if($licitacaoEmpenho<>''){
+			$query = $objEmpenho->ListByLicitacao($licitacaoEmpenho,$status);
+		}
+		$href_grid = $MIOLO->GetActionURL('adm',$self,$param);
+		parent::__construct($query, $columns, $href_grid,25);
+		$href = $this->manager->GetActionURL('adm','main:empenho:new','', array('idEmpenho'=>'$id') );
+    }
+}
+?>

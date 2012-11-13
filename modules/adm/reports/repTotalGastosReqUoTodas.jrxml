@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="repTotalGastosReqUo" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="DATAINICIAL" class="java.lang.String"/>
+	<parameter name="ID_USUARIO" class="java.lang.Integer"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y:\\miolo\\modules\\adm\\reports\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="URL_LOGO" class="java.lang.String"/>
+	<parameter name="DATAFINAL" class="java.lang.String"/>
+	<parameter name="IDUO" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[select uo.iduo,
+    uo.sigla,
+    SUM(COALESCE((item.precoestimado * ROUND(item.quantpedida, 0)), 0.00)) as valor
+from (ad_uo as uo left JOIN ad_requisicao as req ON (uo.iduo = req.iduoreq)
+    LEFT JOIN ad_itemreq as item ON (req.idrequisicao = item.idrequisicao))
+where
+(to_date(TO_CHAR(req.datahorareq,'DD/MM/YYYY') ,'DD/MM/YYYY') >= to_date($P{DATAINICIAL},'DD/MM/YYYY'))
+and (to_date(TO_CHAR(req.datahorareq,'DD/MM/YYYY') ,'DD/MM/YYYY') <= to_date($P{DATAFINAL},'DD/MM/YYYY'))
+GROUP BY uo.iduo, uo.sigla
+order by uo.iduo]]>
+	</queryString>
+	<field name="iduo" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="sigla" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="valor" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="68">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport" x="1" y="0" width="535" height="68"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA["Total de Gastos por Tipo de Requisição"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{URL_LOGO}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{ID_USUARIO}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "/common/reports/Cabecalho.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band height="24">
+			<rectangle>
+				<reportElement key="rectangle" positionType="Float" x="1" y="0" width="532" height="23" isPrintWhenDetailOverflows="true" backcolor="#C0C0C0"/>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText" positionType="Float" x="55" y="2" width="176" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font size="14" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Sigla]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" positionType="Float" x="243" y="2" width="172" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font size="14" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="26">
+			<rectangle>
+				<reportElement key="rectangle" stretchType="RelativeToTallestObject" x="1" y="3" width="532" height="22" backcolor="#E2E2E2">
+					<printWhenExpression><![CDATA[new Boolean(!(( $V{COLUMN_COUNT}.intValue() % 2 )==0))]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField" positionType="Float" x="55" y="4" width="176" height="20" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center">
+					<font isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{sigla}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField" positionType="Float" x="243" y="3" width="172" height="23" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center">
+					<font isItalic="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{valor} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{valor} ))]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="17">
+			<line>
+				<reportElement key="line" x="0" y="1" width="533" height="1"/>
+			</line>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="415" y="2" width="80" height="15"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Página "+$V{PAGE_NUMBER}+" de"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField" x="495" y="2" width="40" height="15"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="false">
+				<reportElement key="textField" x="1" y="1" width="414" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

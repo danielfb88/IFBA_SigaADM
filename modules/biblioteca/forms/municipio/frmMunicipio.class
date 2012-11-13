@@ -1,0 +1,73 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmMunicipio extends MCompoundForm
+{
+	public $oid;
+	protected $municipio;
+	protected $module;
+
+	function __construct($obj)
+	{
+		$this->municipio = $obj;
+		$this->module = 'common';
+		parent::__construct();
+		$this->setClose($this->manager->getActionURL($this->module,'main:municipio:find'));
+		$this->setTitle('Município');
+		$this->setIcon($this->manager->getUi()->getImage($this->module,'mini.png'));
+	}
+
+	function CreateFields()
+	{
+		global $context,$history,$self,$MIOLO;
+
+		$municipio = $MIOLO->GetBusiness('common','municipio');
+		$municipio = $municipio->GetById($this->municipio->idMunicipio);
+
+		if ($this->oid == NULL) $this->oid = $municipio->idMunicipio;
+
+		$ui = $this->manager->GetUI();
+		$form = MForm::GetFormValue('form');
+		switch ($form)
+		{
+			case 'dados' :
+				$this->_form[0] = $ui->getForm($this->module,'frmMunicipioDados', $municipio, 'municipio');
+				break;
+			case 'excluir' :
+				$this->_form[0] = $ui->getForm($this->module,'frmMunicipioDel', $municipio, 'municipio');
+				break;
+		}
+		if ($this->_form[0])
+		{
+			$this->_form[0]->setClose($this->manager->getActionURL($this->module, 'main:municipio',$municipio->idMunicipio));
+		}
+
+		$action = $context->action;
+		$this->_panel[0] = $panel = new MActionPanel('pnlCompound','Opções','',false);
+		$panel->AddUserAction('municipio',A_EXECUTE,'Editar',$ui->getImage($this->module,'edit.png'),$this->module,$action, $this->oid, array("form"=>"dados"));
+		$panel->AddUserAction('municipio',A_EXECUTE,'Excluir',$ui->getImage($this->module,'trash.png'),$this->module,$action, $this->oid, array("form"=>"excluir"));
+
+		$this->_info[0]	= new MTextLabel('txtMunicipio',$this->municipio->municipio,'Município');
+		 
+	}
+}
+?>

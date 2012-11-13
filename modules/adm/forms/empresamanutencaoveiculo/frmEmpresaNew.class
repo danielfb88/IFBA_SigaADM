@@ -1,0 +1,120 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmEmpresaNew extends MForm
+{
+    public function __construct()
+    {
+        global $MIOLO;
+        parent::__construct('Nova Empresa');
+        $this->SetClose($MIOLO->GetActionURL('adm','main'));
+        $this->EventHandler();
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
+    }    
+    public function CreateFields()
+    {
+
+		$fields = array(
+			new MTextField('nome','','Nome','20'),
+			new MTextField('cnpj','','CNPJ','18'),	
+			new MTextField('razaoSocial','','Razão Social','40'),
+			new MTextField('rua','','Rua','50'),
+			new MTextField('numero','','Número','5'),
+			new MTextField('bairro','','Bairro','30'),
+			new MHiddenField('idMunicipio'),
+			new LookupTextField('lkpMunicipio','','Município','40'),
+			new MTextField('cep','','CEP','9','Formato: 99999-999'),
+			new MTextField('telefone','','Telefone','13','Formato: (99)9999-9999')
+					);
+
+		$buttons = new MButton('btnEnviar');
+		$this->SetFields($fields);
+		$this->SetButtons($buttons);
+
+		$this->SetFieldAttr('lkpMunicipio','module','common');
+		$this->SetFieldAttr('lkpMunicipio','item','municipio');
+		$this->SetFieldAttr('lkpMunicipio','event','filler');
+		$this->SetFieldAttr('lkpMunicipio','related','idMunicipio,lkpMunicipio');
+
+		$validators = array(
+			new RequiredValidator('lkpMunicipio'),
+			new RequiredValidator('nome'),
+			new CNPJValidator('cnpj'),
+			new RequiredValidator('razaoSocial'),
+			new RequiredValidator('rua'),
+			new RequiredValidator('numero'),
+			new RequiredValidator('bairro'),
+			new CEPValidator('cep'),
+			new RequiredValidator('telefone'),
+			
+							);
+		$this->SetValidators($validators);
+	
+    }
+    function btnEnviar_click()
+    {
+		global $MIOLO;
+		$numero = Form::GetFormValue('numero');
+		$tel 	= Form::GetFormValue('telefone');
+		if(!is_numeric($numero)){
+			$this->addError("O campo número deve conter apenas números!");
+		}
+		else{
+			if(!preg_match("/\([0-9][0-9]\)\ {0,1}[0-9]{4}-[0-9]{4}/i", $tel)){
+				$this->addError("O campo deve estar neste formato (99)9999-9999");
+			}
+			else{
+				$objEmpresa = $MIOLO->GetBusiness('adm','empresamanutencaoveiculo');
+				$data = $this->getData();
+				$empresaCnpj = $objEmpresa->listByCnpj($data->cnpj);
+				if ($empresaCnpj->result) // Se houver empresa com este cnpj
+				{
+					$this->AddError("Há registro de uma empresa com este cnpj no sistema. Não é possivel duplicá-lo");
+				}
+				else
+				{
+					$objEmpresa->setData($data);
+					$var = $objEmpresa->checkSpace($objEmpresa);
+					if ($var)
+					{
+						$this->AddError("Favor preencher corretamente o campo: ".$var);
+					}
+					else
+					{
+						$objEmpresa->setMunicipio($data->idMunicipio);
+						try
+						{
+							$objEmpresa->Save();
+							$msg = "Empresa Cadastrada com sucesso";
+							$this->manager->Information($msg,$this->manager->GetActionURL('adm','main:empresamanutencaoveiculo:find'));
+						}
+						catch(Exception $e)
+						{
+							$this->manager->Error($e->getMessage());
+						}
+					}
+			    }
+   			}
+		}
+     }
+}
+?>

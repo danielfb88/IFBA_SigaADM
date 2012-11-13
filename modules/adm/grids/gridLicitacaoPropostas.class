@@ -1,0 +1,91 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+/**
+ * Grid LicitacaoPropostas
+ * Grid de uso geral para lançar propostas dos participantes da licitação
+ * @package br.org.miolo.ufjf.adm.listing
+ */
+
+/**
+ * Use Module Control
+ */
+
+
+class gridLicitacaoPropostas extends MGrid
+{
+	protected $objLicitacao;
+    /**
+     * Constructor
+     */
+    function __construct($objLicitacao)
+    {
+		global $MIOLO;
+		$this->objLicitacao = $objLicitacao;
+
+		$columns = array(
+            new MGridColumn('idinstituicao','left',true,'0%',false),
+			new MGridColumn('Fornecedor','left',true,'70%',true),
+    		new MGridColumn('idLicitacao','left',true,'0%',false),
+    		new MGridColumn('idParticipante','left',true,'0%',false),
+			new MGridColumn('Status','center',true,'10%',true),
+		);
+// retirado tag ",'idf'=>'#3#'" após array('form'=>'propostas' 
+	 	$href_grid = $MIOLO->GetActionURL('adm','main:licitacoes',$objLicitacao->idLicitacao,array('form'=>'propostas','idf'=>'#3#'));
+
+        $query = $this->objLicitacao->ListFornecedoresByLicitacao($this->objLicitacao->idLicitacao);
+
+        parent::__construct($query, $columns, $href_grid,100);
+
+        $this->SetTitle('Fornecedores Participantes');
+        $this->SetRowMethod($this,'MyRowMethod');
+        $this->SetFilter(false);
+        $this->SetIndex(1);
+        $this->SetWidth('100%');
+        $this->SetLinkType('hyperlink');
+		$action = $this->manager->GetActionURL('adm','main:licitacoes',$this->objLicitacao->idLicitacao,array('form'=>'propostas','idf'=>'#4#','idp'=>'#3#'));
+		$this->AddActionText('alt','Proposta',$href_grid);
+    }
+
+    // Método a ser executado antes de renderizar cada linha
+    function MyRowMethod($i, $row, $actions, $columns)
+    {
+        if ($this->objLicitacao->getTotalDePropostasNaoLancadas($row[3]) == 0)
+        {
+            $columns[4]->control[$i]->setValue("CONCLUÍDO");
+        }
+        else
+        {
+            $columns[4]->control[$i]->setValue("NÃO CONCLUÍDO");
+        }
+    }
+
+    function GenerateFooter()
+    {
+        if (!$this->data) 
+        $footer[] = $this->GenerateEmptyMsg();
+        $footer[] = new Separator();
+        $footer[] = $this->GenerateControls();
+        return $footer;
+    }
+}
+?>

@@ -1,0 +1,89 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+/**
+ * Grid Licitacao
+ * Grid de uso geral para selecionar licitacao
+ * @package br.org.miolo.ufjf.adm.grids
+ */
+/**
+ * Use Module Control
+ */
+global $MIOLO;
+$MIOLO->Uses('controls/linklicitacao.class','adm');
+
+class gridDescricao extends MDataGrid
+{
+
+    /**
+     * Constructor
+     */
+    function __construct()
+    {
+        global $MIOLO, $module, $page, $context, $self, $action, $state;
+		$linkLicitacao = new LinkLicitacao('linklicitacao','%0%');
+		
+        //$linkLicitacao = new LinkLicitacao('linklicitacao','%0%');
+        $columns = array(
+		new MDataGridControl($linkLicitacao,'licitacao','Número','center', true,'20%'),
+		new MDataGridColumn('quantidade','Quantidade','center', true,'10%'),
+		new MDataGridColumn('valor','Valor','left', true,'10%'),
+		new MDataGridColumn('status','Status','center', true,'25%'),
+		new MDataGridColumn('instituicao','Fornecedor','center', true,'35%')
+         );
+		
+        $this->SetFilter(false);
+		
+		//filtros
+        $filterDesc = Form::GetFormValue('descricao');
+		$filterCod  = Form::GetFormValue('codmaterial');
+		$filterData = Form::GetFormValue('dataabertura');
+		$filterTipo = Form::GetFormValue('tipo');
+
+        $objMapaLicitacao = $MIOLO->GetBusiness('adm','mapalicitacao');
+        $query = $objMapaLicitacao->ListLicitacaoByDescricao(strtoupper("'%$filterDesc%'"), $filterCod,$filterData,$filterTipo);
+
+        $hrefgrid = $MIOLO->GetActionURL($module,$self);
+
+        parent::__construct($query, $columns, $hrefgrid);
+        $this->SetIndex(1);
+		$this->SetRowMethod($this,'MyRowMethod');
+
+    }
+
+    // Método a ser executado antes de renderizar cada linha
+    function MyRowMethod($i, $row, $actions, $columns)
+    {
+		switch ($row[4])
+		{
+		case '1':$tipo = "MONTADA"; break;
+		case '2':$tipo = "PARTICIPANTES CADASTRADOS"; break;
+		case '3':$tipo = "PROPOSTAS CADASTRADAS"; break;
+		case '4':$tipo = "VENCEDORES DEFINIDOS"; break;
+		case '5':$tipo = "EMPENHADA"; break;
+		} 
+		$columns["status"]->control[$i]->setValue($tipo);
+		$cf = new MCurrencyFormatter();
+		$row[6] = $cf->toDecimal($row[2]) *$cf->toDecimal($row[3]);
+		$columns["valor"]->control[$i]->setValue($cf->formatWithSymbol($row[6],'REAL'));
+    }	
+}

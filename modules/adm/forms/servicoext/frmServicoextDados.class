@@ -1,0 +1,133 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmServicoextDados extends MForm
+{
+    protected $objServico;
+    
+    function __construct($objServico)
+    {
+        $this->objServico = $objServico;
+        parent::__construct('Dados do Serviço Externo');
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {    
+        $opcoes1 = array("S"=>"SIM","N"=>"NÃO");            
+        //$opcoes2 = array("C"=>"CONSUMO","P"=>"PERMANENTE");
+
+        $fields = array(
+			new MTextField('codservico','','Codigo','9','Máximo 9 caracteres'),
+            new MMultiLineField('descricao','','Descricao','',2,60,'Máximo 200'),
+          //  new MTextField('unidade','KG','Unidade','3','Máximo 3 caracteres'),
+          //  new MSelection('permcons','C','Tipo',$opcoes2),
+          //  new MSelection('estocavel','S','Estocável',$opcoes1),
+			new MTextField('idelemento','','Elemento','6','Máximo 6 caracteres'),
+			new MTextField('idsubelemento','','Subelemento','2','Máximo 2 caracteres'),
+            new MHiddenField('idServico'),
+			new MSelection('ativo','S','Ativo',$opcoes1)
+        );
+
+        $this->SetFields($fields);
+        $this->SetFieldAttr('idServico','readonly',true);
+        
+        $buttons = array(
+                  new MButton('btnSalvar','Enviar'),
+        );        
+        $this->SetButtons($buttons);
+        
+/*
+        $validators = array(
+              new RequiredValidator('descricao')
+        );
+        $this->SetValidators($validators);
+*/        
+
+        $this->SetData();
+    }
+
+    function SetData()
+    {
+        $data = $this->objServico;
+        $this->SetFieldValue('idServico',$data->idServico);
+        $this->SetFieldValue('descricao',$data->descricao);
+        $this->SetFieldValue('codservico',$data->codServico);
+        $this->SetFieldValue('idelemento',$data->idelemento);
+        $this->SetFieldValue('idsubelemento',$data->idsubelemento);
+		$this->SetFieldValue('ativo',$data->ativo);
+    }
+
+    public function btnSalvar_click()
+    {
+        $dadosServico = $this->objServico->getData();
+        $data = $this->getData();
+
+        if (($data->idelemento != $dadosServico->idelemento)||($data->idsubelemento != $dadosServico->idsubelemento))
+        {
+              if ($this->objServico->jaFoiEmpenhado()->result == NULL)    //nunca foi empenhado
+              {
+                  $this->salvarAlteracoes();
+              }
+              else
+              {
+                  $this->manager->error('Existe empenho com este Servico. <BR> Não é possível alterar o elemento ou subelemento.');
+              }
+        }
+        else
+        {
+            $this->salvarAlteracoes();
+        }
+    }
+
+    function salvarAlteracoes()
+    {
+        $this->objServico->SetData($this->GetData());
+        try
+        {
+             $this->objServico->save();
+             $this->manager->information("Dados alterados com sucesso.",$this->manager->getActionUrl('adm','main:servicoext:find') );
+        }
+        catch (Exception $e)
+        {
+             $this->AddError($e->GetMessage());
+        }
+    }
+
+
+     /*
+    public function btnSalvar_click()
+    {
+        $this->objServico->SetData($this->GetData());
+        try
+        {
+             $this->objServico->save();
+             //$this->AddInfo("Dados cadastrados com sucesso!");
+             $this->manager->information("Dados cadastrados com sucesso.",$this->manager->getActionUrl('adm','main:servicoext:find') );
+        }
+        catch (Exception $e)
+        {
+             $this->AddError($e->GetMessage());
+        }
+    } */
+}
+?>

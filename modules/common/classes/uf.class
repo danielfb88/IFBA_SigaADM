@@ -1,0 +1,136 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class BusinessCommonUf extends Business
+{
+   var $idUF;
+   var $UF;
+ 
+   function __construct($data=null)
+   {
+       parent::__construct('common',$data);
+    }
+
+    function SetData($data)
+   
+    {
+       $this->idUF = $data->idUF;
+       $this->UF = strtoupper(trim($data->UF));
+    }
+
+    function GetById($idUF)
+    {
+        $this->idUF = $idUF;
+        $this->retrieve();        
+    }
+
+	function GetByName($uf)
+    {
+        $sql = new sql('iduf','cm_uf','(uf=?)');
+        $query = $this->Query($sql,$iduf);
+        if ( !$query->eof() )
+        {
+            $this->SetData($query->GetRowObject());
+        }
+        return $this;
+    }
+
+    function Insert()
+    {   global $MIOLO;
+        $sql = new sql('iduf, uf','cm_uf');
+        $args = array(
+    		$this->iduf,
+		    strtoupper($this->uf)
+        );
+        $ok = $this->Execute($sql->Insert($args));
+        if ($ok) {$this->Log(OP_INS,"iduf = $this->iduf");} 
+        return $ok;
+    }
+
+    function Update()
+    {
+        $sql = new sql('uf','cm_uf','iduf = ?');
+        $args = array(
+		    strtoupper($this->uf),
+    		$this->iduf
+        );
+        $ok = $this->Execute($sql->Update($args));
+        if ($ok) {$this->Log(OP_UPD,"iduf = $this->iduf");} 
+        return $ok;
+    }
+    
+    function Delete()
+    {
+        $sql = new sql('','cm_uf', 'iduf = ?');
+        $ok = $this->Execute( $sql->Delete($this->iduf) );
+        if ($ok) {$this->Log(OP_DEL,"iduf = $this->iduf");} 
+        return $ok;
+    }
+
+    function ListRange($range=NULL)
+    {
+        $sql = new sql('trim(iduf), uf', 'cm_uf', '','uf');
+        $sql->SetRange($range); 
+        $query = $this->Query($sql);
+        return $query;
+    }
+
+	function ListAll()
+    {
+		return $this->ListRange();
+    }
+
+    function CountWhere($where='')
+    {
+        $sql = new sql('*','cm_uf',$where);
+        return $this->_db->Count($sql->Select());
+    }
+
+    function listMunicipios()
+    {
+        $municipio = $this->_miolo->getBusiness('common','municipio');
+        $criteria = $municipio->getCriteria();
+        $criteria->addColumnAttribute('idMunicipio');
+        $criteria->addColumnAttribute('municipio');
+        $criteria->addCriteria('idUf','=',"'$this->idUF'");
+        $criteria->addOrderAttribute('municipio');
+        return $criteria->retrieveAsQuery();
+    }
+    function listEstadosBrasileiros()
+    {
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('idUF');
+        $criteria->addColumnAttribute('UF');
+        $criteria->addCriteria('idUf','not like',"'FB%'");
+        $criteria->addOrderAttribute('UF');
+        return $criteria->retrieveAsQuery();
+    }
+
+
+	function listByNome($nome)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->addCriteria('UF', 'LIKE', strtoupper("'{$nome}%'"));
+		return $criteria->retrieveAsQuery();
+	}
+}
+?>

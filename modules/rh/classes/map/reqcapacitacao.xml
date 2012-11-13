@@ -1,0 +1,16 @@
+<?xml version="1.0" standalone="yes"?> 
+<map>
+    <moduleName>rh</moduleName>
+    <className>reqCapacitacao</className>
+    <tableName>rh_reqcapacitacao</tableName>
+    <databaseName>sigaept</databaseName>
+    <attribute>
+        <attributeName>idUsuario</attributeName>
+        <columnName>idusuario</columnName>
+        <key>primary</key>
+    </attribute>
+    <attribute>
+        <attributeName>login</attributeName>
+        <columnName>login</columnName>
+    </attribute>
+</map>

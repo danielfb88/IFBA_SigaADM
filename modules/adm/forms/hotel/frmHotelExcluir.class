@@ -1,0 +1,71 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+/**
+ * Formulário de exclusão hotel
+ */
+class frmHotelExcluir extends Form
+{
+	/**
+	 * Objeto hotel
+	 * @access protected
+	 * 
+	 */
+	protected $objHotel;
+
+    function __construct($objHotel)
+    {
+		$this->objHotel = $objHotel;
+        parent::__construct('Excluir Hotel');
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+		$action_sim = $this->manager->GetActionURL('adm','main:hotel',$this->objHotel->idHotel,array('form'=>'excluir','conf'=>'sim'));
+		$action_nao = $this->manager->GetActionURL('adm','main:hotel',$this->objHotel->idHotel);
+
+		$conf = $this->GetFormValue('conf');
+
+		if ($conf == 'sim')
+		{
+			try
+			{
+				$this->objHotel->Delete();
+				$this->objHotel->Log(OP_DEL,"Hotel excluído");
+				$this->manager->Information('Hotel excluído com sucesso',$this->manager->GetActionURL('adm','main:hotel:find'));
+			}
+			catch (Exception $e)
+			{
+				$this->manager->Error("Informe o seguinte erro à equipe do CGCO: ".$e->getMessage,$this->manager->GetActionURL('adm','main:hotel',$this->objHotel->idHotel));
+			}
+	   }
+	   else
+	   {
+		   $this->manager->Question("Tem certeza que deseja excluir esse hotel?",$action_sim,$action_nao);
+		}
+	   
+    }
+
+
+ }
+?>

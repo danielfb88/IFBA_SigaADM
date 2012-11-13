@@ -1,0 +1,70 @@
+Abaixo segue um passo-a-passo para a instalação e configuração do MIOLO 2.
+
+
+INSTALANDO: (Linux)
+----------
+TAR.GZ:
+-------
+Se você preferir, poderá baixar o arquivo diretamente em:
+e descompactá-lo, preferencialmente em /usr/local
+
+CVS:
+----
+- acesse o diretório no qual você deseja baixar o repositório.
+
+- conecte no servidor CVS (senha= anonymous):
+  cvs -d:pserver:anonymous@miolo.codigolivre.org.br:/home/cvsroot login
+
+- agora, baixe os arquivos do módulo miolo2:
+  cvs -d:pserver:anonymous@miolo.codigolivre.org.br:/home/cvsroot co miolo2
+
+- agora pode efetuar logoff do CVS:
+  cvs -d:pserver:anonymous@miolo.codigolivre.org.br:/home/cvsroot logout
+
+
+CONFIGURANDO:
+-------------
+Por padrão, o MIOLO está configurado para ser instalado no diretório /usr/local/miolo2,
+dessa forma, se você baixou o repósito para /tmp, mova o diretório /tmp/miolo2 para /usr/local 
+
+Apache:
+-------
+- crie um VirtualHost que aponte para /usr/local/miolo2/html
+
+miolo.conf
+----------
+O arquivo de configurações do MIOLO (miolo.conf) está localizado em /usr/local/miolo2/etc.
+Você perceberá que a nova versão do MIOLO utiliza XML para a definições das configurações.
+O que você deve acertar:
+
+- se você instalou o MIOLO 2 em outro diretório que não /usr/local/miolo2 será necessário
+  alterar todas as configurações onde esse endereço aparece, porém, o ideal é que você mova
+  para o diretório padrão. :-)
+
+Em:  <url>http://miolo2.localhost</url>
+informe: o endereço definido no VirtualHost lá no Apache
+
+
+OUTROS:
+-------
+Em testes preliminares realizados, o limite de memória do PHP deve ser maior que os 8 MB padrão.
+
+
+ACESSANDO:
+----------
+Abra seu navegador a informe o endereço conforme definido no Apache.
+
+
+POR ONDE COMEÇAR:
+-----------------
+Para logar no sistema, utilize admin como usuário e senha ... agora é só fuçar... ;-)
+Acesse as opções no "Menu Principal': Hello world, Tutorial, Hangman...
+Não deixe de olhar os fontes dos arquivos, principalmente do módulo tutorial. Dê uma atenção maior
+aos Controls, onde você encontra exemplos dos controles (widgets) do MIOLO 2.
+Dê uma olhada também no diretório /usr/local/miolo2/docs.
+
+No mais, não se esqueça que esta ainda é uma versão beta e por isso algumas coisas poderão
+não funcionar corretamente... :-)
+
+
+Equipe MIOLO

@@ -1,0 +1,189 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class BusinessAdmParticipante extends Business
+{
+    var $idFornecedor;
+    var $idLicitacao;
+    var $fornecedor;
+    var $licitacao;
+    var $mapas;
+
+    function __construct($data = null)
+    {
+        parent::__construct('sigaept', $data);
+    }
+
+    function getIdFornecedor($idParticipante,$idLicitacao)
+    {
+        $criteria = $this->getCriteria();
+        $criteria->addColumnAttribute('idfornecedor');
+        $criteria->addCriteria('idparticipante','=', "$idParticipante");
+        $criteria->addCriteria('idlicitacao','=', "$idLicitacao");
+        return $criteria->retrieveAsQuery()->result[0][0];
+    }
+
+    /* ---------------------------------------
+    Método GetById()
+    ----------------------------------------*/
+    function GetById($id)
+    {
+        $sql = new sql();
+        $sql->SetColumns('
+            idparticipante,
+            idfornecedor,
+            idLicitacao
+        ');
+        $sql->SetTables('
+            ad_participante'
+        );
+        $sql->SetWhere('idparticipante = ?');
+        $query = $this->ObjQuery($sql->Select($id));
+        if ($query)
+        {
+            $this->idparticipante  = $query->fields('idparticipante');
+            $this->idfornecedor = $query->fields('idfornecedor');
+            $this->idLicitacao = $query->fields('idLicitacao');
+        }
+        return $this;
+    }
+
+    /* ---------------------------------------
+    Método Insert()
+    ----------------------------------------*/
+    function Insert()
+    {
+        $sql = new sql();
+        $sql->SetColumns('
+            idparticipante,
+            idfornecedor,
+            idLicitacao
+        ');
+        $sql->SetTables('
+            ad_participante
+        ');
+        $values = array(
+            $this->_db->GetNewId('seq_ad_participante'),
+            $this->idfornecedor,
+            $this->idLicitacao
+        );
+        $ok = $this->Execute($sql->Insert($values));
+        return $ok;
+    }
+
+    /* ---------------------------------------
+    Método SetData()
+    ----------------------------------------*/
+    function SetData($data)
+    {		
+        // seta os atributos do objeto
+        $this->idfornecedor = $data->idfornecedor;
+        $this->idLicitacao = $data->idLicitacao;
+    }
+
+    /* ---------------------------------------
+    Método GetParticipanteByLicitacao()
+    ----------------------------------------*/
+    function GetParticipanteByLicitacao($id)
+    {
+        $sql = new sql();
+        $sql->SetColumns('
+            p.idparticipante,
+            i.nome,
+            m.municipio
+        ');
+        $sql->SetTables('ad_participante p, ad_fornecedor f, cm_instituicao i, cm_municipio m');
+        $sql->SetWhere('p.idfornecedor = f.idfornecedor and f.idinstituicao = i.idinstituicao and i.idmunicipio = m.idmunicipio and p.idLicitacao = ?');
+        $query = $this->ObjQuery($sql->Select($id));
+        return $query;
+    }
+      
+    /* ---------------------------------------------
+    Método Delete()
+    ----------------------------------------------*/
+    function Delete()
+    {
+    }
+
+    /* ---------------------------------------
+    Método checkParticipante()
+    ----------------------------------------*/
+    function checkParticipante($idfornecedor,$idLicitacao)
+    {
+        $sql = new sql();
+        $sql->SetColumns('*');
+        $sql->SetTables('ad_participante');
+        $sql->SetWhere('idfornecedor = ?');
+        $sql->SetWhereAnd('idLicitacao = ?');
+        $values = array($idfornecedor,$idLicitacao);
+        $query = $this->ObjQuery($sql->Select($values));
+        if ($query->result) return true;
+        else return false;
+    }
+
+    /* ---------------------------------------
+    Método checkPotencial()
+    ----------------------------------------*/
+    function checkPotencial($idmaterial)
+    {
+        $sql = new sql();
+        $sql->SetColumns('*');
+        $sql->SetTables('ad_fpotencial');
+        $sql->SetWhere('idmaterial = ?');
+        $sql->SetWhereAnd('idfornecedor = ?');
+        $values = array($idmaterial,$this->idfornecedor);
+        $query = $this->ObjQuery($sql->Select($values));
+        if ($query->result) return true;
+        else return false;
+    }
+
+    /* ---------------------------------------
+    Método InsertPotencial()
+    ----------------------------------------*/
+    function InsertPotencial($idmaterial)
+    {
+        $sql = new sql();
+        $sql->SetColumns('
+            idmaterial,
+            idfornecedor
+        ');
+        $sql->SetTables('ad_fpotencial');
+        $values = array(
+            $idmaterial,
+            $this->idfornecedor
+        );
+        $ok = $this->Execute($sql->Insert($values));
+        return $ok;
+    }
+      
+    function listByLicitacao($id)
+    {
+        $criteria = $this->getCriteria();
+        $criteria->addColumnAttribute('idFornecedor','idFornecedor');
+        $criteria->addColumnAttribute('fornecedor.instituicao.nome','nome');
+        $criteria->addColumnAttribute('fornecedor.instituicao.cgc','cgc');
+        $criteria->addColumnAttribute('fornecedor.instituicao.municipio.municipio','municipio');
+        $criteria->addCriteria('idLicitacao','=', $id);
+        return $criteria->retrieveAsQuery();
+    }
+}
+?>

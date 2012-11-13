@@ -1,0 +1,158 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+
+class BusinessAdmCadAcesso extends Business
+{
+	var $idusuario;	
+	var $nomeuser;
+	var $idbolsa;
+	
+	function BusinessAdmCadAcesso($data=null)
+	{
+		$this->Business('sigaept',$data);
+	}
+
+	function GetById($idusuario,$idbolsa)
+	{
+
+		$sql = new sql('a.idusuario,p.nome as nomeuser,a.idbolsa','');
+		$sql->SetJoin('ad_acessobolsa a','cm_usuario u','a.idusuario = u.idusuario');
+		$sql->SetJoin('cm_usuario u','cm_pessoa p','u.idpessoa = p.idpessoa');
+		$sql->SetWhere("a.idusuario = $idusuario");
+		$sql->SetWhereAnd("a.idbolsa = $idbolsa");
+    
+		$query = $this->Query($sql);
+
+		
+    if ( !$query->eof() )
+    {			
+			$this->SetData($query->GetRowObject());
+    }
+   	return $this;
+  }
+
+  function Insert()
+  {
+  	$sql = new sql('idusuario, idbolsa ','ad_acessobolsa');
+
+		$values = array(
+			$this->idusuario,
+			$this->idbolsa
+		);
+	
+		//$ok = $this->Execute($sql->Insert($values));		
+		try
+		{
+			$this->Execute($sql->Insert($values));
+			$ok = true;
+		}
+		catch(Exception $e)
+		{				
+			$ok = false;
+		}
+	       
+    	return $ok;
+	}
+	
+	function Update()
+ 	{
+  		$sql = new sql('idbolsa','ad_acessobolsa','idusuario= ?');
+        
+		$values = array($this->idusuario,$this->idbolsa);
+
+		//$ok = $this->Execute($sql->Update($values));
+		try
+		{
+			$this->Execute($sql->Update($values));
+			$ok = true;
+		}
+		catch(Exception $e)
+		{				
+			$ok = false;
+		}
+	      
+    	return $ok;
+  	}
+  
+	function Delete()
+	{
+		$sql = new sql();
+		$sql->SetTables('ad_acessobolsa');
+		$sql->SetWhere("idusuario = '{$this->idusuario}'");
+		$sql->SetWhereAnd("idbolsa = '{$this->idbolsa}'");	
+		//$ok = $this->Execute($sql->Delete());
+		try
+		{
+			$this->Execute($sql->Delete());
+			$ok = true;
+		}
+		catch(Exception $e)
+		{				
+			$ok = false;
+		}
+		return $ok;
+	}
+
+  function ListRange($range=NULL)
+  {
+		$sql = new sql('idusuario,idbolsa','ad_acessobolsa','','idusuario');
+		
+		$sql->SetRange($range);
+		
+		$query = $this->Query($sql);
+
+        return $query;
+  }
+
+  function ListAll()
+  {
+		return $this->ListRange();
+  }
+
+	/**
+	**  + $bolsasLiberadas:
+	**    - true = somente bolsas q usuario tem acesso
+	** 		- false= somente bolsas q usuario nao tem acesso
+	**/
+	function ListBolsaPorUsuario($iduser,$bolsasLiberadas=true)
+	{
+		$sql = new sql();
+		$sql->SetColumns('b.idbolsa,b.descricao');
+
+		if( $bolsasLiberadas )
+		{
+			$sql->SetJoin('ad_acessobolsa a','ad_bolsa b','a.idbolsa = b.idbolsa');
+		}
+		else
+		{
+			$sql->SetJoin('ad_acessobolsa a','ad_bolsa b','a.idbolsa <> b.idbolsa');
+		}
+
+		$sql->SetWhere("a.idusuario = $iduser");
+		$sql->SetOrderBy('b.descricao');
+		$query = $this->Query($sql);
+
+		return $query;
+	}
+}
+?>

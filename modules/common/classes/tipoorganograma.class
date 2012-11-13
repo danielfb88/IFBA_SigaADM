@@ -1,0 +1,123 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+class BusinessCommonTipoOrganograma extends MBusiness
+{
+    var $idTipoOrganograma;
+    var $sigla;
+    var $descricao;
+    var $organograma;
+
+    function __construct($data=null)
+    {
+       parent::__construct('common',$data);
+    }
+
+	function SetData($data)
+	{
+		$this->idTipoOrganograma = $data->idTipoOrganograma;
+		$this->sigla = $data->sigla;
+		$this->descricao = $data->descricao;
+	}
+
+    function GetById($idTipoOrganograma)
+    {
+       $this->idTipoOrganograma = $idTipoOrganograma;
+       $this->retrieve();
+       return $this;
+    }
+
+    function ListBySigla($sigla)
+    {
+        $criteria = $this->getCriteria();
+        $criteria->addCriteria('sigla','LIKE',"upper('$sigla%')");
+        return $criteria->retrieveAsQuery();
+    }
+
+    function ListAll()
+    {
+        $criteria = $this->getCriteria();
+        return $criteria->retrieveAsQuery();
+    }
+
+    function GetOrganograma($ativo = true)
+    {
+        global $MIOLO;
+
+        $o = $MIOLO->GetBusiness('common','organograma');
+        $criteria = $o->getCriteria();
+        $criteria->setAssociationAlias('setorPai','S1');
+        $criteria->setAssociationAlias('setores','S2');
+        $criteria->addColumnAttribute('S1.idSetor');
+        $criteria->addColumnAttribute('S2.idSetor');
+        $criteria->addColumnAttribute('S1.sigla','setorpai');
+        $criteria->addColumnAttribute('S2.sigla','setor');
+        $criteria->addCriteria('idTipoOrganograma','=',$this->idTipoOrganograma);
+        $criteria->addCriteria('S2.sigla','<>',"'ROOT'");
+        if ($ativo)
+        {
+            $criteria->addCriteria('S1.dataFim','is','null');
+            $criteria->addCriteria('S2.dataFim','is','null');
+        }
+
+        $criteria->addOrderAttribute('idSetorPai');
+        $criteria->addOrderAttribute('S2.sigla');
+
+        $query = $criteria->retrieveAsQuery();
+        return $query->result;
+    }
+
+    function GetUsersCount()
+    {
+        global $MIOLO;
+
+        $o = $MIOLO->GetBusiness('common','organograma');
+        $criteria = $o->getCriteria();
+        $criteria->setAssociationAlias('setorPai','S1');
+        $criteria->setAssociationAlias('setores','S2');
+        $criteria->addColumnAttribute('S1.idSetor');
+        $criteria->addColumnAttribute('S2.idSetor');
+        $criteria->addColumnAttribute('S1.sigla','setorpai');
+        $criteria->addColumnAttribute('S2.sigla','setor');
+        $criteria->addCriteria('idTipoOrganograma','=',$this->idTipoOrganograma);
+        $criteria->addCriteria('S2.sigla','<>',"'ROOT'");
+        if ($ativo)
+        {
+            $criteria->addCriteria('S1.dataFim','is','null');
+            $criteria->addCriteria('S2.dataFim','is','null');
+        }
+
+        $criteria->addOrderAttribute('idSetorPai');
+        $criteria->addOrderAttribute('S2.sigla');
+
+        $query = $criteria->retrieveAsQuery();
+        return $query->result;
+    }
+    
+     function findByNome($sigla)
+    {
+		$busca = "select count(*) as total from cm_tipoorganograma where sigla = '$sigla'";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
+
+}
+?>

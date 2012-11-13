@@ -1,0 +1,115 @@
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmDotacaoDebito extends Form
+{
+	protected $orcamentointerno;
+	protected $uo;
+	function __construct() 
+	{
+        global $MIOLO;
+        $this->orcamentointerno = $MIOLO->getBusiness('adm','orcamentointerno');
+        $this->uo = $MIOLO->getBusiness('adm','uo');
+        $this->Form('Relação de Dotação e Debito');
+        $this->EventHandler();       
+    }
+
+    function CreateFields()
+	{
+		global $MIOLO, $module;
+		
+        $anos = $this->orcamentointerno->getAnos();
+        $uo = $MIOLO->getBusiness('adm','uo');
+        $rubrica = $MIOLO->getBusiness('adm','rubrica');
+
+        $fields = array(
+            new Selection('selUo','','UO',$uo->ListByNomeAtivo('%','S')->result),
+            new Selection('selAno','','Ano',$anos->result),
+            new Selection('selRubrica','','Rubrica',$rubrica->ListRubricasDoOrcamentoInterno()->result),
+        );
+        
+
+       	$this->SetFields($fields);
+    
+    	$buttons = Array
+		(
+			new FormButton('btnGerarRelatorioJasper', 'Gerar Relatório','pdf'),
+			new FormButton('btnGerarRelatorio', 'Gerar Planilha', '')
+		//	new FormButton('btnGerarCSV', 'Gerar Planilha')
+		);
+
+		$this->SetButtons($buttons);
+	}
+
+	function btnGerarCSV_click()
+	{
+		$data = $this->getData();
+		$orcamentointerno = $this->orcamentointerno;
+
+		$consulta = $orcamentointerno->getDotacaoDebito($data->selAno,$data->selRubrica,$data->selUo);
+	    
+	    
+		$resultAux[] = array('SIGLA','RUBRICA','ANO','CREDITO','DEBITO','PREVISÃO DEBITO','SALDO');
+	    foreach ($consulta->result as $result)
+	    {
+	    	$result[] = number_format(str_replace(',','.',(float)str_replace(',','.',$result[3]) - (float)str_replace(',','.',$result[4]) - (float)str_replace(',','.',$result[5]) ),2,',','');
+	    	$resultAux[] = $result;
+	    	//var_dump($result[0]);
+	    }
+	    $consulta->result = $resultAux;
+		$consulta->getCSV("debito.$data->selAno");
+	}
+		
+	function btnGerarRelatorio_click()
+	{	
+		$report = new MJasperReport( 'sigaept' );
+                $parameters[ 'str_RUBRICA' ] = $this->getFormValue( 'selRubrica' );
+                $parameters[ 'int_IDUO' ] = $this->getFormValue( 'selUo' );
+                $parameters[ 'int_ANO' ] = $this->getFormValue( 'selAno' );
+                $report->Execute( 'adm', 'DotacaoDebitoXls', $parameters, null, 'xls');
+
+
+/*	    global $MIOLO, $module;
+
+	 	$ui = $MIOLO->GetUI();
+     	$report = $ui->GetReport($module,'repDotacaoDebito');
+     	$report->Generate();  
+  */  }
+
+	function btnGerarRelatorioJasper_click()
+	{
+		global $MIOLO;
+
+		$report = new MJasperReport( 'sigaept' );
+		$parameters[ 'str_TITULO' ] = "DOTACAO E DEBITO";
+		$parameters[ 'str_RUBRICA' ] = $this->getFormValue( 'selRubrica' );
+		$parameters[ 'int_IDUO' ] = $this->getFormValue( 'selUo' );
+		$parameters[ 'int_ANO' ] = $this->getFormValue( 'selAno' );
+		$parameters[ 'LOGO' ] = $MIOLO->GetConf( 'home.url' );
+		$parameters[ 'SUBREPORT_DIR' ] = $MIOLO->GetConf('home.modules').'/common/reports/';
+		$parameters[ 'int_IDUSUARIO' ] = $MIOLO->login->idkey;
+
+		$report->Execute( 'adm', 'DotacaoDebito', $parameters );
+	}
+
+
+}
+?>

@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="repRelacaoEmpenhos" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String"/>
+	<parameter name="pURL" class="java.lang.String"/>
+	<parameter name="pIdUsuario" class="java.lang.Integer"/>
+	<parameter name="pDataIni" class="java.lang.String"/>
+	<parameter name="pDataFim" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+  ad_empenho.idempenho,
+  ad_empenho.numero as nroempenho,
+  cm_instituicao.nome as fornecedor,
+  TO_CHAR(AD_EMPENHO.DATAEMPENHO,'DD/MM/YYYY') as dataEmpenho,
+  ad_empenho.tipoempenho,
+  ad_empenho.status,
+  sum(ad_empenhado.valoremp) as valoremp,
+  sum(ad_notafiscal.valor) as valorNF,
+  sum(ad_liquidacao.valor) as valorliq,
+  ad_licitacao.numero as nrolic,
+  SUBSTR(ad_orcamento.idrubrica,1,6) as rubrica,
+  ad_licitacao.numPro,
+  ad_uo.sigla,
+  cm_tabelageral.item2 as statusDesc
+
+FROM
+(ad_empenho INNER JOIN cm_tabelageral ON ((ad_empenho.status=cm_tabelageral.item1))
+         INNER JOIN ad_fornecedor ON ((ad_empenho.idfornecedor=ad_fornecedor.idfornecedor))
+        INNER JOIN cm_instituicao ON ((ad_fornecedor.idinstituicao=cm_instituicao.idinstituicao))
+        INNER JOIN ad_empenhado ON ((ad_empenho.idempenho=ad_empenhado.idempenho))
+        INNER JOIN ad_licitacao ON ((ad_empenhado.idlicitacao=ad_licitacao.idlicitacao))
+     INNER JOIN ad_orcamento ON ((ad_empenhado.idorcamento=ad_orcamento.idorcamento))
+    INNER JOIN ad_itemreq ON ((ad_licitacao.idlicitacao=ad_itemreq.idlicitacao))
+   INNER JOIN ad_requisicao ON ((ad_itemreq.idrequisicao=ad_requisicao.idrequisicao))
+  INNER JOIN ad_uo ON ((ad_requisicao.iduoreq=ad_uo.iduo))
+ LEFT JOIN ad_notafiscal ON ((ad_notafiscal.idempenho=ad_empenho.idempenho))
+ LEFT JOIN ad_liquidacao ON ((ad_notafiscal.idliquidacao=ad_liquidacao.idliquidacao))
+    )
+
+WHERE (cm_tabelageral.tabela = 'AD_EMPENHOSTATUS') and
+      (TO_CHAR(AD_empenho.dataempenho,'YYYY/MM/DD') >= $P{pDataIni}) AND
+      (TO_CHAR(AD_empenho.dataempenho,'YYYY/MM/DD') <= $P{pDataFim})
+
+GROUP BY ad_empenho.idempenho,ad_empenho.numero,cm_instituicao.nome,
+         TO_CHAR(AD_EMPENHO.DATAEMPENHO,'DD/MM/YYYY'), ad_empenho.tipoempenho,ad_empenho.status,ad_licitacao.numero,
+         SUBSTR(ad_orcamento.idrubrica,1,6),ad_licitacao.numPro,cm_tabelageral.item2, ad_uo.sigla, ad_empenhado.valoremp,
+         ad_notafiscal.valor
+
+ORDER BY ad_empenho.numero ASC]]>
+	</queryString>
+	<field name="idempenho" class="java.lang.Integer"/>
+	<field name="nroempenho" class="java.lang.String"/>
+	<field name="fornecedor" class="java.lang.String"/>
+	<field name="dataempenho" class="java.lang.String"/>
+	<field name="tipoempenho" class="java.lang.String"/>
+	<field name="status" class="java.lang.String"/>
+	<field name="valoremp" class="java.math.BigDecimal"/>
+	<field name="valornf" class="java.math.BigDecimal"/>
+	<field name="valorliq" class="java.math.BigDecimal"/>
+	<field name="nrolic" class="java.lang.String"/>
+	<field name="rubrica" class="java.lang.String"/>
+	<field name="numpro" class="java.lang.String"/>
+	<field name="sigla" class="java.lang.String"/>
+	<field name="statusdesc" class="java.lang.String"/>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="84">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-9" stretchType="RelativeToTallestObject" mode="Transparent" x="0" y="2" width="798" height="77"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA["Relação de Empenhos"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "/common/reports/Cabecalho_Paisagem.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="17">
+			<line>
+				<reportElement key="line-1" mode="Transparent" x="3" y="0" width="799" height="1" backcolor="#000000"/>
+			</line>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="41">
+			<rectangle>
+				<reportElement key="rectangle-3" mode="Opaque" x="3" y="5" width="798" height="30" forecolor="#E2E2E2" backcolor="#E2E2E2"/>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-31" x="3" y="5" width="88" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Empenho]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-32" x="91" y="5" width="135" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Fornecedor]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-33" x="226" y="5" width="61" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Data]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-34" x="286" y="5" width="68" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor do Empenho]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-35" x="502" y="5" width="94" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[UO Req]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-36" x="596" y="5" width="70" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[ Valor NF's]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-37" x="353" y="5" width="85" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Licitação]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-38" x="438" y="5" width="64" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Rubrica]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-39" x="666" y="5" width="63" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[ Valor Liquidado]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-40" x="729" y="5" width="72" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Situação]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="30">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-11" isPrintRepeatedValues="false" x="3" y="4" width="88" height="22" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nroempenho}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-12" x="91" y="4" width="135" height="22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{fornecedor}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-13" x="226" y="4" width="61" height="22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{dataempenho}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-14" x="286" y="4" width="68" height="22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{valoremp} == null ? " - " :
+DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{valoremp} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-15" x="354" y="4" width="85" height="22" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nrolic}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-16" x="439" y="4" width="64" height="22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{rubrica}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-17" x="503" y="4" width="94" height="22" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{sigla}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-18" x="596" y="4" width="70" height="22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{valornf} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{valornf} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-19" x="666" y="4" width="63" height="22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{valorliq} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{valorliq} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-20" x="729" y="4" width="72" height="22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{statusdesc}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="29">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="593" y="4" width="170" height="19" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Página " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="764" y="4" width="36" height="19" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line" x="0" y="3" width="801" height="1"/>
+			</line>
+			<textField pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="false">
+				<reportElement key="textField" x="1" y="6" width="209" height="19" forecolor="#000000" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+	<lastPageFooter>
+		<band/>
+	</lastPageFooter>
+	<summary>
+		<band isSplitAllowed="false"/>
+	</summary>
+</jasperReport>

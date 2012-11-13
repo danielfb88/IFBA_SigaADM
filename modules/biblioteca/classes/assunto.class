@@ -1,0 +1,544 @@
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+<?php
+/**
+* @package SIGA
+* @subpackage Biblioteca
+* @author SETEC/MEC
+*/
+
+class BusinessBibliotecaAssunto extends Business
+{
+
+	var $idassunto;
+
+	function BusinessBibliotecaAssunto($data = null)
+	{
+		global $MIOLO, $module;
+      		$this->Business('sigaept', $data);
+	}
+
+
+	function GetData()
+	{
+		$data = new FormData();
+
+		$data->idassunto = $this->idassunto;
+		$data->idetiqueta = $this->idetiqueta;
+		$data->subcampo = $this->subcampo;
+		$data->conteudo = $this->conteudo;
+		$data->indicador = $this->indicador;
+		$data->linha = $this->linha;
+		$data->ocorrencia = $this->ocorrencia;
+		$data->classificacao = $this->classificacao;
+		return $data;
+	}
+
+
+	function SetData($data)
+	{
+		$this->idassunto = $data->idassunto;
+		$this->idetiqueta = $data->idetiqueta;
+		$this->subcampo = $data->subcampo;
+		$this->conteudo = $data->conteudo;
+		$this->indicador = $data->indicador;
+		$this->linha = $data->linha;
+		$this->ocorrencia = $data->ocorrencia;
+		$this->classificacao = $data->classificacao;
+	}
+
+
+	function GetByCodigo($idassunto)
+	{
+
+		$sql = new sql('idassunto,idetiqueta,subcampo,conteudo,indicador,linha,ocorrencia,classificacao','bt_assunto','idassunto = ?');
+	
+		$query = $this->Query($sql,$idassunto);
+
+	        if ( !$query->eof() )
+		{
+			$this->SetData($query->GetRowObject());
+		}
+
+		return $this;
+	}
+   
+	function GetIdassunto()
+	{
+		$sql = new sql("nextval('seq_bt_assunto')");
+        	$query = $this->Query($sql);
+        	return $query;
+	}
+        
+	function ListAssunto()
+	{
+		$sql = new sql('idassunto,idetiqueta,conteudo,classificacao','bt_assunto',"subcampo= 'a'",'conteudo');
+        	$query = $this->Query($sql);
+        	return $query;
+	}
+
+	function ListEtiquetaAssunto()
+	{
+		$sql = new sql('tag','bt_etiqueta',"tag>'599' and tag<'700'");
+	        $query = $this->Query($sql);
+        	return $query;
+	}
+
+	function LastNumeroAssunto()
+	{    
+	  	$sql = new sql("nextval('seq_bt_assunto')");
+		$query = $this->Query($sql);
+	  	return $query->result[0][0];
+	}
+
+	function Insert($idAssunto,$idEtiqueta,$subcampo,$conteudo,$linha,$ocorrencia,$classificacao)
+	{
+		$sql = new sql('idassunto,idetiqueta,subcampo,conteudo,linha,ocorrencia,classificacao','bt_assunto');
+		$values = array($idAssunto,$idEtiqueta,$subcampo,$conteudo,$linha,$ocorrencia,$classificacao);
+		$result = $this->Execute($sql->Insert($values));
+		return $result;
+	}
+
+	function Delete($idassunto)
+	{
+		/*Consulta em bt_assuntoobra para verificar se há algum vínculo do assunto com obra */
+		$sql = new sql('idobra, idmaterial', 'bt_assuntoobra',"idassunto = $idassunto");
+        	$query = $this->Query($sql)->result;
+
+		if ($query!=NULL)
+		{
+			/*Consulta para ter o idEtiqueta e a ocorrência do Assunto em bt_assunto*/			
+			$sql1 = new sql('idetiqueta, ocorrencia', 'bt_assunto',"idassunto = $idassunto");
+        		$query1 = $this->Query($sql1)->result;
+			$idetiqueta = $query1[0][0];
+			$ocorrencia = $query1[0][1];
+
+			/*Criado o for, pois pode haver mais de uma obra vinculada ao assunto*/
+			for ($x=0 ; $x<$query[$x] ; $x++)
+			{
+				$idobra = $query[$x][0];
+				$idmaterial = $query[$x][1];
+	
+				/*Consulta para ter a ocorrência do assunto em bt_material*/			
+				$sql3 = new sql('ocorrencia','bt_material',"idmaterial = $idmaterial");
+				$query3 = $this->Query($sql3)->result;
+				$ocorrenciaMaterial = $query3[0][0];
+
+				/*Apagando o assunto de bt_material*/
+				$sql4 = new sql('','bt_material',"idetiqueta = $idetiqueta and ocorrencia = $ocorrenciaMaterial and idobra= $idobra");
+				$ok4 = $this->Execute($sql4->Delete());
+
+				/*Apagando o assunto de bt_indicador*/
+				$sql5 = new sql('','bt_indicadores',"idetiqueta = $idetiqueta and ocorrencia = $ocorrenciaMaterial and idobra= $idobra");
+				$ok5 = $this->Execute($sql5->Delete());
+
+				/*Apagando o assunto de bt_assuntoobra*/
+				$sql6 = new sql('','bt_assuntoobra',"idassunto = $idassunto and idobra= $idobra and idmaterial = $idmaterial");
+				$ok6 = $this->Execute($sql6->Delete());
+			}
+
+			/*Apagando o assunto de bt_assunto*/
+			$sql2 = new sql('','bt_assunto',"idetiqueta = $idetiqueta and ocorrencia = $ocorrencia");
+			$ok = $this->Execute($sql2->Delete());
+		}
+		else
+		{			
+			/*Consulta para ter o idEtiqueta e a ocorrência do Assunto em bt_assunto*/				
+			$sql1 = new sql('idetiqueta, ocorrencia', 'bt_assunto',"idassunto = $idassunto");
+        		$query1 = $this->Query($sql1)->result;
+			$idetiqueta = $query1[0][0];
+			$ocorrencia = $query1[0][1];
+
+			/*Se não há vínculo com obras, apaga as informações só de bt_assunto*/
+			$sql = new sql('','bt_assunto',"idetiqueta = $idetiqueta and ocorrencia = $ocorrencia");
+			$ok = $this->Execute($sql->Delete());
+		}
+		return $ok;
+	}
+
+	function RetirarCaracteresEspeciais($string)
+	{
+		// as linhas abaixo retiram os ç,ã,ú, ETC ! 
+
+        // $string = eregi_replace("[áàâãä]","a",$string);
+		$a = array("á","à","â","ã","ä");
+		$newstring = str_replace($a,"a",$string); 
+		
+		// $string = eregi_replace("[éèêë]","e",$string);
+		$e = array("é","è","ê","ë");
+		$newstring = str_replace($e,"e",$string);
+		
+		// $string = eregi_replace("[íìîï]","i",$string);
+  		$i = array("í","ì","î","ï");
+  		$newstring = str_replace($i,"i",$string);
+  		
+  		// $string = eregi_replace("[óòôõö]","o",$string);
+        $o = array("ó","ò","ô","õ","ö");
+  		$newstring = str_replace($o,"o",$string);
+  		
+        // $string = eregi_replace("[úùûü]","u",$string);
+        $u = array('ú','ù','û','ü');
+        $newstring = str_replace($u,"u",$string);
+        
+		// $string = eregi_replace("[ñ]","n",$string);
+		$newstring = str_replace("ñ","n",$string);
+  		
+		// $string = eregi_replace("[ç]","c",$string);
+		$newstring = str_replace("ç","c",$string);
+  		
+		// $string = eregi_replace("[ÁÀÂÃÄ]","A",$string);
+		$amasc = array("Á","À","Â","Ã","Ä");
+  		$newstring = str_replace($amasc,"A",$string);
+  		
+		// $string = eregi_replace("[ÉÈÊË]","E",$string);
+		$emasc = array("É","È","Ê","Ë");
+  		$newstring = str_replace($emasc,"E",$string);
+  		
+		// $string = eregi_replace("[ÍÌÎÏ]","I",$string);
+		$imasc = array("Í","Ì","Î","Ï");
+  		$newstring = str_replace($imasc,"I",$string);
+  		
+		// $string = eregi_replace("[ÓÒÔÕÖ]","O",$string);
+		$omasc = array("Ó","Ò","Ô","Õ","Ö");
+  		$newstring = str_replace($omasc,"O",$string);
+  		
+		// $string = eregi_replace("[ÚÙÛÜ]","U",$string);
+		$umasc = array("Ú","Ù","Û","Ü");
+  		$newstring = str_replace($umasc,"U",$string);
+  		
+		// $string = eregi_replace("[Ñ]","N",$string);
+		$newstring = str_replace("Ñ","N",$string);
+  		
+		// $string = eregi_replace("[Ç]","C",$string);
+		$newstring = str_replace("Ç","C",$string);
+  		
+		return $newstring;
+	}
+
+	function GetLastNumAssunto($idEtiqueta)
+	{
+		$sql = new sql("max(ocorrencia) from bt_assunto where idetiqueta = $idEtiqueta");
+        	$query = $this->Query($sql);
+		$result = $query->result[0][0];
+		$result++;
+        	return $result;
+	}
+
+	function GetNumAssunto($idassunto)
+	{
+		$sql = new sql("ocorrencia from bt_assunto where idassunto = $idassunto");
+        	$query = $this->Query($sql);
+		$result = $query->result[0][0];
+        	return $result;
+	}
+
+	function GetEtiquetaById($idassunto)
+	{
+		$sql = new sql("idetiqueta from bt_assunto where idassunto = $idassunto");
+        	$query = $this->Query($sql);
+		$result = $query->result[0][0];
+        	return $result;
+	}
+
+
+	function getAssunto($item, $subcampo, $idEtiqueta)
+    	{
+		$sql = new sql('idassunto,linha,conteudo,classificacao','bt_assunto',"(idassunto = $item) and (subcampo = '$subcampo') and (idetiqueta = $idEtiqueta)",'linha');
+		$query = $this->Query($sql);
+        	return $query;
+    	}
+
+	function saveIndicador($idAssunto,$idEtiqueta, $subcampo,$conteudo,$linha,$ocorrencia, $classificacao,$indicador)
+	{                      
+		$sql = new sql('idassunto,idetiqueta,subcampo,conteudo,linha,ocorrencia,classificacao,indicador','bt_assunto');
+		$values = array($idAssunto,$idEtiqueta, $subcampo,$conteudo, $linha,$ocorrencia, $classificacao,$indicador);
+		$result = $this->Execute($sql->Insert($values));
+		return $result;
+	}
+
+    	function getIndicador($idEtiqueta, $indicador, $ocorrencia)
+    	{
+		$sql = new sql('conteudo','bt_assunto',"(idetiqueta = $idEtiqueta) and (indicador = '$indicador') and (ocorrencia = $ocorrencia)");
+		$query = $this->Query($sql);
+        	return $query;
+    	}
+
+    	function getClassificacao($idEtiqueta,$ocorrencia)
+    	{
+		$sql = new sql('distinct(classificacao)','bt_assunto',"(idetiqueta = $idEtiqueta) and (ocorrencia = $ocorrencia)");
+		$query = $this->Query($sql);
+        	return $query->result[0][0];
+    	}
+
+	function getAssuntoCompleto($idetiqueta,$ocorrencia)
+    	{
+		$sql = new sql('subcampo, conteudo, linha','bt_assunto',"(idetiqueta = $idetiqueta) and (ocorrencia = $ocorrencia) and indicador is null");
+		$query = $this->Query($sql);
+        	return $query->result;
+    	}
+	
+	function getIndicadorAssunto($idetiqueta,$ocorrencia)
+    	{
+		$sql = new sql('indicador, conteudo','bt_assunto',"(idetiqueta = $idetiqueta) and (ocorrencia = $ocorrencia) and indicador is not null");
+		$query = $this->Query($sql);
+        	return $query->result;
+    	}
+
+	function getObrasDoAssunto($idassunto)
+    	{
+		$sql = new sql('idmaterial, idobra, ocorrencia','bt_assuntoobra',"(idassunto = $idassunto)");
+		$query = $this->Query($sql);
+        	return $query->result;
+    	}
+
+	function saveAssuntoObra($idassunto,$idobra,$ocorrencia,$idetiqueta)
+	{
+		$sql1 = new sql('idmaterial','bt_material', "idobra=$idobra and ocorrencia=$ocorrencia and idetiqueta=$idetiqueta and subcampo='a'");
+		$query1 = $this->Query($sql1);
+		$idmaterial = $query1->result[0][0];
+		$sql = new sql('idassunto,idobra,ocorrencia,idmaterial','bt_assuntoobra');
+		$values = array($idassunto,$idobra,$ocorrencia,$idmaterial);
+		$result = $this->Execute($sql->Insert($values));
+		return $result;
+	}
+
+	function desvinculaObra($idmaterial)
+	{
+		/*Consulta para ter o idEtiqueta e a ocorrência do Assunto em bt_assunto*/			
+		$sql1 = new sql('idobra, ocorrencia, idetiqueta', 'bt_material',"idmaterial = $idmaterial");
+		$query1 = $this->Query($sql1)->result;
+		$idobra = $query1[0][0];
+		$ocorrencia = $query1[0][1];
+		$idetiqueta = $query1[0][2];
+
+		/*Apagando o assunto de bt_material*/
+		$sql4 = new sql('','bt_material',"idetiqueta = $idetiqueta and ocorrencia = $ocorrencia and idobra= $idobra");
+		$ok4 = $this->Execute($sql4->Delete());
+
+		/*Apagando o assunto de bt_indicador*/
+		$sql5 = new sql('','bt_indicadores',"idetiqueta = $idetiqueta and ocorrencia = $ocorrencia and idobra= $idobra");
+		$ok5 = $this->Execute($sql5->Delete());
+
+		/*Apagando o assunto de bt_assuntoobra*/
+		$sql6 = new sql('','bt_assuntoobra',"idmaterial = $idmaterial");
+		$ok = $this->Execute($sql6->Delete());
+		return $ok;
+	}
+
+	function getIndicadoresObra($idobra,$idEtiqueta,$ocorrencia)
+	{
+		$sql =  new sql('idindicador','bt_indicadores',"idobra=$idobra and idetiqueta=$idEtiqueta and ocorrencia=$ocorrencia");
+		$query = $this->Query($sql)->result;
+		return $query;
+	}
+	
+	function getIdAssuntoAtualizado($idetiqueta, $ocorrencia)
+	{
+		$sql =  new sql('idassunto','bt_assunto',"idetiqueta=$idetiqueta and ocorrencia=$ocorrencia and subcampo='a'");
+		$query = $this->Query($sql)->result;
+		return $query[0][0];
+	}
+
+	function verificar($idobra, $idassunto)
+	{
+		$sql =  new sql('idassunto','bt_assuntoobra',"idobra=$idobra and idassunto=$idassunto");
+		$query = $this->Query($sql)->result;
+		return $query;
+	}	
+
+	
+	function importacaoAssunto($assuntos,$etiqueta)
+	{
+		$x=0;
+		while ($assuntos[$x][0]<>'a') $x++;
+		$principal = $assuntos[$x][1];
+		$sql =  new sql('a.ocorrencia','bt_assunto a, bt_etiqueta e',"conteudo='$principal' and a.subcampo='a' and e.tag='$etiqueta' and a.idetiqueta=a.idetiqueta");
+		$query = $this->Query($sql)->result;
+		$ocorrencia = $query[0][0];
+		if ($ocorrencia<>Null)
+		{
+			$sql =  new sql('a.subcampo, a.conteudo','bt_assunto a, bt_etiqueta e',"e.tag=$etiqueta and a.ocorrencia = $ocorrencia and indicador is null and e.idetiqueta=a.idetiqueta", 'a.subcampo');
+			$query = $this->Query($sql)->result;
+
+			if (array_diff($query,$assuntos) == null) $retorno=$ocorrencia ;
+			else $retorno=false;
+		}
+		else $retorno = false;
+		return $retorno;
+		
+	}
+
+	function InsertImportacao($idEtiqueta,$subcampo,$conteudo,$linha,$ocorrencia,$classificacao)
+	{
+//$teste = eregi_replace("á","",$conteudo);
+		//$teste = $this->RetirarCaracteresEspeciais($conteudo);
+		$sql = new sql('idassunto,idetiqueta,subcampo,conteudo,linha,ocorrencia,classificacao','bt_assunto');
+		$idAssunto = $this->LastNumeroAssunto();
+		$values = array($idAssunto,$idEtiqueta,$subcampo,$conteudo,$linha,$ocorrencia,$classificacao);
+		$result = $this->Execute($sql->Insert($values));
+		return $idAssunto;
+	}
+	
+	function getByIdSubcampo($item,$subcampo)
+	{
+		$sql = new sql('conteudo,linha','bt_assunto',"idassunto = $item AND (subcampo = ?)");
+		$query = $this->Query($sql,$subcampo);
+		return $query->result;
+	}	
+	
+	function getIndicadorById($item)
+	{
+		$sql = new sql('conteudo','bt_assunto',"(idassunto = $item) and indicador is not null");
+        $query = $this->Query($sql);
+        return $query;
+	}
+	
+	function insereFields($fields,$idAssunto,$ocorrencia,$classificacao,$idSubficha,$idEtiqueta,$transactionLocal = true)
+	{
+        global $MIOLO,$module;
+	   
+        if ($transactionLocal) {
+             $this->BeginTransaction();;
+        }
+       
+        
+        foreach($fields as $campoArray)
+        {
+            $campo = explode('_',$campoArray[0]);
+            $value = $campoArray[1];
+            if ($campo[0] == $idSubficha)
+            {
+                if (is_array($value))
+                {
+                    foreach($value as $i=>$v)
+                    {
+                        $t = explode('] [',$v);
+                        $linha = substr($t[0],1);
+                        $conteudo = substr($t[1],0,strlen($t[1])-1);
+                        $conteudo = trim($this->RetirarCaracteresEspeciais($conteudo));
+                        if($conteudo != null)
+                        {
+                            $this->Insert($idAssunto,$idEtiqueta, $campo[2],$conteudo,$linha,$ocorrencia, $classificacao);
+                        }
+                    }
+                }
+                else
+                {
+                    if ($campo[1] == "IND")
+                    {
+                        $this->saveIndicador($idAssunto,$idEtiqueta, $campo[2],$value,1,$ocorrencia,$classificacao,$campo[2]);
+                    }
+                    else
+                    {
+                        if($value != null)
+                        {
+                            $value = trim($this->RetirarCaracteresEspeciais($value));
+                            $this->Insert($idAssunto, $idEtiqueta, $campo[2],$value,1,$ocorrencia, $classificacao);
+                        }
+                    }
+                }
+            }
+        }
+        
+        if ( $transactionLocal) 
+        {
+            try 
+            {
+                $this->EndTransaction();
+            } 
+            catch (EDatabaseTransactionException $e) 
+            {
+                $msg = $e->getMessage();
+                $MIOLO->logMessage('[ERROR]' . $msg);
+                $MIOLO->error($msg, $MIOLO->GetActionURL($module, $action,null ), 'Fatal Error');            
+            }
+        }
+
+        
+        $ok = ( ! $this->checkError() );
+        return $ok;	
+	}
+	
+	function ListObraByAssunto($idAssunto)
+	{
+		$sql = new sql('idobra','bt_assuntoobra','(idassunto= ?)');
+		$query = $this->Query($sql,$idAssunto);
+		return $query->result[0][0];
+	}   	
+	
+    function updateFields($fields,$idAssunto,$ocorrencia,$classificacao,$idSubficha,$idEtiqueta)
+    {
+        global $MIOLO,$module;
+   
+        $y=0;
+        $ObrasAssunto = $this->getObrasDoAssunto($idAssunto);        
+        $this->BeginTransaction();
+        $this->Delete($idAssunto);
+        $this->insereFields($fields,$idAssunto,$ocorrencia,$classificacao,$idSubficha,$idEtiqueta,false);
+        $obra = $MIOLO->GetBusiness($module,'obra');
+        while ($ObrasAssunto[$y]!=NULL)
+        {
+            $idobra = $ObrasAssunto[$y][1];
+            $y++;
+            $ocorrencia = $temp;
+            $idassunto = $this->getIdAssuntoAtualizado($idEtiqueta,$ocorrencia);
+            $arrayAssunto = $this->GetAssuntoCompleto($idEtiqueta,$ocorrencia);
+            $arrayIndicadores = $this->GetIndicadorAssunto($idEtiqueta,$ocorrencia);
+            $ocorrencia = $obra->GetNextOcorrencia($idobra,$idEtiqueta);
+            for ($x=0;$x<sizeof($arrayAssunto);$x++)
+            {
+                $idmaterial = $obra->saveMaterialAssunto($idobra,$idEtiqueta,$arrayAssunto[$x][0],$arrayAssunto[$x][1],$arrayAssunto[$x][2],$ocorrencia+1);
+            }
+            for ($x=0;$x<sizeof($arrayIndicadores);$x++)
+            {
+                $obra->saveIndicadorObra($idobra,$idEtiqueta,$ocorrencia+1,$arrayIndicadores[$x][0],$arrayIndicadores[$x][1],0);
+            }
+            $this->saveAssuntoObra($idassunto,$idobra,$ocorrencia+1,$idEtiqueta);             
+        }
+       
+        try {
+            $this->EndTransaction();
+        } catch (EDatabaseTransactionException $e) {
+            $msg = $e->getMessage();
+            $MIOLO->logMessage('[ERROR]' . $msg);
+            $MIOLO->error($msg, $MIOLO->GetActionURL($module, $action,null ), 'Fatal Error');            
+        }
+        
+        $ok = ( ! $this->checkError() );
+        return $ok;
+    }
+    
+	function getIdAssuntoByObra($idObra)
+	{
+	  $sql = new sql('idassunto','bt_assuntoobra',"(idobra = $idObra)");
+	  $query = $this->Query($sql);
+	  return $query->result;
+	}
+	
+	
+	function getCamposAssunto($idassunto)
+    {
+		$sql = new sql('a.subcampo, a.conteudo, a.linha, a.indicador, a.idetiqueta, e.tag','bt_assunto a, bt_etiqueta e'," a.idetiqueta = e.idetiqueta AND a.idassunto = $idassunto ");
+		$query = $this->Query($sql);
+       	return $query;
+    }
+
+}
+?>

@@ -1,0 +1,374 @@
+<?PHP
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+<?
+class frmMarc extends Form
+{
+
+	var $objObra;
+	var $objGenero;
+	var $objAutor;
+	var $objAssunto;
+	var $objEtiqueta;
+
+    function frmMarc()  // construtor da Classe
+    {
+		// Título do Formulário
+		$this->Form('MARC');
+
+		//Chama o CreateFileds, etc.
+		$this->EventHandler();
+
+		// Botão "enviar" não aparece
+		$this->defaultButton = false;
+
+		//muda o tema para mostrar apenas area de content
+		$this->manager->getTheme()->setLayout('popup');
+	}
+   
+    function CreateFields()
+    {
+		global $MIOLO, $module, $item;
+
+        
+		$this->objObra = $MIOLO->GetBusiness($module,'obra');
+		$this->objGenero = $MIOLO->GetBusiness($module,'genero');
+		$this->objAutor = $MIOLO->GetBusiness($module,'autor');
+		$this->objAssunto = $MIOLO->GetBusiness($module,'assunto');
+		$this->objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+
+      
+        
+		$camposfixos =  $this->objObra->getCamposFixosByIdobra($item);
+		$material = $this->objObra->getMaterialByIdobra($item);
+		$edicao = $this->objObra->getEdicaoByIdObra($item);
+		$indicadores = $this->objObra->getIndicadoresByIdobra($item);
+		$idautor = $this->objAutor->getIdAutorByObra($item);
+		
+		$cdd = $this->objObra->GetCddByCodigoObra($item);
+		$cdu = $this->objObra->GetCduByCodigoObra($item);
+	
+		$temAutor =0; 
+	
+		$linhas = array();
+		$texto = '';
+		$texto_ind = '';
+		$indcerq = array(17,20,22,40,43,44,80,84,250,255,256,260,300,310,321,500,501,502,504,506,508,515,520,525,530,533,534,538,546,550,580,590,670,752,754,);
+		$vetAutor = array(100,110,111,130,700,710,711,720,730,740,752,754); 
+		$vetAssunto = array(600,610,611,630,650,651);
+		
+		$passou = 0;
+		//acrescenta os camposfixos no tableraw
+		foreach($camposfixos as $c)
+		{
+			$linhas[] = array($c[0], '', str_replace(' ', '&nbsp;', $c[1]));
+			
+			
+		}
+		
+		
+
+		//material[$i] = e.tag, m.ocorrencia, m.subcampo, m.linha, m.conteudo
+		
+		
+		for($i = 0; $i <= count($material); $i++)
+       		 {
+   
+		if( ($material[$i][0] != $material[$i-1][0]) and ($i > 0))//mudou a tag e não é a primeira
+		{
+		  for ($j = 0; $j <= count($indcerq);$j++)
+		  {
+		  	if($material[$i-1][0] == $indcerq[$j])
+		  	{
+		  		 $texto_ind = '#&nbsp;#';
+		  	 }
+		  	 
+		  }
+		
+		
+		//TAG referente ao CDD (o CDU está na 1 função acima e é  = ##)
+		  if($material[$i-1][0] == 82)
+		  {
+		    $texto_ind = '0&nbsp;4';	//Falta caso de cdd abreviado 
+		    $depoisCddCdu = 1;
+
+		  }
+		
+		//TAG referente a LIVROS RAROS
+		  if($material[$i-1][0] == 650)
+		  {
+		    $texto_ind = '#&nbsp;4';	//LIVROS RAROS
+		  }
+		
+		
+		  
+		  
+		  
+		  // Tratamento de autores
+		  for($j = 0; $j <= count($vetAutor);$j++)
+		  {
+		  	if($material[$i-1][0] == $vetAutor[$j])
+		  	{
+				$indTag = $this->objEtiqueta->GetIdByTag($vetAutor[$j]); 
+				$ind1 = $this->objObra->GetIndicador1($item,$indTag->result[0][0]);
+				$ind2 = $this->objObra->GetIndicador2($item,$indTag->result[0][0]);
+				if(($ind1 == NULL) && ($ind2 == NULL))
+				{
+					$ind = $this->objAutor->getIndicadorByIdEtiqueta($item,$indTag->result[0][0],$material[$i-1][1]);
+					$texto_ind = "{$ind[0][0]}&nbsp;{$ind[1][0]}";
+				}
+				else 
+				{
+					$texto_ind = "{$ind1}&nbsp;{$ind2}";
+				}
+		    		$temAutor =1;   
+		    	}
+		  }
+		  
+		  
+		//TAG referente ao TITULO
+		
+		  if  ($material[$i-1][0] == 240)
+		  {
+		    $ind1 = $this->objObra->GetIndicador1($item,59);
+		    $ind2 = $this->objObra->GetIndicador2($item,59);
+		    $texto_ind = "$ind1&nbsp;"."$ind2";	
+		  }
+		  
+		  if  ($material[$i-1][0] == 245)
+		  {
+		    $ind1 = $this->objObra->GetIndicador1($item,62);
+		    $ind2 = $this->objObra->GetIndicador2($item,62);
+		   if(($ind1 == NULL) && ($ind2 == NULL) && $temAutor == 0) $texto_ind = '0&nbsp;'.'0';
+		   if(($ind1 == NULL) && ($ind2 == NULL) && $temAutor == 1) $texto_ind = '1&nbsp;'.'0';
+		   if(($ind1 != NULL) && ($ind2 != NULL)) $texto_ind = "$ind1&nbsp;"."$ind2";	
+		  }
+	  
+		  if  ($material[$i-1][0] == 246)
+		  {
+		    $ind1 = $this->objObra->GetIndicador1($item,63);
+		    $ind2 = $this->objObra->GetIndicador2($item,63);
+		    $texto_ind = "$ind1&nbsp;"."$ind2";	
+		  }
+		  
+			if  ($material[$i-1][0] == 505)
+		  {
+		    $ind1 = $this->objObra->GetIndicador1($item,97);
+		    $texto_ind = "$ind1&nbsp;"."#";	
+		  }
+		  
+		  // Tratamento de assuntos
+		  for($j = 0;$j <= count($vetAssunto);$j++)
+		  {
+		    if($material[$i-1][0] == $vetAssunto[$j])
+		    {
+				$id = $this->objEtiqueta->GetIdByTag($vetAssunto[$j]);
+				$ind1 = $this->objObra->GetIndicador1($item,$id->result[0][0]);
+				$ind2 = $this->objObra->GetIndicador2($item,$id->result[0][0]);
+				$idAssunto = $this->objAssunto->getIdAssuntoByObra($item);
+				/*for ($k = 0; $k < count($idAssunto); $k++)
+				{
+					$indAssunto = $this->objAssunto->getIndicadorById($idAssunto[$k][0]);
+				}*/
+				$texto_ind = "{$ind1}&nbsp;{$ind2}";
+		    }
+		  }
+
+		  
+	                
+              //  rever  $linhas[] = array($material[$i-1][0], $texto_ind, ucwords(strtolower($texto)));   ANTES ESTAVA ASSIM  * Só a primeira maiuscula = ucfirst
+             
+        
+        // Parte referente ao número de chamada, TAG 090
+              if($material[$i-1][0] == 902) //Final do array $material
+              {
+              	$material[$i-1][0] = "090";
+              	if($temAutor == 1) 
+              	{
+					$cutter =  $this->objAutor->getCutterMarcById($idautor[0][0]);
+					if($cdd != NULL)
+					{	
+						$texto = '$a'." $cdd" . ' $b'." $cutter" . ' $c'." $edicao";
+						$texto_ind = "#&nbsp;#";
+					}
+					elseif($cdu != NULL)
+					{	
+						$texto = '$a'." $cdu" . ' $b'." $cutter" . ' $c'." $edicao";
+						$texto_ind = "#&nbsp;#";	
+					}
+				}else
+				{
+					if($cdd != NULL)
+					{	
+						$texto = '$a'." $cdd" . ' $c'." $edicao";
+						$texto_ind = "#&nbsp;#";
+					}
+					elseif($cdu != NULL)
+					{	
+						$texto = '$a'." $cdu" . ' $c'." $edicao";
+						$texto_ind = "#&nbsp;#";	
+					}
+				}
+             }
+             
+            // if($material[$i-1][0] == 902) $material[$i-1][0] = NULL; 
+                $linhas[] = array($material[$i-1][0], ($texto_ind), ($texto));
+                sort($linhas); //Ordenar o array
+				$texto = '';
+				$texto_ind = '';
+               
+			}
+			
+			
+
+			//se houver texto e (mudou a tag ou mudou a ocorrencia), quebra a linha
+			if( ($texto != '') and (($material[$i][0] != $material[$i-1][0]) or ($material[$i][1] != $material[$i-1][1])) )
+			{
+               // $texto_ind .= ($material[$i][1]);
+               switch($material[$i-1][0])
+               {
+               	case 650 :
+               			$id = $this->objEtiqueta->GetIdByTag(650);
+						for ($k = 0; $k < count($idAssunto); $k++)
+						{
+							$indAssunto = $this->objAssunto->getIndicadorById($idAssunto[$k][0]);
+						}
+						$texto_ind = "{$indAssunto->result[0][0]}&nbsp;{$indAssunto->result[1][0]}";
+						$linhas[] = array($material[$i-1][0], $texto_ind, $texto);
+		 				break;
+		 				
+               	case 700 :
+		  				$autorsec = $this->objAutor->getOcorrenciaAutorSecByObra($item);
+		  				for($k=0;$k < count($autorsec)-1;$k++)
+		   				{  
+							$ind = $this->objAutor->getIndicadorByOcorrencia($autorsec[$k][0]);		
+							$texto_ind = "{$ind[0][0]}&nbsp;{$ind[1][0]}";
+		 				}
+		 				$linhas[] = array($material[$i-1][0], $texto_ind, $texto);
+		 				break;
+				
+               	case 740 :
+               			$autorsec = $this->objAutor->getOcorrenciaAutorSecByObra($item);
+		  				for($k=0;$k < count($autorsec)-1;$k++)
+		   				{  
+							$ind = $this->objAutor->getIndicadorByOcorrencia($autorsec[$k][0]);		
+							$texto_ind = "{$ind[0][0]}&nbsp;{$ind[1][0]}";
+		 				}
+		 				$linhas[] = array($material[$i-1][0], $texto_ind, $texto);
+		 				break;
+               }
+                  
+			}
+           
+			//prepara os dados da linha (material)
+			if($material[$i][0] == '902')//para genero, busca a descricao
+			{
+		//		$texto .= '$' . $material[$i][2] . ' ' . (strtolower($this->objGenero->GetByCodigo($material[$i][4])->descricao));
+				$texto = '';
+				$texto_ind = '';
+               
+			}
+			elseif(($material[$i-1][0] == '700') || ($material[$i-1][0] == '650')  || ($material[$i-1][0] == '740'))
+			{
+			$texto = '$' . ($material[$i][2]) . ' ' . ($material[$i][4]) . ' ';
+			}else
+			{
+			$texto .= '$' . ($material[$i][2]) . ' ' . ($material[$i][4]) . ' ';
+		
+			}
+			
+	
+	
+			
+            
+			//dados dos indicadores
+			if($texto_ind == '')
+			{
+			//	$texto_ind = $this->PreparaIndicadores($material[$i][0], $indicadores, $material[$i][1]);
+                			
+            }
+			else
+			{
+				if(($material[$i][0] != $material[$i-1][0]) or ($material[$i][1] != $material[$i-1][1]))
+				{
+                 	   $texto_ind .= "".$this->PreparaIndicadores($material[$i][0], $indicadores, $material[$i][1]);
+				}
+			}
+          
+		}
+        
+		$tabela = new MTableRaw('', $linhas);
+		$tabela->SetAlternate(true);  
+		$fields = Array(
+			$tabela
+		);
+		// Insere os campos
+		$this->SetFields($fields);
+	}
+
+	function PreparaIndicadores($tag, $indicadores, $ocorrencia)
+	{
+		$texto_ind = '';
+
+		//indicadores[$i] = e.tag, i.ocorrencia, i.indicador, i.conteudo;
+		if($indicadores)
+		{
+			foreach($indicadores as $i) //procura o indicador 1 da tag específica no array de indicadores da obra
+			{
+			
+				if( ($i[0] == $tag) and ($i[1] == $ocorrencia) and ($i[2] == '1') )
+				{
+					if(trim($i[3]) == NULL) //se indicador for = ' ', transforma para #
+						$texto_ind = ($i[3]);
+					else
+						$texto_ind = '#';
+					break;
+				}
+			}
+		}
+
+		//preenche com espaço para o caso de não haver indicador 1
+		if($texto_ind == '')
+		{
+			$texto_ind = '&nbsp;';
+		}
+
+		if($indicadores)
+		{
+			foreach($indicadores as $i) //procura o indicador 2 da tag específica no array de indicadores da obra
+			{			
+				if( ($i[0] == $tag) and ($i[1] == $ocorrencia) and ($i[2] == '2') )
+				{
+					if(trim($i[3]) == NULL) //se indicador for = ' ', transforma para #
+						$texto_ind .= "&nbsp;" . ($i[3]);
+						
+						
+						//$texto_ind .= ucfirst($texto_ind);
+						
+					else
+						$texto_ind .= "&nbsp;#";
+					break;
+				}
+			}
+		}
+
+		return $texto_ind;
+	}
+}
+?>

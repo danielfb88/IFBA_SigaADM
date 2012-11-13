@@ -1,0 +1,296 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class BusinessAdmNotaFiscal extends Business
+{
+	public $idNotaFiscal;
+	public $notaFiscal;
+	public $dataNotaFiscal;
+	public $valor;
+	public $desconto;
+	public $idLiquidacao;
+	public $idEmpenho;
+	public $dataAteste;
+	public $liquidacao;
+    public $obs;
+    
+    public $nota;
+	public $empenhado;
+	public $empenho;
+
+	function __construct($data = null)
+	{
+		parent::__construct('sigaept', $data);
+	}
+
+    function OnCreate($data)
+    {
+        if (empty($data))
+        {
+//            $this->initialize();
+        }
+        else
+        {
+            $this->GetById($data);
+        }
+    }
+
+	function GetById($id)
+	{
+		$this->idNotaFiscal = $id;
+		$this->retrieve();
+		return $this;
+	}
+	function GetByNumero($notaFiscal,$idEmpenho)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->AddColumnAttribute('idNotaFiscal');
+		$criteria->addCriteria('notaFiscal','=',"'$notaFiscal'");
+		$criteria->addCriteria('idEmpenho','=',$idEmpenho);
+		$id = $criteria->retrieveAsQuery()->result[0][0];
+		$this->idNotaFiscal = $id;
+		$this->retrieve();
+		return $this;
+	}
+
+	function GetNotasByIdEmpenho($idEmpenho)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->AddColumnAttribute('idNotaFiscal');
+		$criteria->AddColumnAttribute('notaFiscal');
+		$criteria->AddColumnAttribute('dataNotaFiscal','dataNotaFiscal');
+		$criteria->AddColumnAttribute('valor');
+		$criteria->addCriteria('idEmpenho','=',$idEmpenho);
+		return $criteria->retrieveAsQuery();
+	}
+
+	function GetTotalNotasByIdEmpenho($idEmpenho,$liquidado=false)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->AddColumnAttribute('sum(valor)');
+		$criteria->addCriteria('idEmpenho','=',$idEmpenho);
+		if($liquidado)
+		{
+			$criteria->addCriteria('idLiquidacao','is not','null');
+		}
+		$query = $criteria->retrieveAsQuery();
+		return $query->result[0][0];
+	}
+
+	function getItem($id)
+    {
+        foreach ($this->itens as $itemNota)
+        {
+            if ($itemNota->idItemNota == $id)
+            {
+                return $itemNota;
+            }
+        }
+        return false;
+    }
+    function addItem($item)
+    {
+        $item->idNotaFiscal = $this->idNotaFiscal;
+        $this->itens[] = $item;
+    }
+    function isContabilizado()
+    {
+        if ($this->itens)
+        {
+            foreach ($this->itens as $itemNota)
+            {
+                if (!$itemNota->isContabilizado()) return false;
+            }
+        }
+        return true;
+    }
+
+	function GetByNota($nota)
+	{
+		$this->notaFiscal = $nota;
+		$this->retrieve();
+		return $this;
+	}
+
+	function getEmpenho()
+    {
+        $this->retrieveAssociation('empenho');
+        return $this->empenho;
+    }
+
+	function getProcessoPagamento($nota)
+    {
+		$criteria = $this->getCriteria();
+		$criteria->AddColumnAttribute('empenho.numPro');
+		$criteria->addCriteria('idNotaFiscal','=',$nota);
+		$query = $criteria->retrieveAsQuery();
+		return $query->result[0][0];
+    }
+
+	function GetValorNotaItensEmpenho($nota, $idEmpenho)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->addColumnAttribute('itens.quantidade');
+		$criteria->addColumnAttribute('itens.valor');
+		$criteria->addCriteria('itens.empenhado.idEmpenho','=',"$idEmpenho");
+		$criteria->addCriteria('idNotaFiscal','=',"$nota");
+		$query = $criteria->retrieveAsQuery();
+		if($query->result)
+		{
+			$total = 0.0;
+			foreach($query->result as $r)
+			{
+				$total += $r[0] * str_replace(',','.',$r[1]);
+			}
+		}
+		return $total;
+	}
+
+	function GetNotasParaLiquidar($notas)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->AddColumnAttribute('empenho.numero');
+		$criteria->AddColumnAttribute('idNotaFiscal');
+		$criteria->AddColumnAttribute('notaFiscal');
+		$criteria->AddColumnAttribute('dataNotaFiscal','dataNotaFiscal');
+		$criteria->AddColumnAttribute('valor');
+		$criteria->addCriteria('idNotaFiscal','in',$notas);
+		$criteria->AddOrderAttribute('empenho.numero');
+		return $criteria->retrieveAsQuery();
+	}
+
+	function GetIdEmpenhosByNotas($notas)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->setDistinct(true);
+		$criteria->AddColumnAttribute('idEmpenho');
+		$criteria->addCriteria('idNotaFiscal','in',"($notas)");
+		$criteria->AddOrderAttribute('idEmpenho');
+		return $criteria->retrieveAsQuery();
+	}
+
+	function GetValorByNotaFiscal($notas)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->AddColumnAttribute('valor');
+		$criteria->addCriteria('idNotaFiscal','in',"(".$notas.")");
+		$query = $criteria->retrieveAsQuery();
+		return $query->result[0][0];
+	}
+
+	function GetNotasByEmpenho($idEmpenho)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->AddColumnAttribute('idNotaFiscal');
+		$criteria->addCriteria('idEmpenho','=',$idEmpenho);
+		$query = $criteria->retrieveAsQuery();
+		return $query->result;
+	}
+
+	function GetNotasByEmpenhoLiquidacao($idEmpenho, $notas)
+	{
+		$notas = explode(',',$notas);
+		$criteria = $this->getCriteria();
+		$criteria->AddColumnAttribute('idNotaFiscal');
+		$criteria->addCriteria('idEmpenho','=',$idEmpenho);
+		$query = $criteria->retrieveAsQuery();
+		$ret = array();
+		foreach($query->result as $r)
+		{
+			if(in_array($r[0], $notas))
+			{
+				$ret[] = $r[0];
+			}
+		}
+		return $ret;
+	}
+
+    function existeByNumeroAndFornecedor($numero,$idFornecedor)
+    {
+		$criteria = $this->getCriteria();
+		$criteria->AddColumnAttribute('notaFiscal');
+		$criteria->addCriteria('empenho.idFornecedor','=',$idFornecedor);
+		return @in_array($numero,$criteria->retrieveAsQuery()->result[0]) ? true : false;
+    }
+    
+   	function GetIdLiquidacaoByIdEmpenho($idEmpenho)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->AddColumnAttribute('idLiquidacao');
+		$criteria->addCriteria('idEmpenho','=',$idEmpenho);
+		$query = $criteria->retrieveAsQuery();
+		return $query->result[0][0];
+	}
+	
+	function GetIdNotaByIdLiquidacao($idLiquidacao)
+	{
+       	$criteria = $this->getCriteria();
+		$criteria->AddColumnAttribute('idNotaFiscal');
+		$criteria->addCriteria('idLiquidacao','=',$idLiquidacao);
+		$query = $criteria->retrieveAsQuery();
+		return $query->result;
+	}
+
+	function ListItens($idNotaFiscal)
+	{
+		//busca o tipo da licitacao correspondente
+		$criteria = $this->getCriteria();
+		$criteria->setDistinct(true);
+		$criteria->AddColumnAttribute('itens.empenhado.licitacao.idTipoLicitacao');
+		$criteria->addCriteria('idNotaFiscal','=',$idNotaFiscal);
+		$query = $criteria->retrieveAsQuery();
+		$tipo = $query->result[0][0];
+
+		$criteria = $this->getCriteria();
+		if($tipo == '2')
+		{
+			$criteria->AddColumnAttribute('itens.empenhado.itemServExt.servico.descricao');
+			$criteria->AddColumnAttribute('itens.empenhado.itemServExt.servico.codServico', 'codigo');
+		}
+		elseif($tipo == '1' or $tipo == '4')
+		{
+			$criteria->AddColumnAttribute('itens.empenhado.itemreq.material.descricao');
+			$criteria->AddColumnAttribute('itens.empenhado.itemreq.material.codmaterial', 'codigo');
+		}
+		elseif($tipo == '3')
+		{
+			$criteria->AddColumnAttribute('itens.empenhado.itemreqbib.material.descricao');
+			$criteria->AddColumnAttribute('itens.empenhado.itemreqbib.material.codmaterial', 'codigo');
+		}
+		$criteria->AddColumnAttribute('itens.quantidade');
+		$criteria->AddColumnAttribute('itens.valor');
+		$criteria->addCriteria('idNotaFiscal','=',$idNotaFiscal);
+		$query = $criteria->retrieveAsQuery();
+		return $query->result;
+	}
+
+	function existeNotaNaoLiquidadaPorEmpenho($idEmpenho)
+	{
+       	$criteria = $this->getCriteria();
+		$criteria->AddColumnAttribute('idNotaFiscal');
+		$criteria->addCriteria('idLiquidacao','is','null');
+		$criteria->addCriteria('idEmpenho','=',$idEmpenho);
+		$query = $criteria->retrieveAsQuery();
+		return count($query->result);
+	}
+}
+?>

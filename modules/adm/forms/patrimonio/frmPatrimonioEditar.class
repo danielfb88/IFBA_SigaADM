@@ -1,0 +1,197 @@
+<?
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+class frmPatrimonioEditar extends MForm
+{
+
+    protected $objPatrimonio;
+    protected $perms;
+	
+    function __construct($objPatrimonio)
+    {
+        global $MIOLO,$module,$action,$item;
+
+        $this->objPatrimonio = $objPatrimonio;
+        $this->perms  = $MIOLO->getPerms();
+        parent::__construct('Dados do Item');
+        $this->SetClose(null);
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+        global $MIOLO,$module;
+        // 18/10/2010 - Vitor Pacheco
+		$ccontabil = $MIOLO->GetBusiness('adm', 'vidautil');
+		$descricao = $ccontabil->getDescricao($this->objPatrimonio->idvidautil);
+
+        $tabelaGeral = $MIOLO->GetBusiness('common', 'tabelageral');
+        $options = $tabelaGeral->ListByTabela('AD_TIPOINGRESSOPAT');
+        $fields = array(
+            new MMultiLineField('descricao','','Descrição',60,5,60,'Máx. 500 caracteres'),
+            new MTextField('numeroSerie','','Número de Série',20),
+            new MHiddenField('idMaterial'),
+            new MTextField('marcaModelo','','Marca/Modelo',60,'Máx. 50 caracteres'),
+            new MMultiLineField('descricaoEstado','','Estado do Material', 50, 5, 50),
+            new MLookupTextField('classificador','','Classificador',50),
+            new MHiddenField('idClassificador'),
+            new MCalendarField('dataAquisicao','','Data de Aquisição',20),
+            new MTextField('numeroEmpenho','','Número Empenho',20),
+            new MHiddenField('idEmpenhado'),
+            new MLookupTextField('setor','','Setor',50),
+            new MHiddenField('idSetor'),
+            new MLookupTextField('dependencia','','Dependência',50),
+            new MHiddenField('idDependencia'),
+            new MTextField('numPro','','Processo',20),
+            // 20/10/2010 - Vitor Pacheco
+            new MHiddenField('subelemento'),
+            new MTextField('notaFiscal','','Nota Fiscal',20),
+            new MCurrencyField('valor','','Valor',10),
+            // 18/10/2010 - Vitor Pacheco
+	    	new MCalendarField('datainiciouso','','Data de Início de uso',20),
+            new MLookupTextField('contacontabil', $descricao, 'Conta contábil', 50, NULL, NULL, NULL, 'adm', 'contacontabil'),
+	    	new MHiddenField('idvidautil'),
+        );
+		
+        $this->SetFields($fields);
+        $this->SetFieldAttr('setor','module','common');
+        $this->SetFieldAttr('setor','item','setor');
+        $this->SetFieldAttr('setor','related','idSetor,setor');
+        $this->SetFieldAttr('dependencia','module',$module);
+        $this->SetFieldAttr('dependencia','item','dependencia');
+        $this->SetFieldAttr('dependencia','related','idDependencia,dependencia');
+        $this->SetFieldAttr('dependencia','filter','dependencia,idSetor,setor');
+        $this->SetFieldAttr('classificador','module',$module);
+        $this->SetFieldAttr('classificador','item','classificador');
+        $this->SetFieldAttr('classificador','related','idClassificador,classificador');
+        // 18/10/2010 - Vitor Pacheco
+	$this->SetFieldAttr('contacontabil', 'related', 'idvidautil,contacontabil');
+
+        //dependencia só é editável se estiver vazio
+       /* if($this->objPatrimonio->idDependencia)
+        {
+            $this->SetFieldAttr('dependencia','visible',false);
+        }*/
+
+        $buttons = array(
+            new MButton('btnSalvar', 'Salvar')
+        );
+        $this->SetButtons($buttons);
+
+        $this->SetData();
+    }
+
+    function SetData()
+    {
+        global $MIOLO, $module;
+
+        $data = $this->objPatrimonio;
+        $setor = $MIOLO->GetBusiness('common','setor');
+        $setor->GetById($data->idSetor);
+        $dependencia = $MIOLO->GetBusiness($module,'dependencia');
+        $dependencia->GetById($data->idDependencia);
+        $classificador = $MIOLO->GetBusiness($module,'classificador');
+        $classificador->GetById($data->idClassificador);
+        if($data->idEmpenhado)
+        {
+            $data->retrieveAssociation('empenhado');
+            $data->empenhado->retrieveAssociation('empenho');
+        }
+        $this->SetFieldValue('descricao',$data->descricao);
+        $this->SetFieldValue('numeroSerie',$data->numeroSerie);
+        $this->SetFieldValue('idMaterial',$data->idMaterial);
+        $this->SetFieldValue('marcaModelo',$data->marcaModelo);
+        $this->SetFieldValue('descricaoEstado',$data->descricaoEstado);
+        $this->SetFieldValue('idClassificador',$data->idClassificador);
+        $this->SetFieldValue('dataAquisicao',$data->dataAquisicao);
+        $this->SetFieldValue('idEmpenhado',$data->idEmpenhado);
+        $this->SetFieldValue('numeroEmpenho',($data->numeroEmpenho) ? $data->numeroEmpenho : $data->empenhado->empenho->numero);
+        $this->SetFieldValue('idSetor',$data->idSetor);
+        // 18/10/2010 - Vitor Pacheco
+	$this->SetFieldValue('datainiciouso', $data->datainiciouso);
+	$this->SetFieldValue('idvidautil', $data->idvidautil);
+
+        $processo = $this->manager->GetBusiness('protocolo','processo');
+        $this->SetFieldValue('numPro',$processo->numProcessoFormatado($data->numPro));
+        // 20/10/2010 - Vitor Pacheco
+        $this->SetFieldValue('subelemento', substr($data->idvidautil, -4, -2));
+        $this->SetFieldValue('notaFiscal',$data->notaFiscal);
+        $this->SetFieldValue('valor',$data->valor);
+        $this->SetFieldValue('classificador',$classificador->descricao);
+        $this->SetFieldValue('setor',$setor->sigla);
+        $this->SetFieldValue('dependencia',$dependencia->dependencia);
+        $this->SetFieldValue('idDependencia',$data->idDependencia);
+        $this->SetFieldAttr('setor', 'readonly', true);
+        $this->SetFieldAttr('numeroEmpenho', 'readonly', true);
+    }
+	
+    public function btnSalvar_click()
+    {
+        global $MIOLO;
+        
+        $this->objPatrimonio->SetData($this->GetData());
+        
+        /*  IFRO - Alan de Oliveira Silva
+            Controle de Acesso de usuários no Patrimônio
+            -- Inicio --
+        */
+        
+	    $setor = $MIOLO->GetBusiness('common','setor');
+	    $user  = $MIOLO->GetBusiness('common','usuario');
+   		$setorOrigem = $this->objPatrimonio->idSetor;	    
+	    $usuario = $user->GetByLogin($MIOLO->login->id);
+	    $instituicao_usuario = $setor->getById($usuario->idSetor)->idinstituicao;	        
+	    $instituicao_patrimonio = $setor->getById($setorOrigem)->idinstituicao;		        		      
+	    if ($instituicao_usuario == $instituicao_patrimonio || $this->perms->checkAccess('ADM_PATRIMONIOADMIN', A_EXECUTE)) {
+        /* --Fim-- */        			
+			
+	        $cf = new MCurrencyFormatter();
+	        $serie = substr($this->objPatrimonio->numPro,0,6);
+	        $ano = substr($this->objPatrimonio->numPro,7,4);
+	        $codigo = substr($this->objPatrimonio->numPro,12,2);
+	        $this->objPatrimonio->numPro = $ano.$serie.$codigo;
+			$this->objPatrimonio->subelemento = substr($this->objPatrimonio->idvidautil, -4, -2);
+			if (substr_count($this->objPatrimonio->valor, ",") == 0) 
+			{
+		        	$this->objPatrimonio->valor = str_replace(".",",",$this->objPatrimonio->valor);
+		    }
+			else
+			{
+		        	$this->objPatrimonio->valor = str_replace(".","",$this->objPatrimonio->valor);
+		    }
+		
+		    $this->objPatrimonio->valor = $cf->toDecimal($this->objPatrimonio->valor);
+		    
+			try
+	        {
+	            $this->objPatrimonio->save();
+	            $this->objPatrimonio->Log(OP_UPD,"Dados do item modificados");
+	            $this->addInfo("Dados do item Modificados com Sucesso.");
+	        }
+	        catch (Exception $e)
+	        {
+	            $this->addError($e->getMessage());
+	        }
+		}else {
+		    $msg = 'Este usuário não tem permissão para acessar este Patrimonio';
+			$this->manager->Information($msg,$this->manager->GetActionURL('adm','main:patrimonio'));
+		}
+    }
+}
+?>

@@ -1,0 +1,69 @@
+<?php
+class BusinessRhReqCapacitacao extends Business
+{
+	public $idUsuario;
+	public $login;
+
+	public $usuario;
+
+	function __construct($data = null)
+	{
+		parent::__construct('sigaept', $data);
+	}
+	function getById($id)
+	{
+		$this->idUsuario = $id;
+		$this->retrieve();
+		return $this;
+	}
+	function setData($data)
+	{
+		$this->idUsuario = $data->idUsuario;
+		$this->login = $data->lkpUsuario;
+	}
+	function listAll()
+	{
+		$criteria = $this->getCriteria();
+		$query = $criteria->retrieveAsQuery();
+		return $query;
+
+	}
+	function Del($id)
+    	{
+		global $MIOLO;
+		$this->getById($id);
+		try
+		{
+			$this->Delete();
+			$msg = "Requisitante de capacitação Excluido com sucesso";
+			$MIOLO->Information($msg,$MIOLO->GetActionURL('rh','main:capacitacao:acessocapacitacao',array("form" => "acessocapacitacaoreq")));
+		}
+		catch(Exception $e)
+		{
+			$this->manager->Error($e->getMessage());
+		}
+	
+    	}
+	function isReq($idUsuario)
+	{
+		$criteria = $this->getCriteria();
+	        $criteria->addCriteria('idusuario','=', "$idUsuario");
+		$query = $criteria->retrieveAsQuery();
+		if($query->result)
+			return true;
+		else
+			return false;
+	}
+	function hasGestor($idUsuario)
+	{
+		global $MIOLO;
+
+		$sql = new MSql('idusuarior','rh_acessoreqcapacitacao',"idusuarior = '$idUsuario'");
+		$result = $this->Query($sql);
+		if($result->result)
+			return TRUE;
+		else
+			return FALSE;
+	}
+}
+?>

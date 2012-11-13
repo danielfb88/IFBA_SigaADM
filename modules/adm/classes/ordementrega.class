@@ -1,0 +1,116 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class BusinessAdmOrdemEntrega extends Business
+{
+    var $idOrdemEntrega;
+    var $data;
+    var $numero;
+    var $idUoExecutante;
+    var $impresso;
+    
+    function __construct($data = null)
+    {
+        parent::__construct('sigaept', $data);
+    }
+    
+    function OnCreate($data)
+    {
+        if ($data)
+        {
+            $this->GetById($data);
+        }
+    }
+    
+    function getById($id)
+    {
+        $this->idOrdemEntrega = $id;
+        $this->retrieve();
+        return $this;
+    }
+
+    function getUltimoNumeroByUo($idUo)
+    {
+        $ano = date('Y');
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('max(numero)','numero');
+        $criteria->addCriteria('idUoExecutante','=', "$idUo");
+        $criteria->addCriteria("substr(data,7,4)",'=',"'$ano'");
+        return $criteria->retrieveAsQuery()->result[0][0];
+    }
+    
+    function newOrdemEntrega($idUo)
+    {
+        $numero = $this->getUltimoNumeroByUo($idUo);
+        if ($numero) $numero++;
+        else $numero = 1;
+        $today = getDate();
+        $this->data = $today['mday']."/".$today['mon']."/".$today['year'];
+        $this->numero = $numero; 
+        $this->idUoExecutante = $idUo;
+        $this->impresso = '0';
+        $this->save();
+    }
+	
+    function ListOrdemNaoImpressa()
+    {
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('numero','numero');
+        $criteria->addCriteria('impresso','=', "'0'");
+        return $criteria->retrieveAsQuery();
+    }
+
+    function getByNumero($numero)
+    {
+        $criteria =  $this->getCriteria();
+        $criteria->addCriteria('numero','=', "'$numero'");
+        $this->retrieveFromCriteria($criteria);
+    }
+    
+    function MarcarOrdemImpressa($ordem)
+    {
+        try
+        {
+            $this->getByNumero($ordem);
+            $this->impresso = '1';
+            $this->save();
+            return true;
+        }
+        catch (Exception $e)
+        {
+            return false;
+        }
+    }
+
+    function getRequisicao()
+    {
+        $requisicao = $this->_miolo->getBusiness('adm','requisicao');
+        $criteria = $requisicao->getCriteria();
+        $criteria->addCriteria('movimento.idOrdemEntrega','=',"{$this->idOrdemEntrega}");
+        $cursor = $criteria->retrieveAsCursor();
+        while ($o = $cursor->getObject())
+        {
+            return $o;
+        }
+    }
+}
+?>

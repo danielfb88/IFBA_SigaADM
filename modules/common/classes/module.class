@@ -1,0 +1,115 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+
+class BusinessCommonModule extends Business
+{
+    var $idmodule;
+	var $name;
+
+    function BusinessCommonModule($data=null)
+    {
+       $this->Business('common',$data);
+    }
+
+	function SetData($data)
+	{
+		$this->idmodule = $data->idmodule;
+		$this->name = strtoupper($data->name);
+	}
+
+    function GetById($idmodule)
+    {
+        $sql = new sql('idmodule, name','cmn_module','(idmodule = ?)');
+        $query = $this->objQuery($sql, $idtrans);
+        
+        if ( $query )
+        {
+            $this->idmodule   = $query->fields('idmodule');
+            $this->name     = $query->fields('name');
+        }
+       
+        return $this;
+    }
+
+    function Insert()
+    {
+        $sql = ' insert into cm_transacao (IdTrans, Transacao, IdModule) '.
+               ' values (?,?,?)';
+        $args = array($this->idtrans,
+                      $this->transacao,
+                      $this->idmodule);
+        $ok = $this->Execute($sql,$args);
+        return $ok;
+    }
+
+    function Update()
+    {
+        $sql = ' update cm_transacao '.
+			   ' set Transacao=?, IdModule=? '.
+               ' where IdTrans = ?';
+        $args = array($this->transacao,
+                      $this->idmodule,
+			          $this->idtrans);
+        $ok = $this->Execute($sql,$args);
+        return $ok;
+    }
+    
+    function Delete()
+    {
+        $sql[] = $this->Prepare(' delete from cm_acesso where idTrans=?', $this->idtrans);
+        $sql[] = $this->Prepare(' delete from cm_transacao where idTrans=?', $this->idtrans);
+        $ok = $this->Execute( $sql );
+        return $ok;
+    }
+
+    function ListRange(&$range)
+    {
+        $sql = new sql('idmodule, name','cmn_module','','name');
+        $query = $this->objQueryRange($sql,$range);
+        return $query;
+    }
+
+	function ListAll()
+    {
+		$range = FALSE;
+		return $this->ListRange($range);
+    }
+
+    function CountWhere($where='')
+    {
+        $sql = ' select * from cmn_module ';
+        if ( is_array($where) )
+        {
+		 	$sql .= " where ";
+            foreach($where as $w)
+            {  
+		 	$sql .= key($w) . " = ? ";
+			$sql = $this->Prepare($sql, $w);
+            }
+		}
+        return $this->db->Count($sql);
+    }
+
+}
+
+?>

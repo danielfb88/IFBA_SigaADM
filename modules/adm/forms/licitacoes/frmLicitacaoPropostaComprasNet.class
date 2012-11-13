@@ -1,0 +1,431 @@
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmLicitacaoPropostaComprasNet extends Form
+{
+	protected $objLicitacao;    
+
+	function __construct($licitacao)
+	{
+		global $MIOLO;
+        $this->objLicitacao = $licitacao;
+		$this->Form('Proposta ComprasNet');
+        $this->EventHandler();      
+	}
+	
+	function CreateFields()
+	{
+		global $MIOLO;
+
+		$fields = array(
+                        new MSelection ('uginstituicao','','Instituição'),
+                );
+		$this->SetFields($fields);
+
+		$objinst = $MIOLO->GetBusiness('common','instituicao');
+	        $query = $objinst->ListRange(NULL, 'instituicao');
+
+        	while ( !$query->eof() )
+                {
+                        if(($query->fields('ug')!=''))
+                        {
+                                $options[$query->fields('ug')] = $query->fields('instituicao');
+		        }
+                        $query->moveNext();
+                }
+                $this->SetFieldAttr('uginstituicao','options', $options);
+
+                $buttons = array(
+                        new MButton('btnImportar','Importar propostas'),
+                );
+                $this->SetButtons($buttons);
+	}
+	
+	function btnImportar_click()
+	{
+		global $module, $item, $MIOLO;
+		
+		$ug_instituicao = Form::GetFormValue('uginstituicao');
+		if($ug_instituicao == '')
+		{
+			$this->AddError('Você deve selecionar uma instituição.');
+		}
+		else
+		{
+			if($this->objLicitacao->status == '1' || $this->objLicitacao->status == '2')
+			{
+				try{
+					// Pega somente o número da licitacao, retirando a '/' e converetendo a string para uma forma
+					// apropriada para URL
+					$pregao = $this->objLicitacao->numero;
+					$pregao = substr($pregao, 3);
+					$pregao = str_replace('/', '', $pregao);	
+					
+					$cont = 0;
+					$qtdeCaracteres = strlen($pregao);
+		    		for($i = 0; $i < $qtdeCaracteres; $i++)
+					{
+							if($pregao[$i] == '0')
+							{
+								$cont++;
+							}
+							else
+								break;
+					}
+					
+					if($cont != 0)
+					{
+						$pregao = substr($pregao, $cont);
+					}
+					$pregao = urlencode($pregao);
+					// O codigo da instituicao no comprasnet é o ug da instituicao
+					$codInstituicao = $ug_instituicao;
+					
+					$link = "http://www.comprasnet.gov.br/livre/pregao/ata2.asp?co_no_uasg=".$codInstituicao."&numprp=".$pregao.
+						"&f_lstSrp=&f_Uf=&f_numPrp=".$pregao.
+						"&f_codUasg=".$codInstituicao."&f_tpPregao=E&f_lstICMS=&f_dtAberturaIni=&f_dtAberturaFim=";
+					
+					// Converte a página em uma string HTML
+					$html = file_get_contents($link);
+					// Recupera o codigo do resultado por fornecedor, para ter acesso a tabela de propostas
+					$idComprasNet = $this->recuperaCodigoComprasNet($html);
+					// Caso não encontre nenhuma informação no site do compras net, emite um aviso. Em caso contrário,
+					// continua a importação de propostas
+					if(!$idComprasNet) 
+					{
+						$action = $this->manager->GetActionURL('adm','main:licitacoes',$this->objLicitacao->idLicitacao);
+			            $this->manager->information("Não foi encontrada nenhuma informação sobre este pregão.",$action);
+					}
+					else
+					{
+						$link = "http://www.comprasnet.gov.br/livre/pregao/termohom.asp?prgcod=".urlencode($idComprasNet)."&co_no_uasg=".urlencode($ug_instituicao)."&numprp=".urlencode($pregao)."&f_lstSrp=T&f_Uf=&f_numPrp=0&f_coduasg=".urlencode($ug_instituicao)."&f_tpPregao=E&f_lstICMS=T&f_dtAberturaIni=&f_dtAberturaFim=";
+						$html = file_get_contents($link);
+						$mapa = array();
+						$mapa = $this->parseTable($html, $mapa, $idComprasNet, $ug_instituicao, $pregao);
+						try{
+							$this->salvar($mapa);
+							return true;
+						}catch(Exception $e){
+							throw $e;
+						} 
+					}
+				}catch(Exception $e){
+					$action = $this->manager->GetActionURL('adm','main:licitacoes',$this->objLicitacao->idLicitacao);
+		                       	$this->manager->information("Não foi encontrada nenhuma informação sobre este pregão.",$action);
+                }
+			}else
+			{
+				$this->manager->Information('Para executar esta ação, o status da licitação deve ser \'Montada\' ou \'Participantes cadastrados\'',$MIOLO->GetActionURL('adm','main:licitacoes',$this->objLicitacao->idLicitacao));
+			}
+		}
+    }
+    
+	// Função que recupera o código gerado pelo Compras Net referente ao pregão
+	function recuperaCodigoComprasNet($html)
+	{
+		if(!$html)
+		{
+			$action = $this->manager->GetActionURL('adm','main:licitacoes',$this->objLicitacao->idLicitacao);
+            $this->manager->information("Não foi encontrada nenhuma informação sobre este pregão.",$action);
+		}
+		// Carrega a página HTML 
+		$dom = new domDocument();
+		$dom->loadHTML($html);
+		$dom->preserveWhiteSpace = false; 
+		// Pega o ID do elemento que contem o codigo que a ser usado
+		$xpath = new DOMXpath($dom); 
+		$elements = $xpath->query("//*[@name='termodehomologacao']"); 
+		foreach ($elements as $element)
+		{
+			$id = $element;
+			break; 
+		}
+		if($id || $id != '')
+		{
+			$str = $id->getAttribute('onclick'); // Retorna uma string com o conteudo = javascript:termoHomologacao(XXXXXX,YYYYYY,ZZZZZ);
+ 							     // da qual deverá ser pego somente o primeiro numero (codigo gerado pelo compras net)	
+			$idComprasNet = substr($str, 28, 6);
+	        return $idComprasNet;
+		}
+		else {
+			return NULL;
+		}
+	}
+
+	// Função que salva os dados importados no compras net na tabela ad_mapalicitacao	
+	function salvar($mapa)
+	{
+		global $MIOLO;
+
+		$idLicitacao = $this->objLicitacao->idLicitacao;
+		$qtdeItens = $this->objLicitacao->GetTotalDeItensByLicitacao($idLicitacao);
+		$cf = new MCurrencyFormatter();
+		try
+		{
+			$fornecedor = $MIOLO->getBusiness('adm','fornecedor');
+			foreach($mapa as $item)
+			{
+				// Faz uma pesquisa do cnpj do fornecedor na tabela de fornecedores
+				$idFornecedor = $fornecedor->GetByDocumentoOuNome($item['cnpj']);
+				// Caso ele encontre o fornecedor, atualiza os dados da tabela. Em caso contrário, cadastra o fornecedor,
+				// colocando-o como fornecedor da licitação e insere os dados do item no mapa
+				if($idFornecedor[0])
+				{
+					//Pesquisa se o fornecedor está no mapa de fornecedores desta licitacao
+					$eParticipante = $this->objLicitacao->verificaParticipante($idFornecedor[0]);
+					if(!$eParticipante)
+					{
+						$participante = $MIOLO->GetBusiness('adm','participante');
+    	                $participante->idLicitacao = $this->objLicitacao->idLicitacao;
+    	                $participante->idFornecedor = $idFornecedor[0];
+	                    $participante->save();
+	                    $forn = $participante->idFornecedor;
+					}
+					else
+					{
+						$forn = $idFornecedor[0];
+					}
+					// Faz um loop para gravar para cada item da licitacao os dados do fornecedor
+			       	for($i = 0; $i < $qtdeItens; $i++)
+			       	{ 
+			            if (!$this->objLicitacao->ExisteMapaLicitacao(($i+1),$forn))
+			            {
+			            	$this->objLicitacao->InsertMapaLicitacao(($i+1), $forn, 0.00);
+				            // Coloca status como 'CANCELADO'
+				            $this->objLicitacao->setStatusItemFornecedor(($i+1), '3', $forn);
+				        }
+			        }
+			        
+					// Verifica se o preço unitário fornecido é um valor maior que 0, em caso afirmativo atualiza o
+					// item colocando os seus respectivos orçamentos
+					$this->objLicitacao->UpdateMapaLicitacao((float)$item['item'],(float)$idFornecedor[0],$item['precoUnitario'],'',(float)$item['quantidade'],'1');
+				}
+				else
+				{
+					$instituicao = $this->manager->getBusiness('common','instituicao');
+					$fornecedor = $this->manager->getBusiness('adm', 'fornecedor');
+					$result = $instituicao->GetByCgc($item['cnpj']);
+					// Caso não tenha o fornecedor cadastrado, cadastra-o para só depois colocá-lo como fornecedor
+					if(!$result->idInstituicao)
+					{
+						$instituicao->cgc = $item['cnpj'];
+				        $instituicao->nome = $item['fornecedor'];
+				        $instituicao->idpais = '024';
+				        $instituicao->idmunicipio = 'XXXX'; // Coloca o municipio como 'Indefinido'
+				        $instituicao->Insert();
+				        
+						$fornecedor->idInstituicao = $instituicao->idinstituicao;
+						$fornecedor->save();
+						$idForn = $fornecedor->idFornecedor;
+				    }else
+				    {
+				    	$forn = $fornecedor->getByIdInstituicao($result->idinstituicao);
+				    	$idForn = $forn->idFornecedor;
+				    }
+				    // Coloca o fornecedor como participante
+					$participante = $MIOLO->GetBusiness('adm','participante');
+                    $participante->idLicitacao = $this->objLicitacao->idLicitacao;
+                    $participante->idFornecedor = $idForn;
+                    $participante->save();
+                    // Faz um loop para gravar para cada item da licitacao os dados do fornecedor
+                   	for($i = 0; $i < $qtdeItens; $i++)
+                   	{ 
+                        if (!$this->objLicitacao->ExisteMapaLicitacao(($i+1),$participante->idFornecedor))
+                        {
+	                    	$this->objLicitacao->InsertMapaLicitacao(($i+1), $participante->idFornecedor,0.00);
+	                    	// Coloca status como 'CANCELADO'
+				            $this->objLicitacao->setStatusItemFornecedor(($i+1), '3', $participante->idFornecedor);
+				        }
+                    }
+				    // Salva na tabela de mapa da licitação os dados para o item
+				    $this->objLicitacao->UpdateMapaLicitacao((float)$item['item'], $fornecedor->idFornecedor, $item['precoUnitario'], '', (float)$item['quantidade'], '1');				    
+				}
+			}
+			// Chama a função a seguir para que se cancele os itens que não possuem propostas
+			$this->cancelaItens();
+		
+			// Altera o status da licitacao e emite a mensagem
+			$this->objLicitacao->alteraStatus('3');
+            try
+	        {
+				$this->objLicitacao->save();
+				$action = $this->manager->GetActionURL('adm','main:licitacoes',$this->objLicitacao->idLicitacao);
+				$this->manager->information("Inclusão de propostas concluida com sucesso.",$action);
+        	}
+            catch (Exception $e)
+	        {
+        	        $this->AddError($e->getMessage());
+            }
+		}catch(Exception $e){
+			throw $e;			
+		}
+	}
+	
+	// Funcao que retorna um array de forncedores, cada qual composto por outro array com seus dados.
+	function parseTable($html, $mapa, $idComprasNet, $ug_instituicao, $pregao)
+	{
+		 
+		// Carrega o HTML, pegando os dados contidos nas tag's table
+		$dom = new domDocument();
+		$dom->loadHTML($html);
+		$dom->preserveWhiteSpace = false; 	
+		$table = $dom->getElementsByTagName('table');
+		// Como a página é formada por várias tabelas, pego estas para que fique mais fácil obter os dados
+		$tableDados = $table->item(1)->getElementsByTagName('table');
+		$cf = new MCurrencyFormatter();
+		// Percorre todas as linhas da segunda tabela
+		for($i = 0; $i < $tableDados->length; $i++)
+		{	
+			$dados = $tableDados->item($i)->nodeValue;
+			// Verifica se a string possui 'Item' como primeira palavra e também se possui 'Homologado'. 
+			// Ou seja, ela possui os dados de algum item que possui uma proposta
+			if(strpos($dados, 'Item:') !== false && strpos($dados, 'Homologado') !== false)
+			{
+				// Pega o valor do item convertendo-o para inteiro
+				$pos = strpos($dados, 'Item:');
+				$pos2 = strpos($dados, 'Descri');
+				$item = intval(substr($dados, ($pos + 6), ($pos2 - 1)));
+				// Recebe as posições que estão as strings 'Quantidade:', 'Unidade de fornecimento:' e 'Valor estimado:'
+				$pos = strpos($dados, 'Quantidade:');
+				$pos2 = strpos($dados, 'Unidade de fornecimento:');
+				$pos3 = strpos($dados, 'Valor estimado:');
+				$inicio = $pos + 12;
+				$inicio2 = $pos2 + 25;
+				$quantidade = $cf->toDecimal(substr($dados, ($inicio), ($pos2 - $inicio)));
+				$unidade = substr($dados, ($inicio2), ($pos3 - $inicio2));
+				
+				// Aumenta o valor de $i em 3 para que seja possível pegar o restante dos dados
+				$i += 3;
+				$dados = $tableDados->item($i)->nodeValue;
+				// Recebe as posições que estão as strings 'Fornecedor:', 'CNPJ/CPF:' e 'Melhor lance', para que seja possível 
+				// pegar o CNPJ e o nome do fornecedor
+				$pos = strpos($dados, 'Fornecedor:');
+				$pos1 = strpos($dados, 'CNPJ/CPF:');
+				$pos2 = strpos($dados, ', Melhor lance');
+				$inicio = $pos + 12;
+				$inicio1 = $pos1 + 9;
+				$fornecedor = trim(substr($dados, ($inicio), ($pos1 - $inicio)));
+				$str = trim(substr($dados, ($inicio1), ($pos2 - $inicio1)));
+				$cnpj = $this->retiraMascara($str);
+				// Pega a última posição que aparece a string 'R$' para que possa ser possível pegar o valor da proposta
+				$pos = strrpos($dados, 'R$');
+				$pos2 = strpos($dados, ',', $pos);
+				$precoUnitario = $cf->toDecimal(substr($dados, ($pos+3), ($pos2 + 4)));
+				if (substr_count($precoUnitario, ",") != 0)
+				{
+	                  $precoUnitario = str_replace(".","",$precoUnitario);
+	                  $precoUnitario = str_replace(",",".",$precoUnitario);
+	            }
+	            $mapa[] = array('item'=>$item, 'quantidade'=>$quantidade, 'unidade'=>$unidade, 'cnpj'=>$cnpj, 'fornecedor'=>$fornecedor, 'precoUnitario'=>$precoUnitario);
+			}
+		} 
+		
+		// Pesquisa se há mais páginas com dados
+		$pos = strrpos($table->item(1)->nodeValue, 'Página:');
+		if( $pos !== false )
+		{
+			$inicio = $pos + 8;
+			$pos2 = strrpos($table->item(1)->nodeValue, ' de ');
+			$pos3 = strrpos($table->item(1)->nodeValue, 'Atenção:');
+			$inicio2 = $pos2 + 4;
+			$paginaAtual = intval(substr($table->item(1)->nodeValue, $inicio, ($pos2 - $inicio)));
+			$totalPaginas = intval(substr($table->item(1)->nodeValue, $inicio2, ($pos3 - $inicio2)));
+			if($paginaAtual != $totalPaginas)
+			{
+				// Destrói as variáveis que armazenam as páginas, para que haja espaço suficiente para continuar
+				// pegando o restante dos dados
+				unset($table, $tableDados);
+				// URL para a próxima página
+				$url = "http://comprasnet.gov.br/livre/pregao/termoHom.asp?prgCod=".urlencode($idComprasNet)."&tipo=p&pagina=".urlencode($paginaAtual + 1)."&co_no_uasg=".urlencode($ug_instituicao)."&numprp=".urlencode($pregao)."&f_lstSrp=&f_Uf=&f_numPrp=".urlencode($pregao)."&f_coduasg=".urlencode($ug_instituicao)."&f_tpPregao=E&f_lstICMS=&f_dtAberturaIni=&f_dtAberturaFim=";
+				$html = file_get_contents($url);
+				return $this->parseTable($html, $mapa, $idComprasNet, $ug_instituicao, $pregao);
+			}	
+		}
+		// Retorna o array com as informações dos orçamentos
+		return $mapa;
+	}
+	
+	function retiraMascara($cnpj)
+	{
+		$masc = array( "/", ".", "-" );
+   	    return str_replace( $masc, '', $cnpj );
+	}
+	
+	function cancelaItens()
+	{
+		global $MIOLO;
+		
+		$OrcTermo = $this->manager->getBusiness('adm','orcamentotermo');
+		$queryLicitacao = $this->objLicitacao->GetItensRequisitados();
+		$itens = $queryLicitacao->result;
+		
+		// Carrega a tabela referente ao tipo de licitação para que seja possível atualizar os itens
+		if ($this->objLicitacao->idTipoLicitacao == '1' || $this->objLicitacao->idTipoLicitacao == '4') // Compra consumo ou permanente
+		{
+			$itemReq = $this->manager->getBusiness('adm','itemreq');
+		}
+		else if ($this->objLicitacao->idTipoLicitacao == '3') // Livro
+		{
+			$itemReq = $this->manager->getBusiness('adm','itemreqbib');
+		}
+		else //Serviço
+		{
+			$itemServExt = $this->manager->getBusiness('adm','itemservext');
+		}
+	
+		try{
+			// Atualiza o status (para cancelado) dos itens de requisição que fazem parte desta licitacao
+			foreach ($itens as $rs)
+			{
+				if ($this->objLicitacao->idTipoLicitacao == '1' || $this->objLicitacao->idTipoLicitacao == '4')
+				{
+					$NumItem = $rs[0];
+					$IdRequisicao = $rs[8];
+				}
+				else if ($this->objLicitacao->idTipoLicitacao == '3')
+				{
+					$NumItem = $rs[0];
+					$IdRequisicao = $rs[8];
+				}
+				else
+				{
+					$NumItem = $rs[4];
+					$IdRequisicao = $rs[6];
+				}
+				// Se não existe pelo menos uma proposta válida para este item, é porque este foi cancelado
+				// Por isso, coloca o status deste como "autorizado pelo gestor"
+				if ($this->objLicitacao->temPropostaValida($NumItem) == false) 
+				{
+					$itemReq->removeDaLicitacao($this->objLicitacao->idLicitacao,$NumItem,$IdRequisicao);
+
+					$OrcTermo->RemoveOrcTermo($this->objLicitacao->idLicitacao,$NumItem);
+					
+					$this->objLicitacao->deleteItemDoMapa($itemReq->item);
+				}
+			}
+		}catch (Exception $e)
+		{
+			$this->AddError("Devido a algum problema não foi possível cancelar algum item.");
+		}
+	}
+	
+}
+?>

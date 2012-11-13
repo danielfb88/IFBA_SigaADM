@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="RelLicencaAfastamentoSaude"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="595"
+		 pageHeight="842"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="mes" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pURL" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="pIdUsuario" isForPrompting="true" class="java.lang.Integer"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["var/www/miolo/modules/adm/reports/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="data" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="ano" isForPrompting="false" class="java.lang.String"/>
+	<queryString><![CDATA[SELECT 
+	rh_licafast.idvinculo,
+	cm_pessoa.nome,
+	cm_setor.siglasetor,
+	TO_CHAR(RH_LICAFAST.DATAINICIO,'DD/MM/YYYY') as datainicio,
+	TO_CHAR(RH_LICAFAST.DATAFIM,'DD/MM/YYYY') as datafim
+	
+FROM 
+	((((((((rh_licafast INNER JOIN rh_ocorrencia 
+		ON ((rh_licafast.idgrupoocorrencia=rh_ocorrencia.idgrupoocorrencia) 		
+			AND (rh_licafast.idocorrencia=rh_ocorrencia.idocorrencia)))
+	INNER JOIN rh_grupolicafast 
+		ON ((rh_ocorrencia.idocorrencia=rh_grupolicafast.idocorrencia) 
+			AND (rh_ocorrencia.idgrupoocorrencia=rh_grupolicafast.idgrupoocorrencia))) 
+	INNER JOIN rh_tipolicafast 
+		ON ((rh_grupolicafast.idtipolicafast=rh_tipolicafast.idtipolicafast))) 
+	INNER JOIN rh_vinculo 	
+		ON ((rh_licafast.idvinculo=rh_vinculo.idvinculo))) 
+	INNER JOIN rh_provimento 
+		ON ((rh_vinculo.idvinculo=rh_provimento.idvinculo))) 
+	INNER JOIN rh_funcionario 
+		ON ((rh_vinculo.idfuncionario=rh_funcionario.idfuncionario))) 
+	INNER JOIN cm_pessoa 
+		ON ((rh_funcionario.idpessoa=cm_pessoa.idpessoa))) 
+	INNER JOIN cm_setor 
+		ON ((rh_provimento.idsetor=cm_setor.idsetor))) 
+
+WHERE 
+	(
+		(rh_tipolicafast.tipoLicAfast = 'RH_SAUDE') 
+		AND (TO_CHAR(RH_PROVIMENTO.DATAFIM,'YYYY/MM/DD') IS null) 
+		AND (TO_CHAR(RH_LICAFAST.DATAINICIO,'YYYY/MM/DD') >= $P{data}) 
+		AND (TO_CHAR(RH_LICAFAST.DATAINICIO,'MM') = $P{mes})
+		AND (TO_CHAR(RH_LICAFAST.DATAINICIO,'YYYY') = $P{ano})
+	)
+		ORDER BY cm_pessoa.nome ASC]]></queryString>
+
+	<field name="idvinculo" class="java.math.BigDecimal"/>
+	<field name="nome" class="java.lang.String"/>
+	<field name="siglasetor" class="java.lang.String"/>
+	<field name="datainicio" class="java.lang.String"/>
+	<field name="datafim" class="java.lang.String"/>
+
+	<variable name="idUnica" class="java.lang.String" resetType="Report" calculation="Nothing">
+	</variable>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="69"  isSplitAllowed="true" >
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="-1"
+						y="2"
+						width="550"
+						height="66"
+						key="subreport"/>
+					<subreportParameter  name="pTitulo">
+						<subreportParameterExpression><![CDATA["Geral de Setores"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pConsulta">
+						<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pURL">
+						<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "/common/reports/Cabecalho.jasper"]]></subreportExpression>
+				</subreport>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="30"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="14"
+						y="7"
+						width="0"
+						height="0"
+						key="staticText-1"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Texto Estático]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="58"
+						height="17"
+						key="staticText-2"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Id Única]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="67"
+						y="-1"
+						width="165"
+						height="17"
+						key="staticText-3"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Nome]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="232"
+						y="-1"
+						width="65"
+						height="17"
+						key="staticText-4"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Sigla Setor]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="297"
+						y="-1"
+						width="58"
+						height="17"
+						key="staticText-5"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Início]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="355"
+						y="-1"
+						width="58"
+						height="17"
+						key="staticText-6"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Fim]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="25"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="6"
+						y="6"
+						width="52"
+						height="11"
+						key="textField-1"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{idvinculo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="67"
+						y="4"
+						width="165"
+						height="13"
+						key="textField-2"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{nome}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="232"
+						y="1"
+						width="65"
+						height="15"
+						key="textField-3"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{siglasetor}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="297"
+						y="2"
+						width="58"
+						height="15"
+						key="textField-4"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{datainicio}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="355"
+						y="1"
+						width="58"
+						height="17"
+						key="textField-5"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{datafim}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="28"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="325"
+						y="3"
+						width="170"
+						height="19"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="Helvetica" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="5"
+						width="209"
+						height="19"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement>
+						<font fontName="Times-Roman" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="499"
+						y="3"
+						width="36"
+						height="19"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+						<font fontName="Helvetica" pdfFontName="Helvetica" size="10" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" pdfEncoding ="CP1252" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

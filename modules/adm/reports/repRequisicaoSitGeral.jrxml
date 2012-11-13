@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ReqVeiculoPorDataOrigemeDestino" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA["./"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pIdUsuario" class="java.lang.Integer"/>
+	<parameter name="pURL" class="java.lang.String"/>
+	<parameter name="requisicao" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[select req.idrequisicao,
+    TO_CHAR(req.datahorareq, 'DD/MM/YYYY') as data,
+    TO_CHAR(req.datahoraautreq, 'DD/MM/YYYY') as dataAutorizacao,
+    cm_pessoa.nome as requisitante,
+    req.idusuarioreq as idrequisitante,
+    (select cm_pessoa.nome from cm_pessoa where req.idusuariogestor = cm_usuario.idusuario) as gestor,
+    req.idusuariogestor as idgestor,
+    mat.descricao as material,
+    lic.numero,
+     TO_CHAR(lic.dataabertura,  'DD/MM/YYYY') as dataabertura,
+    geral.item2 as estadolicitacao,
+    ad_empenho.numero as numeroEmpenho,
+    TO_CHAR(ad_empenho.dataempenho,  'DD/MM/YYYY')  as dataempenho,
+    (select cm_tabelageral.item2
+		from cm_tabelageral
+		where ad_empenhado.status = cm_tabelageral.item1
+		and cm_tabelageral.tabela = 'AD_EMPENHOSTATUS') as estadoemp,
+    (select cm_tabelageral.item2
+		from cm_tabelageral
+		where itens.status = cm_tabelageral.item1
+		and cm_tabelageral.tabela = 'AD_STATUSITEMREQ') as statuslic
+
+from ad_requisicao as req inner join ad_itemreq as itens on (req.idrequisicao = itens.idrequisicao)
+    inner join ad_licitacao as lic on (itens.idlicitacao = lic.idlicitacao)
+    inner join cm_tabelageral as geral on (lic.status = geral.item1)
+    inner join ad_material as mat on (itens.idmaterial = mat.idmaterial)
+    left join ad_empenhado on (ad_empenhado.idlicitacao = lic.idlicitacao)
+    left join ad_empenho on (ad_empenhado.idempenho = ad_empenho.idempenho)
+    inner join cm_usuario on (req.idusuarioreq = cm_usuario.idusuario )
+    inner join cm_pessoa on (cm_usuario.idpessoa = cm_pessoa.idpessoa)
+where req.idrequisicao = $P{requisicao}
+    and geral.tabela = 'AD_ALMOXSTATUSLIC'
+    and req.idusuarioreq = cm_usuario.idusuario]]>
+	</queryString>
+	<field name="idrequisicao" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="data" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="dataautorizacao" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="requisitante" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="idrequisitante" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="gestor" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="idgestor" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="material" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="numero" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="dataabertura" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="estadolicitacao" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="numeroempenho" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="dataempenho" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="estadoemp" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="statuslic" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="variable1" class="java.lang.String"/>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band/>
+	</title>
+	<pageHeader>
+		<band height="182">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" x="-6" y="2" width="781" height="97"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA["Situação Geral da Requisição"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "/common/reports/Cabecalho_Paisagem.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement x="1" y="101" width="104" height="20"/>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="13"/>
+				</textElement>
+				<text><![CDATA[Nº Requisição:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="121" width="101" height="20"/>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="13"/>
+				</textElement>
+				<text><![CDATA[Requisitante:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="105" y="101" width="121" height="20"/>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="13"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{idrequisicao}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="101" y="121" width="681" height="20"/>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="13"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{requisitante}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="332" y="101" width="47" height="20"/>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="13"/>
+				</textElement>
+				<text><![CDATA[Data:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="379" y="101" width="113" height="20"/>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="13"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{data}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="102" y="141" width="679" height="20"/>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="13"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{gestor} == null ? "" : $F{gestor}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="1" y="141" width="57" height="20"/>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="13"/>
+				</textElement>
+				<text><![CDATA[Gestor:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="146" y="161" width="129" height="20"/>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="13"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{dataautorizacao}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="1" y="161" width="145" height="20"/>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="13"/>
+				</textElement>
+				<text><![CDATA[Data de Autorização:]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="36">
+			<staticText>
+				<reportElement key="staticText-2" mode="Opaque" x="0" y="3" width="125" height="33" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Material/Serviço]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-4" mode="Opaque" x="226" y="3" width="106" height="33" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Data Licitação]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-5" mode="Opaque" x="125" y="3" width="101" height="33" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Licitação]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-6" mode="Opaque" x="332" y="3" width="91" height="33" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Estado Licitação]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-7" mode="Opaque" x="422" y="3" width="81" height="33" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Empenho]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-8" mode="Opaque" x="674" y="3" width="107" height="33" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Status do item]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-9" mode="Opaque" x="503" y="3" width="101" height="33" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Data Empenho]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-9" mode="Opaque" x="604" y="3" width="70" height="33" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Estado Empenho]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="21">
+			<rectangle radius="0">
+				<reportElement key="rectangle" stretchType="RelativeToTallestObject" mode="Opaque" x="1" y="0" width="780" height="20" backcolor="#E2E2E2">
+					<printWhenExpression><![CDATA[new Boolean(((($V{COLUMN_COUNT}.intValue()) % 2) == 0))]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-3" mode="Transparent" x="240" y="2" width="92" height="19" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{dataabertura}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-13" mode="Transparent" x="125" y="0" width="115" height="19" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{numero}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-15" mode="Transparent" x="332" y="0" width="91" height="19" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{estadolicitacao}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-16" mode="Transparent" x="422" y="0" width="91" height="19" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{numeroempenho} == null ? "" : $F{numeroempenho}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-17" mode="Transparent" x="674" y="0" width="107" height="19" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{statuslic}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-18" mode="Transparent" x="513" y="0" width="91" height="19" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{dataempenho} == null ? "" : $F{dataempenho}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-21" x="0" y="0" width="125" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{material}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-15" mode="Transparent" x="604" y="0" width="70" height="19" backcolor="#D2C8C8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{estadoemp} == null ? "NÃO EMPENHADO" : $F{estadoemp}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="19">
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField" x="742" y="2" width="40" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="false">
+				<reportElement key="textField" x="1" y="1" width="160" height="16"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="662" y="3" width="80" height="15"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Página "+$V{PAGE_NUMBER}+" de"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line" x="0" y="1" width="781" height="1"/>
+			</line>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="24"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band/>
+	</lastPageFooter>
+</jasperReport>

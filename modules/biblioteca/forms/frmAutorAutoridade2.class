@@ -1,0 +1,520 @@
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+<?php
+/**
+* @package SIGA
+* @subpackage Biblioteca
+* @author SETEC/MEC
+*/
+
+class frmAutorAutoridade extends MFormAjax
+{
+
+    private $objAutor;
+    private $objEtiqueta;
+    private $objFicha;
+    private $idSubficha;
+    private $idFicha;
+    
+    function __construct()  // construtor da Classe
+    {
+        global $MIOLO,$module;
+
+        // Título do Formulário
+        parent::__construct('Autores');
+
+        //Chama o CreateFileds, etc.
+        $this->EventHandler();
+
+        // Botão "enviar" não aparece
+        $this->defaultButton = false;
+        
+        // Botão 'fechar', direcionando para o handler biblioteca/main/admin
+        $this->SetClose($this->manager->GetActionURL($module, 'main:admin'));        
+		
+
+	    $this->item = $item;
+	    $this->page->addJsCode(file_get_contents(dirname(__FILE__).'/js/frmAutorAutoridade.js'));    
+			
+    }
+
+
+
+
+   
+    function CreateFields()
+    {        		       
+        // Campos que aparecem no formulário
+        global $MIOLO,$module, $item;
+
+        $this->objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+        $this->objAutor = $MIOLO->GetBusiness($module,'autor');
+        $this->objFicha = $MIOLO->GetBusiness($module,'ficha');
+
+        /*Esse código existe para a viabilização da exclusão do autor, com mensagem de confirmação, sem que seja necessário um form auxiliar.*/
+        $conf= $this->GetFormValue('conf');
+        if ($conf =='sim')
+        {   
+            $data = $this->GetData();           
+            $ok = $this->objAutor->Delete($item);
+            if ( $ok )
+                    $MIOLO->Information("Registro deletado da base de dados", $MIOLO->GetActionURL($module,$action,'', Array('event'=>'btnList_click')) );
+            else
+                $MIOLO->Error("As informações não foram deletadas", $MIOLO->GetActionURL($module,$action) );
+        }
+
+        $this->idFicha = 1; 
+        $this->idSubficha = 5; 
+ 
+        $resultTag = $this->objEtiqueta->ListAutor($this->idFicha, $this->idSubficha);
+        
+        $x = 0;
+        while ($resultTag[$x][0] <> null)
+        {
+            $selTags[$x] = $resultTag[$x][0];
+            $x++;
+        }
+
+        $fields = Array (
+                        new MSelection('selEtiqueta','','Etiqueta', $selTags),
+                        new MHiddenField('hidFieldList',''),
+                        new MHiddenField('hidFieldTag',''),
+                        new MHiddenField('idEtiqueta',''),
+                  );
+
+        // Insere os campos
+
+        $this->SetFields($fields);    
+        
+        $buttons = array(
+                new MButton('btnEdit','Inserir'),
+                new MLink('btnLinkAutor','Relação de Autores',$this->manager->getActionURL($module,$self,'',array('event'=>'btnList:click'))),                               
+            );
+
+        $this->SetButtons($buttons);
+    }
+
+
+
+
+
+ function GetData()
+    {
+		$data = new FormData();		
+		$data->idEtiqueta = $this->GetFieldValue('selEtiqueta');
+		return $data;
+	}
+
+
+
+
+
+// Usada para inserir valores no formulário
+	function SetData($data)
+	{
+	
+		//$this->SetFieldValue('selEtiqueta',intval($data->idEtiqueta));
+		$this->SetFieldValue('selEtiqueta', $data->idEtiqueta);
+	
+	}
+
+
+
+
+    function btnEdit_click(){
+        global $MIOLO, $module, $self, $theme, $action, $page,$ocorrencia,$item;
+
+		if($item != NULL){
+			$ok = $item;
+		}
+		else{
+			$data = $this->GetData();
+			$ok = $data->idEtiqueta;
+		 }
+		 
+		//if ($selecao)  
+		if(($item == NULL) && ($ok == $item))
+        {
+			$MIOLO->Prompt(Prompt::Error("Por favor, selecione uma etiqueta.",$MIOLO->GetActionURL($module,$action)));
+			
+			//  REVER  
+            //$idAutor = $item;
+            //$ocorrencia = $this->objAutor->GetNumAutor($item);
+            //$idEtiqueta = $this->objAutor->GetEtiquetaById($idAutor);
+            //$tag = $this->objEtiqueta->GetTagById($idEtiqueta);
+        }
+	elseif ($ok != $item)		
+        {
+             		
+           $pos = (int)$this->getFormValue('selEtiqueta');
+           $tag = $this->selEtiqueta->getOption($pos);
+           $idEtiqueta = $this->objEtiqueta->GetIdByTag($tag)->result[0][0];
+           $etiqueta = $this->objEtiqueta->getById($idEtiqueta);
+          $ocorrencia = $this->objAutor->GetLastNumAutor($idEtiqueta);
+
+        }
+        elseif($ok == $item)
+        {
+           $pos = (int)$this->getFormValue('selEtiqueta');
+           $tag = $this->selEtiqueta->getOption($pos);
+           $idEtiqueta = $this->objAutor->GetEtiquetaById($item);
+           $etiqueta = $this->objEtiqueta->getById($idEtiqueta);
+          $ocorrencia = $this->objAutor->GetLastNumAutor($idEtiqueta);
+        
+        }
+        elseif($item == NULL)
+        {
+		
+			$MIOLO->Prompt(Prompt::Error("Por favor, selecione uma etiqueta.",$MIOLO->GetActionURL($module,$action)));
+			
+			//  REVER  
+            //$idAutor = $item;
+            //$ocorrencia = $this->objAutor->GetNumAutor($item);
+            //$idEtiqueta = $this->objAutor->GetEtiquetaById($idAutor);
+            //$tag = $this->objEtiqueta->GetTagById($idEtiqueta);
+        }
+   
+        $this->addInputFields($idEtiqueta, $ocorrencia, $tag);
+
+
+ 
+    }
+
+    function addInputFields($idEtiqueta, $ocorrencia,$tag){
+        global $MIOLO, $self, $module, $item;
+
+        $this->setFieldAttr('btnEdit','visible',false);
+        $this->setFieldAttr('btnLinkAutor','visible',false);
+        $this->setFieldAttr('selEtiqueta','visible',false);
+        $fList = '';
+    
+        $obj = new MDummy();
+        $fields = new MHContainer();
+
+        $indicadores = $this->objEtiqueta->getIndicadores($idEtiqueta);
+
+        $listaIndicadores = array();
+        foreach ($indicadores as $i=>$ind)
+        {
+                if ($ind != 0)
+                { 
+                    $obj->indicador = $i;
+                    $obj->idopcao = $this->objEtiqueta->getOpcaoAutor('IN' . $i, $idEtiqueta);                    
+                    $field = $this->objFicha->getInputFieldInd($this->idSubficha, $obj);
+                    $fList .= ($fList != '' ? ',' : '') . $field->getName();
+                    $field->formMode = 2;
+
+                    if ($item != NULL)
+                    {
+                        $indicador = $this->objAutor->getIndicadorById($item);
+                        if (!$indicador->eof)
+                        {
+                            $field->setValue($indicador->result[--$i][0]);
+                        }
+                    }                   
+                    $fields->addControl($field);
+                    $listaIndicadores[] = $field->getName();
+                }
+        } 
+        $this->addField($fields);
+
+        for($i = 0; $i < count($listaIndicadores); $i++)
+        {
+            $this->AddValidator(new RequiredValidator($listaIndicadores[$i]));
+        }
+
+        $campo = $this->objFicha->getCampo($this->idFicha,$this->idSubficha, $idEtiqueta, $ocorrencia);        
+        
+        while (! $campo->eof)
+        {
+            $obj = $campo->getRowObject();
+            //TODO: verificar
+            // $field = $this->objFicha->getInputFieldVarAutor($this->idSubficha,$obj,$tag,$item);
+            $field = $this->objFicha->getInputFieldVar($this->idSubficha,$obj,$tag);
+            $fList .= ($fList != '' ? ',' : '') . $field->getName();
+            $field->formMode = 2;
+            if ($item != null)
+            {
+                $material = $this->objAutor->getFieldsForm($item,$obj->subcampo,$idEtiqueta);
+                if (!$material->eof)
+                {
+                    if ($field->className == 'mmultitextfield3')
+                    {
+                        $array = $material->chunkResultMany(0,array(1,2),'');
+                        $field->setCodeValue($array);
+                    }
+                    else
+                    {
+                        $field->setValue($material->fields('conteudo'));
+                    }
+                }
+            }
+           
+            if ($obj->subcampo == 'a') 
+            {
+                //button_refresh
+                $fieldsAutor = new MHContainer();
+        		$url = $this->manager->getActionUrl('biblioteca','ajaxhandler');
+        		$aguarde = $this->manager->getUI()->getImage('miolo','aguarde.gif');
+        		$field->addAttribute("onChange","buscaCutter('$url','$aguarde','$field->id');");                   
+                $fieldsAutor->addControl($field);
+                $fieldCutter = new MTextField('txtCutter','','Cutter',6);
+                $fieldCutter->formMode = 2;
+                if ($material != null) {
+                    if (!$material->eof)
+                    {
+                        $fieldCutter->setValue($material->fields('cutter'));
+                    }
+                }         
+                $button = new MButton('bntGeraCutter','Gerar Cutter',"buscaCutter('$url','$aguarde','$field->id');");
+                $button->_addStyle('margin-top',"15px");
+                $fieldsAutor->addControl($fieldCutter);                
+                $fieldsAutor->addControl($button);
+                $this->addField($fieldsAutor);
+                $this->setFieldAttr('txtCutter','readonly',true);
+            }
+            else 
+            {
+                 $this->addField($field);
+            }     
+                   
+            $campo->moveNext(); 
+        } 
+
+        $this->setFieldValue('hidFieldList', $fList);
+        $this->setFieldValue('idEtiqueta', $idEtiqueta);
+        $this->setFieldValue('hidFieldTag', $tag);
+
+       // $fNew = new MTextField('classificacao','','Classificação',10);
+        $class = $this->objAutor->getClassificacao($idEtiqueta,$ocorrencia);
+
+       // $fNew->setValue($class);
+       // $this->addField($fNew);
+        
+        if ($item)
+        {
+            $buttons = array(
+                new MButton('btnUpdate', '<b>Atualizar</b>'),
+                
+            );
+        }
+        else
+        {
+            $buttons = array(
+                new MButton('btnPost', '<b>Gravar</b>'),
+            );
+        }
+        $buttons[] = new MButton('btnVoltar','<b>Voltar</b>',$MIOLO->getActionURL($module,$self));
+        $this->SetButtons($buttons);
+         
+    } 
+    
+    function btnPost_click()
+    {
+        global $MIOLO, $module;
+        
+        $classificacao = $this->getFormValue('classificacao');
+
+        $tag = $this->getFormValue('hidFieldTag');
+        $idEtiqueta = $this->objEtiqueta->GetIdByTag($tag)->result[0][0];
+        $ocorrencia = $this->objAutor->GetLastNumAutor($idEtiqueta);
+        $idAutor = $this->objAutor->LastNumeroAutor();
+        $etiqueta_vazia = true;
+        $fields = explode(',',$this->getFieldValue('hidFieldList'));
+
+        foreach($fields as $field)
+        {
+            $value = $this->page->request($field);
+            $campo = explode('_',$field);
+            $cutter = null; 
+            if ($campo[0] == $this->idSubficha)
+            {
+                if (is_array($value))
+                {
+                    foreach($value as $i=>$v)
+                    {
+                        $t = explode('] [',$v);
+                        $linha = substr($t[0],1);
+                        $conteudo = substr($t[1],0,strlen($t[1])-1);
+                        $conteudo = trim($this->objAutor->RetirarCaracteresEspeciais($conteudo));
+                        if($conteudo != null)
+                        {
+                             $this->objAutor->Insert($idAutor,$idEtiqueta, $campo[2],$conteudo,$linha,$ocorrencia, $classificacao);
+                            $etiqueta_vazia = false;
+                        }
+                    } 
+                }
+                else
+                {
+                    if ($campo[1] == "IND")
+                    {           
+                        $this->objAutor->saveIndicador($idAutor,$idEtiqueta, $campo[2],$value,1,$ocorrencia,$classificacao,$campo[2]);
+                    }
+                    else
+                    {
+                        if($value != null)
+                        {                                                     
+                            $value = trim($this->objAutor->RetirarCaracteresEspeciais($value));
+                            $cutter = $this->getFormValue('txtCutter');                                                      
+                            $this->objAutor->Insert($idAutor, $idEtiqueta, $campo[2],$value,1,$ocorrencia, $classificacao,$cutter);
+                            $etiqueta_vazia = false;                           
+                        }
+                    }
+                }
+            }
+        }
+
+        $MIOLO->Information("Autor inserido com sucesso na base de dados",$MIOLO->GetActionURL('biblioteca',"main:admin:autor"));       
+    }
+    
+    function btnList_click()
+    {
+        global $MIOLO, $module, $self, $theme, $action, $page;
+
+        $columns = array(
+            new DataGridColumn('idautor','Código','left',true, '10%',true, null, true,true),
+            new DataGridColumn('conteudo','Conteúdo','left',true, '70%',true, null, true,true),
+            new DataGridColumn('tag', 'Campo', 'left',true,'10%',true,null,true,true),
+            new DataGridColumn('classificacao','Classificação','center',true, '10%',true, null, true,true),
+            );
+
+        $href_datagrid = $MIOLO->GetActionURL($module,$self,'', Array('event'=>'btnList_click'));
+        $page->SetAction($href_datagrid);
+        $query = $this->objAutor->ListAutores();
+                
+        $datagrid = new DataGrid2($query, $columns, $href_datagrid,20);
+        $datagrid->SetTitle('Relação de autores');
+        $datagrid->SetLinkType('linkbutton');
+        $datagrid->SetWidth('100%');
+        $href_edit = $MIOLO->GetActionURL($module,$self,'%0%',Array('event'=>'btnEdit:click'));
+        $href_dele = $MIOLO->GetActionURL($module,$self,'%0%',Array('event'=>'btnExcluir:click'));
+        
+        $datagrid->AddActionIcon('Editar', 'edit', $href_edit);
+        $datagrid->AddActionIcon('Excluir', 'delete.gif', $href_dele);
+        $datagrid->HeaderLink('new', 'Novo Registro', $MIOLO->GetActionURL($module,$self));
+
+        $theme->InsertContent($datagrid);
+    }
+
+    function btnExcluir_click()
+    {
+        global $MIOLO, $module, $item, $action;
+        
+        $action_sim = $MIOLO->GetActionURL('biblioteca','main:admin:autor&event',$item,array('conf'=>'sim'));
+        $action_nao = $MIOLO->GetActionURL('biblioteca','main:admin:autor&event=btnList:click',$item,array('conf'=>'nao'));
+        $MIOLO->Question("Tem certeza que deseja excluir o autor? <i><font color=red>O autor será excluído mesmo que haja vínculo com alguma obra.</font></i>",$action_sim,$action_nao);
+    }
+    
+    function btnUpdate_click()
+    {
+        global $MIOLO, $module, $ocorrencia, $item;
+            
+
+        $y=0;
+        $ObrasAutor = $this->objAutor->getObrasDoAutor($item);
+        $classificacao = $this->getFormValue('classificacao');
+        $idEtiqueta = $this->getFieldValue('idEtiqueta');
+        $tag = $this->getFormValue('hidFieldTag');
+        $ocorrencia = $this->objAutor->GetLastNumAutor($idEtiqueta);
+
+        $etiqueta_vazia = true;
+        $fields = explode(',',$this->getFieldValue('hidFieldList'));
+        $ok = $this->objAutor->Delete($item);
+        if ($ok)
+        {
+        foreach($fields as $field)
+        {
+            $value = $this->page->request($field);
+            $campo = explode('_',$field);
+            if ($campo[0] == $this->idSubficha)
+            {
+                if (is_array($value))
+                {
+                    foreach($value as $i=>$v)
+                    {
+                        $t = explode('] [',$v);
+                        $linha = substr($t[0],1);
+                        $conteudo = substr($t[1],0,strlen($t[1])-1);
+                        $conteudo = trim($this->objAutor->RetirarCaracteresEspeciais($conteudo));
+                        if($conteudo != null)
+                        {
+                            $this->objAutor->Insert($item,$idEtiqueta, $campo[2],$conteudo,$linha,$ocorrencia, $classificacao);
+                            if ($campo[2]=='a')
+                            {
+                                $temp = $ocorrencia;    
+                            }
+                            $etiqueta_vazia = false;
+                        }
+                    } 
+                }
+                else
+                {
+                    if ($campo[1] == "IND")
+                    {
+                        $this->objAutor->saveIndicador($item,$idEtiqueta,  $campo[2],$value,1,$ocorrencia,$classificacao,$campo[2]);
+                    }
+                    else
+                    {
+                        if($value != null)
+                        {
+                            $value = trim($this->objAutor->RetirarCaracteresEspeciais($value));
+                            $cutter = $this->getFormValue('txtCutter');                                                      
+                            $this->objAutor->Insert($item, $idEtiqueta, $campo[2],$value,1,$ocorrencia, $classificacao,$cutter);
+                            if ($campo[2]=='a')
+                            {
+                                $temp = $ocorrencia;                        
+                            }
+                            $etiqueta_vazia = false;                              
+                        }
+                    }
+                }
+            } 
+        }
+        $obra = $MIOLO->GetBusiness($module,'obra');
+        while ($ObrasAutor[$y]!=NULL) 
+        {
+            $idobra = $ObrasAutor[$y][1];
+            $y++;
+            $ocorrencia = $temp;
+            $idAutor = $this->objAutor->getIdAutorAtualizado($idEtiqueta,$ocorrencia);
+            $arrayAutores = $this->objAutor->GetAutorCompleto($idEtiqueta,$ocorrencia);
+            $arrayIndicadores = $this->objAutor->GetIndicadorAutor($idEtiqueta,$ocorrencia);
+            $ocorrencia = $obra->GetNextOcorrencia($idobra,$idEtiqueta);
+            for ($x=0;$x<sizeof($arrayAutores);$x++)
+            {
+                $idmaterial = $obra->saveMaterialAutor($idobra,$idEtiqueta,$arrayAutores[$x][0],$arrayAutores[$x][1],$arrayAutores[$x][2],$ocorrencia+1);
+            }
+            for ($x=0;$x<sizeof($arrayIndicadores);$x++)
+            {
+                $obra->saveIndicadorObra($idobra,$idEtiqueta,$ocorrencia+1,$arrayIndicadores[$x][0],$arrayIndicadores[$x][1],0);
+            }   
+            $this->objAutor->saveAutorObra($idAutor,$idobra,$ocorrencia+1,$idEtiqueta);
+             
+        }
+        }       
+        else
+        {
+            $MIOLO->Error("As informações não foram atualizadas.", $MIOLO->GetActionURL('biblioteca','main:admin:autor&event=btnList:click'));
+        }
+
+        $MIOLO->Information("Autor atualizado com sucesso na base de dados.", $MIOLO->GetActionURL('biblioteca','main:admin:autor&event=btnList:click'));
+    }
+}
+?>

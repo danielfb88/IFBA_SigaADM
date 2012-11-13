@@ -1,0 +1,74 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+/**
+ * Form TipoLicAfast
+ */
+class frmSetor extends CompoundForm
+{
+	public $oid;
+    protected $setor;
+    /**
+     * Construtor
+     */
+    function __construct($objSetor)
+    {
+        global $MIOLO;
+        $this->setor = $objSetor;
+        parent::__construct();
+        $this->SetClose($MIOLO->GetActionURL('protocolo','main:setor:find'));
+        $this->SetTitle($this->setor->sigla);
+        $this->SetIcon($MIOLO->GetUi()->GetImage('protocolo','setor_mini.png'));
+    }
+
+    function CreateFields()
+    {
+        $setor = $this->setor;
+        if ($this->oid == NULL) $this->oid = $setor->idSetor;
+
+        // form
+        $ui = $this->manager->GetUI();
+        $form = Form::GetFormValue('form');
+        switch ($form)
+        {
+            case 'acesso':
+				$setor->getAcesso();
+				if ( ($id = $this->getFormValue('id')) != NULL )
+				{
+					$setor->deleteAcesso($id);
+					$setor->getAcesso();
+				}
+                $this->_form[0] = $ui->GetGrid('protocolo','gridSetorAcesso', $setor);
+			 	$this->_form[1] = $ui->GetForm('protocolo','frmSetorAcesso',$setor,'setor');
+                $this->page->setAction($this->manager->GetActionURL('protocolo','main:setor',$setor->idSetor,array('form'=>'acesso')));
+            break;
+        }
+        if ($this->_form[0])
+        {
+            $this->_form[0]->SetClose($this->manager->GetActionURL('protocolo','main:setor',$setor->sigla));
+        }
+		
+        // info
+		$this->_info[0]	= new TextLabel('infoNome',$setor->nome,'Nome');
+	} 
+}
+?>

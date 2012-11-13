@@ -1,0 +1,132 @@
+<?
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+class frmAutorizacao extends MForm
+{
+    public $idauth;
+    public $idvinculo;
+    public $grid; 
+    public $modulos;
+    public $candidato;
+
+	function __construct($idauth)
+    {   global $MIOLO, $action, $curso;
+
+       parent::__construct('Inscrições em Eventos de Capacitação - Anuência');
+//       $this->box->AddStyle('width',"75%");
+       $this->box->AddStyle('padding',"10px");
+       $this->idauth = $idauth; 
+	   $this->eventHandler();
+	}
+
+   function CreateFields()
+	{  
+	
+	global $MIOLO;
+	
+	$idUsuario = $this->manager->GetLogin()->idkey;
+	$objGestor = $MIOLO->GetBusiness('rh','gestorcapacitacao');
+	if ($objGestor->isGestor($idUsuario))
+	{
+        	$status = array(""=>"Pendente","E"=>"Excedente","P"=>"Pendente","A"=>"Autorizado","C"=>"Confirmado","X"=>"Autoriz-Exc");
+	        $aTurno = array("M"=>"Manhã","T"=>"Tarde","N"=>"Noite");	
+	
+	        $ctlArray = array(
+	            new MButton( 'btnAuth', 'Estou de acordo com os cursos/módulos selecionados'),
+	        );
+	
+	        $columns = array(
+	            new MDataGridColumn('inscricao','','left', false,'5%',true),
+	            new MDataGridColumn('curso','Nome','left', false,'30%',true),
+	            new MDataGridColumn('modulo','Módulo','left', false,'30%',true),
+	            new MDataGridColumn('turno','Turno','left', false,'5%',true,$aTurno),
+	            new MDataGridColumn('datainicio','Data Início','right', false,'10%',true),
+	            new MDataGridColumn('status','Status','left', false,'10%',true,$status),
+		    new MDataGridColumn('login','Requisitante','left', false,'10%',true),
+		    new MDataGridColumn('idvinculo','SIAPE','left', false,'10%',true),
+			
+		
+	        );
+		$button = array(new MButton('btn1','Enviara'));
+		$this->setButtons($button);
+	        
+		$idUsuario = $this->manager->GetLogin()->idkey;
+	
+	        $href_grid = $this->manager->GetActionURL($module,$self);
+	        $this->candidato = $this->manager->GetBusiness('rh','capacitacaoinsc');
+	        $this->candidato->idvinculo = $this->idvinculo;             
+	        //$query = $this->candidato->listCursosNaoAutorizados();
+		$query = $this->candidato->listCursosNaoAutorizadosPorGestor($idUsuario);
+	        $this->modulos = $query->result; 
+	        $this->grid = new MDataGrid($query, $columns, $href_grid,25);
+	        $this->grid->SetTitle('Cursos/Eventos de Capacitação - SIAPE: ' . $this->candidato->idvinculo);
+	        $this->grid->setRowMethod('frmAutorizacao','gridRowMethod');
+	        $this->grid->addActionSelect();
+	        $this->grid->setControls($ctlArray);
+	
+	        $this->candidato->getDadosPessoais();
+	        
+		$fields = array(
+			$this->grid
+			);
+		$this->SetFields($fields);
+		$this->setButtonAttr('btn1','visible',false);
+	}
+	else
+	{
+		$this->addError("Seu perfil não corresponde ao perfil de gestor, portanto a autorização de inscrições não é possível");
+	}
+	}	
+    function gridRowMethod($i, $row, $actions,$columns)
+    {
+        if ( $row[4]{0} == 'A' )
+        {
+            $columns['status']->control[$i]->setColor('blue');
+            $columns['status']->control[$i]->setBold(true);
+        }
+        if ( $row[4]{0} == 'C' )
+        {
+            $columns['status']->control[$i]->setColor('green');
+            $columns['status']->control[$i]->setBold(true);
+        }
+    }
+
+    public function btnAuth_click()
+    {
+       if ( count( $this->grid->selecteds ) )
+       {
+          $select = $this->page->request( 'select' . $this->name );
+          foreach( $this->grid->allSelecteds as $pageNum => $p )
+          {
+              foreach( $p as $lineNum )
+              {
+                 $pos     = ( ( $pageNum - 1 ) * $this->grid->getPageLength() ) + $lineNum;
+                 $inscricao = $this->modulos[$pos][0];
+                 $this->candidato->getById($inscricao);
+                 $this->candidato->autorizadoPor($this->idauth);
+              }
+          }
+	$idUsuario = $this->manager->GetLogin()->idkey;
+        $this->grid->query = $this->candidato->listCursosNaoAutorizadosPorGestor($idUsuario);
+       }
+    }
+
+
+}
+?>

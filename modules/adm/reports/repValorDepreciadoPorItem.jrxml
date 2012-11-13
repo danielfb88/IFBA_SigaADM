@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="repValorDepreciadoPorItem" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="117"/>
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Heading 1" isDefault="false" fontSize="22" isBold="true" pdfFontName="Helvetica-Bold">
+		<box>
+			<pen lineWidth="1.0" lineStyle="Solid"/>
+			<topPen lineWidth="0.25" lineStyle="Solid"/>
+			<leftPen lineWidth="0.25" lineStyle="Solid"/>
+			<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+			<rightPen lineWidth="0.25" lineStyle="Solid"/>
+		</box>
+	</style>
+	<parameter name="mesRelatorio" class="java.lang.String"/>
+	<parameter name="pURL" class="java.lang.String"/>
+	<parameter name="pIdUsuario" class="java.lang.Integer"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA["/var/www/miolo/modules"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pIdItem1" class="java.lang.Integer"/>
+	<parameter name="pIdItem2" class="java.lang.Integer"/>
+	<parameter name="idInstituicao" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[new java.lang.Integer(0)]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+iditempatrimonio,
+item as descricao,
+TO_CHAR(dataaquisicao,'DD/MM/YYYY') as dataaquisicao,
+TO_CHAR(iniciouso,'DD/MM/YYYY') as datainiciouso,
+idrubrica as contacontabil,
+valor as valor_bruto,
+
+-- VALOR DEPRECIÁVEL MÊS
+-- * Quando o total de meses ultrapassar o tempo de vida útil do item deve-se considerar o valor depreciável do mês como ZERO.
+-- * Quando o
+
+SUM(CASE extract(day from iniciouso) WHEN 1 THEN
+    CASE (((extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))-1) > mesesdepreciacao OR
+          ((extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))-1) = 0) WHEN true THEN
+        0
+    ELSE
+        valordepreciavelmes
+    END
+ELSE
+    CASE ((extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso))) > mesesdepreciacao OR
+           extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)) = 0) WHEN true THEN
+        0
+    ELSE
+        valordepreciavelmes
+    END
+END) as valordepreciavelmes,
+
+-- VALOR DEPRECIADO
+-- * É o valor devreciável do mês multiplicado pelo total de meses.
+
+SUM((valordepreciavelmes *
+CASE extract(day from iniciouso) WHEN 1 THEN
+    CASE ((extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))-1) > mesesdepreciacao WHEN true THEN
+        mesesdepreciacao
+    ELSE
+        ((extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))-1)
+    END
+ELSE
+    CASE (extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso))) > mesesdepreciacao WHEN true THEN
+        mesesdepreciacao
+    ELSE
+        (extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))
+    END
+END)) as valordepreciado,
+
+-- VALOR LÍQUIDO
+-- * É o valor bruto subtraído do valor depreciado.
+
+SUM((valor - (valordepreciavelmes *
+CASE extract(day from iniciouso) WHEN 1 THEN
+    CASE ((extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))-1) > mesesdepreciacao WHEN true THEN
+        mesesdepreciacao
+    ELSE
+        ((extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))-1)
+    END
+ELSE
+    CASE (extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso))) > mesesdepreciacao WHEN true THEN
+        mesesdepreciacao
+    ELSE
+        (extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))
+    END
+END))) as valorLiquido
+
+FROM vw_depreciacao
+WHERE iniciouso < date($P{mesRelatorio})
+	AND iditempatrimonio>=$P{pIdItem1}
+	AND iditempatrimonio<=$P{pIdItem2}
+	and idinstituicao = CAST ($P{idInstituicao} AS Integer)
+	AND TO_CHAR(iniciouso,'DD/MM/YYYY') not like ('01/01/0001')
+	AND (idrubrica != 142121800 and idrubrica != 142128700)
+GROUP BY
+iditempatrimonio, idrubrica, valor, item, dataaquisicao, datainiciouso
+ORDER BY
+iditempatrimonio;]]>
+	</queryString>
+	<field name="contacontabil" class="java.math.BigDecimal"/>
+	<field name="valor_bruto" class="java.math.BigDecimal"/>
+	<field name="valordepreciavelmes" class="java.math.BigDecimal"/>
+	<field name="valordepreciado" class="java.lang.Double"/>
+	<field name="valorliquido" class="java.lang.Double"/>
+	<field name="iditempatrimonio" class="java.math.BigDecimal"/>
+	<field name="descricao" class="java.lang.String"/>
+	<field name="dataaquisicao" class="java.lang.String"/>
+	<field name="datainiciouso" class="java.lang.String"/>
+	<variable name="SUM_valor_bruto_1" class="java.math.BigDecimal" resetType="Column" calculation="Sum">
+		<variableExpression><![CDATA[$F{valor_bruto}]]></variableExpression>
+	</variable>
+	<variable name="SUM_valorliquido_1" class="java.lang.Double" resetType="Column" calculation="Sum">
+		<variableExpression><![CDATA[$F{valorliquido}]]></variableExpression>
+	</variable>
+	<variable name="SUM_valordepreciado_1" class="java.lang.Double" resetType="Column" calculation="Sum">
+		<variableExpression><![CDATA[$F{valordepreciado}]]></variableExpression>
+	</variable>
+	<variable name="SUM_valordepreciavelmes_1" class="java.math.BigDecimal" resetType="Column" calculation="Sum">
+		<variableExpression><![CDATA[$F{valordepreciavelmes}]]></variableExpression>
+	</variable>
+	<group name="ccontabil">
+		<groupExpression><![CDATA[$F{iditempatrimonio}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band height="18">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+					<reportElement key="textField-11" positionType="Float" x="52" y="0" width="265" height="15" isPrintWhenDetailOverflows="true"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{descricao}]]></textFieldExpression>
+				</textField>
+				<textField pattern="R¤ ###0.00" isBlankWhenNull="false">
+					<reportElement key="textField-12" positionType="Float" x="540" y="0" width="69" height="15"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{valorliquido} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{valorliquido} ))]]></textFieldExpression>
+				</textField>
+				<textField pattern="R¤ ###0.00" isBlankWhenNull="false">
+					<reportElement key="textField-13" positionType="Float" x="616" y="0" width="68" height="15"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{valordepreciado} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{valordepreciado} ))]]></textFieldExpression>
+				</textField>
+				<textField pattern="R¤ ###0.00" isBlankWhenNull="false">
+					<reportElement key="textField-14" positionType="Float" x="691" y="0" width="87" height="15"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{valordepreciavelmes} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{valordepreciavelmes} ))]]></textFieldExpression>
+				</textField>
+				<textField pattern="R¤ ###0.00" isBlankWhenNull="false">
+					<reportElement key="textField-16" positionType="Float" x="470" y="0" width="68" height="15"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{valor_bruto} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{valor_bruto} ))]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-11" positionType="Float" x="1" y="0" width="51" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{iditempatrimonio}]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+					<reportElement key="textField-11" positionType="Float" x="397" y="0" width="71" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{datainiciouso}.equals("01/01/0001"))?null:$F{datainiciouso}]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+					<reportElement key="textField-11" positionType="Float" x="325" y="0" width="71" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{dataaquisicao}.equals("01/01/0001"))?null:$F{dataaquisicao}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="125">
+			<textField evaluationTime="Report" pattern="dd/MM/yyyy H:mm" isBlankWhenNull="false">
+				<reportElement key="textField-1" x="602" y="0" width="179" height="18"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport" mode="Transparent" x="0" y="0" width="782" height="96"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA["DEPRECIAÇÃO POR ITENS"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} +"/common/reports/Cabecalho_Paisagem.jasper"]]></subreportExpression>
+			</subreport>
+			<textField pattern="MMMMM-yy" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="454" y="108" width="201" height="16"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[(DateFormat.getDateInstance(DateFormat.LONG, new Locale("pt","BR")).format(
+new Date (((Integer.parseInt($P{mesRelatorio}.substring(3,5))-1)==0?12:Integer.parseInt($P{mesRelatorio}.substring(3,5))-1)+
+    "/"+(Integer.parseInt($P{mesRelatorio}.substring(0,2)))+
+    "/"+((Integer.parseInt($P{mesRelatorio}.substring(3,5))-1)==0?(Integer.parseInt($P{mesRelatorio}.substring(6,10))-1):(Integer.parseInt($P{mesRelatorio}.substring(6,10))))
+    )
+)).substring(5)]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-1" x="325" y="108" width="122" height="16"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Período do Relatório:]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band height="36">
+			<staticText>
+				<reportElement key="staticText-3" x="52" y="8" width="265" height="28"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Descrição]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-4" x="489" y="8" width="54" height="28"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor
+Bruto]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-5" x="617" y="8" width="67" height="28"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor
+Depreciado]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-6" x="691" y="8" width="90" height="28"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor
+Depreciado Mês]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-7" x="552" y="8" width="62" height="28"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor
+Líquido]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-1" x="0" y="8" width="778" height="1"/>
+			</line>
+			<staticText>
+				<reportElement key="staticText-3" x="1" y="8" width="51" height="28"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Número]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-3" x="325" y="8" width="71" height="28"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Data de Aquisição]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-3" x="397" y="8" width="70" height="28"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Data Início de Uso]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band/>
+	</detail>
+	<columnFooter>
+		<band height="35">
+			<line>
+				<reportElement key="line-2" x="0" y="1" width="778" height="1"/>
+			</line>
+			<staticText>
+				<reportElement key="staticText-8" x="372" y="2" width="95" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[TOTAL]]></text>
+			</staticText>
+			<textField pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="468" y="2" width="70" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{SUM_valor_bruto_1} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{SUM_valor_bruto_1}))]]></textFieldExpression>
+			</textField>
+			<textField pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="538" y="2" width="71" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{SUM_valorliquido_1} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{SUM_valorliquido_1}))]]></textFieldExpression>
+			</textField>
+			<textField pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="609" y="2" width="75" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{SUM_valordepreciado_1} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{SUM_valordepreciado_1}))]]></textFieldExpression>
+			</textField>
+			<textField pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="691" y="2" width="86" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{SUM_valordepreciavelmes_1} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($V{SUM_valordepreciavelmes_1}))]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="14">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-9" x="660" y="0" width="80" height="14"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Página "+$V{PAGE_NUMBER}+" de"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-10" x="740" y="0" width="40" height="14"/>
+				<textElement>
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

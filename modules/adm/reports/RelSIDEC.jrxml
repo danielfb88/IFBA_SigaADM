@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="RelSIDEC" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String"/>
+	<parameter name="idlicitacao" class="java.lang.String"/>
+	<parameter name="pURL" class="java.lang.String"/>
+	<parameter name="pIdUsuario" class="java.lang.Integer"/>
+	<parameter name="pTitulo" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT	l.idlicitacao,
+	ot.itemdef,
+	Sum(ir.quantpedida) AS SomaDequantpedida,
+	m.unidade,
+	m.descricao,
+	m.codmaterial,
+	((ot.orcamento1+ot.orcamento2+ot.orcamento3)/3) AS Media,
+	Sum(ir.quantpedida) * Round((ot.orcamento1+ot.orcamento2+ot.orcamento3)/3,2) AS Total,
+	l.numero,
+	( SELECT ml.descricao FROM ad_modalidadelicitacao ml WHERE ml.idmodalidadelicitacao = l.idmodalidadelicitacao ) as modalidade,
+	pro.numpro,
+	pro.instit
+	
+FROM ((
+	(ad_orcamentotermo ot 
+		INNER JOIN (cm_pessoa p INNER JOIN cm_usuario u ON p.idpessoa = u.idpessoa) ON ot.iduser = u.idusuario
+	) INNER JOIN (ad_licitacao l INNER JOIN ad_itemreq ir ON (l.idlicitacao = ir.idlicitacao) INNER JOIN ad_processo pro ON (l.numpro = pro.numpro) ) ON (ot.idlicitacao = ir.idlicitacao) AND (ot.itemdef = ir.item) AND (ot.idlicitacao = l.idlicitacao)
+	) inner join ad_material m on (ir.idmaterial = m.idmaterial)), cm_instituicao i , cm_setor s
+WHERE	U.IDSETOR = S.IDSETOR
+AND	S.IDINSTITUICAO = I.IDINSTITUICAO 
+AND l.idlicitacao = cast($P{idlicitacao} as numeric)
+
+GROUP BY l.idlicitacao,
+	 ot.itemdef,
+	 m.unidade,
+	 m.descricao,
+	 m.codmaterial,
+	 ot.empresa1,
+	 ot.orcamento1,
+	 ot.empresa2,
+	 ot.orcamento2,
+	 ot.empresa3,
+	 ot.orcamento3,
+	 Round((ot.orcamento1+ot.orcamento2+ot.orcamento3)/3,2),
+	 l.numero,
+	 (  SELECT ml.descricao  FROM ad_modalidadelicitacao ml   WHERE ml.idmodalidadelicitacao = l.idmodalidadelicitacao ) ,
+	 pro.numpro,
+	 pro.instit
+
+order by ot.itemdef;]]>
+	</queryString>
+	<field name="idlicitacao" class="java.math.BigDecimal"/>
+	<field name="itemdef" class="java.math.BigDecimal"/>
+	<field name="somadequantpedida" class="java.math.BigDecimal"/>
+	<field name="unidade" class="java.lang.String"/>
+	<field name="descricao" class="java.lang.String"/>
+	<field name="codmaterial" class="java.math.BigDecimal"/>
+	<field name="media" class="java.math.BigDecimal"/>
+	<field name="total" class="java.math.BigDecimal"/>
+	<field name="numero" class="java.lang.String"/>
+	<field name="modalidade" class="java.lang.String"/>
+	<field name="numpro" class="java.lang.String"/>
+	<field name="instit" class="java.math.BigDecimal"/>
+	<variable name="vSoma" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{total}]]></variableExpression>
+	</variable>
+	<background>
+		<band height="1"/>
+	</background>
+	<title>
+		<band height="167">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" stretchType="RelativeToTallestObject" x="0" y="0" width="782" height="102"/>
+				<subreportParameter name="SUBREPORT_DIR">
+					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA["LANÇAMENTO NO SIDEC"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "/common/reports/Cabecalho_Paisagem.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement key="staticText-2" x="0" y="123" width="146" height="19"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Número do Processo:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-3" x="0" y="102" width="146" height="19"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Número da Licitação:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-4" x="0" y="145" width="146" height="18"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Modalidade:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-2" x="146" y="123" width="372" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{instit}+
+"."+
+$F{numpro}.substring( 4, 10 ) +
+"/" +
+$F{numpro}.substring( 0, 4 ) +
+"-" +
+$F{numpro}.substring( 10, 12 )]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-3" x="146" y="102" width="372" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{numero}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-4" x="146" y="145" width="372" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{modalidade}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="36">
+			<staticText>
+				<reportElement key="staticText-5" x="51" y="12" width="102" height="18"/>
+				<textElement textAlignment="Center">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Código]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-6" x="176" y="12" width="102" height="18"/>
+				<textElement textAlignment="Left">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Descrição]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-7" x="540" y="12" width="53" height="18"/>
+				<textElement textAlignment="Left">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Quant.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-8" x="604" y="12" width="53" height="18"/>
+				<textElement textAlignment="Left">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Unidade]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-9" x="663" y="4" width="53" height="26"/>
+				<textElement textAlignment="Center">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Unitário]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-10" x="731" y="4" width="46" height="26"/>
+				<textElement textAlignment="Center">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Total]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-2" x="0" y="34" width="782" height="1"/>
+			</line>
+			<staticText>
+				<reportElement key="staticText-11" x="5" y="12" width="33" height="18"/>
+				<textElement textAlignment="Center">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Item]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band/>
+	</columnHeader>
+	<detail>
+		<band height="31">
+			<line>
+				<reportElement key="line-1" positionType="FixRelativeToBottom" x="0" y="29" width="782" height="1"/>
+			</line>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-9" x="165" y="6" width="351" height="18"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{descricao}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-10" x="45" y="6" width="110" height="18"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{codmaterial}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-11" x="523" y="6" width="67" height="18"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{somadequantpedida}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-12" x="600" y="6" width="47" height="18"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{unidade}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField-13" x="660" y="6" width="53" height="18"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{media}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField-14" x="723" y="6" width="58" height="18"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{total}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-15" x="-1" y="6" width="39" height="18"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{itemdef}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="13"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="18">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-7" x="598" y="0" width="138" height="14"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-8" x="736" y="0" width="46" height="14"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" de " + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-16" x="0" y="0" width="782" height="14"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[new SimpleDateFormat( "dd/MM/yyyy" ).format( new Date( ) )]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="56">
+			<staticText>
+				<reportElement key="staticText-12" stretchType="RelativeToTallestObject" x="682" y="-1" width="39" height="10"/>
+				<textElement textAlignment="Left">
+					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Total:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField-17" stretchType="RelativeToTallestObject" x="710" y="-1" width="71" height="10"/>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{vSoma}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-18" x="0" y="37" width="782" height="8"/>
+				<textElement textAlignment="Center">
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[new SimpleDateFormat( "dd/MM/yyyy" ).format( new Date( ) )]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-19" x="598" y="37" width="138" height="8"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Courier New" size="6" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-20" x="736" y="37" width="46" height="8"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Courier New" size="6" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" de " + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

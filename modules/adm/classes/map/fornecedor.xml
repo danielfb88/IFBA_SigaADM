@@ -1,0 +1,70 @@
+<map>
+    <moduleName>adm</moduleName>
+    <className>fornecedor</className>
+    <tableName>ad_fornecedor</tableName>
+    <databaseName>sigaept</databaseName>
+    <attribute>
+        <attributeName>idFornecedor</attributeName>
+        <columnName>idfornecedor</columnName>
+		<idgenerator>seq_ad_fornecedor</idgenerator>
+		<key>primary</key>
+    </attribute>
+    <attribute>
+        <attributeName>contaCorrente</attributeName>
+        <columnName>contacorrente</columnName>
+    </attribute>
+    <attribute>
+        <attributeName>idInstituicao</attributeName>
+        <columnName>idinstituicao</columnName>
+    </attribute>
+    <attribute>
+        <attributeName>idPessoa</attributeName>
+        <columnName>idpessoa</columnName>
+    </attribute>
+
+    <attribute>
+        <attributeName>idBanco</attributeName>
+        <columnName>idbanco</columnName>
+    </attribute>
+    <attribute>
+        <attributeName>idAgencia</attributeName>
+        <columnName>idagenc</columnName>
+    </attribute>
+
+    <attribute>
+        <attributeName>instituicao</attributeName>
+    </attribute>
+    
+    <attribute>
+        <attributeName>licitacao</attributeName>
+    </attribute>
+
+    <association>
+		<toClassModule>common</toClassModule>
+		<toClassName>instituicao</toClassName>
+		<cardinality>oneToOne</cardinality>
+		<target>instituicao</target>
+		<retrieveAutomatic>false</retrieveAutomatic>
+		<saveAutomatic>false</saveAutomatic>
+		<entry>
+			<fromAttribute>idInstituicao</fromAttribute>
+			<toAttribute>idinstituicao</toAttribute>
+		</entry>
+   </association>    
+
+    <association>
+		<toClassModule>adm</toClassModule>
+		<toClassName>licitacao</toClassName>
+		<associativeClassModule>adm</associativeClassModule>
+		<associativeClassName>participante</associativeClassName>
+		<cardinality>manyToMany</cardinality>
+		<target>licitacao</target>
+		<retrieveAutomatic>false</retrieveAutomatic>
+		<saveAutomatic>false</saveAutomatic>
+		<direction>
+			<fromAttribute>participantes</fromAttribute>
+			<toAttribute>licitacao</toAttribute>
+		</direction>
+   </association>  
+
+</map>

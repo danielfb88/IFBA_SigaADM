@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="itensPorClassificador" pageWidth="595" pageHeight="842" whenNoDataType="BlankPage" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Key">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="pClassificador" class="java.lang.String"/>
+	<parameter name="pIdUsuario" class="java.lang.Integer"/>
+	<parameter name="pURL" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA["/home/siga/WORKSPACE SIGAEPT-ADM/modulos/trunk"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pIdInstituicao" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT cm_setor.idsetor,
+cm_setor.siglasetor,
+ad_itempatrimonio.descricao,
+TO_CHAR(AD_ITEMPATRIMONIO.DATAAQUISICAO,'DD/MM/YYYY') as dataAquisicao,
+ad_itempatrimonio.valor,
+ad_itempatrimonio.subelemento,
+ad_itempatrimonio.iditempatrimonio,
+ad_itempatrimonio.idempenhado,
+ad_itempatrimonio.idmaterial,
+ad_classificador.descricao as classificador
+
+FROM (ad_itempatrimonio INNER JOIN cm_setor ON ((ad_itempatrimonio.idsetor=cm_setor.idsetor)) INNER JOIN ad_classificador ON ((ad_itempatrimonio.idclassificador=ad_classificador.idclassificador)))
+WHERE ((ad_itempatrimonio.idclassificador = $P{pClassificador}) AND (ad_itempatrimonio.ativo = 'S') AND cm_setor.idinstituicao = $P{pIdInstituicao})
+ORDER BY
+cm_setor.idsetor ASC,
+ad_itempatrimonio.iditempatrimonio ASC]]>
+	</queryString>
+	<field name="idsetor" class="java.math.BigDecimal"/>
+	<field name="siglasetor" class="java.lang.String"/>
+	<field name="descricao" class="java.lang.String"/>
+	<field name="dataaquisicao" class="java.lang.String"/>
+	<field name="valor" class="java.math.BigDecimal"/>
+	<field name="subelemento" class="java.math.BigDecimal"/>
+	<field name="iditempatrimonio" class="java.math.BigDecimal"/>
+	<field name="idempenhado" class="java.math.BigDecimal"/>
+	<field name="idmaterial" class="java.math.BigDecimal"/>
+	<field name="classificador" class="java.lang.String"/>
+	<variable name="classificador_sub_totals" class="java.math.BigDecimal" resetType="Group" resetGroup="classificadores" calculation="Sum">
+		<variableExpression><![CDATA[$F{valor}]]></variableExpression>
+	</variable>
+	<variable name="minPatrimonio" class="java.math.BigDecimal" resetType="Group" resetGroup="classificadores" calculation="Lowest">
+		<variableExpression><![CDATA[$F{iditempatrimonio}]]></variableExpression>
+	</variable>
+	<variable name="maxPatrimonio" class="java.math.BigDecimal" resetType="Group" resetGroup="classificadores" calculation="Highest">
+		<variableExpression><![CDATA[$F{iditempatrimonio}]]></variableExpression>
+	</variable>
+	<variable name="totalGeral" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{valor}]]></variableExpression>
+	</variable>
+	<variable name="qteTotal" class="java.lang.Integer" incrementType="Group" incrementGroup="classificadores" calculation="Sum">
+		<variableExpression><![CDATA[$V{classificadores_COUNT}]]></variableExpression>
+	</variable>
+	<group name="classificadores" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{idmaterial}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+	</group>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="108">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-1" mode="Transparent" x="5" y="7" width="545" height="94"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA["ITENS PATRIMONIADOS POR CLASSIFICADOR"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} +"/common/reports/Cabecalho.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="33">
+			<line>
+				<reportElement key="line-1" x="2" y="3" width="550" height="1"/>
+			</line>
+			<line>
+				<reportElement key="line-2" x="2" y="26" width="550" height="1"/>
+			</line>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="113" y="7" width="440" height="18"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font pdfFontName="Times-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{classificador}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-29" x="3" y="5" width="110" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[CLASSIFICADOR: ]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="34" isSplitAllowed="false">
+			<staticText>
+				<reportElement key="staticText-19" x="397" y="6" width="60" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Setor]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-20" x="488" y="6" width="61" height="17"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-21" x="67" y="6" width="319" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Descrição]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-3" x="2" y="27" width="550" height="1"/>
+			</line>
+			<staticText>
+				<reportElement x="3" y="6" width="52" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="sansserif" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Código]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<rectangle radius="0">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="1" y="0" width="553" height="18" backcolor="#E2E2E2">
+					<printWhenExpression><![CDATA[new Boolean(((($V{COLUMN_COUNT}.intValue()) % 2) == 0))]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-24" x="67" y="0" width="319" height="18"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{descricao}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="classificadores" pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-22" isPrintRepeatedValues="false" x="481" y="0" width="74" height="18" printWhenGroupChanges="classificadores"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{valor} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{valor} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-27" x="391" y="0" width="82" height="18"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{siglasetor}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="55" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{iditempatrimonio}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="24">
+			<textField pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="false">
+				<reportElement key="textField-16" x="32" y="6" width="161" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-19" x="506" y="5" width="25" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-27" x="464" y="5" width="40" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Página Estático]]></text>
+			</staticText>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="24">
+			<rectangle>
+				<reportElement key="rectangle-2" x="5" y="0" width="549" height="24" isPrintWhenDetailOverflows="true" backcolor="#FFFFFF"/>
+				<graphicElement>
+					<pen lineWidth="0.1" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-26" x="360" y="0" width="58" height="24"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Total:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-17" isPrintRepeatedValues="false" x="429" y="0" width="28" height="24"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{qteTotal}]]></textFieldExpression>
+			</textField>
+			<textField pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-18" isPrintRepeatedValues="false" x="468" y="0" width="82" height="24"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($V{totalGeral} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $V{totalGeral} ))]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

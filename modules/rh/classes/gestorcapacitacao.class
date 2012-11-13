@@ -1,0 +1,108 @@
+<?php
+class BusinessRhGestorCapacitacao extends Business
+{
+	public $idUsuario;
+	public $login;
+	public $dataInicio;
+	public $dataFim;
+
+	public $usuario;
+
+	function __construct($data = null)
+	{
+		parent::__construct('sigaept', $data);
+	}
+	function getById($id)
+	{
+		$this->idUsuario = $id;
+		$this->retrieve();
+		return $this;
+	}
+	function setData($data)
+	{
+		$this->idUsuario = $data->idUsuario;
+		$this->login = $data->lkpUsuario;
+		$this->dataInicio = $data->dataInicio;	
+		$this->dataFim = $data->dataFim;
+	}
+	function listAll()
+	{
+		$criteria = $this->getCriteria();
+		$query = $criteria->retrieveAsQuery();
+		return $query;
+
+	}
+	function Del($id)
+    	{
+		global $MIOLO;
+		$this->getById($id);
+		try
+		{
+			$this->Delete();
+			$msg = "Gestor Excluido com sucesso";
+			$MIOLO->Information($msg,$MIOLO->GetActionURL('rh','main:capacitacao:acessocapacitacao',array("form" => "acessocapacitacaoges")));
+		}
+		catch(Exception $e)
+		{
+			$this->manager->Error($e->getMessage());
+		}
+	
+    	}
+	function listRequisitantes($idGestor)
+	{
+		$sql = new MSql('r.idusuario,r.login','rh_reqcapacitacao r, rh_gestorcapacitacao g, rh_acessoreqcapacitacao a',"g.idusuario = a.idusuariog AND a.idusuarior = r.idusuario AND g.idusuario = '$idGestor'");
+		$query = $this->Query($sql);		
+		return $query;
+	}
+	function saveAcessoReq($idr,$idg)
+	{
+		$sql = new sql('idusuarior, idusuariog','rh_acessoreqcapacitacao');
+		$args = array($idr,$idg);
+		$cmd = array(); 
+		$cmd[] = $sql->Insert($args);
+		try
+		{
+			$this->Execute($cmd);
+		}
+		catch(Exception $e)
+		{
+			$this->manager->Error($e->getMessage());
+		}
+		
+    	}	
+	function DelAcesso($idR,$idG)
+	{
+        	$values = array();
+        	$sql = new sql('','rh_acessoreqcapacitacao',"idusuarior = '$idR' AND idusuariog = '$idG'");    
+        	try
+        	{
+            		$this->Execute($sql->Delete($values));
+               	}
+        	catch(Exception $e)
+        	{	                
+            		$this->manager->Error($e->getMessage());
+        	}
+	}
+	function isGestor($idUsuario)
+	{
+		$criteria = $this->getCriteria();
+	        $criteria->addCriteria('idusuario','=', "$idUsuario");
+		$query = $criteria->retrieveAsQuery();
+		if($query->result)
+			return true;
+		else
+			return false;
+	}
+	function hasReq($idUsuario)
+	{
+		global $MIOLO;
+
+		$sql = new MSql('idusuariog','rh_acessoreqcapacitacao',"idusuariog = '$idUsuario'");
+		$result = $this->Query($sql);
+		if($result->result)
+			return TRUE;
+		else
+			return FALSE;
+	}
+}
+?>

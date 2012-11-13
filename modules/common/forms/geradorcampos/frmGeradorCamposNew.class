@@ -1,0 +1,80 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+class frmGeradorCamposNew extends MForm
+{
+
+	function __construct()
+	{
+		parent::__construct('Incluir Novo Campo para Gerador de Relatório');
+		$this->EventHandler();
+	}
+    
+	function CreateFields()
+	{
+        $tab = $this->manager->getBusiness('common','tabelarelat');
+        $query = $tab->listAll();
+        
+		$fields = array(
+			$campo = new MTextField('campo','','Campo','25','Nome físico'),
+			$titulo = new MTextField('titulo','','Título','25','Título (no Cabeçalho) (para o usuário)'),
+			$descricao = new MTextField('descricao','','Descrição','55'),
+            $tabela = new MSelection('idTabelaRelat','','Tabela',$query->result),
+        ); 
+        $this->SetFields($fields);		
+
+
+        $buttons = array(
+            new MButton('btnNew','Incluir Campo')
+        );
+        $this->SetButtons($buttons);
+
+		
+        $validators = array(
+            new MRequiredValidator('campo'),
+            new MRequiredValidator('titulo'),
+
+        );
+        $this->SetValidators($validators);
+	}
+    
+	public function btnNew_click()
+	{
+		$data = $this->GetData();
+		$o = $this->manager->GetBusiness('common','camporelat');
+        $o->campo = $data->campo;
+        $o->titulo = $data->titulo;
+        $o->descricao = $data->descricao;
+        $o->idTabelaRelat = $data->idTabelaRelat;
+		try
+		{
+			$o->save();
+			$go = $this->manager->GetActionURL('common','main:mad:geradorcampos:main',$o->idCampoRelat);
+			$this->page->Redirect($go);
+		}
+		catch (Exception $e)
+		{
+			$this->AddError($e->GetMessage());
+		}
+	}
+}
+?>

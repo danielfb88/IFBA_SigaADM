@@ -1,0 +1,78 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+/**
+ * Form Sistema
+ */
+class frmSistema extends MCompoundForm
+{
+	public $oid;
+    protected $Sistema;
+    /**
+     * Construtor
+     */
+    function __construct($objSistema)
+    {
+        global $MIOLO;
+        $this->Sistema = $objSistema;
+        parent::__construct();
+        $this->SetClose($MIOLO->GetActionURL('common','main:sistema:find'));
+        $this->SetTitle($this->Sistema->sistema);
+        $this->SetIcon($MIOLO->GetUi()->GetImage('common','sistema_mini.png'));
+    }
+
+    function CreateFields()
+    {
+		global $context,$history,$self;
+
+        $Sistema = $this->Sistema;
+        if ($this->oid == NULL) $this->oid = $Sistema->idSistema;
+
+// form
+        $ui = $this->manager->GetUI();
+        $form = MForm::GetFormValue('form');
+        switch ($form)
+        {
+            case 'dados' : 
+				$this->_form[0] = $ui->GetForm('common','frmSistemaDados', $Sistema, 'sistema'); 
+                break;
+            case 'excluir'     : 
+                 $this->_form[0] = $ui->GetForm('common','frmSistemaDel', $Sistema, 'sistema'); 
+                 break;
+        }
+        if ($this->_form[0])
+        {
+            $this->_form[0]->SetClose($this->manager->GetActionURL('common', 'main:admin:sistema',$Sistema->idSistema));
+        }
+		
+// panel        
+        $action = $context->action;
+        $this->_panel[0] = $panel = new ActionPanel('pnlCompound','Opções','',false);
+        $panel->AddUserAction('sistema',A_EXECUTE,'Editar',$ui->GetImage('common','edit.png'),'common',$action, $this->oid, array("form"=>"dados"));
+        $panel->AddUserAction('sistema',A_EXECUTE,'Excluir',$ui->GetImage('common','trash.png'),'common',$action, $this->oid, array("form"=>"excluir"));
+
+// info
+		$this->_info[0]	= new MTextLabel('txtSistema',$this->Sistema->sistema,'Nome');
+       
+	}
+}
+?>

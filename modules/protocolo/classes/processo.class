@@ -1,0 +1,757 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+class BusinessProtocoloProcesso extends Business
+{
+    public $numProcesso;
+    public $dataAbertura;
+    public $instituicao;
+    public $arquivo;
+    public $setorOrigem;
+    public $tipo;
+    public $solicitante;
+    public $titulo;
+    public $assunto;
+    public $publico;
+    public $andamento;
+    public $retencao;
+    public $sons;
+    //IFSP
+    public $iduser;
+    public $uasg;
+    function __construct($data=NULL)
+    {
+        $this->Business('sigaept',$data);
+    }
+    function OnCreate($numero)
+    {
+        if ($numero) $this->GetByNumero($numero);
+    }
+    function save()
+    {
+        global $MIOLO;
+        $commands = array();
+        
+        $this->retrieveAssociation('sons');
+        if ($this->sons)
+        {
+            $this->sons[0]->setTransaction($this->getTransaction());
+            $this->sons[0]->delete();
+        }
+        unset($this->sons);
+        $word = str_word_count($this->titulo,1);
+        foreach ($word as $char)
+        {
+            $soundex = $MIOLO->getBusiness('protocolo','soundex');
+            $soundex->setSom($char);
+            $soundex->numProcesso = $this->numProcesso;
+            $this->sons[$soundex->som] = $soundex;
+        }
+        $word = str_word_count($this->assunto,1);
+        foreach ($word as $char)
+        {
+            $soundex = $MIOLO->getBusiness('protocolo','soundex');
+            $soundex->setSom($char);
+            $soundex->numProcesso = $this->numProcesso;
+            $this->sons[$soundex->som] = $soundex;
+        }
+        $word = str_word_count($this->solicitante,1);
+        foreach ($word as $char)
+        {
+            $soundex = $MIOLO->getBusiness('protocolo','soundex');
+            $soundex->setSom($char);
+            $soundex->numProcesso = $this->numProcesso;
+            $this->sons[$soundex->som] = $soundex;
+        }
+
+        parent::save();
+    }
+//  processos
+    function getByNumero($numero)
+    {
+        $this->numProcesso = $numero;
+        $this->retrieve();
+        $this->getAndamentos();
+        return $this;
+    }
+    function getByPartNumero($numero)
+    {
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('numProcesso');
+        $criteria->addCriteria('numProcesso','LIKE',"'$numero%'");
+        $criteria->addOrderAttribute('numProcesso');
+        $this->getByNumero($criteria->retrieveAsQuery()->result[0][0]);
+    }
+    function getByNumeroFormatado($numProcesso)
+    {
+        $numProcesso = str_repeat('0',14-strlen($numProcesso)).$numProcesso;
+        $serie = substr($numProcesso,0,6);
+        $ano = substr($numProcesso,7,4);
+        $codigo = substr($numProcesso,12,2);
+        if (!is_numeric($codigo)) $this->getByPartNumero($ano.$serie);
+        else $this->getByNumero($ano.$serie.$codigo);
+        return $this;
+    }
+    function getSeriesByAno($ano,$instituicao)
+    {
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('numProcesso');
+        $criteria->addColumnAttribute('dataAbertura');
+        $criteria->addCriteria('numProcesso','LIKE',"'$ano%'");
+        $criteria->addOrderAttribute('numProcesso');
+        $query = $criteria->retrieveAsQuery();
+        if ($query->result)
+        {
+            foreach ($query->result as $q)
+            {
+                $result[intval(substr($q[0],4,6))] = $q[1];
+            }
+        }
+        return $result;
+    }
+    function getProcessosVagos($ano,$instituicao)
+    //function getProcessosVagos($ano)
+    {
+        global $MIOLO;
+        $controle = $MIOLO->getBusiness('protocolo','controleprotocolo');
+        //$controle->getByAno($ano);
+        //IFSP
+        $controle->getByAno($ano,$instituicao);
+        for ($i=1;$i<intval($controle->ultimoNumProcesso+1);$i++) $pTodos[$i] = '';
+        for ($i=500000;$i<intval($controle->ultimoNumProtocolado+1);$i++) $pTodos[$i] = '';
+        $pExiste = $this->getSeriesByAno($ano,$instituicao);
+        if ($pTodos)
+        {
+            $pVago = array_diff_key($pTodos,$pExiste);
+            if ($pVago)
+            {
+                foreach ($pVago as $serie => $data)
+                {
+                    $sAnt = $serie-1;
+                    $tipo = ($serie < 500000) ? 'PROCESSO' : 'PROTOCOLADO';  
+                    if ($pExiste[$sAnt]) $pExiste[$serie] = $pExiste[$sAnt];
+                    else $pExiste[$serie] = $ano.'01010000'; 
+                    $pVago[$serie] = $pExiste[$serie];
+                    
+                    $processos[] = array($pVago[$serie],$ano.str_repeat('0',6-strlen($serie)).$serie.$controle->getCodigo($ano. str_repeat('0',6-strlen($serie)).$serie,'23071'),$tipo,$this->dataFormatada($pVago[$serie]));
+                }
+            }
+        }
+        if ($processos)
+        {
+            foreach ($processos as $key => $processo) ksort($processos[$key]);
+            sort($processos); 
+        }
+        return $processos;
+    }
+    function getDataAbertura()
+    {
+        global $MIOLO;
+        if (!$this->isPersistent())
+        {
+            $ano = substr($this->numProcesso,0,4);
+            $serie = substr($this->numProcesso,4,6);
+            $codigo = substr($this->numProcesso,10,2);
+            $protocolo = $MIOLO->getBusiness('protocolo','processo');
+            $controle = $MIOLO->getBusiness('protocolo','controleprotocolo');
+            $controle->getByAno($ano,$instituicao);
+            $fim = ((int) $serie < 500000) ? 0 : 500000;
+            for ($i = (int) $serie; $i >= (int) $fim; $i--)
+            {
+                $protocolo->setPersistent(false);
+                $protocolo->getByPartNumero($ano.str_repeat('0',6-strlen($i)).$i);
+                if ($protocolo->isPersistent()) return $protocolo->dataAbertura;
+            }
+            return $ano.'01010000';
+        }
+        return $this->dataAbertura;
+    }
+//  andamentos
+    function getAndamento($numAndamento)
+    {
+        global $MIOLO;
+        if ($this->andamento) foreach ($this->andamento as $andamento) if ($andamento->numAndamento == $numAndamento) return $andamento;
+        $andamento = $MIOLO->getBusiness('protocolo','andamento');
+        $andamento->numProcesso = $this->numProcesso;
+        $andamento->numAndamento = $numAndamento;
+        return $andamento;
+    }
+    function getAndamentos()
+    {
+        $this->retrieveAssociation('andamento');
+        if ( $this->andamento )
+        {
+            foreach ( $this->andamento as $andamento ) $andamentos[$andamento->numAndamento] = $andamento;
+            $this->andamento = $andamentos;
+        }
+    }
+    function addAndamento($data)
+    {
+        if ($data->setorDestino == 'A DEFINIR')
+        {
+        	$data->setorDestino = '';
+        	$data->dataSaida = null;
+        }
+    	$this->andamento[$data->numAndamento] = $data;
+    	
+    }
+    function numProcessoFormatado($num=null)
+    {
+        $num = ($num == null) ? $this->numProcesso : $num;
+        if ($num)
+        {
+            $ano = substr($num,0,4);
+            $serie = substr($num,4,6);
+            $codigo = substr($num,10,2);
+            return "$serie/$ano-$codigo";
+        }
+    }
+    
+    function numProcesso()
+    {
+        return $this->numProcesso;
+    }
+        
+// IFSP
+//  controle
+    function getControle($ano=null,$instituicao=null)
+    {
+        global $MIOLO;
+        
+        $controle = $MIOLO->getBusiness('protocolo','controleprotocolo');
+        $ano = ($ano == null) ? date('Y') : $ano;
+        $controle->getByAno($ano,$instituicao);
+       	return $controle;
+    }
+    // IFSP
+   
+    //function setNewNumProcesso($ano,$instituicao)
+    function setNewNumProcesso($ano)
+    {
+        global $MIOLO;
+       // IFSP
+        $controle = $this->getControle($ano,$this->instituicao);
+        if ($controle->isPersistent())
+        {
+            $this->numProcesso = $controle->getNewNumProcesso($this->tipo);
+            $controle->save();
+        }
+        else
+        {
+            $controle->addControle($ano,$this->instituicao);
+            $this->setNewNumProcesso($ano);
+        }
+    }
+//  setores
+    function getSetorUsuario()
+    {
+        global $MIOLO;
+        $setor = $MIOLO->getBusiness('protocolo','setor');
+        $usuario = $MIOLO->getBusiness('common','usuario');
+        $usuario->getById($MIOLO->GetLogin()->idkey);	
+        $usuario->retrieveAssociation('setor');
+	//echo $usuario->setor->sigla;
+	//var_dump($setor->selAll());
+        //if (in_array("BCN-SPD",$setor->selAll())){ echo "Retornou certo"; return $usuario->setor->sigla; }
+	//$teste="BCN-SPD";
+	//var_dump($usuario->setor->sigla);
+	//echo $teste;
+	if (array_search($usuario->setor->sigla,$setor->selAll())){ return $usuario->setor->sigla; }
+        else { return null;}
+    }
+            
+//  datas
+    function dataFormatada($data)
+    {
+        if ($data)
+        {
+            $ano = substr($data,0,4);
+            $mes = substr($data,4,2);
+            $dia = substr($data,6,2);
+            $hora = substr($data,8,2);
+            $minuto = substr($data,10,2);
+            return "$dia/$mes/$ano - $hora:$minuto";
+        }
+    }
+    function dataSimplesFormatada($data)
+    {
+        $ano = substr($data,0,4);
+        $mes = substr($data,4,2);
+        $dia = substr($data,6,2);
+        return "$dia/$mes/$ano";
+    }
+//  grids
+    function listByNumProcesso($numProcesso)
+    {
+        $numProcesso = str_repeat('0',14-strlen($numProcesso)).$numProcesso;
+        $serie = substr($numProcesso,0,6);
+        $ano = substr($numProcesso,7,4);
+        $codigo = substr($numProcesso,12,2);
+        if (!is_numeric($codigo)) unset($codigo);
+        $numProcesso = $ano.$serie.$codigo;
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('numProcesso');
+        $criteria->addColumnAttribute('titulo');
+        $criteria->addColumnAttribute('solicitante');
+        $criteria->addCriteria('numProcesso','LIKE',"'%$numProcesso%'");
+        $criteria->addOrderAttribute('numProcesso');
+        return $criteria->retrieveAsQuery();
+    }
+    function listByTitulo($titulo)
+    {
+        global $MIOLO;
+        $titulo = strtoupper(trim($titulo));
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('numProcesso');
+        $criteria->addColumnAttribute('titulo');
+        $criteria->addColumnAttribute('assunto');
+        $criteria->addColumnAttribute('solicitante');
+        $criteria->addCriteria('titulo','LIKE',"'%$titulo%'");
+        $criteria->addOrderAttribute('numProcesso');
+        return $criteria->retrieveAsQuery();
+    }
+    function listBySolicitante($solicitante)
+    {
+        $solicitante = strtoupper(trim($solicitante));
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('numProcesso');
+        $criteria->addColumnAttribute('titulo');
+        $criteria->addColumnAttribute('assunto');
+        $criteria->addColumnAttribute('solicitante');
+        $criteria->addCriteria('solicitante','LIKE',"'%$solicitante%'");
+        $criteria->addOrderAttribute('numProcesso');
+        return $criteria->retrieveAsQuery();
+    }
+    function listByNoSoundex($string)
+    {
+        global $MIOLO;        
+        $string = strtoupper($string);
+         var_dump($string );
+   
+   
+        $soundex = $MIOLO->getBusiness('protocolo','soundex');
+        $criteria =  $this->getCriteria();
+        $criteria->setAlias('S');
+        $criteria->addColumnAttribute('numProcesso');
+        $criteria->addColumnAttribute('titulo');
+        $criteria->addColumnAttribute('assunto');
+        $criteria->addColumnAttribute('solicitante');
+        $criteria->addColumnAttribute("substr(stampaber, 7, 2)||'/'||substr(stampaber, 5, 2)||'/'||substr(stampaber, 1, 4) as stampaber");        
+		$numProcesso = $string; 
+       // $numProcesso = (strlen($string) < 14) ? str_repeat('0',14-strlen($string)).$string : $string;
+	if(substr_count($numProcesso, "/") == 1 && substr_count($numProcesso, "-") == 1)
+	{
+	        $serie = substr($numProcesso,0,6);
+        	$ano = substr($numProcesso,7,4);
+	        $codigo = substr($numProcesso,12,2);
+        	if (!is_numeric($codigo)) unset($codigo);
+        		$numProcesso = $ano.$serie.$codigo;        
+	}
+        if ( ($string[0] == "\"") && ($string[$string] == "\"") )
+        {        	
+        	$frase = substr($string, 1);
+        	$frase = substr($frase, 0, $frase-1);        	
+        	$subCriteria = $this->getCriteria();
+            $subCriteria->setReferenceAlias('S');
+            $subCriteria->addColumnAttribute("interes||' '||titulo||' '||assunto");
+            $subCriteria->addCriteria('numProcesso','LIKE',"'%S.numProcesso%'");
+            $criteria->addCriteria($subCriteria,'like',"'%$frase%'");
+        }
+        else 
+        {        			
+        	$word = explode(" ",$string);	        
+	        foreach ( $word as $char )
+	        {
+	            if ( strlen($char) > 2 )
+	            {
+	                $subCriteria = $this->getCriteria();
+	                $subCriteria->setReferenceAlias('S');
+	                $subCriteria->addColumnAttribute("interes||' '||titulo||' '||assunto");
+	                $subCriteria->addCriteria('numProcesso','=','S.numProcesso');
+	                $criteria->addCriteria($subCriteria,'like',"'%$char%'");
+	            }
+	        }
+        }
+        $criteria->addOrCriteria('S.numProcesso','LIKE',"'%$numProcesso%'");
+        $criteria->addGroupAttribute('numProcesso');
+        $criteria->addGroupAttribute('titulo');
+        $criteria->addColumnAttribute('assunto');
+        $criteria->addGroupAttribute('solicitante');
+        $criteria->addGroupAttribute('assunto');
+	$criteria->addGroupAttribute('dataAbertura');
+        $criteria->addOrderAttribute('dataAbertura',false);
+        return $criteria->retrieveAsQuery();
+     
+    }
+    function listBySoundex($string)
+    {
+
+
+        var_dump('$string');
+        var_dump($string);
+
+
+        global $MIOLO;
+        $soundex = $MIOLO->getBusiness('protocolo','soundex');
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('numProcesso');
+        $criteria->addColumnAttribute('titulo');
+        $criteria->addColumnAttribute('assunto');
+        $criteria->addColumnAttribute('solicitante');
+        $numProcesso = $string; 
+        $serie 	= substr($numProcesso,0,6);
+        $ano 	= substr($numProcesso,7,4);
+        $codigo = substr($numProcesso,12,2);
+        if (!is_numeric($codigo)) 
+		unset($codigo);
+        $numProcesso = $ano.$serie.$codigo;
+        $word = str_word_count($string,1);
+        $criteria->addCriteria('numProcesso','LIKE',"'%$numProcesso%'");
+        foreach ($word as $char)
+        {
+            if ( strlen($char) > 3 )
+            {
+                $cc = new CriteriaCondition();
+                $som = $soundex->Soundex("$char");
+                $cc->addCriteria($criteria->getCriteria("sons.som","=","'$som'"));
+            }
+        }
+        if ($cc) $criteria->addOrCriteria($cc);
+        $criteria->addGroupAttribute('numProcesso');
+        $criteria->addGroupAttribute('titulo');
+        $criteria->addColumnAttribute('assunto');
+        $criteria->addGroupAttribute('solicitante');
+        $criteria->addGroupAttribute('assunto');
+        $criteria->addGroupAttribute('dataAbertura');
+        $criteria->addOrderAttribute('dataAbertura',false);
+        return $criteria->retrieveAsQuery();
+        
+    }
+    function listSemDecisaoBySetor($setor)
+    {
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('numProcesso');
+        $criteria->addColumnAttribute('titulo');
+        $criteria->addColumnAttribute('assunto');
+        $criteria->addColumnAttribute('solicitante');
+        $criteria->addCriteria('retencao.setor','LIKE',"'$setor'");
+        $criteria->addCriteria('retencao.status','=',"'N'");
+        $criteria->addCriteria('retencao.dataDespacho','is','null');
+        $criteria->addOrderAttribute('numProcesso');
+        return $criteria->retrieveAsQuery();
+    }
+    function listEntradaBySetor($setor)
+    {
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('numProcesso');
+        $criteria->addColumnAttribute('titulo');
+        $criteria->addColumnAttribute('assunto');
+        $criteria->addColumnAttribute('solicitante');
+        $criteria->addCriteria('retencao.setorDestino','LIKE',"'$setor'");
+        $criteria->addCriteria('retencao.status','=',"'N'");
+        $criteria->addOrderAttribute('numProcesso');
+        return $criteria->retrieveAsQuery();
+    }
+    function listSaidaBySetor($setor)
+    {
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('numProcesso');
+        $criteria->addColumnAttribute('titulo');
+        $criteria->addColumnAttribute('assunto');
+        $criteria->addColumnAttribute('solicitante');
+        $criteria->addCriteria('retencao.setor','LIKE',"'$setor'");
+        $criteria->addCriteria('retencao.status','=',"'N'");
+        $criteria->addCriteria('retencao.setorDestino','is','null');
+        $criteria->addOrderAttribute('numProcesso');
+        return $criteria->retrieveAsQuery();
+    }
+    function listByAssunto($assunto)
+    {
+        $assunto = strtoupper(trim($assunto));
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('numProcesso');
+        $criteria->addColumnAttribute('titulo');
+        $criteria->addColumnAttribute('solicitante');
+        $criteria->addCriteria('assunto','LIKE',"'%$assunto%'");
+        $criteria->addCriteria('retencao.status','=',"'N'");
+        $criteria->addOrderAttribute('numProcesso');
+        return $criteria->retrieveAsQuery();
+    }
+    function listNumProcessosAAnexar()
+    {
+        $setor = $this->retencao->setor;
+        $criteria =  $this->getCriteria();
+        $criteria->addColumnAttribute('numProcesso');
+        $criteria->addCriteria('retencao.setor','=',"'$setor'");
+        $criteria->addOrderAttribute('numProcesso');
+        return $criteria->retrieveAsQuery();
+    }
+    function getNumProcessosAAnexar()
+    {
+        $numProcessos = $this->listNumProcessosAAnexar()->result;
+        foreach ($numProcessos as $key => $value)
+        {
+            if ($value[0] != $this->numProcesso) $numProcessosFiltrados[$this->numProcessoFormatado($value[0])] = $this->numProcessoFormatado($value[0]);
+        }
+        return $numProcessosFiltrados;
+    }
+
+    function formataGridProcessosTramite()
+    {
+        if ($this->andamento)
+        {
+            foreach ($this->andamento as $andamento)
+            {
+                if ($andamento->setor) $andamento->setorData = $this->dataSimplesFormatada($andamento->dataEntrada).' - '.$andamento->setor;
+                if ($andamento->setorDestino) $andamento->setorDestinoData = $this->dataSimplesFormatada($andamento->dataSaida).' - '.$andamento->setorDestino;
+                if ($andamento->dataDespacho) $andamento->decisaoData = $this->dataSimplesFormatada($andamento->dataDespacho).' - DETALHES';
+                $tramite[] = $andamento;
+            }
+            $this->andamento = $tramite;
+        }
+    }
+    
+	function listTipoDir ()
+	{
+		global $MIOLO,$module;
+
+		$sql = new MSql($columns="t.idtipoprot,t.tipo",$tables='ad_tipoprot t',$where="diretor='S' OR (diretor ='N' and gerente='N' and coord ='N')",$orderBy='t.tipo',$groupBy='',$having='');
+		$query = $this->Query($sql);
+		return $query;	
+	}
+    
+	
+	function listTipoGer ()
+	{
+		global $MIOLO,$module;
+
+		$sql = new MSql($columns="t.idtipoprot,t.tipo",$tables='ad_tipoprot t',$where="gerente='S' OR (diretor ='N' and gerente='N' and coord ='N')",$orderBy='t.tipo',$groupBy='',$having='');
+		$query = $this->Query($sql);
+		return $query;	
+	}
+		
+    
+	function listTipoCoord ()
+	{
+		global $MIOLO,$module;
+		$sql = new MSql($columns="t.idtipoprot,t.tipo",$tables='ad_tipoprot t',$where="coord='S' OR (diretor ='N' and gerente='N' and coord ='N')",$orderBy='t.tipo',$groupBy='',$having='');
+		$query = $this->Query($sql);
+		return $query;	
+	}
+
+
+	function listTiposComuns()
+	{
+		global $MIOLO,$module;
+
+		$sql = new MSql($columns="t.idtipoprot, t.tipo",$tables='ad_tipoprot t',$where="diretor = 'N' AND gerente = 'N' AND coord = 'N'",$orderBy='t.tipo',$groupBy='',$having='');
+		$query = $this->Query($sql);
+		return $query;	
+	}
+
+
+	function getTitulo($titulo)
+	{
+		global $MIOLO,$module;		
+		$sql = new MSql($columns="t.tipo",$tables='ad_tipoprot t',$where="t.idtipoprot = $titulo",$orderBy='',$groupBy='',$having='');
+		$query = $this->Query($sql);
+		return $query;	
+	}
+	//IFSP
+	function getUASG($iduser)
+	{
+		global $MIOLO;
+		$db   = $MIOLO->GetDatabase('sigaept');
+		if (! $iduser){
+			$iduser =  $MIOLO->login->idkey;
+		  }
+		//$sql  = new sql(" i.uasg "," cm_instituicao i, cm_setor s, cm_usuario u ","i.idinstituicao = s.idinstituicao and s.idsetor = u.idsetor and mesmoif = 'S' and u.idusuario = ".$iduser,"");
+		$sql  = new sql(" i.uasg "," cm_instituicao i, cm_setor s, cm_usuario u ", "i.idinstituicao = s.idinstituicao and s.idsetor = u.idsetor  and u.idusuario = ".$iduser,"","");
+		$query = $this->Query($sql);	
+		return $query;	
+	}
+	function getInstituicao($iduser)
+	{
+		global $MIOLO;
+		$db   = $MIOLO->GetDatabase('sigaept');
+		$sql  = new sql(" i.idinstituicao "," cm_instituicao i, cm_setor s, cm_usuario u ","i.idinstituicao = s.idinstituicao and s.idsetor = u.idsetor and mesmoif = 'S' and u.idusuario = ".$iduser,"");
+		$query= $db->GetQuery($sql);
+		return $query;	
+	}
+	
+
+	function listProcessos($descricao, $situacao, $setor, $acompanhar, $datainicio)
+	{
+		$descricao = str_replace(" ", "%", strtoupper($descricao));
+			      
+		$sql = new sql(
+			"p.numpro, p.titulo, p.assunto, p.interes, to_char(cast(substr(p.stampaber, 1, 8) as date), 'DD/MM/YY') as stampaber", 
+			"ad_processo p, ad_retencao r","p.numpro = r.numpro"
+		);
+
+		//Descricao
+		$sql->SetWhere("p.numpro||' '||p.titulo||' '||p.assunto||' '||p.interes like '%$descricao%'");
+
+		//situacao
+		if($acompanhar != 'S')
+		{  
+			if($situacao)
+			{
+				switch($situacao)
+				{
+					case 'anexado':
+						$sql->SetWhere("r.inativo = 'J'  and r.setordest like '%$setor%'");
+						break;
+					case 'apensado':
+						$sql->SetWhere("p.numpro in (select r.numpro from ad_retencao r, ad_andamento a where a.numpro = r.numpro and (a.numanda = r.numanda-1) and a.despacho like 'APENSADO AO PROCESSO%' and r.setor like '%$setor%') ");// and a.inativo='N' ) ");
+						break;
+					case 'arquivado':
+						$sql->SetWhere("r.inativo = 'A'  and r.setor like '%$setor%'");
+						break;
+					case 'saida':
+						$sql->SetWhere("r.stampsai is null and r.setor like '%$setor%'");
+						break;
+					case 'entrada':
+						$sql->setWhere("p.numpro = r.numpro and (r.setordest LIKE '$setor' or r.setordest in ( select setorfilho from ad_setoracesso where setor = '$setor' )) and r.inativo = 'N'");
+						break;
+				}
+			}
+			elseif($setor)
+			{
+				$sql->SetWhere("r.setordest like '$setor'");
+			}
+		}
+		else
+		{
+			$sql->SetWhere("p.setororig like '%$setor%'");
+		}
+
+		if($datainicio){
+			$sql->SetWhere("p.stampaber >= '$datainicio'");
+		}
+
+		$sql->SetOrderBy("p.numpro");
+		$query = $this->Query($sql);
+		return $query;
+	}
+
+	function SaveProcesso(&$data,$numProcesso)
+    	{
+       		$commands = array();
+   		if ($data->numProcesso == NULL)
+      		{
+         		$sql = new sql('numpro,stampaber,instit,cxarq,setororig,tipo,interes,titulo,assunto,publico,emailinteres,idusuario','ad_processo');
+         		$sql2 = new sql('numpro,numanda,stampentr,stampsai,stampdesp,inativo,setor,setordest,despacho,autor,idusuario','ad_andamento');
+         		$sql3 = new sql('numpro,setor,setordest,stampentr,stampsai,stampdesp,inativo,numanda','ad_retencao');
+         		$commands[] = $sql->Insert(array($numProcesso,$data->dataAbertura,$data->instituicao,$data->arquivo,$data->setorOrigem,    								$data->tipo,strtoupper($data->solicitante),strtoupper($data->titulo),strtoupper($data->assunto),$data->publico,$data->email,$this->iduser));
+		        $commands[] = $sql2->Insert(array($numProcesso,'1',$data->dataAbertura,$data->dataSaida,$data->dataDespacho,'N',$data->setorOrigem,$data->setorDestino,	strtoupper($data->decisao),strtoupper($data->autor),$this->iduser));
+			$commands[] = $sql3->Insert(array($numProcesso,$data->setorOrigem,$data->setorDestino,$data->dataAbertura,$data->dataSaida,$data->dataDespacho,'N','1'));
+         		$okInsert = $this->Execute($commands);
+	  	}
+
+      		return $okInsert;
+   	}
+   
+   function getStatusPublico($numpro)
+   {
+   		$sql = new sql("i.numpro","ad_processo i","i.numpro = '$numpro' and i.publico = 'S'");
+		$query = $this->Query($sql);
+		//var_dump($query->result);
+		return $query->result;
+	}
+	
+	function getTituloByNumProcesso($numpro)
+	{
+		 $sql = new sql("i.titulo","ad_processo i","i.numpro = '$numpro'");
+		 $query = $this->Query($sql);
+		 //var_dump($query->result[0][0]);
+		 return $query->result[0][0];
+		
+	}
+	
+	function getMailByNumProcesso($numpro)
+	{
+		$sql = new sql("i.emailinteres","ad_processo i","i.numpro = '$numpro'");
+		 $query = $this->Query($sql);
+		 //var_dump($query->result[0][0]);
+		 return $query->result[0][0];
+	}
+	
+	function verificaAcompanhamento($numpro)
+        {
+                global $MIOLO;
+		$usuario = $MIOLO->GetLogin()->idkey;
+                $db   = $MIOLO->GetDatabase('sigaept');
+                $sql  = new sql(" * "," ad_processoemail ","numpro = '$numpro' and idusuario = '$usuario'");
+              
+                $query= $db->GetQuery($sql);
+                return $query->result[0][0];
+        }
+	
+	//1462185287  id usuario   eprocesso:201200476118	
+	
+	function salvarEmail()
+	{
+		global $MIOLO;
+		$usuario = $MIOLO->GetLogin()->idkey;
+                $sql = new sql("numpro,idusuario","ad_processoemail");
+                $commands = $sql->Insert(array($this->numProcesso, $usuario));
+                $okInsert = $this->Execute($commands);
+		return $okInsert;
+	} 
+	
+	function descartarEmail()
+        {
+                global $MIOLO;
+                $usuario = $MIOLO->GetLogin()->idkey;
+                $sql = new sql("", "ad_processoemail", "numpro = '$this->numProcesso' and idusuario = '$usuario'");
+                $commands = $sql->Delete();
+                $okDelete = $this->Execute($commands);
+                return $okDelete;
+        } 
+	
+	function listarEmail()
+	{
+		global $MIOLO;
+                $usuario = $MIOLO->GetLogin()->idkey;
+		$sql = new sql("lower(p.email) as email, pe.idusuario, p.nome","ad_processoemail as pe inner join cm_usuario as u on (pe.idusuario=u.idusuario) inner join cm_pessoa p on (p.idpessoa=u.idpessoa)","pe.numpro = '$this->numProcesso'");
+                $query = $this->Query($sql);
+                return $query->result;
+	}
+
+	function instituicaoUsuario($iduser)
+        {
+                global $MIOLO;
+                $db   = $MIOLO->GetDatabase('sigaept');
+                $sql  = new sql(" i.nome || ' - ' || i.instituicao as instituicao "," cm_instituicao i, cm_setor s, cm_usuario u ","i.idinstituicao = s.idinstituicao and s.idsetor = u.idsetor and mesmoif = 'S' and u.idusuario = ".$iduser,"");
+                $query= $db->GetQuery($sql);
+                return $query->result[0][0];
+        }
+        function instituicaoProcesso()
+        {
+        	global $MIOLO;
+            $db   = $MIOLO->GetDatabase('sigaept');
+            $sql  = new sql(" i.nome || ' - ' || i.instituicao as instituicao "," cm_instituicao i inner join cm_setor s on (i.idinstituicao=s.idinstituicao)","s.siglasetor = '".$this->setorOrigem."'");
+            $query= $db->GetQuery($sql);
+            return $query->result[0][0];
+        }
+
+}
+?>

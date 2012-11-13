@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ViagemMotoristaXls" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String"/>
+	<parameter name="pIdUsuario" class="java.lang.Integer"/>
+	<parameter name="pURL" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="dataInicio" class="java.lang.String">
+		<defaultValueExpression><![CDATA["'07/10/2007'"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="dataFim" class="java.lang.String">
+		<defaultValueExpression><![CDATA["'07/10/2010'"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select
+	p.nome as Motorista,
+	count(i.idrequisicao) as Quantidade
+from
+	ad_motorista m,
+	cm_pessoa p,
+	ad_itemreqveiculo i,
+	ad_requisicao r
+where
+	m.idpessoa = p.idpessoa and
+	m.idmotorista = i.idmotorista and
+	i.idrequisicao = r.idrequisicao and
+	r.status='G' and
+	i.datahorasaidagar >= to_date($P{dataInicio},'DD/MM/YYYY') and
+	i.datahoracheggar <= to_date($P{dataFim},'DD/MM/YYYY')
+group by Motorista]]>
+	</queryString>
+	<field name="motorista" class="java.lang.String"/>
+	<field name="quantidade" class="java.lang.Long"/>
+	<background>
+		<band/>
+	</background>
+	<columnHeader>
+		<band height="19">
+			<staticText>
+				<reportElement key="element-90" x="0" y="0" width="449" height="19" forecolor="#000000"/>
+				<box leftPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="" size="12"/>
+				</textElement>
+				<text><![CDATA[Motorista]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="element-90" x="449" y="0" width="146" height="19" forecolor="#000000"/>
+				<box leftPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="" size="12"/>
+				</textElement>
+				<text><![CDATA[Quantidade]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="18">
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField" x="0" y="0" width="449" height="18"/>
+				<box leftPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Times-Roman" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{motorista}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField" x="449" y="0" width="146" height="18"/>
+				<box leftPadding="2" rightPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Times-Roman" size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{quantidade}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

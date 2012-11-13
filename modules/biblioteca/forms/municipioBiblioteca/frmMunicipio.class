@@ -1,0 +1,241 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+/**
+
+ * 
+ * @author Daniel Bonfim
+ * @since  11-10-2012
+ *
+ */
+class frmMunicipio extends MFormAjax {
+
+	function __construct() {
+
+		parent::__construct('Incluir Novo Município');
+		$this->eventHandler();
+		$this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/js/frmMunicipio.js'));
+
+		$this->carregarInfo();
+	}
+
+	function createFields() {
+		$pais = $this->manager->getBusiness('common', 'pais');
+		$fields = array(
+		new MHiddenField('idMunicipio'),
+		new MLookupTextField('municipio','','Município',60),
+		//new MTextField('municipio','','Municipio', 50),
+		array(
+		new MSelection('idPais','','País',$pais->ListAll()->result),
+		new MSelection('idUF','','Estado',array(''=>'--Selecione o País--'))
+		),
+		);
+
+		$this->SetFields($fields);
+		$aguarde = $this->manager->getUI()->getImage('miolo','aguarde.gif');
+		$urlAjaxHandler = $this->manager->getActionURL('common','ajaxhandler');
+		$this->idPais->addAttribute('onChange',"doSelUF('$urlAjaxHandler','$aguarde');");
+
+		$buttons = array(
+			new MButton('btnIncluir', 'Incluir'),
+           	new FormButton('btnExcluir', 'Excluir'),
+			new MLink('btnLinkRelacao','Relação de Municípios',
+				$this->manager->getActionURL($module, 'main:admin:municipioBibliotecaFind')),
+		//$this->manager->getActionURL($module, $self,'',array('event'=>'btnList:click'))),
+		);
+		$this->SetButtons($buttons);
+		
+		$this->SetButtonAttr('btnExcluir','visible',false);
+		
+		//As 4 propriedades de um lookup
+        // module = módulo usado
+        // item = A funcao que chama no arquivo classes/lookup.class
+        // event = O evento relacionado quando o usuário clica em "acao"
+        // related = Os campos retornados após a ação
+        $this->SetFieldAttr('municipio','module','common');
+        $this->SetFieldAttr('municipio','item','municipioBiblioteca');
+        $this->SetFieldAttr('municipio','event','btnConsulta:click');
+        // event = filler carrega os campos definidos em 'related' automaticamente.
+//        $this->SetFieldAttr('municipio','event','filler');
+//        $this->SetFieldAttr('municipio','related', 'idMunicipio, municipio, idUF, idPais');
+
+		$validators = array(
+		new MRequiredValidator('municipio')
+		);
+		$this->SetValidators($validators);
+	}
+	
+	// o segundo atributo é sempre o id 
+	function btnConsulta_click($sender,$idMunicipio) {
+		global $MIOLO,$module,$item;
+		
+		$id = (!empty($idMunicipio)) ? $idMunicipio : $item;
+	
+		// Já considera que o usuário quer excluir,editar uma unidade
+		$this->SetButtonAttr('btnExcluir','visible',true);	
+ 		$this->SetButtonAttr('btnIncluir','label','Salvar');	
+
+ 		// bussines municipio
+	    $bussMunicipio = $MIOLO->GetBusiness('common','municipio');
+		$bussMunicipio->GetById($id);
+		
+		// bussines pais
+		$bussUF = $MIOLO->GetBusiness('common','uf');
+		
+		if($bussMunicipio->idPais == 24) {
+			$options = $bussUF->ListAll()->result;
+		}
+		
+		// inserindo as opçoes no selection
+		$this->SetFieldAttr('idUF','options', $options);
+	
+		// setando valores
+		$this->SetFieldValue('idMunicipio', $bussMunicipio->idMunicipio);
+		$this->SetFieldValue('municipio', ucfirst(strtolower($bussMunicipio->municipio)));
+		$this->SetFieldValue('idPais', $bussMunicipio->idPais);
+		$this->SetFieldValue('idUF', $bussMunicipio->idUF);
+	}
+
+	// Carrega o form com as informações do item que chegar
+	function carregarInfo() {
+		global $item;
+		
+		if(!is_null($item)) {
+			$this->SetButtonAttr('btnIncluir','label','Salvar');	
+			$this->SetButtonAttr('btnExcluir','visible',true);	
+			
+			// pegando obj municipio
+			$obj_municipio = $this->manager->getBusiness('common','municipio');
+			$obj_municipio->GetById($item);
+
+			// pegando obj pais
+			$obj_pais = $this->manager->getBusiness('common','pais');
+			$obj_pais = $obj_pais->GetById($obj_municipio->idPais);
+
+			// inserindo valores
+			$this->SetFieldValue('idMunicipio', $obj_municipio->idMunicipio);
+			$this->SetFieldValue('municipio', ucfirst(strtolower($obj_municipio->municipio)));
+			$this->SetFieldValue('idPais', $obj_municipio->idPais);
+			$this->SetFieldValue('idUF', $obj_municipio->idUF);
+		}
+	}
+
+	function btnIncluir_click()
+	{
+		global $item;
+		
+		$data = $this->getData();
+		
+		$municipio = $this->manager->getBusiness('common','municipio');
+		$municipio->SetData2($data);
+
+		if( strlen(trim(Form::GetFormValue('municipio'))) < 3 ) {
+			$this->addError('O nome do município precisa ter mais caracteres.');
+			
+		} elseif ($this->getFieldValue('idPais') == '') {
+			$this->addError('Por favor, selecione um país');
+			
+		} elseif ($this->getFieldValue('idUF') == '') {
+			
+			if(trim($this->getFieldValue('idPais')) == '024') {
+				$estado = $this->manager->getBusiness('common', 'uf');
+				$this->setFieldAttr('idUF', 'options', $estado->ListAll()->result);
+				
+			} else {
+				$this->setFieldAttr('idUF', 'options', array('FB'=>'FORA DO BRASIL'));
+			}
+			
+			$this->addError('Por favor, selecione um estado');
+			
+		} elseif ($municipio->isPersistent()) {
+			$this->addError('Código de país já existente');
+			
+		} else {
+			try
+			{
+				// se tem idMunicipio ou item atualize
+				if(!empty($municipio->idMunicipio) || (!is_null($item) && !empty($item))) {
+					$municipio->idMunicipio = (!empty($municipio->idMunicipio) ? $municipio->idMunicipio : $item);
+					$municipio->Update();
+					$this->manager->information('Municipio atualizado com sucesso.',$this->manager->getActionUrl('biblioteca','main:admin:municipioBibliotecaFind'));
+				} else {
+					if ($municipio->existe()) {
+						$this->addError('O município já existe na base de dados');
+					} else {
+					// caso contrario salve novo
+						$municipio->save();
+						$this->manager->information('Municipio cadastrado com sucesso.',$this->manager->getActionUrl('biblioteca','main:admin:municipioBibliotecaFind'));
+					}
+				}
+			}
+			catch ( Exception $e )
+			{
+				$this->addError($e->getMessage());
+			}
+		}
+	}
+	
+	function btnExcluir_click() {
+		global $MIOLO, $module, $item, $action;
+
+		// bussiness Municipio
+		$bussMunicipio = $MIOLO->GetBusiness('common', 'municipio');
+		
+		$idMunicipio = $this->getFieldValue('idMunicipio');
+		
+		$id = $idMunicipio ? $idMunicipio : $item;		
+
+		$bussMunicipio->GetById($id);
+
+		//$conf é a variável que confirma a exclusão do registro no momento
+		//em que é questionado ao usuário se ele deseja relmente excluir o registro
+		$conf = Form::GetFormValue('conf');
+
+		if( $conf == 'sim') //Caso o usuário tenha escolhido a opção sim
+		{
+			try
+			{
+				$bussMunicipio->deleteById($id);
+				$bussMunicipio->Log(OP_DEL,'Deletado o município '.$bussMunicipio->municipio.' com o id = '.$id);
+				$MIOLO->prompt(Prompt::information($bussMunicipio->municipio . " deletado da base de dados", $MIOLO->GetActionURL($module,$action)));
+			} catch(EMioloException $e)
+			{
+				$MIOLO->Error("As informações não foram deletadas. Existem editoras associadas a este município", $MIOLO->GetActionURL($module,$action));
+			}
+		}
+		elseif( $conf == 'nao')
+		{
+			$MIOLO->prompt(Prompt::information('Exclusão cancelada.', $MIOLO->GetActionURL($module,$action)));
+		} else
+		{
+			//Caso a variável não possua o valor "sim" ou "não" significa que ainda não lhe foi atribuído um valor,
+			//ou seja, deve-se perguntar ao usuário se deseja realmente excluir o registro
+
+			$msg = "Tem certeza que deseja realmente excluir o município " . $bussMunicipio->municipio . " ?";
+
+			$action_sim = $MIOLO->getActionURL($module,'main:admin:municipioBibliotecaFind&event=btnExcluir:click',$bussMunicipio->idmunicipio, array('conf'=>'sim', 'item' => $id));
+			$action_nao = $MIOLO->getActionURL($module,'main:admin:municipioBibliotecaFind&event=btnExcluir:click',$bussMunicipio->idmunicipio, array('conf'=>'nao'));
+
+			$MIOLO->prompt(Prompt::question($msg, $action_sim, $action_nao));
+		}
+	}
+	
+
+}

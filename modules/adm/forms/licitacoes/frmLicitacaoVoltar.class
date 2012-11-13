@@ -1,0 +1,124 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmLicitacaoVoltar extends form
+{
+	protected $licitacao;
+	
+    function __construct($licitacao)
+    {
+		$this->licitacao = $licitacao;
+		$this->Form('Voltar Licitação');
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+        global $MIOLO;
+
+        $buttons = array
+		(
+        	  new FormButton("btnVoltarStatus","Voltar para 'PROPOSTAS CADASTRADAS'")
+        );
+        $this->SetButtons($buttons);
+    }
+
+    function btnVoltarStatus_click()
+	{
+		global $MIOLO, $module, $item, $action;
+
+		$conf = $this->GetFormValue('conf');
+		$href = $MIOLO->GetActionURL($module,$action,$this->licitacao->idLicitacao,array('form'=>'item'));
+		if ( $conf == 'sim')
+		{
+			try
+			{
+				$this->licitacao->status = '3';
+				$this->licitacao->save();
+				if(($this->licitacao->idTipoLicitacao == '1') or ($this->licitacao->idTipoLicitacao == '4'))//COMPRA
+				{
+					$this->licitacao->getItens();
+					foreach($this->licitacao->itens as $i)
+					{
+						$i->getItemReq();
+						foreach($i->itemreq as $ir)
+						{
+							if($ir->status == '5')//LICITADO
+							{
+								$ir->status = '1';//EM LICITAÇÃO
+								$ir->save();
+							}
+						}
+					}
+				}
+				elseif($this->licitacao->idTipoLicitacao == '2')//SERVIÇO
+				{
+					$this->licitacao->getItens();
+					foreach($this->licitacao->itens as $i)
+					{
+						$i->getItemServExt();
+						foreach($i->itemservext as $is)
+						{
+							if($is->status == '5')//LICITADO
+							{
+								$is->status = '1';//EM LICITAÇÃO
+								$is->save();
+							}
+						}
+					}
+				}
+				elseif($this->licitacao->idTipoLicitacao == '3')//LIVRO
+				{
+					$this->licitacao->getItens();
+					foreach($this->licitacao->itens as $i)
+					{
+						$i->getItemReqBib();
+						foreach($i->itemreqbib as $ir)
+						{
+							if($ir->status == '5')//LICITADO
+							{
+								$ir->status = '1';//EM LICITAÇÃO
+								$ir->save();
+							}
+						}
+					}
+				}
+				$MIOLO->Information('Status alterado com sucesso.',$href);
+			}
+			catch (Exception $e)
+			{
+				$this->addError($e->getMessage());
+			}
+		}
+		elseif ( $conf == 'nao')
+		{
+			$MIOLO->Information('Alteração cancelada.',$href);
+		}
+		else
+		{
+			$action_sim = $MIOLO->GetActionURL($module,$action,$this->licitacao->idLicitacao,array('form'=>'voltar','event'=>'btnVoltarStatus_click','conf'=>'sim'));
+			$action_nao = $MIOLO->GetActionURL($module,$action,$this->licitacao->idLicitacao,array('form'=>'voltar','event'=>'btnVoltarStatus_click','conf'=>'nao'));
+			$MIOLO->Question("Confirma a mudança de status da licitação?",$action_sim, $action_nao);
+		}
+	}
+ }
+?>

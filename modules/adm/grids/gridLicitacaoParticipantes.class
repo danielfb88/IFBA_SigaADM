@@ -1,0 +1,86 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+/**
+ * Grid LicitacaoParticipantes
+ * Grid de uso geral para selecionar tipos de licafast
+ * @package br.org.miolo.ufjf.adm.listing
+ */
+
+/**
+ * Use Module Control
+ */
+
+
+class gridLicitacaoParticipantes extends MDataGrid
+{
+	protected $licitacao;
+    /**
+     * Constructor
+     */
+    function __construct($licitacao)
+    {
+		global $MIOLO;
+		$this->licitacao = $licitacao;
+        $k = new MKrono();
+
+		$columns = array(
+			new DataGridColumn('idfornecedor','IdMaterial','','','',false),
+			new DataGridColumn('cgc','CNPJ','','','15%'),
+			new DataGridColumn('nome','Nome','','','60%'),
+			new DataGridColumn('municipio','Cidade','','','25%'),
+		);
+
+        $participante = $MIOLO->GetBusiness('adm','participante');
+
+        //var_dump($k->compareDate(substr($this->licitacao->dataCriacao,0,10),'>','17/09/2007'));
+        if ($k->compareDate(substr($this->licitacao->dataCriacao,0,10),'>','17/09/2007'))
+            $result = $participante->listByLicitacao($this->licitacao->idLicitacao);
+        else        
+            $result = $this->licitacao->listParticipantes($this->licitacao->idLicitacao);
+			//alteração Adicionado $href_grid
+       $href_grid = $MIOLO->GetActionURL('adm','main:licitacoes',$this->licitacao->idLicitacao,array('form'=>'participantes'));
+	   
+        parent::__construct($result, $columns, $href_grid,25);
+        $this->SetTitle("Participantes Cadastrados");
+        $this->SetFilter(NULL);
+        $this->SetIndex(1);
+        $this->SetWidth('100%');
+        $this->SetLinkType('hyperlink');
+		$action = $this->manager->GetActionURL('adm','main:licitacoes',$this->licitacao->idLicitacao,array('form'=>'participantes','id'=>'#0#'));
+
+        // Se a licitação está com status PARTICIPANTES CADASTRADOS ou posterior não habilita link de excluir fornecedor
+        // E se não existe um mapa de licitação
+        if ($this->licitacao->status == '1' && !$this->licitacao->ExisteMapaLicitacao())
+		    $this->AddActionDelete($action);
+    }
+
+    function GenerateFooter()
+    {
+        if (!$this->data) 
+        $footer[] = $this->GenerateEmptyMsg();
+        $footer[] = new Separator();
+        $footer[] = $this->GenerateControls();
+        return $footer;
+    }
+}
+?>

@@ -1,0 +1,1047 @@
+<?PHP
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versÃ£o 2 da Licença.
+ *
+ * Este programa é distribuí­do na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título "LICENCA.txt",
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+?>
+
+
+<?
+
+class frmCadastraMarc extends Form
+{
+    public $obra;
+    public $subcampo;
+    public $etiqueta;
+    public $item;
+    public $selecao;
+    var $objEtiqueta;
+    var $objSubcampo;
+
+
+
+    function __construct($item)
+    {
+        parent::__construct('Cadastrar Etiqueta Marc21');
+        $this->SetClose($this->manager->GetActionURL($module, 'main:admin'));
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+        global $item;
+
+           $this->etiqueta = $this->manager->getBusiness('biblioteca','etiqueta');
+           $this->subcampo = $this->manager->getBusiness('biblioteca','subcampo');
+		
+        //$tagAssuntos = $this->etiqueta->ListAssuntos(1, 5)->result;
+        //$tagEtiqueta = $this->etiqueta->ListEtiquetas(1, 5)->result;
+
+        $x = 0;
+       /* while ($tagEtiquetas[$x][0] <> null)
+        {
+            $resultTag[$x] = $tagEtiquetas[$x][0];
+            $x++;
+        }
+        */
+
+
+               $array = array(
+                              new MHiddenField('hidFieldList',''),
+                                               new MHiddenField('idassunto',''),
+                                                       new MHiddenField('ocorrencia',''),
+                                                               new MHiddenField('idetiqueta',''),
+                                                                       new MTextLabel('lbl1','Alterar Etiqueta',null,'black'),
+                                                                               array(
+                                                 
+                                                                                new LookupTextField('lkpEtiqueta','','Etiqueta',17,'Número da Etiqueta'),
+                                                                                new MTextLabel('ou','  &  ','&nbsp;'),
+                                                                                new MTextField('edtTag','','Tag',30),
+                                                                                ),
+                                                                                new MButton('btnEdit','Buscar'),
+                                                                                new MButton('btnChoose','Outra Etiqueta'),
+          //  new MButton('btnNovoAss','Novo Assunto'),
+          
+                        new MTextField('txtInd1','','Indicador 1',3),
+                                       new MTextField('txtInd2','','Indicador 2',3),
+                                               new TextField('edtMnemonico','','Mnemônico ', '10'),
+                                                       new TextField('edtDescricao','','Descrição ', '80'),
+                                                               new TextField('edtObservacao','','Observação ', '80'),
+                                    new CheckBox('chktemrepeticoes',true,'Repetições',false,'','Se tem repetições' ),
+                                                                               new CheckBox('chktemsubcampos',true,'Subcampos',false,'','Se tem subcampos' ),
+                                                                                new CheckBox('chkestaativo',true,'Ativo',false,'','Se está ativo' ),
+                                                                                new CheckBox('chkemlista',true,'Em lista',false,'','Se está em listas' ),
+                                                                                new CheckBox('chkemdemonstracao',true,'Em demonstração',false,'','Se está em demonstração' ),
+                                                                                new CheckBox('chkobsoleto',true,'Obsoleto',false,'','Se está obsoleto' ),
+                  //      new HiddenField('idetiqueta') // controla Incluir/Editar
+        new HiddenField('hidKey'), // controla Incluir/Editar
+        new MTextLabel('lbl2','Pesquisar Subcampos:',null,'black'),
+        
+            array(
+				//new LookupTextField('lkpassunto','',null,27,'Pesquisar'),
+    new MlookupFieldValue('lkpsubcampo','',null,27,'Pesquisar'),
+                          new MHiddenField('numero',''),
+                
+                                             ),
+                                             new MButton('btnAlterar','Associar'),
+           
+                             );
+
+       $this->setFields($array);
+
+
+
+//       $tipo = $this->getFormValue('tipo');
+  //     if ($tipo == 'indice')
+    //   {
+           $buttons = array(
+    
+                            new MButton('btnNovo', '<b>Novo</b>'),
+                            new MButton('btnGravar', '<b>Salvar</b>'),
+                            new MButton('btnEnviar', '<b>Gravar</b>'),
+                            //$this->SetButtonAttr('btnEnviar:click','label','Salvar');
+                            new MLink('btnLinkRelacao','Relação de Etiquetas',$this->manager->getActionURL($module,$self,'',
+                                                array('event'=>'btnList_click'))),
+
+                    
+                           );
+           
+           $this->SetButtons($buttons);
+      // }
+
+
+
+
+    
+     $this->SetFieldAttr('lkpEtiqueta','module','biblioteca');
+     $this->SetFieldAttr('lkpEtiqueta','item','etiqueta');
+     //$this->SetFieldAttr('lkpEtiqueta','event','filler');
+     $this->SetFieldAttr('lkpEtiqueta','event','btnConsulta:click');
+     $this->SetFieldAttr('lkpEtiqueta','related', 'idetiqueta');
+
+
+     $this->SetFieldAttr('lkpsubcampo','module','biblioteca');
+     $this->SetFieldAttr('lkpsubcampo','item','subcampo');
+     $this->SetFieldAttr('lkpsubcampo','event','filler');
+//    $this->SetFieldAttr('lkpsubcampo','event','btnPesquisa:click');
+     $this->SetFieldAttr('lkpsubcampo','related', 'idetiqueta,lkpsubcampo');
+    $this->SetFieldAttr('lkpsubcampo','filter', 'lkpsubcampo');
+
+
+     
+     
+       $this->setFieldAttr('lbl2','visible',false);
+       $this->setFieldAttr('lkpsubcampo','visible',false);
+       $this->setFieldAttr('btnAlterar','visible',false);
+       $this->setFieldAttr('btnChoose','visible',false);
+       $this->setFieldAttr('btnEnviar','visible',false);
+       $this->setFieldAttr('edtMnemonico','visible',false);
+       //$this->SetFieldValue('lkpEtiqueta','');
+   //  $this->SetFieldValue('edtEtiqueta','');
+   $this->setFieldAttr('edtTags','visible',false);
+   $this->setFieldAttr('txtInd1','visible',false);
+   $this->setFieldAttr('txtInd2','visible',false);
+   $this->setFieldAttr('edtMnemonico','visible',false);
+   $this->setFieldAttr('edtDescricao','visible',false);
+   $this->setFieldAttr('edtObservacao','visible',false);
+   $this->setFieldAttr('chktemrepeticoes','visible',false);
+   $this->setFieldAttr('chktemsubcampos','visible',false);
+   $this->setFieldAttr('chkestaativo','visible',false);
+   $this->setFieldAttr('chkemlista','visible',false);
+   $this->setFieldAttr('chkemdemonstracao','visible',false);
+   $this->setFieldAttr('chkobsoleto','visible',false);
+   $this->setFieldAttr('btnGravar','visible',false);
+   $this->setFieldAttr('btnLinkRelacao','visible',true);
+
+
+
+       $this->defaultButton = false;
+
+
+
+       if ($item != null)
+       {
+           $idetiqueta = $item;
+          // $this->SetFieldValue('idetiqueta', $numerodaobra);
+          // $idetiqueta = $this->etiqueta->GetByCodigo($numerodaobra);
+           //$titulo = $this->obra->GetTituloByNumero($numerodaobra);
+           $this->SetFieldValue('lkpEtiqueta', $idetiqueta);
+          $this->SetFieldValue('edtTag', $tag);
+          
+           $this->btnEdit_click();
+       }  
+
+
+
+//      $escolhaAnterior = $this->objEtiqueta->getTagEscolhidas();
+      if($escolhaAnterior->result)
+{
+    $value = '';
+    $num = 2;
+    $lista = $escolhaAnterior->result[0][0].'-'.$escolhaAnterior->result[0][1];
+    $valorTag2 = $this->objEtiqueta->getDescricaoMarcByTag($escolhaAnterior->result[0][0]);
+    $value .= "1- ". $valorTag2."\n";
+
+    for($i = 1 ; $i<count($escolhaAnterior->result);$i++){
+        $tag1 = $escolhaAnterior->result[$i][0];
+        $lista .= '[-]'.$tag1.'-'.$escolhaAnterior->result[$i][1];
+        $valorTag2 = $this->objEtiqueta->getDescricaoMarcByTag($tag1);
+        $value .= "$num- ". $valorTag2."\n";
+        $num++;
+    }
+
+    $this->SetFieldValue('mlinTags',$value);
+    $this->SetFieldValue('listaTags',$lista);
+}
+       
+    }
+
+
+
+// Consulta: função chamada após o usuário usar o lookup
+        function btnConsulta_click($sender,$idetiqueta)
+{
+    global $MIOLO,$module,$item;
+
+	//Se nao existir, ela tenta pegar $item que é passada
+	//pelo botao editar do "relação"
+            $idetiqueta = ($idetiqueta != '') ? $idetiqueta : $item;
+
+   	// Já considera que o usuário quer excluir,editar uma idetiqueta
+            $this->SetButtonAttr('btnExcluir:click','visible',true);
+    
+    $this->SetButtonAttr('btnEnviar:click','label','Salvar');
+
+	//Instancia o objeto etiqueta
+            $this->objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+
+    
+	// ok retorna os dados de idetiqueta
+
+    $ok = $this->objEtiqueta->GetByCodigo($idetiqueta);
+
+	// este é o setdata deste arquivo. não é o setdata da classe de negócios
+	// veja que é $this->SetData e nao $this->objEtiqueta->SetData
+
+         
+    $this->SetData($ok);
+
+    //var_dump($this->estaAtivo);
+
+    
+         $this->SetFieldValue('lkpEtiqueta',$idetiqueta);
+     //    $teste =   $this->SetFieldValue('lkpEtiqueta',$idetiqueta);
+  //       var_dump(teste);
+
+         
+         
+}
+
+
+   // usada para inserir valores no formulário
+function SetData($ok)
+{
+
+    $this->setFieldAttr('chktemrepeticoes','visible',false);
+  
+  $this->SetFieldValue('edtTag',$ok->tag);
+  $this->SetFieldValue('txtInd1',$ok->indicador1);
+  $this->SetFieldValue('txtInd2',$ok->indicador2);
+  $this->SetFieldValue('edtMnemonico',$ok->mnemonico);
+  $this->SetFieldValue('edtDescricao',$ok->descricao);
+  $this->SetFieldValue('edtObservacao',$ok->observacao);
+  $this->SetFormValue('chktemrepeticoes',$ok->temRepeticoes);
+  $this->SetFormValue('chktemsubcampos',$ok->temSubcampos);
+  $this->SetFormValue('chkestaativo',$ok->estaAtivo);
+  $this->SetFormValue('chkemlista',$ok->emListas);
+  $this->SetFormValue('chkemdemonstracao',$ok->emDemonstracao);
+  $this->SetFormValue('chkobsoleto',$ok->obsoleto);
+
+//  $this->SetFieldValue('hidKey',$data->idetiqueta);
+    $temRepeticoes =$ok->temRepeticoes;
+    if ($temRepeticoes == 1)
+    {
+        $this->setFieldAttr('chktemrepeticoes','checked',1);
+    }
+    else
+    {
+        $this->setFieldAttr('chktemrepeticoes','visible',false);
+    }
+
+    $temSubcampos =$ok->temSubcampos;
+    if ($temSubcampos == 1)
+    {
+        $this->setFieldAttr('chktemsubcampos','checked',1);
+    }
+    else
+    {
+        $this->setFieldAttr('chktemsubcampos','visible',false);
+    }
+    
+    $estaAtivo =$ok->estaAtivo;
+    if ($estaAtivo == 1)
+    {
+        $this->setFieldAttr('chkestaativo','checked',1);
+    }
+    else
+    {
+        $this->setFieldAttr('chkestaativo','visible',false);
+    }
+
+    $emListas =$ok->emListas;
+    if ($emListas == 1)
+    {
+        $this->setFieldAttr('chkemlista','checked',1);
+    }
+    else
+    {
+        $this->setFieldAttr('chkemlista','visible',false);
+    }
+
+    $emDemonstracao =$ok->emDemonstracao;
+    if ($emDemonstracao == 1)
+    {
+        $this->setFieldAttr('chkemdemonstracao','checked',1);
+    }
+    else
+    {
+        $this->setFieldAttr('chkemdemonstracao','visible',false);
+    }
+
+    $obsoleto =$ok->obsoleto;
+    if ($obsoleto == 1)
+    {
+        $this->setFieldAttr('chkobsoleto','checked',1);
+    }
+    else
+    {
+        $this->setFieldAttr('chkobsoleto','visible',false);
+    }
+
+    
+ 
+    $teste =$ok->emListas;
+    //var_dump($teste );
+    $teste =$ok->emDemonstracao;
+    //var_dump($teste );
+
+   
+
+}
+
+
+
+    	function btnEdit_click()
+{
+    global $MIOLO, $module, $self, $theme, $action, $page, $item;
+
+
+
+    if ($this->getFormValue('idetiqueta')==NULL)
+    {
+
+
+       $idetiqueta = $this->GetFieldValue('lkpEtiqueta');
+
+        $this->SetButtonAttr('btnEnviar:click','label','Salvar');
+        $this->objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+
+
+	   // ok retorna os dados de idetiqueta
+      
+      $ok = $this->objEtiqueta->GetByCodigo($idetiqueta);
+	       // este é o setdata deste arquivo. não é o setdata da classe de negócios
+	       // veja que é $this->SetData e nao $this->objEtiqueta->SetData
+    
+    //if ($ok->temrepeticoes==0)
+       //    {
+     //          $data->temrepeticoes=NULL;
+    //}
+           //else
+           //{
+            //   $data->temrepeticoes=true;
+    //}
+    /*
+           $data->temsubcampos = $this->GetFormValue('chktemsubcampos');
+           if ($data->temsubcampos)
+           {
+               $data->temsubcampos=1;
+    }
+           else
+           {
+               $data->temsubcampos=0;
+    }
+    
+           $data->estaativo = $this->GetFormValue('chkestaativo');
+           if ($data->estaativo)
+           {
+               $data->estaativo=1;
+    }
+           else
+           {
+               $data->estaativo=0;
+    }
+    
+           $data->emlistas = $this->GetFormValue('chkemlista');
+           if ($data->emlistas)
+           {
+               $data->emlistas=1;
+    }
+           else
+           {
+               $data->emlistas=0;
+    }
+    
+           $data-> emdemonstracao = $this->GetFormValue('chkemdemonstracao');
+           if ($data->emdemonstracao)
+           {
+               $data->emdemonstracao=1;
+    }
+           else
+           {
+               $data->emdemonstracao=0;
+    }
+    
+           $data->obsoleto = $this->GetFormValue('chkobsoleto');
+           if ($data->obsoleto)
+           {
+               $data->obsoleto=1;
+    }
+           else
+           {
+               $data->obsoleto=0;
+    }
+*/
+    //   var_dump($ok->temrepeticoes);
+
+
+           
+       $this->SetData($ok);
+
+ 
+           $this->SetFieldValue('lkpEtiqueta',$idetiqueta);
+ 
+  
+
+           
+
+    }
+    
+    else
+    {
+        $idetiqueta = $this->GetFormValue('idetiqueta');
+        //$idobra = $this->obra->GetIdByNumero($numerodaobra);
+    }
+
+
+		/*if ($this->getFormValue('lkpobra') == null)
+        {
+            $MIOLO->Information("Por favor, selecione uma obra.", $MIOLO->GetActionURL($module,$action) );
+}*/
+
+
+        $this->setFieldAttr('lbl1','readonly',true);
+        $this->setFieldAttr('lkpEtiqueta','readonly',true);
+        $this->setFieldAttr('edtTag','readonly',true);
+        $this->setFieldAttr('btnEdit','visible',false);
+        $this->setFieldAttr('btnChoose','visible',true);
+        $this->setFieldAttr('lbl2','visible',true);
+        $this->setFieldAttr('lkpassunto','visible',true);
+        $this->setFieldAttr('btnAlterar','visible',true);
+        $this->setFieldAttr('lblRep','visible',false);
+        $this->setFieldAttr('numero','value',"$idobra");
+        $this->setFieldAttr('edtMnemonico','visible',true);
+       
+        $this->setFieldAttr('txtInd1','visible',true);
+        $this->setFieldAttr('txtInd2','visible',true);
+        $this->setFieldAttr('edtMnemonico','visible',true);
+        $this->setFieldAttr('edtDescricao','visible',true);
+        $this->setFieldAttr('edtObservacao','visible',true);
+        $this->setFieldAttr('chktemrepeticoes','visible',true);
+
+        $teste =1;//$this->estaAtivo;
+        
+        if ($teste == 1)
+        {
+            
+//            $this->setFieldAttr('chktemrepeticoes','"checked"',"checked");
+            
+
+        }
+     
+
+
+        
+        $this->setFieldAttr('chktemsubcampos','visible',true);
+        $this->setFieldAttr('chkestaativo','visible',true);
+        $this->setFieldAttr('chkemlista','visible',true);
+        $this->setFieldAttr('chkemdemonstracao','visible',true);
+        $this->setFieldAttr('chkobsoleto','visible',true);
+        $this->setFieldAttr('btnEnviar','visible',true);
+        $this->setFieldAttr('btnGravar','visible',false);
+        $this->setFieldAttr('btnNovo','visible',false);
+        $this->setFieldAttr('btnLinkRelacao','visible',false);
+        $this->setFieldAttr('lkpsubcampo','visible',true);
+
+        $columns = array(
+			
+                         
+       new DataGridColumn('classificacao','Classificação','left',true, '15%',true, null, true,true),
+                      new DataGridColumn('conteudo','Conteúdo','left',true, '75%',true, null, true,true),
+                        );
+
+        $href_datagrid = $MIOLO->GetActionURL($module,$self,'', Array('event'=>'btnEdit_click'));
+        $page->SetAction($href_datagrid);
+  //      $query = $this->obra->AssuntosPorObra($idobra);
+
+   //     $datagrid = new DataGrid2($query, $columns, $href_datagrid,20);
+   //     $datagrid->SetTitle('Relação de assuntos');
+  //      $datagrid->SetLinkType('linkbutton');
+    //    $datagrid->SetWidth('100%');
+    //    $href_dele = $MIOLO->GetActionURL($module,$self,'%0%',Array('event'=>'btnExcluir:click'));
+			
+     //   $datagrid->AddActionIcon('Excluir', 'delete.gif', $href_dele);
+		
+     //   $this->addField($datagrid);
+
+
+
+  $columns = array(
+
+   new DataGridColumn('subcampo','Subcampos','left',true, '15%',true, null, true,true),
+                      new DataGridColumn('descricao','Descrição','left',true, '75%',true, null, true,true),
+                  );
+
+  $href_datagrid = $MIOLO->GetActionURL($module,$self,'', Array('event'=>'btnEdit_click'));
+  $page->SetAction($href_datagrid);
+  $idetiqueta = $this->GetFieldValue('lkpEtiqueta');
+  $query = $this->subcampo->SubcamposPorEtiqueta($idetiqueta);
+
+ // var_dump($query->getValue('subcampo'));
+  //var_dump($query->getValue('idetiqueta'));
+
+ //substr(u.nick,1,20)
+
+
+         
+ $selecao = $query->getValue('subcampo');
+
+  
+  $datagrid = new DataGrid2($query, $columns, $href_datagrid,20);
+  $datagrid->SetTitle('Relação de subcampos da etiqueta');
+  $datagrid->SetLinkType('linkbutton');
+  $datagrid->SetWidth('100%');
+  
+
+
+//$MIOLO->GetActionURL($module,$self,'%0%-%1%',Array('event'=>'0:click'));  
+//  $href_dele = $MIOLO->GetActionURL($module,$self,'%0%',Array('event'=>'btnExcluirSubcampo:click', 'subcampo' => $selecao));
+
+  
+  
+  $href_dele = $MIOLO->GetActionURL($module,$self,'%0%',Array('event'=>'btnExcluirSubcampo:click', 'subcampo' => '%0%-%1%'));
+			
+  $datagrid->AddActionIcon('Excluir', 'delete.gif', $href_dele);
+		
+  $this->addField($datagrid);
+
+}
+
+
+
+
+        
+        function btnChoose_click()
+{
+    global $MIOLO,$module;
+        
+    $msg = "Escolher nova etiqueta ";
+    
+//    $go = $this->manager->getActionURL('biblioteca','main:admin:cadastramarc',$item);
+  //  $this->page->redirect($go);
+
+    $MIOLO->Prompt(Prompt::Confirmation($msg,$MIOLO->GetActionURL($module,'main:admin:cadastramarc', $item, ''),$this->listURL));
+
+}
+
+
+
+
+function btnExcluirSubcampo_click()
+{
+    global $MIOLO, $module, $item, $action;
+    
+
+    
+    $idetiqueta = $this->GetFormValue('lkpEtiqueta');
+
+   
+
+    $this->subcampo = $this->manager->getBusiness('biblioteca','subcampo');
+    $subcampo = $this->getFormValue('subcampo');
+  //  var_dump($subcampo);
+    $sub = substr("$subcampo",-1);
+  //  var_dump($sub);
+
+    
+    $ok =  $this->subcampo->desvinculaSubcampo($idetiqueta,$sub);
+    
+
+  if ( $ok )
+    
+
+          
+  {
+      
+//  retirado para voltar para tela de PESQUISA:
+                //$MIOLO->Information("Registro deletado da base de dados", $MIOLO->GetActionURL('biblioteca',"main:admin:cadatramarc:idetiqueta=$idetiqueta"));
+
+  $MIOLO->Information($data->mnemonico . " Registro deletado da base de dados!", $MIOLO->GetActionURL($module,$self,'',Array('event'=>'')));
+
+
+  
+  }
+  
+  
+  
+  
+    else
+  {
+          $MIOLO->Error("As informações não foram deletadas");//,$MIOLO->GetActionURL($module,$action);
+  }
+
+}
+
+
+
+        
+        
+    function btnExcluir_click()
+{
+    global $MIOLO, $module, $item, $action;
+
+    $data = $this->GetData();
+
+        //Instancia o objeto editora
+                $this->objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+
+        //A linha abaixo verifica se existe um data->ideditora
+        //Se nao existir, ela tenta pegar $item que é passada
+        //pelo botao editar do "relação"
+                if (!($data->idetiqueta))
+        {
+            $this->objEtiqueta->GetByCodigo($item);
+            $data = $this->objEtiqueta->GetData();
+        }
+
+        $ok = $this->objEtiqueta->Delete($item);
+
+
+     //   $this->objEtiqueta->Log(OP_DEL,'Deletada a etiqueta '.$data->descricao.' com o id = '.$data->idetiqueta);
+        if ( $ok )
+
+                      $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click')) ;
+
+
+////////////
+                  //  $this->objEtiqueta->Log(OP_DEL,'Deletada a etiqueta '.$data->descricao.' com o id = '.$data->idetiqueta);
+       // $MIOLO->Prompt(Prompt::Information($data->mnemonico . " $what deletado da base de dados!",
+                       //$MIOLO->GetActionURL($module, $self  ,'',array('event'=>'btnList_click'))));
+        
+        else
+            
+
+        {
+    // Se existir alguma obra relacionada com a editora a ser deletada, não será permitido.
+            $obraEd = $this->objEtiqueta->ListByEtiqueta($data->idetiqueta);
+
+    if ( $obraEd )
+        $MIOLO->Error("Esta etiqueta não pode ser apagada porque existe(m) subcampos(s) relacionado(s) com a mesma.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click')) );
+    else
+        $MIOLO->Error("As informações não foram deletadas", $MIOLO->GetActionURL($module,$action,'',
+                      array('event'=>'btnList_click')) );
+        }
+}
+
+
+
+
+    function btnList_click()
+{
+    global $MIOLO, $module, $self, $theme, $action, $page;
+    
+    $columns = array(
+                     new DataGridColumn(null),
+                                        new DataGridColumn('tag','Tag Etiqueta','left',true, '20%',true, null, true,true),
+                                                new DataGridColumn('descricao','Descrição','left',true, '80%',true, null, true,true),
+
+                    );
+    $href_datagrid = $MIOLO->GetActionURL($module,$self,'', Array('event'=>'btnList_click'));
+    $page->SetAction($href_datagrid);
+
+        //Instancia o objeto Etiqueta
+                
+                $this->objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+
+        $query = $this->objEtiqueta->ListEtiqueta();
+
+        $datagrid = new DataGrid2($query, $columns, $href_datagrid,20);
+        $datagrid->SetTitle('Relação de Etiquetas');
+        $datagrid->SetLinkType('linkbutton');
+        $datagrid->SetWidth('100%');
+        $href_edit = $MIOLO->GetActionURL($module,$self,'%0%',Array('event'=>'btnConsulta:click'));
+        $href_dele = $MIOLO->GetActionURL($module,$self,'%0%',Array('event'=>'btnExcluir:click'));
+
+        $datagrid->AddActionIcon('Editar', 'edit', $href_edit);
+        $datagrid->AddActionIcon('Excluir', 'delete.gif', $href_dele);
+        $datagrid->HeaderLink('new', 'Novo Registro',
+
+                              $MIOLO->GetActionURL($module,$self,'',Array('event'=>'')));
+
+        $theme->InsertContent($datagrid);
+}
+
+
+// Enviar pode ser inserir ou editar
+
+        function  btnEnviar_click()
+{
+
+    global $MIOLO, $module, $item, $action;
+		
+    
+    $idetiqueta = $this->GetFieldValue('lkpEtiqueta');
+  //  var_dump($idetiqueta);
+  $data = $this->GetData();
+
+  //var_dump($data->tag);
+
+    //Instancia o objeto
+    $this->objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+
+    $ok = $this->objEtiqueta->GetByCodigo($idetiqueta);
+
+
+    if ($ok->tag)
+    { // Usuário quer editar um item
+            //$data->idetiqueta = $idetiqueta;
+            $what = " atualizado ";
+            $ok = $this->objEtiqueta->UpdateEtiqueta($data);
+            $this->objEtiqueta->Log(OP_UPD,'Alterada a etiqueta '.$data->descricao.' com o id = '.$data->idetiqueta);
+
+
+    }
+    else
+    { // Usuário quer inserir novo item
+            //var_dump('insert');
+            //var_dump($ok->idetiqueta);
+            //$data->idetiqueta = ( $data->hidKey);
+            
+           // $what = " inserido ";
+           // $ok = $this->objEtiqueta->Insert($data);
+            //$this->objEtiqueta->Log(OP_UPD,'Inserida a etiqueta '.$data->descricao.' com o id '.$ok);
+
+            $this->setFieldAttr('lbl1','readonly',true);
+            $this->setFieldAttr('lkpEtiqueta','visible',true);
+            $this->setFieldAttr('edtTag','visible',true);
+            $this->setFieldAttr('btnEdit','visible',false);
+            $this->setFieldAttr('btnChoose','visible',true);
+            $this->setFieldAttr('lbl2','visible',true);
+            $this->setFieldAttr('lkpassunto','visible',true);
+            $this->setFieldAttr('btnAlterar','visible',true);
+            $this->setFieldAttr('lblRep','visible',false);
+            $this->setFieldAttr('numero','value',"$idobra");
+            $this->setFieldAttr('edtMnemonico','visible',true);
+       
+            $this->setFieldAttr('txtInd1','visible',true);
+            $this->setFieldAttr('txtInd2','visible',true);
+            $this->setFieldAttr('edtMnemonico','visible',true);
+            $this->setFieldAttr('edtDescricao','visible',true);
+            $this->setFieldAttr('edtObservacao','visible',true);
+            $this->setFieldAttr('chktemrepeticoes','visible',true);
+            $this->setFieldAttr('chktemsubcampos','visible',true);
+            $this->setFieldAttr('chkestaativo','visible',true);
+            $this->setFieldAttr('chkemlista','visible',true);
+            $this->setFieldAttr('chkemdemonstracao','visible',true);
+            $this->setFieldAttr('chkobsoleto','visible',true);
+            $this->setFieldAttr('btnEnviar','visible',true);
+            $this->setFieldAttr('btnGravar','visible',false);
+
+
+    }
+
+
+    if ( $ok )
+    {
+        $MIOLO->Prompt(Prompt::Information($data->mnemonico . " $what com sucesso.",
+                       $MIOLO->GetActionURL($module,$action) ));
+    }
+    else
+        $MIOLO->Error("'" . $data->mnemonico  . "' não foi $what. ", $MIOLO->GetActionURL($module,$action) );
+
+
+}
+
+
+
+ 
+        // pega os dados que estão no formulário   
+     function GetData()
+{
+    $data = new FormData();
+
+
+    $data->idetiqueta = $this->GetFieldValue('lkpEtiqueta');
+    $data->tag = $this->GetFieldValue('edtTag');
+    $data->indicador1 = $this->GetFieldValue('txtInd1');
+    $data->indicador2 = $this->GetFieldValue('txtInd2');
+    $data->mnemonico = $this->GetFieldValue('edtMnemonico');
+    $data->descricao = $this->GetFieldValue('edtDescricao');
+    $data->observacao = $this->GetFieldValue('edtObservacao');
+//    $data->idetiqueta = $this->GetFieldValue('lkpEtiqueta');
+
+
+
+
+    //  tratar campos
+        $data->temrepeticoes = $this->GetFormValue('chktemrepeticoes');
+   if ($data->temrepeticoes)
+   {
+       $data->temrepeticoes=1;
+   }
+   else
+   {
+       $data->temrepeticoes=0;
+   }
+    $data->temsubcampos = $this->GetFormValue('chktemsubcampos');
+    if ($data->temsubcampos)
+    {
+        $data->temsubcampos=1;
+    }
+    else
+    {
+        $data->temsubcampos=0;
+    }
+    
+    $data->estaativo = $this->GetFormValue('chkestaativo');
+    if ($data->estaativo)
+    {
+        $data->estaativo=1;
+    }
+    else
+    {
+        $data->estaativo=0;
+    }
+    
+    $data->emlistas = $this->GetFormValue('chkemlista');
+    if ($data->emlistas)
+    {
+        $data->emlistas=1;
+    }
+    else
+    {
+        $data->emlistas=0;
+    }
+    
+    $data-> emdemonstracao = $this->GetFormValue('chkemdemonstracao');
+    if ($data->emdemonstracao)
+    {
+        $data->emdemonstracao=1;
+    }
+    else
+    {
+        $data->emdemonstracao=0;
+    }
+    
+    $data->obsoleto = $this->GetFormValue('chkobsoleto');
+    if ($data->obsoleto)
+    {
+        $data->obsoleto=1;
+    }
+    else
+    {
+        $data->obsoleto=0;
+    }
+
+
+
+
+    return $data;
+
+}
+
+function  btnGravar_click()
+{
+
+    global $MIOLO, $module, $item, $action;
+		
+
+    $data = $this->GetData();
+    
+  
+   // var_dump($idetiqueta);
+   $idetiqueta = $this->GetFieldValue('lkpEtiqueta');
+   //$data->idetiqueta = $idetiqueta;
+    
+
+  //Instancia o objeto
+    $this->objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+
+  $ok = $this->objEtiqueta->GetByCodigo($idetiqueta);
+
+
+  if ($ok->idetiqueta)
+  { // Usuário quer editar um item
+          $what = " atualizado ";
+         //   $ok = $this->objEtiqueta->UpdateEtiqueta($data);
+         //   $this->objEtiqueta->Log(OP_UPD,'Alterada a etiqueta '.$data->descricao.' com o id = '.$data->idetiqueta);
+
+
+  }
+  else
+  { // Usuário quer inserir novo item
+          //var_dump('insert');
+       //   var_dump($ok->idetiqueta);
+
+          
+          //$data->idetiqueta = ( $data->hidKey);
+            
+          $what = " inserido ";
+          $ok = $this->objEtiqueta->InsertEtiqueta($data);
+
+          $this->objEtiqueta->Log(OP_UPD,'Inserida a etiqueta '.$data->descricao.' com o id '.$ok);
+          
+          
+  }
+
+
+  if (!($ok))
+    {
+      $MIOLO->Prompt(Prompt::Information($data->mnemonico . " $what com sucesso.",
+                     $MIOLO->GetActionURL($module,$action) ));
+  }
+  else
+      $MIOLO->Error("'" . $data->mnemonico  . "' não foi $what. ", $MIOLO->GetActionURL($module,$action) );
+
+
+}
+
+
+  	function btnNovo_click()
+{
+    global $MIOLO, $module, $self, $theme, $action, $page, $item;
+
+
+    
+    if ($this->getFormValue('idetiqueta')==NULL)
+    {
+
+        
+
+        $this->setFieldAttr('lbl1','visible',true);
+        $this->setFieldAttr('lkpEtiqueta','visible',true);
+        $this->setFieldAttr('edtTag','visible',true);
+        $this->setFieldAttr('btnEdit','visible',false);
+        $this->setFieldAttr('btnChoose','visible',true);
+        $this->setFieldAttr('lbl2','visible',true);
+        $this->setFieldAttr('lkpassunto','visible',true);
+        $this->setFieldAttr('btnAlterar','visible',true);
+        $this->setFieldAttr('lblRep','visible',false);
+        
+        $this->setFieldAttr('edtMnemonico','visible',true);
+       
+        $this->setFieldAttr('txtInd1','visible',true);
+        $this->setFieldAttr('txtInd2','visible',true);
+        $this->setFieldAttr('edtMnemonico','visible',true);
+        $this->setFieldAttr('edtDescricao','visible',true);
+        $this->setFieldAttr('edtObservacao','visible',true);
+        $this->setFieldAttr('chktemrepeticoes','visible',true);
+        $this->setFieldAttr('chktemsubcampos','visible',true);
+        $this->setFieldAttr('chkestaativo','visible',true);
+        $this->setFieldAttr('chkemlista','visible',true);
+        $this->setFieldAttr('chkemdemonstracao','visible',true);
+        $this->setFieldAttr('chkobsoleto','visible',true);
+        $this->setFieldAttr('btnEnviar','visible',false);
+        $this->setFieldAttr('btnNovo','visible',false);
+        $this->setFieldAttr('btnChoose','visible',false);
+        $this->setFieldAttr('btnAlterar','visible',false);
+        $this->setFieldAttr('btnGravar','visible',true);
+        $this->setFieldAttr('btnNovo','visible',false);
+        
+
+}
+
+}
+
+
+    function btnAlterar_click($idetiqueta, $subcampos)
+{
+    global $MIOLO;
+
+    $this->subcampo = $this->manager->getBusiness('biblioteca','subcampo');
+    $idetiqueta = $this->GetFormValue('lkpEtiqueta');
+    $subcampo = $this->GetFormValue('lkpsubcampo');
+
+    if ($this->getFormValue('lkpsubcampo')==NULL)
+    {
+        $MIOLO->Information("Por favor, selecione um subcampo a ser adicionado.", $MIOLO->GetActionURL('biblioteca',"main:admin:cadastramarc&item=$idetiqueta"));
+    }
+
+
+
+
+		//Após inserir o subcampo, se a página for atualizada, o subcampo será inserido novamente. 
+         $ok = $this->subcampo->verificar($idetiqueta, $subcampo);
+        if ($ok)
+        {
+           
+            $idetiqueta = null;
+            $subcampo   = null;
+
+       //     $MIOLO->Error("Subcampo já vinculado a etiqueta, por favor, selecione outro.", $MIOLO->GetActionURL('biblioteca','main:admin:subcampo'));
+        }
+        else
+        {
+           // var_dump("novo");
+            $this->subcampo->saveSubcampo($idetiqueta,$subcampo);
+        }
+
+       /* $ocorrencia = $this->GetFieldValue('ocorrencia');
+        $idetiqueta = $this->GetFieldValue('idetiqueta');
+
+        $arrayAssuntos = $this->assunto->GetAssuntoCompleto($idetiqueta,$ocorrencia);
+        $arrayIndicadores = $this->assunto->GetIndicadorAssunto($idetiqueta,$ocorrencia);
+        $ocorrencia = $this->obra->GetNextOcorrencia($idobra,$idetiqueta);
+        for ($x=0;$x<sizeof($arrayAssuntos);$x++)
+        {
+            $idmaterial = $this->obra->saveMaterialAssunto($idobra,$idetiqueta,$arrayAssuntos[$x][0],$arrayAssuntos[$x][1],$arrayAssuntos[$x][2],$ocorrencia+1);
+        }
+        for ($x=0;$x<sizeof($arrayIndicadores);$x++)
+        {
+            $this->obra->saveIndicadorObra($idobra,$idetiqueta,$ocorrencia+1,$arrayIndicadores[$x][0],$arrayIndicadores[$x][1],0);
+        }
+
+       $this->etiqueta = $this->manager->getBusiness('biblioteca','etiqueta');
+       
+       */
+       
+     //   $this->etiqueta->saveSubcampo($idetiqueta,$subcampo);
+}
+
+
+}
+?>

@@ -1,0 +1,90 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+
+class BusinessCommonMain
+{
+
+    var $key;
+    var $idusuario;
+	var $login;
+    var $password;
+    var $name;
+    var $nickname;
+    var $email;
+	var $grupo;
+	var $rights;
+    var $theme;
+
+    function GetDatabase()
+    {   global $MIOLO;
+        
+        return $MIOLO->GetDatabase('common');
+    }
+    
+    function GetUser($login)
+    {
+        $db = $this->GetDatabase();
+        
+        $sql = "select u.idusuario, u.login, u.password, p.nome, u.nickname, p.email" .
+               "  from cm_usuario u, cm_pessoa p" .
+               "  where u.idpessoa = p.idpessoa " .
+		       "  and u.login=?"; 
+        
+        $result = $db->Query($db->Prepare($sql,$login));
+        
+        list ( $this->idusuario,
+			   $this->login,
+               $this->password,
+               $this->name,
+               $this->nickname,
+               $this->email ) = $result[0];
+        
+		$this->key = $this->idusuario;
+		return $this;
+    }
+    
+    function GetGrupo($login)
+    {
+        $db = $this->GetDatabase();
+        
+        $sql = "select u.idusuario, u.login, g.idgrupo, ga.grupo" .
+               "  from cm_usuario u, cm_grpusuario g, cm_grupoacesso ga" .
+               "  where u.idusuario=g.idusuario"; 
+               "    and g.idgrupo=ga.idgrupo"; 
+               "    and u.login=?"; 
+        
+        $result = $db->Query($db->Prepare($sql,$login));
+        
+        if ( $result )
+        {
+            foreach ( $result as $r )
+            {
+                $this->grupo[] = ($r[3]);
+            }
+        }
+        
+		return $this->grupo;
+    }
+}
+
+?>

@@ -1,0 +1,18 @@
+      127.0.0.1 - admin      - [28/03/2012 13:39:21] "; SQL:SELECT u.login,p.nome,u.idusuario,u.idpessoa,p.idpessoa FROM   cm_usuario u,cm_pessoa p WHERE (u.idpessoa = p.idpessoa) and (( upper(u.login) like
+                            upper('JOSE DA SILVA%') ) ORDER BY u.login"
+      127.0.0.1 - admin      - [28/03/2012 16:36:20] "; SQL:SELECT u.login,p.nome,u.idusuario,u.idpessoa,p.idpessoa FROM   cm_usuario u,cm_pessoa p WHERE (u.idpessoa = p.idpessoa) and (( upper(u.login) like
+                            upper('JOSE DA SILVA%') ) ORDER BY u.login"
+      127.0.0.1 - admin      - [28/03/2012 16:36:35] "; SQL:SELECT u.login,p.nome,u.idusuario,u.idpessoa,p.idpessoa FROM   cm_usuario u,cm_pessoa p WHERE (u.idpessoa = p.idpessoa) and (( upper(u.login) like
+                            upper('%%') ) ORDER BY u.login"
+      127.0.0.1 - admin      - [28/03/2012 16:37:18] "; SQL:SELECT u.login,p.nome,u.idusuario,u.idpessoa,p.idpessoa FROM   cm_usuario u,cm_pessoa p WHERE (u.idpessoa = p.idpessoa) and (( upper(u.login) like
+                            upper('%%') ) ORDER BY u.login"
+      127.0.0.1 - admin      - [30/03/2012 11:30:32] "; SQL:SELECT m.idmunicipio,m.municipio,m.iduf,p.pais,p.idpais FROM   cm_municipio m,cm_pais p WHERE m.idpais = p.idpais and ucwords(strtolower(m.municipio))) LIKE upper('%%%') ORDER BY m.municipio"
+      127.0.0.1 - admin      - [30/03/2012 15:21:55] "; SQL:SELECT m.idmunicipio,lower(m.municipio) as m.municipio,m.iduf,p.pais,p.idpais FROM   cm_municipio m,cm_pais p WHERE m.idpais = p.idpais and (m.municipio) LIKE upper('%%%') ORDER BY m.municipio"
+      127.0.0.1 - admin      - [30/03/2012 15:22:21] "; SQL:SELECT m.idmunicipio,lower(m.municipio)  m.municipio,m.iduf,p.pais,p.idpais FROM   cm_municipio m,cm_pais p WHERE m.idpais = p.idpais and (m.municipio) LIKE upper('%%%') ORDER BY m.municipio"
+      127.0.0.1 - admin      - [03/04/2012 11:40:08] "; SQL:SELECT m.idmunicipio,lower(m.municipio)  as m.municipio,m.iduf,p.pais,p.idpais FROM   cm_municipio m,cm_pais p WHERE m.idpais = p.idpais and (m.municipio) LIKE upper('%%%') ORDER BY m.municipio"
+      127.0.0.1 - admin      - [03/04/2012 11:44:54] "; SQL:SELECT m.idmunicipio,ucfirst(m.municipio)  as municipio,m.iduf,p.pais,p.idpais FROM   cm_municipio m,cm_pais p WHERE m.idpais = p.idpais and (m.municipio) LIKE upper('%%%') ORDER BY m.municipio"
+      127.0.0.1 - admin      - [03/04/2012 11:46:01] "; SQL:SELECT m.idmunicipio,UC_FIRST(m.municipio)  as municipio,m.iduf,p.pais,p.idpais FROM   cm_municipio m,cm_pais p WHERE m.idpais = p.idpais and (m.municipio) LIKE upper('%%%') ORDER BY m.municipio"
+      127.0.0.1 -            - [03/04/2012 13:39:19] "; SQL:SELECT m.idmunicipio,ucfirst(m.municipio)  as municipio,m.iduf,p.pais,p.idpais FROM   cm_municipio m,cm_pais p WHERE m.idpais = p.idpais and (m.municipio) LIKE upper('%%%') ORDER BY m.municipio"
+      127.0.0.1 - admin      - [03/04/2012 13:40:11] "; SQL:SELECT m.idmunicipio,ucfirst(m.municipio)  as municipio,m.iduf,p.pais,p.idpais FROM   cm_municipio m,cm_pais p WHERE m.idpais = p.idpais and (m.municipio) LIKE upper('%%%') ORDER BY m.municipio"
+      127.0.0.1 -            - [09/05/2012 13:51:18] "ERROR:  null value in column "idusuario" violates not-null constraint; SQL:INSERT INTO cm_log ( idlog,idusuario,operacao,descricao,timestamp,modulo,classe ) VALUES ( '1065',null,'INS','Estado inserido - id = 33',TO_TIMESTAMP('09/05/2012 13:51:18','DD/MM/YYYY HH24:MI:SS') ,'BIBLIOTECA','ESTADO' )"
+      127.0.0.1 - sandala    - [04/06/2012 16:38:06] "; SQL:SELECT m.idmunicipio,INITCAP(m.municipio)  as municipio,m.iduf,p.nome as pais,p.pais,p.idpais FROM   cm_municipio m,cm_pais p WHERE m.idpais = p.idpais and (m.municipio) LIKE upper('%%%') ORDER BY m.municipio"

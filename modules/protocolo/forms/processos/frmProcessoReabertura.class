@@ -1,0 +1,150 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+MIOLO::Import('extensions::class.phpmailer.php','PHPMailer');
+class frmProcessoReabertura extends MForm
+{
+	protected $processo;
+	protected $setores;
+    function __construct($objProcesso)
+    {
+//      construct
+        global $MIOLO;
+		$this->processo = $objProcesso;
+        $this->setores = $MIOLO->getBusiness('protocolo','setor');
+        parent::__construct('Reabrir processo');
+        $this->eventHandler();
+    }
+    
+    function CreateFields()
+    {
+    	global $MIOLO, $auth;
+    	
+//      confirmation
+        if (!$this->GetFormValue('conf'))
+        {
+            $action_sim = $this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso,array('form'=>'reabrir','conf'=>'sim'));
+            $action_nao = $this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso);
+		    $this->manager->Question("Tem certeza que deseja reabrir o processo ".$this->processo->numProcessoFormatado()."?",$action_sim,$action_nao);
+            return;
+        }
+//      set and save           
+        try
+        {
+            $this->processo->beginTransaction();
+            $this->processo->retencao->numAndamento++;
+            $andamento = $this->processo->getAndamento($this->processo->retencao->numAndamento);
+            $andamento->setor = $this->processo->retencao->setor;
+            $andamento->dataEntrada = date("YmdHi");
+            $andamento->setorDestino = $this->processo->retencao->setorDestino;
+            $andamento->dataSaida = $andamento->dataEntrada;
+            $andamento->decisao = 'REABERTO EM '.$this->processo->dataFormatada($andamento->dataEntrada);
+            $andamento->dataDespacho = $andamento->dataEntrada;
+            $numeroAndamento = $this->processo->retencao->numAndamento - 1;
+            $getStatus = $this->processo->getAndamento($numeroAndamento);
+            if ($getStatus->status == 'H')
+            {
+            	$andamento->status = 'H';
+            }else{
+            	$andamento->status = 'N';
+            }
+			$andamento->idUsuario = $auth->getLogin()->idkey;
+            $this->processo->addAndamento($andamento);
+            unset($andamento);
+            $this->processo->retencao->numAndamento++;
+            $andamento = $this->processo->getAndamento($this->processo->retencao->numAndamento);
+            $andamento->setor = $this->processo->retencao->setor;
+            $andamento->setorDestino = $this->processo->retencao->setorDestino;
+            $andamento->dataEntrada = date("YmdHi");
+            $numeroAndamento = $this->processo->retencao->numAndamento - 1;
+            $getStatus = $this->processo->getAndamento($numeroAndamento);
+            if ($getStatus->status == 'H')
+            {
+            	$andamento->status = 'H';
+            }else{
+            	$andamento->status = 'N';
+            }
+			$andamento->idUsuario = $auth->getLogin()->idkey;
+            $this->processo->addAndamento($andamento);
+            $this->processo->retencao->setData($andamento);
+            $this->processo->retencao->setorDestino = $this->processo->retencao->setorDestino;
+            $this->processo->retencao->dataSaida = null;
+            $this->processo->retencao->dataDespacho = null;
+            $this->processo->save();
+            
+        	    $dataMail = date("d/m/y");
+				$horaMail = date("H:i");
+				$objMail = $this->processo->getTituloByNumProcesso($this->processo->numProcesso);
+				$mailSender = $this->processo->getMailByNumProcesso($this->processo->numProcesso);
+				$emails = $this->processo->listarEmail();
+				$emails[$emails->length][0] = $mailSender;
+                foreach($emails as $e)
+                {
+                    if($e[1])
+		            {
+		                    $instituicao = $this->processo->instituicaoUsuario($e[1]);
+		                    $pessoa = $e[2];
+		            }
+		            else
+		            {
+		                    $instituicao = $this->processo->instituicaoProcesso();
+		                    $pessoa = $this->processo->solicitante;
+		            }				
+					$mail = new PHPMailer();
+					$mail->IsSMTP(); // send via SMTP
+					$mail->Host = $MIOLO->getConf('mail.host');
+					$mail->SMTPAuth = $MIOLO->getConf('mail.auth');
+					$mail->Username = $MIOLO->getConf('mail.user');
+					$mail->Password = $MIOLO->getConf('mail.pass');
+					$mail->From = $MIOLO->getConf('mail.from');
+					$mail->FromName = "SIGA - Sistema Integrado de Gestão Acadêmica";
+					$mail->AddAddress($e[0]);
+					$mail->Port = $MIOLO->getConf('mail.port');
+					$mail->WordWrap = 50;
+					$mail->IsHTML(true);
+					$mail->Subject = "SIGA-ADM(1) - Notificação de Trâmite de Processo";
+	                                $mail->ssl = $MIOLO->getConf('mail.ssl');
+        	                        $mail->Body = "
+                                                <center><h1>TRAMITAÇÃO DO PROCESSO<br /> {$this->processo->numProcessoFormatado()}</h1></center>
+                                                <br /><br />Prezado(a) Sr(a) {$pessoa},
+                                        	<br /><br />O processo {$this->processo->numProcessoFormatado()} foi reaberto
+                                                <br /><br /><b>Objeto: </b>{$objMail}
+                                                <br /><b>Setor Atual: </b>{$this->processo->retencao->setor}
+                                                <br /><br /><b>Data: </b>{$dataMail}
+                                                <br /><b>Hora: </b>{$horaMail}
+                                                <br /><br /><b>Para maiores informações acesse: </b>{$MIOLO->getConf('home.url')}
+                                                <br /><br />Atenciosamente,
+                                                <br /><br />{$instituicao}
+                                                <br /><br /><b><font color=\"RED\"> Observação: Este email foi enviado automaticamente, não é necessário responder. </font></b>
+                	                ";
+					$mail->Send();
+				}
+            
+            $msg = "Processo ".$this->processo->numProcessoFormatado()." reaberto com sucesso.";
+            $this->processo->Log(OP_UPD,$msg);
+            $this->processo->endTransaction();
+            $this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
+        }
+        catch(Exception $e) {$this->addError($e->getMessage());}
+    }
+ }
+?>

@@ -1,0 +1,191 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+// 19/10/2010 - Vitor Pacheco
+class frmRepDepreciacaoPorNumero extends MForm
+{
+	public function __construct()
+	{
+		parent::__construct('Relatório Acumulado de Valor Depreciado por Itens');
+		$this->EventHandler();
+		$this->defaultButton = false;
+	}
+	public function CreateFields()
+	{
+		global $MIOLO, $module, $action, $item, $theme;
+
+		$instituicao = $MIOLO->GetBusiness('common','instituicao');
+		$idinstituicao = $this->manager->GetBusiness('common','instituicao');
+		$instituicao = $idinstituicao->listAll();
+		
+        $fields = array(
+			new MTextField('iditempatrimonio','','Numero item de',20),
+		    new MTextField('iditempatrimonio1','','Até Número ',20),
+            new MSelection('mesReferencia', '','Mês referência',$this->geraMeses()),
+            new MSelection('anoReferencia', '','Ano referência',$this->geraAnos()),
+            //new MLookupTextField('instituicao', '', 'Instituição', 30, NULL, NULL, NULL, 'common', 'instituicao2'),
+            //new MHiddenField('idinstituicao'),
+            //new MHiddenField('sigla'),
+            new MSelection ('idinstituicao','','Instituição'),
+		);
+        $this->SetFields($fields);
+        //$this->SetFieldAttr('instituicao', 'related', 'idinstituicao,instituicao,sigla');
+        $buttons = array(
+			new MButton('btnPost', 'Gerar Relatório', 'PDF'),
+		);
+		$this->SetButtons($buttons);
+		
+		$objinst = $MIOLO->GetBusiness('common','instituicao');
+        $query = $objinst->ListRange(NULL, 'instituicao');
+		$options['0'] = 'TODAS';
+        while ( !$query->eof() )
+		{
+			if(($query->fields('ug')!='') or ($query->fields('uasg')!=''))
+			{
+				$options[$query->fields('idinstituicao')] = $query->fields('instituicao');
+            }
+			$query->moveNext();
+		}
+		$this->SetFieldAttr('idinstituicao','options', $options);
+	}
+	public function btnPost_click()
+    {
+		global $MIOLO, $module, $item;
+
+		$instituicao = Form::GetFormValue('idinstituicao');
+		$numItem 	 = Form::GetFormValue('iditempatrimonio');
+		$untilNum 	 = Form::GetFormValue('iditempatrimonio1');
+		
+        if( $instituicao == '')
+		{
+			$this->AddError('Você deve selecionar uma Instituição');
+        }
+        else if($numItem == '' || (!is_numeric($numItem))){
+        	$this->AddError('O campo \'Número item de\' deve ser preenchido apenas com números!');
+        }
+        else if($untilNum == '' || (!is_numeric($untilNum))){
+	    	$this->AddError('O campo \'Até Número\' deve ser preenchido apenas com números!');
+	    }
+	    else if($untilNum < $numItem){
+	    	$this->AddError('O campo \'Até Número\' deve ser maior que o número \'Número item de\'!');
+	    }
+        else
+        {
+			$report = new MJasperReport('sigaept');
+			$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
+			$parameters['int_pIdUsuario'] = $MIOLO->login->idkey;
+			$parameters['pURL'] = $MIOLO->GetConf('home.url');
+			$parameters['int_idInstituicao'] = $instituicao;
+			$parameters['int_pIdItem1']	= Form::GetFormValue('iditempatrimonio'); 
+			$parameters['int_pIdItem2']	= Form::GetFormValue('iditempatrimonio1'); 
+			//$parameters['int_idInstituicao'] = trim(Form::GetFormValue('idinstituicao'));
+			/*$instituicao = Form::GetFormValue('instituicao');
+			$instituicao = explode('-', $instituicao);
+			$parameters['instituicao'] = trim($instituicao[0]);
+			$parameters['unidade'] = trim($instituicao[1]);
+
+			if (!$parameters['instituicao'])
+			{
+				$parameters['instituicao'] = ' ';			
+			}
+		
+			if (!$parameters['unidade'])
+			{
+				$parameters['unidade'] = ' ';
+			}*/
+		
+			$mesReferencia = Form::GetFormValue('mesReferencia');
+			$anoReferencia = Form::GetFormValue('anoReferencia');
+			$mesReferencia = $mesReferencia + 1;
+			
+			if ($mesReferencia==13)
+			{
+				$mesReferencia = 01;
+				$anoReferencia = $anoReferencia + 1;
+			}
+			if ($mesReferencia < 10) {
+				$mesReferencia = '0' . $mesReferencia;
+			}
+			$parameters['mesRelatorio'] = $mesReferencia . '/' . $anoReferencia;
+
+			if (empty($mesReferencia)) {
+				$this->addError("Selecione o mês referência do relatóio.");
+				return false;
+			} elseif (empty($anoReferencia)) {
+				$this->addError("Selecione o ano referência do relatóio.");
+				return false;
+			} else {
+				$parameters['mesRelatorio'] = '01/' . $parameters['mesRelatorio'];
+			}
+						
+			if( $parameters['int_idInstituicao'] == 0 )
+			{
+				$report->Execute($module, 'repValorDepreciadoPorItem2', $parameters);
+	        }
+			else
+			{
+				$report->Execute($module, 'repValorDepreciadoPorItem', $parameters);
+            }
+        
+			/*if (empty($parameters['int_idInstituicao'])) {
+				unset($parameters['instituicao']);
+				unset($parameters['unidade']);
+				unset($parameters['int_idInstituicao']);
+				$report->Execute($module, 'repValorDepreciadoPorContasContabeisRetrato2', $parameters);
+//            $report->Execute($module, 'repValorDepreciadoPorContasContabeis2', $parameters);
+			} else {
+				$report->Execute($module, 'repValorDepreciadoPorContasContabeisRetrato', $parameters);
+//            $report->Execute($module, 'repValorDepreciadoPorContasContabeis', $parameters);
+			}*/
+		}
+		
+	}
+	
+    public function geraMeses() {
+        global $MIOLO;
+        $meses = array(
+            1 => 'Janeiro',
+            2 => 'Fevereiro',
+            3 => 'Março',
+            4 => 'Abril',
+            5 => 'Maio',
+            6 => 'Junho',
+            7 => 'Julho',
+            8 => 'Agosto',
+            9 => 'Setembro',
+            10 => 'Outubro',
+            11 => 'Novembro',
+            12 => 'Dezembro',
+        );
+        return $meses;
+    }
+    public function geraAnos() {
+        $anos = array();
+        $anoAtual = date('Y');
+        $anoInicial = $anoAtual - 40;
+        for ($i = $anoAtual; $i >= $anoInicial; --$i) {
+            $anos[(int) $i] = (int) $i;
+        }
+        return $anos;
+    }
+}
+?>

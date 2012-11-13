@@ -1,0 +1,91 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+global $MIOLO;
+/**
+ * Use Module Control
+ */
+$MIOLO->Uses('controls/linkveiculo.class','adm');
+
+/**
+ * Formulário básico para seleção de Hotéis
+ * 
+ */
+class frmVeiculoFind extends Form
+{
+    function __construct()
+    {
+		global $MIOLO, $module;
+		
+        $this->Form('Pesquisar Veículos');
+		$this->SetClose($MIOLO->GetActionURL($module,'main:manutencao'));
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+        global $MIOLO, $action;
+
+		// Inclusão do Filtro por Tipo de Requisição
+    	$objInstituicao = $this->manager->GetBusiness('common','instituicao');
+		$instituicao = $objInstituicao->listAll();
+		while ( !$instituicao->eof() )
+		{
+			if(($instituicao->fields('ug')!='') or ($instituicao->fields('uasg')!=''))
+			{
+				$options[$instituicao->fields('idinstituicao')] = $instituicao->fields('instituicao');
+            }
+			$instituicao->moveNext();
+		}
+		$this->SetFieldAttr('idinstituicao','options', $options);
+		$controleInstituicao = array( 
+					new Text('','Instituição'),
+					new Selection('idInstituicao','','',$options) ,
+					new FormButton('btnPost', 'Enviar'));
+		$controlInstituicao = new BaseGroup('controlInstituicao','Filtragem por Instituição:',$controleInstituicao,'horizontal','css');
+
+        $ui = $MIOLO->GetUI();
+        $grid = $ui->GetGrid('adm','gridVeiculo');
+        $grid->SetTitle(NULL);
+
+        
+        $lnkNew = new LinkVeiculo('lnkNew', FALSE);
+        $lnkNew->setNew();
+        
+        $findButton = new ButtonFind('');
+        $findButton->SetName('btnFind');
+        
+        $fields = array(
+            array(
+                new Text('','Veiculo:'),
+                new TextField('veiculo','','',15),
+                $findButton,
+                $lnkNew
+            ),
+            $controlInstituicao,
+            $grid
+        );
+        $this->SetFields($fields);
+        $this->defaultButton = false;
+    }
+ }
+?>

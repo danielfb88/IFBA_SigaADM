@@ -1,0 +1,84 @@
+<?
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+MIOLO::Import('modules::rh::controls::selectionref');
+class frmVinculoReferencia extends Form
+{
+	protected $vinculo;
+	protected $provimento;
+
+	function __construct($objVinculo)
+    	{
+		$this->vinculo = $objVinculo;
+		$this->provimento = $this->vinculo->getProvimentoAtual();
+	        $this->Form('Referência');
+	        $this->EventHandler();
+	}
+	function CreateFields()
+    	{
+		global $MIOLO;
+		
+		$fields = array(
+		        new SelectionRef('refClass','','Referência')
+		);
+	        $this->SetFields($fields);
+		
+		$buttons = array(
+	            new FormButton('btnRef', 'Cadastrar Referencia')
+        	);
+		$this->SetButtons($buttons);	
+		$idGrupoCargo = $this->provimento->idGrupoCargo;
+		if ($idGrupoCargo)
+		{
+			$this->refClass->setReferencias($idGrupoCargo);
+		}
+		else
+		{
+			$MIOLO->information('Grupo Cargo inválido. Favor entrar em contato com o suporte',$this->manager->GetActionURL('rh','main:vinculo',$this->vinculo->idVinculo,array('form'=>'provimentos')));
+		}
+	}
+	function btnRef_click()
+	{
+		global $MIOLO;
+
+		$data = $this->GetData();
+		if ($data->refClass)
+		{
+		        $refClass = explode('_',$data->refClass);
+	        	$idClasse = $refClass[0];
+		        $idReferencia = $refClass[1];
+			$this->provimento->idClasse = $idClasse;
+			$this->provimento->idReferencia = $idReferencia;
+			try
+			{
+				$this->provimento->save();
+				$MIOLO->Information('Referencia atualizada com sucesso',$this->manager->GetActionURL('rh','main:vinculo',$this->vinculo->idVinculo,array('form'=>'provimentos')));
+				
+			}
+			catch ( Exception $e )
+		        {
+	        	        $this->addError($e->getMessage());
+		        }
+		}
+		else
+		{
+			$this->AddInfo("Favor, selecionar a classe");
+		}
+	}
+}
+?>

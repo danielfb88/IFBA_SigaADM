@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="DotacaoTodasXls" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="LOGO" class="java.lang.String"/>
+	<parameter name="TITULO" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="IDUSUARIO" class="java.lang.Integer"/>
+	<parameter name="ANO" class="java.lang.Integer"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA["/home/siga/WORKSPACE SIGAEPT-ADM/modulos/trunk/adm/reports/"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT TO_CHAR( AD_LANCAMENTOINT.DATA,'DD/MM/YYYY' ), iduo, sigla, idrubrica, tipolancamento, valor, cm_pessoa.nome
+from ad_uo inner join ad_lancamentoint on ( ad_uo.iduo = ad_lancamentoint.iduoreq )
+inner join cm_usuario on ( cm_usuario.idusuario = ad_lancamentoint.idusuario )
+inner join cm_pessoa on ( cm_usuario.idpessoa = cm_pessoa.idpessoa) where ano = CAST($P{ANO} AS integer) and iduo >= 0 order by sigla]]>
+	</queryString>
+	<field name="to_char" class="java.lang.String"/>
+	<field name="iduo" class="java.math.BigDecimal"/>
+	<field name="sigla" class="java.lang.String"/>
+	<field name="idrubrica" class="java.lang.String"/>
+	<field name="tipolancamento" class="java.lang.String"/>
+	<field name="valor" class="java.math.BigDecimal"/>
+	<field name="nome" class="java.lang.String"/>
+	<background>
+		<band/>
+	</background>
+	<pageHeader>
+		<band height="21">
+			<staticText>
+				<reportElement key="staticText" x="70" y="1" width="57" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Cod-UO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="127" y="1" width="140" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Sigla]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="267" y="1" width="61" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Rubrica]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="458" y="1" width="82" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="328" y="1" width="130" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Tipo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="0" y="1" width="70" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Data]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText" x="540" y="1" width="152" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Usuário]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="21" isSplitAllowed="false">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="0" y="0" width="70" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{to_char}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="127" y="0" width="140" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{sigla}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="267" y="0" width="61" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{idrubrica}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField" x="328" y="1" width="130" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tipolancamento}.equals( "1" ) ? new String( "Dotação Inicial" )
+  : $F{tipolancamento}.equals( "2" ) ? new String( "Anulação de Crédito" )
+  : $F{tipolancamento}.equals( "3" ) ? new String( "Estorno de Crédito" )
+  : $F{tipolancamento}.equals( "4" ) ? new String( "Previsão de Débito" )
+  : $F{tipolancamento}.equals( "5" ) ? new String( "Débito/Crédito" )
+  : $F{tipolancamento}.equals( "6" ) ? new String( "Estorno de Débito/Crédito" )
+  : $F{tipolancamento}.equals( "7" ) ? new String( "Retorno da Previsão de Débito" )
+  : $F{tipolancamento}.equals( "8" ) ? new String( "Complementação de Crédito" )
+  : new String( " " )]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="70" y="0" width="57" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{iduo}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="458" y="0" width="82" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{valor} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{valor} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField" x="540" y="1" width="152" height="19"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="10" pdfFontName="Times-Roman"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nome}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+</jasperReport>

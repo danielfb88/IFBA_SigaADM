@@ -1,0 +1,112 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+MIOLO::Import('modules::protocolo::controls::linkobject');
+class LinkProcesso extends LinkObject
+{
+    public function __construct($numero='', $processo)
+    {
+        global $MIOLO;
+        $MIOLO->UsesBusiness('protocolo','processo');
+        parent::__construct($numero,$processo,'documento_mini.png');
+    }
+    public function setObjectByValue($value)
+    {
+        global $MIOLO;
+        $this->object = $MIOLO->GetBusiness('protocolo','processo');
+        $this->object->GetByNumero($value);
+    }
+    public function setAction()
+    {
+        $this->hyperlink->SetAction('protocolo','main:processos',$this->object->numProcesso);
+        $this->imagelink->SetAction('protocolo','main:processos',$this->object->numProcesso);
+    }
+    public function setText()
+    {
+        $this->hyperlink->SetText($this->object->numProcessoFormatado());
+    }
+    public function setNew()
+    {
+        global $MIOLO;
+        $this->isNewLink = TRUE;
+        $this->hyperlink->SetAction('protocolo','main:processos:new');
+        $this->hyperlink->SetText('Abertura de processo');
+        $this->imagelink->SetAction('protocolo','main:processos:new');
+        $this->imagelink->image = new MImage('','',$MIOLO->GetUI()->GetImage(self::MODULE,'novo_mini.png'));
+    }
+    public function setNewVago()
+    {
+        global $MIOLO;
+        $this->isNewLink = TRUE;
+        $this->hyperlink->SetAction('protocolo','main:processos:vagos');
+        $this->hyperlink->SetText('Inserir Processo Vago');
+        $this->imagelink->SetAction('protocolo','main:processos:vagos');
+        $this->imagelink->image = new MImage('','',$MIOLO->GetUI()->GetImage(self::MODULE,'vago_mini.png'));
+    }
+    public function setConsulta()
+    {
+        global $MIOLO;
+        $this->isNewLink = TRUE;
+        $this->hyperlink->SetAction('protocolo','main:busca');
+        $this->hyperlink->SetText('Outras Consultas');
+        $this->imagelink->SetAction('protocolo','main:busca');
+        $this->imagelink->image = new MImage('','',$MIOLO->GetUI()->GetImage(self::MODULE,'find.png'));
+    }
+    public function setDocumentacao()
+    {
+        global $MIOLO;
+        $this->isNewLink = TRUE;
+        $this->hyperlink->SetAction('protocolo','main:documentos:hierarquia');
+        $this->hyperlink->SetText('Hierarquia');
+        $this->imagelink->SetAction('protocolo','main:documentos:hierarquia');
+        $this->imagelink->image = new MImage('','',$MIOLO->GetUI()->GetImage(self::MODULE,'report_mini.png'));
+    }
+    public function setProcessosAbertos()
+    {
+        global $MIOLO;
+        $this->isNewLink = TRUE;
+        $this->hyperlink->SetAction('protocolo','main:documentos:processosabertos');
+        $this->hyperlink->SetText('Processos Abertos');
+        $this->imagelink->SetAction('protocolo','main:documentos:processosabertos');
+        $this->imagelink->image = new MImage('','',$MIOLO->GetUI()->GetImage(self::MODULE,'report_mini.png'));
+    }
+    public function setProcessosSetor()
+    {	
+        global $MIOLO;
+        $this->isNewLink = TRUE;
+        $this->hyperlink->SetAction('protocolo','main:documentos:processossetor');
+        $this->hyperlink->SetText('Processos no Setor');
+        $this->imagelink->SetAction('protocolo','main:documentos:processossetor');
+        $this->imagelink->image = new MImage('','',$MIOLO->GetUI()->GetImage(self::MODULE,'report_mini.png'));
+    }
+
+    public function setProcessosExternos()
+    {	
+        global $MIOLO;
+        $this->isNewLink = TRUE;
+        $this->hyperlink->SetAction('protocolo','main:documentos:processosexternos');
+        $this->hyperlink->SetText('Processos Externos');
+        $this->imagelink->SetAction('protocolo','main:documentos:processosexternos');
+        $this->imagelink->image = new MImage('','',$MIOLO->GetUI()->GetImage(self::MODULE,'report_mini.png'));
+    }
+}
+?>

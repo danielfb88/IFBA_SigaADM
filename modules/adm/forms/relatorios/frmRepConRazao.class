@@ -1,0 +1,172 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmRepConRazao extends MForm
+{
+    	function __construct()
+    	{
+        	parent::__construct('Relatório ConRazão');
+        	$this->EventHandler();
+		$this->defaultButton = false;
+    	}
+
+    	function createFields()
+        {
+		global $MIOLO, $module, $action, $item, $theme;
+
+		$instituicao = $MIOLO->GetBusiness('common','instituicao');
+                $idinstituicao = $this->manager->GetBusiness('common','instituicao');
+                $instituicao = $idinstituicao->listAll();
+
+                $fields = array(
+                        new MTextField('ano',date('Y'),'Ano',5),
+			new MSelection ('idinstituicao','','Instituição'),
+                );
+                $this->SetFields($fields);
+
+                $this->addButton(new MButton('btnReportConRazao','Gerar Relatório', 'pdf'));
+                $this->addButton(new MButton('btnReportConRazaoXLS','Gerar Planilha', ''));
+
+		$objinst = $MIOLO->GetBusiness('common','instituicao');
+                $query = $objinst->ListRange(NULL, 'instituicao');
+		$options['0'] = 'TODAS';
+                while ( !$query->eof() )
+                {
+
+                        if(($query->fields('ug')!='') or ($query->fields('uasg')!='')){
+                              $options[$query->fields('idinstituicao')] = $query->fields('instituicao');
+                        }
+                        $query->moveNext();
+                }
+                $this->SetFieldAttr('idinstituicao','options', $options);
+
+        }
+
+        function btnReportConRazao_click()
+        {
+                global $MIOLO;
+		$instituicao = Form::GetFormValue('idinstituicao');
+                if( $instituicao == '')
+                {
+                        $this->AddError('Você deve selecionar uma Instituição');
+                }
+                else{
+
+			$ano = $this->GetFormValue('ano');
+	                $report = new MJasperReport('sigaept');
+        	        $parameters['int_pAno']   = $ano;
+			$parameters['int_pIdInstituicao'] = $instituicao;
+                	$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
+	                $parameters['pURL']          = $MIOLO->GetConf('home.url');
+        	        $parameters['int_pIdUsuario']    = $MIOLO->login->idkey;
+			if( $parameters['int_pIdInstituicao'] == 0 )
+                        {
+                                $report->Execute( 'adm', 'repConRazaoTodas', $parameters );
+                        }
+                        else
+                        {
+                                $report->Execute( 'adm', 'repConRazao', $parameters );
+                        }
+		}
+        }
+
+        function btnReportConRazaoXLS_click()
+        {
+                global $MIOLO;
+		$instituicao = Form::GetFormValue('idinstituicao');
+		if( $instituicao == '')
+                {
+                        $this->AddError('Você deve selecionar uma Instituição');
+                }
+                else
+		{
+			$ano = $this->GetFormValue('ano');
+	                $report = new MJasperReport('sigaept');
+        	        $parameters['int_pAno']   = $ano;
+			$parameters['int_pIdInstituicao'] = $instituicao;
+                	$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
+	                $parameters['pURL']          = $MIOLO->GetConf('home.url');
+        	        $parameters['int_pIdUsuario']    = $MIOLO->login->idkey;
+               		
+			if( $parameters['int_pIdInstituicao'] == 0 )
+			{
+                        	$report->Execute( 'adm', 'repConRazaoTodasXls', $parameters,null,'xls' );
+	                }
+			else
+			{
+		                $report->Execute( 'adm', 'repConRazaoXls', $parameters,null,'xls' );
+                	}
+ 
+		}
+        }
+
+/*	function CreateFields()
+    {
+		global $MIOLO, $module, $action, $item, $theme;
+
+		$fields = array(
+			new MTextField('ano',date('Y'),'Ano',5),
+		);
+		$this->SetFields($fields);
+
+		$buttons = array(
+			new MButton('btnPost','Gerar Relatório','PDF'),
+			new MButton('btnGerarCSV','Gerar Planilha')        
+		);
+		$this->SetButtons($buttons);
+	}
+
+    function btnPost_click()
+    {
+		global $MIOLO, $module, $item;
+
+		$ui = $MIOLO->GetUI();
+        $report = $ui->GetReport($module,'repConRazao');
+        $report->Generate();
+	}
+	
+	function btnGerarCSV_click()
+	{
+		$orcamento = $this->manager->getBusiness('adm','orcamento');
+        $ano = $this->GetFormValue('ano');
+        
+        	
+		$consulta = $orcamento->ListByAno($ano);		
+
+        if ( is_array($consulta->result) )
+     	{
+    		$resultAux[] = array('PTR','FONTE','RUBRICA', 'ESFERA','CRED. DISP.','EMPENHADO','SALDO');
+    		foreach ($consulta->result as $result)		  
+	    	{
+	    		$resultAux[] = array($result[0],$result[1],$result[2],$result[3],$result[4],$result[5],$result[6] );		
+	    	}
+    	}
+    	else 
+    	{
+    		$consulta->result[] = ""; 
+    	}   
+			    
+	    $consulta->result = $resultAux;
+		$consulta->getCSV("Relatório com Razão: $ano");	
+	}*/
+}
+?>

@@ -1,0 +1,197 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+/*
+* Classe Almoxarifado
+* Classe utilizada para o controle de almoxarifados.
+* @author Equipe UKB Sistemas
+* @package ADM
+* @subpackage class
+*/
+class BusinessAdmAlmoxarifado extends Business
+{
+	var $idalmoxarifado;
+	var $descricao;
+	/* ---------------------------------------
+
+	Construtor()
+
+	----------------------------------------*/
+	function __construct($data=null)
+	{
+		$this->GetDatabase('sigaept');
+		if ($data)
+		{
+			$this->SetData($data);
+		}
+	}
+	/* ---------------------------------------
+
+	Método SetData()
+
+	----------------------------------------*/
+	function SetData($data)
+	{
+		$this->idalmoxarifado = $data->idalmoxarifado;
+		$this->descricao = strtoupper($data->banco);
+	}
+	/* ---------------------------------------
+
+	Método GetById()
+
+	----------------------------------------*/
+	function GetById($idalmoxarifado)
+	{
+		$sql = new sql();
+		$sql->SetColumns('
+			t.idalmoxarifado,
+			t.descricao
+		');
+		$sql->SetTables('
+			ad_almoxarifado t
+		');
+		$sql->SetWhere('t.idalmoxarifado = ?');
+		$query = $this->objQuery($sql->select($idalmoxarifado));
+		if ($query)
+		{
+			$this->idalmoxarifado = $query->fields('idalmoxarifado');
+			$this->descricao = $query->fields('descricao');
+		}
+		return $this;
+	}
+	/* ---------------------------------------
+
+	Método Insert()
+
+	----------------------------------------*/
+	function Insert()
+    {
+		$sql = new sql();
+		$sql->SetColumns('
+			t.idalmoxarifado,
+			t.descricao
+		');
+		$sql->SetTables('
+			ad_almoxarifado
+		');
+		$values = array(
+			$this->idalmoxarifado,
+			$this->descricao
+		);
+		$ok = $this->Execute($sql->Insert($values));
+		return $ok;
+    }
+	/* ---------------------------------------
+
+	Método Update()
+
+	----------------------------------------*/
+	function Update()
+    {
+    	$sql = new sql();
+		$sql->SetColumns('
+			t.idalmoxarifado,
+			t.descricao
+		');
+		$sql->SetTables('
+			ad_almoxarifado t
+		');
+		$sql->SetWhere('t.descricao = ?');
+        $values = array($this->descricao);
+		$ok = $this->Execute($sql->Update($values));
+		return $ok;
+	}
+	/* ---------------------------------------
+
+	Método Delete()
+
+	----------------------------------------*/
+	function Delete()
+    {
+		$values = array($this->idalmoxarifado);
+		$sql = new sql();
+		$sql->SetTables('
+			ad_almoxarifado
+		');
+		$sql->SetWhere('idalmoxarifado = ?');
+		$ok = $this->Execute($sql->Delete($args));
+		return $ok;
+    }
+	/* ---------------------------------------
+
+	Método ListRange()
+
+	----------------------------------------*/
+	function ListRange(&$range)
+	{
+		$sql = new sql();
+		$sql->SetColumns('
+			t.idalmoxarifado,
+			t.descricao
+		');
+		$sql->SetTables('
+			ad_almoxarifado t
+		');
+		$sql->SetOrderBy('t.idalmoxarifado');
+		$query = $this->objQueryRange($sql->select(),$range);
+		return $query;
+	}
+	/* ---------------------------------------
+
+	Método ListAll()
+
+	----------------------------------------*/
+	function ListAll()
+	{
+		$sql = new sql();
+		$sql->SetColumns('
+			idsetor,
+			nomesetor
+		');
+		$sql->SetTables('
+			cm_setor
+		');
+		$sql->SetWhere("upper(tiposetor) = 'ALMOXARIFADO'");
+		$query = $this->objQuery($sql->select());
+		return $query;
+	}
+	/* ---------------------------------------
+
+	Método CountWhere()
+
+	----------------------------------------*/
+	function CountWhere($where='')
+	{
+		$sql = ' select * from ad_almoxarifado ';
+		if (is_array($where))
+		{
+			$sql .= " where ";
+            foreach($where as $w)
+            {  
+		 		$sql .= key($w) . " = ? ";
+				$sql = $this->Prepare($sql, $w);
+            }
+		}
+		return $this->db->Count($sql);
+	}
+}
+?>

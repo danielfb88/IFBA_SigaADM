@@ -1,0 +1,194 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+MIOLO::Import('modules::protocolo::controls::linkprocesso');
+class frmProcessosFind extends MForm
+{
+	protected $processo;
+	protected $setoracesso;
+	protected $setor;
+	protected $perms;
+
+	function __construct()
+	{
+		global $MIOLO;
+		$this->processo = $MIOLO->getBusiness('protocolo','processo');
+		$this->setoracesso = $MIOLO->getBusiness('protocolo','setoracesso');
+		$this->setor = $MIOLO->getBusiness('protocolo','setor');
+		$this->perms  = $MIOLO->getPerms();
+		parent::__construct('Pesquisa de processos');
+		$this->SetClose($this->manager->GetActionURL('protocolo','main'));
+		$this->eventHandler();
+	}
+
+	function CreateFields()
+	{
+
+		//      grid
+		$grid = $this->manager->GetUI()->GetGrid('protocolo','gridProcessos');
+		$grid->SetTitle(NULL);
+
+		//      busca de processos
+		$btnFind = new ButtonFind('btnBusca');
+
+		$busca  = Form::GetFormValue('busca');
+		if (!$buscaPor = Form::GetFormValue('buscaPor')) $buscaPor = 'numProcesso';	
+		$formBusca = new MThemeBox('&nbsp;&nbsp;Busca de processos', 
+			array(
+				    new MTextField('busca',$busca,'',58),
+				    new ButtonFind(''),
+			)
+		);
+		$formBusca->width = '72%';
+		$formBusca->float = 'left';
+		$formBusca->padding = '6px';
+		$formBusca->height = '50px';
+
+		//      menu		
+		$novo = new LinkProcesso('lnkNovo',FALSE);
+		$novo->setNew();
+
+
+		// IFRJ
+		if (($this->perms->checkAccess('PROT_ADMIN', A_ACCESS)) || ($this->perms->checkAccess('PROT_PT', A_ACCESS)) || ($this->perms->checkAccess('PROT_PC', A_ACCESS))) {
+
+		$linkNovo = array($novo,new MSpacer('5px'));
+
+		}  // IFRJ
+
+		$vago = new LinkProcesso('lnkVago',FALSE);
+		$vago->setNewVago();
+		$linkVago = ($this->perms->checkAccess('PROT_ADMIN', A_ACCESS)) ? array($vago,new MSpacer('5px')) : null;
+		$consulta = new LinkProcesso('lnkConsulta',FALSE);
+		$consulta->setConsulta();
+		$linkConsulta = array($consulta,new MSpacer('5px'));
+		$documentacao = new LinkProcesso('lnkDocumentacao',FALSE);
+		$documentacao->setDocumentacao();
+		$linkDocumentacao = array($documentacao,new MSpacer('5px'));
+
+		$processosabertos = new LinkProcesso('lnkProcessosAbertos',FALSE);
+		$processosabertos->setProcessosAbertos();
+		$linkProcessosAbertos = array($processosabertos,new MSpacer('5px'));
+
+		$processossetor = new LinkProcesso('lnkProcessoSetor',FALSE);
+                $processossetor->setProcessosSetor();
+
+		$processoexterno = new LinkProcesso('lnkProcessoExterno', FALSE);
+		$processoexterno->setProcessosExternos();
+	
+		$linkProcessoSetor = array($processossetor, new Spacer('5px'));
+		
+		$formLink = new MThemeBox('&nbsp;&nbsp;Outras opções',
+			array($linkNovo,$linkVago,$linkDocumentacao,$linkProcessosAbertos, $linkProcessoSetor, $processoexterno)
+		);
+
+		$formLink->width = '24%';
+		$formLink->float = 'right';
+		$formLink->padding = '6px';
+		$formLink->height = '195px';
+		
+		//      listagem de processos
+
+		$opcoes = array(
+			"entrada"=>"aguardando entrada",
+			"saida"=>"aguardando saída/decisão",
+			"anexado"=>"anexado",
+			"arquivado"=>"arquivado",
+			"apensado"=>"apensado",
+		);
+
+		$perms = $this->perms->checkAccess('PROT_ADMIN', A_ACCESS);
+
+		if(!$lista = Form::GetFormValue('lista')){
+			$lista = 'entrada';
+		}
+		
+		if ((!$listaPor = Form::GetFormValue('listaPor')) && (!$perms) ){
+			$listaPor = $this->processo->getSetorUsuario();
+		}
+
+		if (!in_array($this->processo->getSetorUsuario(),$this->setor->selAll()) and ($perms))
+		{
+			$this->addError('Você está lotado em um setor inválido. Por favor, procure o CGCO.');
+		}
+
+		$setores = ($perms)  ? $this->setor->selAll() : $this->setoracesso->selSetoresAcesso($this->processo->getSetorUsuario());
+
+		if( Form::GetFormValue('filtrar') == 'S' ){
+			$filtrar = true;
+		}else{
+			$filtrar = false;
+		}
+		
+		if( Form::GetFormValue('acompanhar') == 'S' ){
+			$acompanhar = true;
+		}else{
+			$acompanhar = false;
+		}
+
+		if( strlen(trim(Form::GetFormValue('dataIni'))) == 10 ){
+			$dataIni = Form::GetFormValue('dataIni');
+		}else{
+			$dataIni = '';
+		}
+
+
+		$formListar = new MThemeBox('&nbsp;&nbsp;Filtrar processos', 
+			array(
+				new MCheckBox('filtrar','S','Filtrar processos?',$filtrar,'Filtrar processos ?'),	
+				new MSpacer(2),	
+				new MText('','Situação'),
+				new MSelection('lista',$lista,'',$opcoes),
+				new MText('','no setor'),
+				new MSelection('listaPor',$listaPor,'',$setores),
+				new MSpacer(1),
+				new MText('','criado em'),
+				new CalendarField('dataIni',$dataIni,'Início',10),
+				new MText('','&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'),
+				new MCheckBox('acompanhar','S','Acompanhar processos?',$acompanhar,'Acompanhar processos?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'),
+				
+			)
+		);
+
+		$formListar->float = 'left';
+		$formListar->padding = '6px';
+		//$formListar->height = '120px';
+		$formListar->width = '72%';
+
+		//      fields
+		$fields = array(
+			new Spacer('5px'),
+			$formBusca,
+			$formLink,
+			$formListar,
+			$grid,
+		);
+		$this->SetFields($fields);
+
+		//      buttons
+		$this->defaultButton = false;
+
+		// Define o campo a ser focado        
+		$this->page->onLoad("MIOLO_GetElementById('busca').focus();");
+	}
+}
+?>

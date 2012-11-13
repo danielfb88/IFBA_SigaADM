@@ -1,0 +1,93 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+/**
+ * Listing Bolsista
+ * @package br.org.miolo.ufjf.adm.listing
+ */
+class lstBolsista extends DataGrid2
+{
+	/**
+	 * Base URL
+	 * @var string 
+	 */
+	var $listURL;
+
+	/**
+	 * Constructor
+	 */
+	function lstBolsista()
+	{
+		global $MIOLO, $module, $page, $context, $self, $action, $perms, $state, $theme,$item;
+	
+		/*
+		$vaux = explode('_',$item);
+		$idpessoa = $vaux[0];
+		$idbolsista = $vaux[1];
+		*/
+		$idpessoa = $item;
+		
+		$this->listURL = $MIOLO->GetActionURL($module,$self);
+		
+		$objBolsista = $MIOLO->GetBusiness($module,'bolsista');
+		
+		$query = $objBolsista->ListBolsistas($idpessoa,'ativos');
+
+		$columns = array(
+			new DataGridColumn('idbolsista','Id','right', true, '0%',false),
+			new DataGridColumn('nome','Nome','left', true, '50%',true, null, false,true),
+			new DataGridColumn('datainclusao','Inclusao','left',true, '20%',true, null, false,true),
+			new DataGridColumn('bolsa','Bolsa','left', true, '30%',true, null, false,true),
+		);
+		
+		$datagrid = new Grid($query->result, $columns, $this->listURL,20,0);
+
+		$datagrid->SetTitle('Bolsistas');
+		
+		//$datagrid->SetRowMethod('lstBolsista', 'MyRowMethod');
+
+		$href_edit = $MIOLO->GetActionURL($module,'main:bolsista','%0%', array('event'=>'btnEdit:click'));
+		//$href_dele = $MIOLO->GetActionURL($module,'bolsista','%0%', array('event'=>'btnDelete:click'));
+
+		//$datagrid->AddActionDelete($href_dele);
+
+		$datagrid->HeaderLink('inicio', 'Formulário Inicial',$MIOLO->GetActionURL($module,'main:bolsista'));
+		
+		$datagrid->AddActionUpdate($href_edit);
+		$datagrid->HeaderLink('novo', 'Novo Registro Bolsista',$MIOLO->GetActionURL($module,'main:bolsista','',Array('event'=>'btnPreparaNovo:click','item'=>$idpessoa)));
+		$datagrid->HeaderLink('inativos', 'Registros Inativos',$MIOLO->GetActionURL($module,'main:listabolsistainativo',$idpessoa));
+		
+		$MIOLO->theme->InsertContent($datagrid);
+	}
+
+/**
+	function MyRowMethod($row, $actions, $columns, $fieldpos)
+	{
+		var_dump($row);
+		var_dump($actions);
+		var_dump($columns);
+		var_dump($fieldpos);
+		echo '<br>---++++++++++-----<br>';
+	}
+**/
+}
+?>

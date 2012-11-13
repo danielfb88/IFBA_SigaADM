@@ -1,0 +1,83 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+global $MIOLO;
+class gridUoAlmoxarifadoEntradaMaterialRequisicoes extends MGrid
+{
+    function __construct($itemNota)
+    {
+        global $MIOLO, $page, $action, $item;
+		$cf = new MCurrencyFormatter();
+        $itemNota->getItensReq();
+        foreach ($itemNota->empenhado->itemreq as $itemRequisicao)
+        {
+            $itemRequisicao->getUoRequisitante();
+            $dados[$itemRequisicao->idRequisicao][0] = $itemRequisicao->idRequisicao;
+            $dados[$itemRequisicao->idRequisicao][1] = $itemRequisicao->idMaterial;
+            $dados[$itemRequisicao->idRequisicao][2] = $itemRequisicao->requisicao->uoRequisitante->nome;
+            $dados[$itemRequisicao->idRequisicao][3] = $cf->toDecimal($itemRequisicao->quantEmpenhada);
+            $dados[$itemRequisicao->idRequisicao][4] = ($cf->toDecimal($itemRequisicao->quantAutorizada)) ? $cf->toDecimal($itemRequisicao->quantAutorizada) : 0; 
+        }
+        $href = $MIOLO->getActionUrl('adm',$self,$item,array("form"=>"entradamaterial","idEmpenho"=>Form::getFormValue('idEmpenho'),"idNotaFiscal"=>$itemNota->idNotaFiscal,"idItemNota"=>$itemNota->idItemNota,"idRequisicao"=>"#0#","idMaterial"=>"#1#"));
+        if ($itemNota->isContabilizado())
+        {
+            $columns = array(
+                new MGridColumn('Requisição','center',false,'12%',true),
+                new MGridColumn('idMaterial','left',false,'',false),
+                new MGridHyperlink('UO Requisitante',$href,'64%'),
+                new MGridColumn('Quantidade Empenhada','center',true,'12%'),
+                new MGridColumn('Quantidade Entregue','center',true,'12%'),
+            );
+        }
+        else
+        {
+            $quantAutorizada = new MTextField('quantAutorizada[%0%]','','','4');
+            $columns = array(
+                new MGridColumn('Requisicao','center',false,'12%',true),
+                new MGridColumn('idMaterial','left',false,'',false),
+                new MGridHyperlink('UO Requisitante',$href,'center',true,'52%'),
+                new MGridColumn('Quantidade Empenhada','center',true,'12%'),
+                new MGridColumn('Quantidade Entregue','center',true,'12%'),
+                new MGridControl($quantAutorizada,'Quantidade Autorizada','center','12%'),
+            );
+        }
+        $this->SetFilter(false);
+        parent::__construct($dados,$columns,$action,25);
+        if (!$itemNota->isContabilizado()) $this->setRowMethod('gridUoAlmoxarifadoEntradaMaterialRequisicoes','rowMethod');
+        $this->SetLinkType('hyperlink');
+    }
+    function GenerateHeader()
+    {
+        return null;
+    }
+    function GenarateFooter()
+    {
+        return null;
+    }
+    function rowMethod($i,$row,$actions,$columns)
+    {
+        if ($row[3] == $row[4])
+        {
+            $columns[5]->control[$i]->setAttribute('readonly',true);
+        }
+    }
+}

@@ -1,0 +1,76 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class BusinessAdmOrcamentoHist extends Business
+{
+    var $idOrcamento;
+    var $data;
+    var $tipoOrc;
+    var $valor;
+    var $tipoOrcDescricao;
+    var $orcamento;
+
+    function __construct($data = null)
+    {
+        parent::__construct('sigaept',$data);
+    }
+
+    function OnCreate($data)
+    {
+        if (!empty($data))
+        {
+            $this->GetById($data);
+        }
+    }
+
+    function GetById($idOrcamento)
+    {
+        $this->idOrcamento = $idOrcamento;
+        $this->retrieve();
+        return $this;
+    } 
+
+    function ListByClassOrcamentaria($ano,$ptr,$esfera,$fonte,$rubrica)
+    {
+        $criteria = $this->getCriteria();
+        $criteria->AddColumnAttribute('idOrcamento');
+        $criteria->AddColumnAttribute('orcamento.ano','ano');
+        $criteria->AddColumnAttribute('orcamento.ptr.idPtr','ptr');
+        $criteria->AddColumnAttribute('orcamento.fonte.idFonte','fonte');
+        $criteria->AddColumnAttribute('orcamento.idRubrica','idRubrica');
+        $criteria->AddColumnAttribute('orcamento.rubrica.descricao','rubrica');
+        $criteria->AddColumnAttribute('data');
+        $criteria->AddColumnAttribute('tipoOrc');
+        $criteria->AddColumnAttribute('tabelaGeral.item2','tipoOrcDescricao');
+        $criteria->AddColumnAttribute('valor');
+        $criteria->AddColumnAttribute('orcamento.esfera');
+        $criteria->addCriteria('tabelaGeral.tabela','=',"'AD_TIPOORC'");
+        $criteria->addCriteria('orcamento.ano','=', $ano);
+        $criteria->addCriteria('orcamento.ptr.idPtr','LIKE', "$ptr");
+        $criteria->addCriteria('orcamento.fonte.idFonte','LIKE', "$fonte");
+        $criteria->addCriteria('orcamento.rubrica.idRubrica','LIKE', "$rubrica");
+        $criteria->addCriteria('orcamento.esfera','LIKE', "$esfera");
+        $criteria->addOrderAttribute('idOrcamento');
+        return $criteria->retrieveAsQuery();
+    }
+}
+?>

@@ -1,0 +1,302 @@
+<?
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+MIOLO::Import('extensions::class.phpmailer.php','PHPMailer');
+class frmPatrimonioTransferirBloco extends MForm
+{
+
+	protected $objPatrimonio;
+	protected $perms;
+	
+    function __construct($objPatrimonio)
+    {
+		global $MIOLO,$module,$action,$item;
+		
+		$this->objPatrimonio = $objPatrimonio;
+		$this->perms  = $MIOLO->getPerms();
+        parent::__construct('Transferir Itens em Bloco');
+		$this->SetClose(null);
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+		global $MIOLO, $action, $module, $item;
+		$ui = $MIOLO->GetUI();
+        $grid = $ui->GetGrid( 'adm', 'gridItensPatrimonioSelection' );
+        $grid->SetTitle(NULL);
+		$tabelaGeral = $MIOLO->GetBusiness( 'common', 'tabelageral' );
+		$options = $tabelaGeral->ListByTabela( 'AD_MOTIVOBAIXAPAT' );
+
+		$objSetor = $this->manager->GetBusiness( 'common', 'setor' );                
+		$optionSetores= $objSetor->listAll();	
+
+		
+		$fields = array
+			(
+				$grid,
+				new MSpacer(1),
+				new MLookupTextField('setor','','Setor de Destino',50),
+				new MHiddenField('idSetor'),
+				new MLookupTextField('dependencia','','Dependência de Destino',50),
+				new MHiddenField('idDependencia'),
+				new MCalendarField('dataMovimento',date('d/m/Y'),'Data',20),
+			);
+		
+        $this->SetFields($fields);
+		$this->SetFieldAttr('setor','module','common');
+		$this->SetFieldAttr('setor','item','setor');
+		$this->SetFieldAttr('setor','related','idSetor,setor');
+		$this->SetFieldAttr('dependencia','module','adm');
+		$this->SetFieldAttr('dependencia','item','dependencia');
+		$this->SetFieldAttr('dependencia','related','idDependencia,dependencia');
+		$this->SetFieldAttr('dependencia','filter','dependencia,idSetor,setor');
+
+		$buttons = array
+			(
+        	   new MButton('btnSalvar', 'Transferir')
+            );
+		$this->SetButtons($buttons);
+
+		 /*	$validators = array
+			(
+				new MRequiredValidator('idSetor'),
+				new MRequiredValidator('setor'),
+		    );
+		$this->SetValidators($validators);  */
+    }
+
+	public function btnSalvar_click()
+	{
+		global $MIOLO;
+
+		$selected = $this->GetFormValue('select');
+		$countItens = 0;
+	    foreach ($selected as $item) //conta qtas itens foram selecionadas
+        { 
+			$countItens++;
+    	}
+
+		$data = $this->getData();
+		if($countItens == 0)
+        {       
+            $this->addError("Você deve selecionar quais itens deseja dar baixa.");
+        }
+		elseif($data->setor == '' || $data->idSetor == '')
+		{
+			$this->addError("O setor deve ser selecionado. Utilize a lupa.");
+		}
+		elseif($data->dataMovimento == '')
+		{
+			$this->addError("A data deverá ser informada.");
+		}
+		else
+		{
+		
+        /*  IFRO - Alan de Oliveira Silva
+            Controle de Acesso de usuários no Patrimônio
+            -- Inicio --
+        */
+        
+		    $setor = $MIOLO->GetBusiness('common','setor');
+		    $user  = $MIOLO->GetBusiness('common','usuario');   		
+		    $usuario = $user->GetByLogin($MIOLO->login->id);
+		    $instituicao_usuario = $setor->getById($usuario->idSetor)->idinstituicao;	      
+        // --Fim-- 
+        
+			$dependenciaOrigem = $this->objPatrimonio->idDependencia;
+
+			$movimentoPat = $this->manager->GetBusiness('adm','movimentopat');
+			$novoIdNumeroTermo = $movimentoPat->GetTermoFormatado($movimentoPat->GetNextIdTermo());
+
+			$dadosItens = "<table border = 1><tr><td>Número de Patrimônio</td><td>Descrição</td><td>Setor de Origem</td><td>Setor de Destino</td></tr>";
+			$dadosEmail = array();
+			$instituicoes = array();
+			$setores = array();
+			try
+			{		
+				$numItens = 0;
+				$itens = "";	
+				foreach($selected as $sel)
+				{
+					$itens .= $sel.',';
+					$numItens++;
+					$objPatrimonioBloco = $this->manager->GetBusiness( 'adm','itempatrimonio' );
+					$objPatrimonioBloco->GetById( $sel );
+					$instituicao_patrimonio = $objPatrimonioBloco->idSetor;	 
+					$dependencia_origem = $objPatrimonioBloco->idDependencia;
+					$objPatrimonioBloco->SetData( $this->GetData() );
+
+			   		if ($instituicao_usuario == $instituicao_patrimonio || $this->perms->checkAccess('ADM_PATRIMONIOADMIN', A_EXECUTE)) {
+     
+						$movimentoPat = $this->manager->GetBusiness('adm','movimentopat');
+						$novoIdNumeroTermo = $movimentoPat->GetTermoFormatado($movimentoPat->GetNextIdTermo());
+
+						$objPatrimonioBloco->idDependencia = ($data->idDependencia) ? ($data->idDependencia) : null;
+
+						$movimentoPat->numeroTermo = $novoIdNumeroTermo . '/' . date('Y');
+						$movimentoPat->tipoMovimento = '2';
+						$movimentoPat->idItemPatrimonio = $objPatrimonioBloco->idItemPatrimonio;
+						$movimentoPat->idSetorOrigem = $instituicao_patrimonio;
+						$movimentoPat->idSetorDestino = $data->idSetor;
+						$movimentoPat->idDependenciaOrigem = $dependencia_origem;
+						$movimentoPat->idDependenciaDestino = ($data->idDependencia) ? ($data->idDependencia) : null;
+						$movimentoPat->dataMovimento = $data->dataMovimento;
+
+						$objPatrimonioBloco->save();
+						$movimentoPat->save();
+						// Pega o setor de origem e de destino para que possa obter os e-mails
+						$setorOrigem = $MIOLO->GetBusiness('common','setor', $movimentoPat->idSetorOrigem);
+						$setorDestino = $MIOLO->GetBusiness('common','setor', $movimentoPat->idSetorDestino);
+						if ($setorOrigem->idinstituicao != $setorDestino->idinstituicao)
+						{
+							$encontrouSetorOrigem = false;
+							$encontrouSetorDestino = false;
+							foreach ($instituicoes as $i)
+							{
+								if($setorOrigem->idinstituicao == $i)
+									 $encontrouSetorOrigem = true;
+								if($setorDestino->idinstituicao == $i)
+									 $encontrouSetorDestino = true;
+								if($encontrouSetorOrigem && $encontrouSetorDestino)
+									break;
+							}
+							if($encontrouSetorOrigem == false)
+							{
+								$dadosOrigem = $setorOrigem->getDadosResponsavel();
+								$dadosEmail[] = $dadosOrigem->result[0];
+							}
+							if($encontrouSetorDestino == false)
+							{
+								$dadosDestino = $setorDestino->getDadosResponsavel();
+								$dadosEmail[] = $dadosDestino->result[0];
+							}				
+							
+							$dadosItens .= "<tr><td>$objPatrimonioBloco->idItemPatrimonio</td><td>$objPatrimonioBloco->descricao</td><td>$setorOrigem->sigla</td><td>$setorDestino->sigla</td></tr>";
+							$encontrouOrigem = false;
+							$encontrouDestino = false;
+							foreach ($instituicoes as $i)
+							{
+								if($setorOrigem->idinstituicao == $i)
+									 $encontrouOrigem = true;
+								if($setorDestino->idinstituicao == $i)
+									 $encontrouDestino = true;
+								if($encontrouOrigem && $encontrouDestino)
+									break;
+							}
+							if($encontrouOrigem == false)
+								$instituicoes[] = $setorOrigem->idinstituicao;
+							if($encontrouDestino == false)
+								$instituicoes[] = $setorDestino->idinstituicao;
+						}
+						$objPatrimonioBloco->Log(OP_UPD,"Item transferido: " . $objPatrimonioBloco->idItemPatrimonio);
+
+					}else {
+						$msg = 'Este usuário não tem permissão para acessar este Patrimonio';
+						$this->manager->Information($msg,$this->manager->GetActionURL('adm','main:patrimonio'));
+					}
+				}
+				$dadosItens .= "</table>";
+				// Pega instituição para que possa pegar os dados das pessoas que tem acesso ao patrimônio
+				$instituicao = $MIOLO->GetBusiness('common','instituicao');
+				if (count($dadosEmail) != 0)
+				{
+					// Guarda os dados que serão utilizados no envio de e-mails em um único array
+					foreach($instituicoes as $i)
+					{
+						$dadosPatrimonio = $instituicao->getPessoasAcessoPatrimonio($i);
+						foreach ($dadosPatrimonio->result as $d)
+						{
+							$dadosEmail[] = $d;
+						}
+					}
+					// Envio de e-mail avisando os usuário responsável pelos setores, juntamente 
+					// com as pessoas que tem acesso ao patrimônio
+					$dataMail = date("d/m/y");
+					$horaMail = date("H:i");				
+					$setor = $this->manager->getBusiness('common','setor');
+					$setor->getById($user->idSetor);
+					$instituicao = $this->manager->getBusiness('common','instituicao');
+					$instituicao->getById($setor->idinstituicao);
+					foreach ($dadosEmail as $e)
+					{
+						$mail = new PHPMailer();
+						$mail->IsSMTP(); // send via SMTP
+						$mail->Host = $MIOLO->getConf('mail.host');
+						$mail->SMTPAuth = $MIOLO->getConf('mail.auth');
+						$mail->Username = $MIOLO->getConf('mail.user');
+						$mail->Password = $MIOLO->getConf('mail.pass');
+						$mail->From = $MIOLO->getConf('mail.from');
+						$mail->FromName = "SIGA - Sistema Integrado de Gestão Acadêmica";
+						$mail->AddAddress($e[1]);
+						$mail->Port = $MIOLO->getConf('mail.port');
+						$mail->WordWrap = 50;
+						$mail->IsHTML(true);
+						$mail->Subject = "SIGA-ADM(7) - TRANSFERÊNCIA DE ITENS PATRIMONIAIS";
+						$mail->ssl = $MIOLO->getConf('mail.ssl');
+						$mail->Body = "
+								<center><h1>TRANSFERÊNCIA DE ITENS PATRIMONIAIS</h1></center>
+								<br /><br />Prezado(a) Sr(a) {$e[0]},
+								<br /><br />Houve transferência dos seguintes itens:
+								<br /><br />{$dadosItens}
+								<br /><br /><b>Data: </b>{$dataMail}										
+								<br /><b>Hora: </b>{$horaMail}						
+								<br /><br /><b>Para maiores informações acesse: </b>{$MIOLO->getConf('home.url')}
+								<br /><br />Atenciosamente,
+								<br /><br />{$instituicao->nome} - {$instituicao->instituicao}						
+								<br /><br /><b><font color=\"RED\"> Observação: Este email foi enviado automaticamente, não é necessário responder. </font></b>
+						";								
+						$mail->Send();
+					}
+				}
+				
+				$itens = substr($itens, 0, -1);			
+				$action_voltar = $this->manager->getActionURL('adm','main:transferirbloco','','');
+				$action_rep = $this->manager->getActionURL('adm','main:transferirbloco','', array("itens"=>$itens, "numItens"=>$numItens, "idSetor"=>$data->idSetor, "dataTransferencia"=>$data->dataMovimento, "event"=>"btnConfirma_click"));
+				$this->manager->Confirmation("Itens transferidos com sucesso. Exibir relatório da transferência?",$action_rep, $action_voltar);
+			}
+			catch (Exception $e)
+			{
+				$this->addError($e->getMessage());
+			}
+		}
+		
+	}
+
+	function btnConfirma_click()
+	{
+		$itens = $this->getFormValue('itens');
+		$numItens = $this->getFormValue('numItens');
+		$idSetor = $this->getFormValue('idSetor');
+		$dataTransferencia = $this->getFormValue('dataTransferencia');
+
+		global $MIOLO, $module, $item;
+		$report = new MJasperReport('sigaept');
+		$parameters['SUBREPORT_DIR']    = $MIOLO->GetConf('home.modules');
+		$parameters['int_pIdSetor']   = $idSetor;
+		$parameters['int_pIdUsuario']   = $MIOLO->login->idkey;
+		$parameters['itens'] = $itens;
+		$parameters['int_numItens'] = $numItens;
+		$parameters['dataTransferencia'] = $dataTransferencia;
+		$parameters['pURL'] = $MIOLO->GetConf('home.url');
+		$report->Execute($module, 'repItensTransferidos', $parameters);		
+	}
+
+ }
+?>

@@ -1,0 +1,448 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+class repConviteEquipamento extends MPDFReport
+{
+    var $img;
+    var $timestamp;
+    var $licitacao;
+    var $idFornecedor;
+
+    function __construct($arr)
+    {
+        global $MIOLO, $module, $page, $context, $self, $action, $perms;
+        
+        $licitacao = $arr[0];
+        $idFornecedor = $arr[1];
+       
+        $modalidadeLicitacao = $MIOLO->getBusiness('adm','modalidadelicitacao');        
+        $modalidadeLicitacao = $modalidadeLicitacao->getById($licitacao->idModalidadeLicitacao);
+        
+        $ui = $MIOLO->GetUI();
+        $this->img = $ui->GetImageSrc('logonet.png','adm');
+
+        // apenas uma coluna
+        $column = new MPDFReportColumn('text', 'Text', 'full');
+
+        // gera o array de dados
+//       for ($i = 0; $i < 2; $i++)
+//       {
+                 $data[][0] = "                                                   <b>COORDENADORIA DE SUPRIMENTOS</b>"
+                             ."
+
+
+ CONVITE Nº<b> ".$licitacao->numero." </b>" 
+                             . "
+ <b>Tipo</b>: ".$modalidadeLicitacao->descricao
+                             . "
+
+"."<b>1.  ENTREGA DAS PROPOSTAS:</b>"
+                             . "
+
+"."          Diretoria de Logistica - Protocolo"
+                             . "
+"."          (de 8:30 às 11:00 e de 14:00 às 17:00 horas)"
+                             . "
+"."          Campus Universitario/UFJF - Martelos"
+                             . "
+"."          Juiz de Fora - MG"
+                             . "
+
+"."          <b>ABERTURA:</b>"
+                             . "
+"."          <b>Dia     : </b>".substr($licitacao->dataAbertura,0,10)
+                             . "
+"."          <b>Horário : </b>".substr($licitacao->dataAbertura,11,5)
+                             . "
+"."          <b>Sala    : </b> Diretoria de Logistica - Coordenadoria de Suprimentos"
+                             . "
+
+"."          <b>OBS</b> : Caso seja decretado feriado nacional, estadual ou municipal no dia"
+                             . "
+"."          previsto para a abertura a mesma ficará automaticamente transferida para o"
+                             . "
+"."          primeiro dia útil seguinte, no mesmo horário"
+                             . "
+
+"."<b>2. OBJETO DA LICITAÇÃO:</b>"
+                             . "
+
+"."        2.1. Aquisição de equipamento, conforme quantidades e especificações"
+                             . "
+
+"."<b>3. DO AMPARO LEGAL:</b>"
+                             . "
+
+"."        3.1. Lei nº 8.666 de 21.junho.1993 e demais normas pertinentes.."
+                             . "
+
+"."<b>4. CONDIÇÕES PARA PARTICIPAR:</b>"
+                             . "
+
+"."        4.1 As empresas deverão estar cadastradas no SICAF."
+                             . "
+
+"."             4.1.1 A regularidade do cadastramento do licitante inscrito no"
+                             . "
+"."             SICAF, será confirmada por meio de consulta 'ON-LINE', no ato de"
+                             . "
+"."             abertura da licitação."
+                             . "
+
+"."             4.1.2 A não regularidade do cadastramento do licitante no SICAF"
+                             . "
+
+"."<b>5. DAS PROPOSTAS:</b>"
+                             . "
+
+"."        5.1. A proposta sera apresentada em 01 (uma) via, em papel impresso da"
+                             . "
+"."        firma, datilografada ou digitada em linguagem clara, sem rasuras, emendas,"
+                             . "
+"."        entrelinhas ou ressalvas, devendo constar da mesma, a razão social e o CGC,"
+                             . "
+"."        e ser assinada na última folha."
+                             . "
+
+"."        5.2. A proposta devera ser entregue em envelope lacrado com a seguinte"
+                             . "
+"."        identificacao externa:"
+                             . "
+
+"."             <b>RAZÃO SOCIAL DA LICITANTE</b>"
+                             . "
+"."             <b>C.G.C.: (para consulta on-line no SICAF)</b>"
+                             . "
+"."             <b>UNIVERSIDADE FEDERAL DE JUIZ DE FORA</b>"
+                             . "
+"."             <b>COORDENADORIA DE SUPRIMENTOS</b>"
+                             . "
+"."             <b>CONVITE Nº ".$licitacao->numero."</b>"
+                             . "
+"."             <b>ABERTURA: ".$licitacao->dataAbertura."</b>";
+                 $data[1][0] = "
+
+"."         5.3. Será inabilitada a empresa que deixar de constar no envelope o número"
+                             . "
+"."         do C.G.C. para a consulta on-line no SICAF."
+                             . "
+
+"."         5.4. Não será aceita proposta copiada por FAX."
+                             . "
+
+"."         5.5. As propostas conterão os seguintes elementos mínimos:"
+                             . "
+
+"."              5.5.1. Preço unitário e total, em moeda corrente nacional, para"
+                             . "
+"."              material entregue na UFJF, estando nele incluídas todas as"
+                             . "
+"."              despesas, tais como, frete, impostos, embalagens, seguros, etc."
+                             . "
+
+"."              5.5.2. Perfeita descrição do material cotado, e a marca."
+                             . "
+
+"."              5.5.3. Prazo de Entrega, do artigo ofertado. Caso o proponente"
+                             . "
+"."              omita o prazo de entrega, a UFJF o considerará como sendo"
+                             . "
+"."              imediato."
+                             . "
+
+"."              5.5.4. As propostas deverão ter validade de 30 (trinta) dias para"
+                             . "
+"."              seu estudo, julgamento e processamento do empenho."
+                             . "
+
+"."                       5.5.4.1. Caso os proponentes nao explicitem o prazo de"
+                             . "
+"."                       validade de suas propostas, a UFJF considerará como"
+                             . "
+"."                       sendo o acima citado. Propostas com prazo de validade"
+                             . "
+"."                       inferior ao acima determinado, poderão ou nao ser"
+                             . "
+"."                       aceitas, a critério único da comissão de licitação da"
+                             . "
+"."                       UFJF."
+                             . "
+
+"."         5.6. Indicação dos seguintes dados:"
+                             . "
+
+"."              - C.G.C."
+                             . "
+"."              - Razão Social"
+                             . "
+"."              - Rua - Nº - Bairro - Cidade"
+                             . "
+"."              - CEP - UF"
+                             . "
+"."              - Telefone, Número do FAX e TELEX"
+                             . "
+"."              - Nº e Nome do Banco - Código e Nome da Agência"
+                             . "
+"."              - Praça de Pagamento - Conta Corrente Nº"
+                             . "
+
+"."          5.7. Caso os materiais e/ou equipamentos cotados não sejam nacionais,"
+                             . "
+"."          informar o país de origem (local de fabricação)."
+                             . "
+
+"."<b> 6. PREÇO:</b>"
+                             . "
+
+"."           6.1. Fixo e Irreajustável/Reajustável (observação anexa)."
+                             . "
+
+"."<b>  7. DO JULGAMENTO DAS PROPOSTAS:</b>"
+                             . "
+
+"."           7.1. O julgamento far-se-a por item e e do tipo MENOR PREÇO."
+                             . "
+
+"."           7.2. No caso de empate por absoluta igualdade de propostas entre duas ou"
+                             . "
+"."           mais firmas, fa-se-a o desempate de acordo com o art.45, parágrafo 2§, da"
+                             . "
+"."           Lei Nº. 8666 de 21/06/93";
+                 $data[2][0] = "
+
+"."<b>   8. DO PAGAMENTO:</b>"
+                             . "
+
+"."            8.1. O pagamento será efetuado mediante depósito em conta bancária"
+                             . "
+
+"."                  8.1.1. O prazo de pagamento previsto pela UFJF, e de 05 (cinco)"
+                             . "
+"."                  dias úteis, após recebimento da mercadoria e aceitação pelo"
+                             . "
+"."                  Almoxarifado da UFJF/Restaurante Universitário."
+                             
+                             . "
+
+"."             8.2. Serão retidos na fonte, os tributos referentes IRPJ, CONFINS, CSLL,"
+                             . "
+"."             PIS/PASEP, conforme determina a Instrucao Normativa nº 4 de 18.ago.97 da"
+                             . "
+"."             Secretaria da Receita Federal, exceto para pessoas jurídicas optantes pelo"
+                             . "
+"."             SIMPLES."
+                             . "
+
+"."<b>    9. CONDIÇÕES E INFORMAÇÕES GERAIS:</b>"
+                             . "
+
+"."             9.1. A participação à licitacao significa pleno conhecimento destas"
+                             . "
+"."             instrucoes e integral concordoncia com o que nelas e fixado e, ainda, o"
+                             . "
+"."             compromisso de assinar o Termo de Contrato, quando exigido, pela UFJF."
+                             . "
+
+"."              9.2. O fornecedor deverá assegurar, dentro da validade de sua proposta a"
+                             . "
+"."             disponibilidade do material ofertado, nao podendo alegar, posteriormente,"
+                             . "
+"."             falta de estoque, ficando sujeito às penalidades previstas na Lei No. 8666"
+                             . "
+"."             de 21/06/93."
+                             . "
+
+"."             9.3. A critério da Universidade o presente Convite poderá ser anulado"
+                             . "
+"."             revogado no todo ou em parte, ter valores iniciais do contrato ou empenho"
+                             . "
+"."             acrescidos ou suprimidos nos limites previstos no art. 65 da Lei Nº. 8666 de"
+                             . "
+"."             21/06/93, sem que, por qualquer destas razões, caiba ao licitante vencedor"
+                             . "
+"."             indenização ou nao aceitação."
+                             . "
+
+"."             9.4. As amostras apresentadas para efeito de julgamento dos materiais"
+                             . "
+"."             ofertados, que se referirem aos materiais não escolhidos, estarão à"
+                             . "
+"."             disposição dos respectivos proprietários a partir do 30º(trigésimo) dia da"
+                             . "
+"."             abertura da licitação, e deverão ser procuradas pelos interessados nos 15"
+                             . "
+"."             (quinze) dias subseqüentes a esta data, sob pena de a Universidade dar a"
+                             . "
+"."             elas a destinação que lhe convier."
+                             . "
+
+"."                    9.4.1. As amostras referentes aos materiais escolhidos somente"
+                             . "
+"."                    estarão à disposição de seus proprietários após o recebimento e"
+                             . "
+"."                    conferência pela UFJF dos bens a que se refiram."
+                             . "
+
+"."             9.5. O C.G.C da nota fiscal devera ser o mesmo que a firma apresentou nos"
+                             . "
+"."             documentos de habilitacao do presente certame."
+                             . "
+
+"."             9.6. Caso o sistema SICAF esteja sem comunicação na data de abertura, será"
+                             . "
+"."             feita ata, e marcada nova data."
+                             . "
+
+"."             9.7. Será desclassificada a proposta que apresentar faturamento mínimo." 
+                             . "
+
+"."             9.8 Os itens que apresentarem opcao de preço e/ou marca e/ou modelo serão"
+                             . "
+"."              desclassificados.";
+                 $data[3][0] = "
+
+"."             9.9. O prazo de garantia do equipamento cotado deverá ser de no mínimo 12"
+                             . "
+"."              meses, a contar da data de entrega do mesmo no Almoxarifado Central/UFJF."
+                             . "
+
+"."                     9.10.1. <b>Os resultados das licitações estarão disponíveis no"
+                             . "
+"."                   seguinte endereço: http://www.comprasnet.gov.br </b>(obs.: serviço de"
+                             . "
+"."                     livre acesso)." 
+                             . "
+
+"."<b>     10. DAS SANÇÕES ADMINISTRATIVAS</b>"
+                             . "
+
+"."              10.1. O atraso na entrega, além do prazo estipulado, da totalidade ou de"
+                             . "
+"."             parte dos materiais adjudicados, acarretara para a licitante inadimplente"
+                             . "
+"."             multa de 10% (DEZ POR CENTO) do valor dos materiais em mora."
+                             . "
+
+"."              10.2. Persistindo o atraso na entrega dos materiais, por prazo superior a 30"
+                             . "
+"."             (trinta) dias da data fixada para a entrega, ficará resolvido o negócio, de"
+                             . "
+"."             pleno direito, indepentemente da interpelacao, notificacao ou aviso judicial"
+                             . "
+"."             ou extrajudicial, total ou parcialmente, conforme a hipótese."
+                             . "
+
+"."              10.3. A resolução do negócio, total ou parcialmente, por inadimplemento da"
+                             . "
+"."             licitante vencedora, implicará na aplicação à mesma demulta de 10% (DEZ POR"
+                             . "
+"."             CENTO) do valor global do Empenho ou da parte inadimplida."
+                             . "
+
+"."              10.4. A UFJF poderá optar, na hipótese descrita no item 10.3 pela satisfação"
+                             . "
+"."             de suas perdas e danos, entendidas estas como a diferença entre o preço"
+                             . "
+"."             ofertado pela licitante inadimplente para os materiais nao entregues e o"
+                             . "
+"."             efetivamente pago pelos mesmos materiais adquiridos de terceiros."
+                             . "
+
+"."              10.5. Os débitos de licitantes, de qualquer espécie, sofrerão a incidência"
+                             . "
+"."             de juros moratorios de 1% (UM POR CENTO) ao mês, sendo deduzidos pela UFJF"
+                             . "
+"."             dos valores que deva pagar àqueles."
+                             . "
+
+"."              10.6. Além das multas expressamente estipuladas para os casos de"
+                             . "
+"."             descumprimento total ou parcial do negocio decorrente deste procedimento"
+                             . "
+"."             licitatório, a UFJF poderá aplicar, a seu exclusivo critério, a pena de"
+                             . "
+"."             suspensão temporária de participação em licitação ou de contratação com a"
+                             . "
+"."             Administração Publica nas hipóteses de inadimplemento parcial, e a pena de"
+                             . "
+"."             declaração de indoneidade para licitar ou contratar com a Administracao"
+                             . "
+"."             Publicaenquanto persistente o inadimplemento que deu causa à declaração."
+                             . "
+
+"."              10.7. É único e exclusivo competente para solução de todo e qualquer litígio"
+                             . "
+"."             decorrente deste procedimento, o foro da Justiça Federal em Juiz de Fora,MG."
+                             . "
+
+"."<b>      11. APROVAÇÃO DO ORGÃO DE CONSULTORIA JURÍDICA</b>"
+                             . "
+
+"."             11.1. As presentes instruções foram previamente analisadas e aprovadas pela"
+                             . "
+"."             Procuradoria Jurídica desta Universidade, conforme consta do processo Nº"
+                             . "
+"."             23071.006492/95-99."
+                             . "
+
+"."                                              <b>Juiz de Fora, 23 de maio de 2006.</b> "
+                             . "
+"."                                                      <b>Setor de Compras</b> ";                                
+//        }
+
+        // chama o construtor (com apenas um registro por página)
+        parent::__construct($data, $column, 1);
+        $this->pdf->selectFont('verase.afm');
+
+        $this->SetOption('showHeadings', 0);
+        $this->SetOption('showTableTitle', 0);
+        $this->timestamp = date('d/m/Y G:i');
+    }
+
+    function GeneratePageHeader()
+    {
+        $h = $this->pdf->getFontHeight(10);
+
+		$x00=$this->pdf->left;	
+		$this->pdf->addText($x00, 800, 12, $this->manager->getConf('instituicao.sigla')." - ".$this->manager->getConf('instituicao.nome'));
+		$this->pdf->addText($x00, 800 - $h, 12, $this->manager->getConf('theme.system'));
+       
+/* $this->pdf->ezImage($this->img, 5, 50, 'none', 'left');
+        $this->pdf->addText(90, 800, 12, 'UFJF - Universidade Federal de Juiz de Fora');
+        $this->pdf->addText(90, 800 - $h, 12, 'CGCO - Centro de Gestão do Conhecimento Organizacional');
+        $this->pdf->addText(90, 800 - $h - $h, 12, 'SIGA - Sistema Integrado de Gestão Acadêmica');
+*/
+
+        $this->pdf->ezSetY(800 - $h - $h - $h);
+    }
+
+  /*  function GeneratePageTitle()
+    {
+        //$year = date('Y');
+        $this->pdf->ezSetDy(-20);
+        $this->pdf->ezText("<b>Coordenadoria de Suprimentos</b>", 15, array('justification' => 'center'));
+        //$this->pdf->ezText("<b>Ano: $year</b>", 12, array('justification' => 'center'));
+        $this->pdf->ezSetDy(-60);
+    }
+  */  
+}
+?>

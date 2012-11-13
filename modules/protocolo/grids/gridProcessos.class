@@ -1,0 +1,120 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+MIOLO::Import('modules::protocolo::controls::linkprocesso');
+class gridProcessos extends MDataGrid2
+{
+	protected $processo;
+	protected $perms;
+	function __construct()
+	{
+		global $MIOLO, $module, $page, $context, $self, $action, $perms, $state;
+
+
+		$href_grid = $MIOLO->GetActionURL($module,$self,'', Array('event'=>'btnList_click'));
+		$linkprocesso = new LinkProcesso('linkprocesso','%0%');
+		$this->processo = $MIOLO->GetBusiness('protocolo','processo');
+		$this->perms  = $MIOLO->getPerms();
+
+		$descricao = Form::GetFormValue('busca');
+		$setor = Form::GetFormValue('listaPor');
+		$acompanhar  = Form::GetFormValue('acompanhar');
+		$filtrar  = Form::GetFormValue('filtrar');
+
+		//Se nenhuma situação do processo foi escolhida,
+		//a mesma passará a ser "entrada".
+		if(!$situacao = Form::GetFormValue('lista')){
+			$situacao = 'entrada';
+		}
+		
+		//Caso o usuário não selecione o setor,
+		//será utilizado o setor no qual o mesmo está lotado,para
+		//evitar acesso indevido aos processos de outro setor.
+		if((!$setor) and (!$this->perms->checkAccess('PROT_ADMIN', A_ACCESS))){
+			$setor = $this->processo->getSetorUsuario();
+		}else{
+			//Se o usuário tiver a permissão PROT_ADMIN
+			//e não selecionar um setor específico,
+			//o mesmo poderá ver todos os processos.
+			if( $this->perms->checkAccess('PROT_ADMIN', A_ACCESS) && (!$setor) ){
+				$setor = '%';
+			}
+		}
+
+		//Converte a data recebida para o formato utilizado
+		//na consulta do banco de dados,
+		if( strlen(trim(Form::GetFormValue('dataIni'))) == 10 ){
+			$comp = explode('/', Form::GetFormValue('dataIni'));
+			$dataIni = $comp[2].$comp[1].$comp[0].'0000';
+		}else{
+			//caso a mesma não for uma data válida,
+			//ela não será utilizada.
+			$dataIni = '';
+		}
+		
+		//if(
+		if ($filtrar=='S' )
+		{
+			//Utilizar Filtro de Resultados
+			$query = $this->processo->listProcessos($descricao, $situacao, $setor, $acompanhar, $dataIni);
+		}else
+		{
+			//Não Utilizar Filtro de Resultados
+			//$query = $this->processo->listByNoSoundex($descricao);	
+			if(!Form::GetFormValue('listaPor') && (!$this->perms->checkAccess('PROT_ADMIN', A_ACCESS)))
+				$query = $this->processo->listProcessos(null, null, $this->processo->getSetorUsuario(), null, null);
+			else
+			//estava assim:	$query = $this->processo->listByNoSoundex($descricao);
+			$query = $this->processo->listProcessos(null, null, $this->processo->getSetorUsuario(), null, null);
+			
+			
+
+		}
+		
+
+		//$this->SetFilter(false);
+
+		$this->SetIndex(1);
+		$columns = array(
+			new MDataGridControl($linkprocesso,'numpro','Numero','center','','18%'),
+			new MDataGridColumn('titulo','Título','',false,'25%'),
+			new MDataGridColumn('assunto','Assunto','',false,'25%'),
+			new MDataGridColumn('interes','Solicitante','',false,'22%'),
+			new MDataGridColumn('stampaber','Abertura','',false,'10%'),
+		);
+
+		parent::__construct($query, $columns, $href_grid,25);
+		$this->SetLinkType('hyperlink');
+		$this->SetTitle('Relação de Processos');
+		$this->width = '100%';
+		$this->eventHandler();
+	}
+
+	function GenerateFooter()
+	{
+		if (!$this->data) 
+			$footer[] = $this->GenerateEmptyMsg();
+
+		return $footer;
+	}
+}
+?>

@@ -1,0 +1,76 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+class frmRepMaterialConsumo extends Form
+{
+    protected $material;
+    protected $subelemento;
+	
+    function __construct()
+    {
+    	global $MIOLO;
+        $this->material = $MIOLO->getBusiness('adm','material');
+        $this->subelemento = $MIOLO->getBusiness('adm','subelemento');
+        $this->Form('Relatório de Material de Consumo');
+        $this->EventHandler();       
+    }
+
+    function CreateFields()
+    {	
+        $consumo = $this->material->ListSubElementoByIdElemento(339030);	
+        $yesNo = array("S"=>"SIM","N"=>"NÃO");	
+        $fields = Array(
+            new Text('','Selecione uma categoria:'),
+            new Selection('idconsumo','','', $consumo->result),
+            new Text('','Listar somente os materiais estocáveis?'),
+            new Selection('estocavel','','', $yesNo)
+        );
+
+	$this->SetFields($fields);
+	$buttons = Array (
+            new FormButton('btnRelatorioJasper', 'Gerar Relatório','pdf'),
+        );
+        $this->SetButtons($buttons);
+    }		
+
+    function btnRelatorioJasper_click()
+    {
+        global $MIOLO;
+
+        $data = $this->getData();		
+        
+        if (!$data->estocavel || !$data->idconsumo)
+            $this->manager->Error("Voce precisa selecionar uma das opções.");		
+        else
+        {
+            $parameters['NUM_SUBELEMENTO'] = Form::getFormValue('idconsumo');
+            $parameters['ESTOCAVEL_N'] = Form::getFormValue('estocavel');
+            $parameters['int_ID_USUARIO'] = $MIOLO->login->idkey; 
+            $parameters['URL_LOGO'] = $MIOLO->GetConf('home.url');
+            //$parameters['INSTITUICAO'] = $MIOLO->GetConf('instituicao.nome');
+            $parameters['str_HEADER_DIR'] = $MIOLO->GetConf('home.modules') . '/common/reports/';
+            $report = new MJasperReport('sigaept');
+            $report->Execute('adm', 'MaterialDeConsumo', $parameters);
+        }
+    }
+}
+?>

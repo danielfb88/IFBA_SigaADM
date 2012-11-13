@@ -1,0 +1,109 @@
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmRepResumoEmpenho extends Form
+{
+	protected $uo;
+	protected $requisicao;
+	protected $tiporeq;
+
+	function __construct()
+        {
+		global $MIOLO;
+		$this->uo = $MIOLO->GetBusiness('adm','uo');
+		$this->requisicao = $MIOLO->GetBusiness('adm','requisicao');
+		$this->tiporeq = $MIOLO->GetBusiness('adm','tiporeq');
+                parent::__construct('Resumo de Empenho');
+		$this->SetClose($this->manager->GetActionURL('adm','main:relatorios'));
+                $this->eventHandler();
+        }
+
+        function CreateFields()
+        {
+         	//$uo = $this->uo;
+		//Comentado o trecho abaixo para que o relatório pudesse funcionar.
+      		/*  if (!$options = $uo->listByUsuario($this->manager->getLogin()->idkey)->result)
+        	{	
+            		$this->manager->error('Não existem UOs associadas a este usuário.',$this->manager->GetActionURL('adm','main:reports'));
+            		return;
+        	}*/
+		global $MIOLO, $module;
+                $uo = $MIOLO->GetBusiness($module,'uo');
+		$opt = $uo->listUosOrdemNome();
+		$options['0'] = 'TODAS';
+                foreach($opt->result as $o)
+                {
+                        $options[$o[0]] = $o[1];
+                }
+		//$this->addField(new MSelection('idUo','','UO',array('%'=>array('%','TODAS'))+$options));
+        	$this->addField(new MSelection('selUO','','UO',$options));
+		$this->addField(new MCalendarField('dataInicio','','Data Inicial'));
+        	$this->addField(new MCalendarField('dataFim','','Data Final'));
+		$this->addButton(new MButton('btnPost','Gerar Relatório','PDF'));
+	}
+
+   	function btnPost_click()
+   	{
+		 global $MIOLO, $module, $item;
+
+                $uo = Form::GetFormValue('selUO');
+		$inicio = Form::getFormValue('dataInicio');
+                $final = Form::getFormValue('dataFim');
+
+                $partes_da_data = explode('/',$inicio);
+                $datainicial =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+                $partes_da_data = explode('/',$final);
+                $datafinal =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+
+	        if( $uo == '')
+                {
+                        $this->AddError('Você deve selecionar uma UO');
+        	}
+	        else if($inicio == '' || $final == '')
+	             {
+                     	  $this->addError('Favor Selecionar as Datas de Início e Término do Relatório.');
+                     }
+                     else if($datainicial > $datafinal)
+                          {
+                                 $this->addError('É necessário que a data inicial seja inferior a final!');
+                          }
+			  else
+	          	  {
+                          	$report = new MJasperReport('sigaept');
+                         	$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
+                          	$parameters['pURL'] = $MIOLO->GetConf('home.url');
+                          	$parameters['int_pIdUsuario'] = $MIOLO->login->idkey;
+                          	$parameters['int_IDUO'] = $uo;
+                         	$parameters['DATAINICIAL']  = $inicio;
+                         	$parameters['DATAFINAL']  = $final;
+                       		if( $parameters['int_IDUO'] == 0 )
+                        	{
+                                	$report->Execute($module, 'ResumoPorEmpenhoTodas', $parameters);
+                        	}
+	                        else
+        	                {			
+                	                $report->Execute($module, 'ResumoPorEmpenho', $parameters);
+            			}
+			  }
+                
+        }
+}
+?>

@@ -1,0 +1,92 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+MIOLO::Import('modules::protocolo::controls::linkprocesso');
+class frmProcessosVagos extends MForm
+{
+    var $processo;
+    var $controle;
+    var $ui; 
+    function __construct()
+    {
+//      construct
+        global $MIOLO;
+    	$this->processo = $MIOLO->getBusiness('protocolo','processo');
+        $this->controle = $MIOLO->getBusiness('protocolo','controleprotocolo');
+   		$this->ui = $MIOLO->GetUI();
+        parent::__construct('Listar Processos Vagos');
+        $this->SetClose($this->manager->GetActionURL('protocolo','main'));
+		$this->eventHandler();		
+    }
+
+    public function CreateFields()
+    {
+        //Instituição
+        global $MIOLO;
+        $msg_tst = $MIOLO->login->idkey;     
+        $objProc = $this->manager->GetBusiness('protocolo','processo');
+        $uasg = $objProc->getUASG($msg_tst);
+        $value = $uasg->fields('uasg');
+        $instituicao = $value; 
+
+//      ano
+        
+        $ano = array('last'=>date('Y')-1,'this'=>date('Y'));
+        $opt1 = new MOption( 'opt1', $ano['last'],$ano['last'].'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', false, 'id1' );
+        $opt2 = new MOption( 'opt2', $ano['this'],$ano['this'].'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', false, 'id2' ); 
+        $groupAno = new MRadioButtonGroup('anoCorrente','Ano do processo',array($opt1,$opt2),$ano['this'],'','horizontal','css'); 
+        $groupAno->addAttribute('style','padding:10px');
+//      fields
+    	$fields = Array (
+            $groupAno,
+		);
+		$this->SetFields($fields);
+//      buttons
+		$buttons = Array(
+			new MButton('btnConsulta', 'Listar'),
+						);
+	    $this->SetButtons($buttons);
+    }
+
+    public function btnConsulta_click()
+    {	
+	 global $MIOLO;
+//      data
+       
+        $data = $this->getData(); 
+//      processos
+//$processos = $this->processo->getProcessosVagos($data->anoCorrente);
+        $msg_tst = $MIOLO->login->idkey;
+         $objProc = $this->manager->GetBusiness('protocolo','processo');
+        $uasg = $objProc->getUASG($msg_tst);
+        $value = $uasg->fields('uasg');
+        $instituicao = $value; 
+        
+        $processos = $this->processo->getProcessosVagos($data->anoCorrente,$instituicao);
+        
+//      grid
+	    $this->AddField($this->ui->GetGrid("protocolo",'gridProcessosVagos', $processos));    
+    }
+
+}
+
+?>

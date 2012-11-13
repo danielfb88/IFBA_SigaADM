@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="RelAniversariantes"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="595"
+		 pageHeight="842"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<style 
+		name="zebra"
+		isDefault="false"
+		backcolor="#D7D7D7"
+	>
+					<box>					<pen lineWidth="0.0" lineStyle="Dotted"/>
+					<topPen lineWidth="0.0" lineStyle="Dotted"/>
+					<leftPen lineWidth="0.0" lineStyle="Dotted"/>
+					<bottomPen lineWidth="0.0" lineStyle="Dotted"/>
+					<rightPen lineWidth="0.0" lineStyle="Dotted"/>
+</box>
+	</style>
+	<style 
+		name="pageHeader"
+		isDefault="false"
+	>
+					<box>					<leftPen lineWidth="0.0" lineColor="#FFFFFF"/>
+					<rightPen lineWidth="0.0" lineColor="#FFFFFF"/>
+</box>
+	</style>
+
+	<parameter name="pURL" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pIdUsuario" isForPrompting="true" class="java.lang.Integer"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String">
+		<defaultValueExpression ><![CDATA["/home/siga/WORKSPACE SIGAEPT-ADM/modulos/trunk"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="cat" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="mes" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="categoria" isForPrompting="true" class="java.lang.Integer"/>
+	<parameter name="stMes" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="ano" isForPrompting="false" class="java.lang.String"/>
+	<queryString><![CDATA[SELECT 
+	rh_provimento.idvinculo,cm_pessoa.nome, to_char(cm_pessoa.datanasc,'dd') as datanascimento, cm_setor.nomesetor
+
+from 
+	cm_setor,cm_pessoa,rh_funcionario,rh_provimento,rh_vinculo 
+where 
+	cm_pessoa.idpessoa = rh_funcionario.idpessoa 
+	and cm_setor.idsetor = rh_provimento.idsetor
+	and TO_CHAR(cm_pessoa.datanasc,'MM') = $P{mes}
+	and rh_provimento.idvinculo = rh_vinculo.idvinculo 
+	AND rh_funcionario.idfuncionario = rh_vinculo.idfuncionario 
+	and rh_provimento.idsituacao = $P{categoria}
+
+order by datanascimento]]></queryString>
+
+	<field name="idvinculo" class="java.lang.String"/>
+	<field name="nome" class="java.lang.String"/>
+	<field name="datanascimento" class="java.lang.String"/>
+	<field name="nomesetor" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="93"  isSplitAllowed="true" >
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="0"
+						y="5"
+						width="535"
+						height="87"
+						key="subreport-1"
+						stretchType="RelativeToTallestObject"/>
+					<subreportParameter  name="pTitulo">
+						<subreportParameterExpression><![CDATA["SERVIDORES " + $P{cat} +" ANIVERSARIANTES DO MÊS DE "+$P{stMes}+" / "+ $P{ano}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pURL">
+						<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pConsulta">
+						<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "/common/reports/Cabecalho.jasper"]]></subreportExpression>
+				</subreport>
+				<staticText>
+					<reportElement
+						x="452"
+						y="75"
+						width="0"
+						height="3"
+						key="staticText-34"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Texto Estático]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="10"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="1"
+						width="535"
+						height="1"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="28"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						style="zebra"
+						mode="Opaque"
+						x="0"
+						y="0"
+						width="535"
+						height="27"
+						backcolor="#D7D7D7"
+						key="rectangle-1"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.0" lineStyle="Dotted"/>
+</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="46"
+						height="27"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Matrícula]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="46"
+						y="0"
+						width="253"
+						height="27"
+						key="staticText-3"/>
+					<box></box>
+					<textElement verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Nome]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="299"
+						y="0"
+						width="87"
+						height="27"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Dia Aniversário]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="386"
+						y="0"
+						width="149"
+						height="27"
+						key="staticText-5"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Setor]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="25"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="3"
+						width="46"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{idvinculo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="46"
+						y="3"
+						width="253"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{nome}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="299"
+						y="3"
+						width="87"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{datanascimento}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="386"
+						y="3"
+						width="142"
+						height="18"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{nomesetor}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="37"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4"
+						y="20"
+						width="161"
+						height="12"
+						key="textField-16"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="506"
+						y="19"
+						width="25"
+						height="12"
+						key="textField-19"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="464"
+						y="19"
+						width="40"
+						height="12"
+						key="staticText-27"/>
+					<box></box>
+					<textElement>
+						<font size="8"/>
+					</textElement>
+				<text><![CDATA[Página Estático]]></text>
+				</staticText>
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="24"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						x="0"
+						y="0"
+						width="535"
+						height="24"
+						backcolor="#FFFFFF"
+						key="rectangle-2"
+						isPrintWhenDetailOverflows="true"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.1" lineStyle="Solid"/>
+</graphicElement>
+				</rectangle>
+			</band>
+		</summary>
+</jasperReport>

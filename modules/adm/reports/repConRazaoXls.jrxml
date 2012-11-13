@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="repConRazaoXls" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="zebra" isDefault="false" backcolor="#D7D7D7">
+		<box>
+			<pen lineWidth="0.0" lineStyle="Dotted"/>
+			<topPen lineWidth="0.0" lineStyle="Dotted"/>
+			<leftPen lineWidth="0.0" lineStyle="Dotted"/>
+			<bottomPen lineWidth="0.0" lineStyle="Dotted"/>
+			<rightPen lineWidth="0.0" lineStyle="Dotted"/>
+		</box>
+	</style>
+	<style name="pageHeader" isDefault="false">
+		<box>
+			<leftPen lineWidth="0.0" lineColor="#FFFFFF"/>
+			<rightPen lineWidth="0.0" lineColor="#FFFFFF"/>
+		</box>
+	</style>
+	<parameter name="pImg" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="pAno" class="java.lang.Integer"/>
+	<parameter name="pIdUsuario" class="java.lang.Integer"/>
+	<parameter name="pURL" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String"/>
+	<parameter name="pIdInstituicao" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT ad_orcamento.ug,
+	ad_orcamento.idptr,
+	ad_orcamento.idfonte,
+	ad_orcamento.idrubrica,
+	ad_orcamento.esfera,
+	(dotacao + suplementacao) as disponivel,
+	(bloqueio + anulacao + pago) as empenhado,
+	(dotacao + suplementacao - bloqueio - anulacao - pago) as saldo
+FROM ad_orcamento INNER JOIN cm_instituicao USING (ug)
+WHERE (ad_orcamento.ano = $P{pAno}) AND (cm_instituicao.idinstituicao = $P{pIdInstituicao})]]>
+	</queryString>
+	<field name="ug" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="idptr" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="idrubrica" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="esfera" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="saldo" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="idfonte" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="disponivel" class="java.math.BigDecimal"/>
+	<field name="empenhado" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="totalGeral" class="java.lang.Number" calculation="Sum">
+		<variableExpression><![CDATA[$F{saldo}]]></variableExpression>
+	</variable>
+	<columnHeader>
+		<band height="20">
+			<staticText>
+				<reportElement key="staticText-19" x="49" y="1" width="58" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Fonte]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-20" x="435" y="1" width="95" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Saldo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-21" x="108" y="1" width="85" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Rubrica]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-23" x="346" y="1" width="88" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Empenhado]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-19" x="1" y="1" width="48" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[PTR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-21" x="193" y="1" width="62" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Esfera]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-21" x="255" y="1" width="90" height="19"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" pdfFontName="Times-Bold"/>
+				</textElement>
+				<text><![CDATA[Cred. Disp.]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="16">
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="435" y="1" width="95" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{saldo} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{saldo} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-13" stretchType="RelativeToBandHeight" x="108" y="1" width="85" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{idrubrica}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField" x="49" y="1" width="58" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{idfonte}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField" x="193" y="1" width="62" height="15"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{esfera}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField" x="1" y="1" width="48" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{idptr}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="255" y="1" width="90" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{disponivel} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{disponivel} ))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="346" y="1" width="88" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{empenhado} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{empenhado} ))]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

@@ -1,0 +1,181 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmOrcamentoEditar extends CompoundForm
+{
+
+	protected $objOrcamento;
+	
+    function __construct($objOrcamento)
+    {
+		$this->objOrcamento = $objOrcamento;
+        parent::__construct('Dados do Orçamento');
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+		global $MIOLO,$module;
+
+		$tabelaGeral = $MIOLO->GetBusiness('common','tabelageral');
+		$options = $tabelaGeral->ListByTabela('AD_TIPOORC','item1');
+
+		$fields = array
+			(
+				new TextField('ano','','Ano','10'),
+				new LookupTextField('lkpPtr','','PTR',50),
+				new HiddenField('idptr',NULL),
+				new LookupTextField('lkpFonte','','Fonte',50),
+				new HiddenField('idfonte',NULL),
+				new LookupTextField('lkpRubrica','','Rubrica',70),
+				new HiddenField('idrubrica',NULL),
+				new CalendarField('data','','Data',15), 
+				new Selection('tipoorc','','Tipo',$options->result,false),
+				new MCurrencyField('valor','','Valor','10')
+            );
+		
+        $this->SetFields($fields);
+		$this->SetFieldAttr('lkpPtr','module',$module);
+		$this->SetFieldAttr('lkpPtr','item','Ptr');
+		$this->SetFieldAttr('lkpPtr','event','filler');
+		$this->SetFieldAttr('lkpPtr','related','idptr,lkpPtr');
+		$this->SetFieldAttr('lkpFonte','module',$module);
+		$this->SetFieldAttr('lkpFonte','item','Fonte');
+		$this->SetFieldAttr('lkpFonte','event','filler');
+		$this->SetFieldAttr('lkpFonte','related','idfonte,lkpFonte');
+		$this->SetFieldAttr('lkpRubrica','module',$module);
+		$this->SetFieldAttr('lkpRubrica','item','Rubrica');
+		$this->SetFieldAttr('lkpRubrica','event','filler');
+		$this->SetFieldAttr('lkpRubrica','related','idrubrica,lkpRubrica');
+		
+		$buttons = array
+			(
+        	   new FormButton('btnSalvar', 'Salvar')
+            );
+		$this->SetButtons($buttons);
+
+		$validators = array
+			(
+			   new RequiredValidator('ano'),
+			   new RequiredValidator('lkpPtr'),
+			   new RequiredValidator('lkpFonte'),
+			   new RequiredValidator('data'),
+		    );
+		$this->SetValidators($validators);
+		$this->SetData();
+    }
+
+	function SetData()
+	{
+		$data = $this->objOrcamento;
+		
+		$this->SetFieldValue('ano',$data->orcamento->ano);
+		$this->SetFieldValue('lkpPtr',$data->orcamento->idPtr);
+		$this->SetFieldValue('idptr',$data->orcamento->idPtr);
+		$this->SetFieldValue('lkpFonte',$data->orcamento->idFonte);
+		$this->SetFieldValue('idfonte',$data->orcamento->idFonte);
+		$this->SetFieldValue('lkpRubrica',$data->orcamento->idRubrica);
+		$this->SetFieldValue('idrubrica',$data->orcamento->idRubrica);
+		$this->SetFieldValue('data',$this->invert($data->data,'/'));
+		$this->SetFieldValue('tipoorc',$data->tipoOrc);
+		$this->SetFieldValue('valor',$data->valor);		
+	}
+	
+	function GetData()
+	{
+		$data = $this->objOrcamento;
+		
+		$data->orcamento->ano = $this->GetFormValue('ano');		
+		$data->orcamento->idPtr = $this->GetFormValue('idptr');
+		$data->orcamento->idFonte = $this->GetFormValue('idfonte');		
+		$data->orcamento->idRubrica = $this->GetFormValue('idrubrica');
+		$data->data = $this->GetFormValue('data');
+		$data->tipoOrc = $this->GetFormValue('tipoorc');
+		$data->valor = $this->GetFormValue('valor');		
+	}
+	
+	
+	public function btnSalvar_click()
+	{
+		$this->objOrcamento->SetData($this->GetData());
+		//var_dump($this->objOrcamento->orcamento->ano);
+		if (substr_count($this->objOrcamento->valor, ",") == 0) 
+		{
+                   $this->objOrcamento->valor = str_replace(".",",",$this->objOrcamento);
+                }
+		else
+		{
+                   $this->objOrcamento->valor = str_replace(".","",$this->objOrcamento->valor);
+                }
+
+                $cf = new MCurrencyFormatter();
+		$this->objOrcamento->valor = $cf->toDecimal($this->objOrcamento->valor);             
+		$this->objOrcamento->orcamento->dotacao = ":0";
+		$this->objOrcamento->orcamento->suplementacao = ":0";
+		$this->objOrcamento->orcamento->bloqueio = ":0";
+		$this->objOrcamento->orcamento->anulacao = ":0";
+		
+		switch ($this->objOrcamento->tipoOrc)
+        {
+            case 1:
+                $this->objOrcamento->orcamento->dotacao = $this->objOrcamento->valor;
+                break;
+            case 2:
+                $this->objOrcamento->orcamento->suplementacao = $this->objOrcamento->valor;
+                break;
+            case 3:
+                $this->objOrcamento->orcamento->bloqueio = $this->objOrcamento->valor;
+                break;
+            case 4:
+                $this->objOrcamento->orcamento->anulacao = $this->objOrcamento->valor;
+                break;
+        }
+		
+		try
+		{
+			$this->objOrcamento->begintransaction();
+			$this->objOrcamento->orcamento->save();
+			$this->objOrcamento->save();
+			$this->objOrcamento->Log(OP_UPD,"Dados de orçamento modificados");
+			$this->objOrcamento->endtransaction();
+			$go = $this->manager->GetActionURL('adm','main:orcamento',$this->objOrcamento->idOrcamento);
+			$this->manager->Information('Orçamento alterado com sucesso', $go);			
+		}
+		catch (Exception $e)
+		{
+			$this->addError($e->getMessage());
+		}
+	}
+	
+	function invert($datainv,$sep)
+	
+			{//recebe a data e o separador
+
+		$ano=substr("$datainv",0, 4);
+		$mes=substr("$datainv",5, 2);
+		$dia=substr("$datainv",8, 2);
+		$datainv="$dia$sep$mes$sep$ano";
+		return $datainv;
+			}	
+	
+ }
+?>

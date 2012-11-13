@@ -1,0 +1,59 @@
+﻿
+001
+   
+142902
+003
+   
+BR-SvUFB 
+005
+   
+20080229183800.0 
+008
+   
+080229s1991 bl al frm #000 0#por#c 
+040
+   
+$a BR-SvUFB $b por $c BR-SvUFB 
+080
+   
+$a 81'367.634 
+090
+   
+$d T/UFBA $a 81'367.634 $b O46 $8 1 
+100
+1  
+$a Olinda, Sílvia Rita Magalhães de 
+245
+1 0
+$a "Pois" e "Ca" : : $b mudanças semânticas e sintáticas no português arcaico/ $c Sílvia Rita Magalhães de Olinda. - 
+260
+   
+$c 1991. 
+300
+   
+$a 111 f. : $b il. 
+500
+   
+$a Orientadora : Profª Drª Rosa Virgínia Mattos e Silva. 
+502
+   
+$a Dissertação (mestrado) - Universidade Federal da Bahia, Instituto de Letras, 1991. 
+650
+0 4
+0 4
+0 4
+0 4
+$a Língua portuguesa $x Conjunções. 
+$a Língua portuguesa $x Gramática. 
+$a Lingüística 
+$a Língua portuguesa $x Português arcaico $y Até 1400 
+700
+1  
+$a Silva, Rosa Virgínia Mattos e 
+710
+2  
+$a Universidade Federal da Bahia. $b Instituto de Letras. 
+951
+   
+$a Memória 
+

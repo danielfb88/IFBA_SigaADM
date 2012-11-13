@@ -1,0 +1,119 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmServicoextNew extends Form
+{
+	function __construct()
+	{
+		$this->Form('Incluir Novo Serviço Externo');
+		$this->EventHandler();
+	}
+
+	function CreateFields()
+	{
+		global $MIOLO;
+
+		$opcoes1 = array(
+		"S"=>"SIM",
+		"N"=>"NÃO",
+		);
+
+		//$opcoes2 = array(
+		//        "C"=>"CONSUMO",
+		//        "P"=>"PERMANENTE",
+		//    );
+
+		$fields = array(
+			new MTextField('codservico','','Codigo','9','Máximo 9 algarismos'),
+			new MMultiLineField('descricao','','Descricao','200',2,60,'Máximo 200'),
+			//new MTextField('unidade','KG','Unidade','3','Máximo 3 caracteres'),
+			//new MSelection('permcons','C','Tipo',$opcoes2),
+			//new MSelection('estocavel','S','Estocável',$opcoes1),
+			new MTextField('idelemento','','Elemento','6','Máximo 6 algarismos'),
+			new MTextField('idsubelemento','','Subelemento','2','Máximo 2 algarismos'),
+			new MSelection('ativo','S','Ativo',$opcoes1)
+		);
+        
+		$this->SetFields($fields);
+
+		$buttons = array(
+		new MButton('btnNew', 'Incluir Serviço Externo')
+		);
+		$this->SetButtons($buttons);
+
+		
+		$validators = array(
+			new RequiredValidator('codservico'),
+			new RequiredValidator('descricao'),
+			new RequiredValidator('idelemento'),
+			new RequiredValidator('idsubelemento')
+		);
+		$this->SetValidators($validators);
+		
+	}
+
+	function btnNew_click()
+	{
+		global $MIOLO, $page, $module;
+
+		$data = $this->GetData();
+		$servico = $MIOLO->GetBusiness($module,'servico');
+		$servico->SetData($data);
+
+		$cod = Form::GetFormValue('codservico');
+		
+		if(!is_numeric(Form::GetFormValue('codservico')))
+		{
+			$this->AddError('O código do serviço deve ser composto por números.');
+		}
+		elseif( strlen(trim(Form::GetFormValue('descricao'))) < 5 )
+		{
+			$this->AddError('Descreva melhor o serviço externo.');
+		}
+		elseif( !is_numeric(Form::GetFormValue('idelemento')) )
+		{
+			$this->AddError('O Elemento deve ser um número.');
+		}
+		elseif( !is_numeric(Form::GetFormValue('idsubelemento')) )
+		{
+			$this->AddError('O Subelemento deve ser um número.');
+		}
+		else
+		{
+			try
+			{
+				$servico->save(); //grava no banco
+				$this->manager->information("Serviço externo cadastrado com sucesso.",$this->manager->getActionUrl('adm','main:servicoext:find') );
+			}
+			catch (Exception $e)
+			{
+				$err = $e->GetMessage();
+				if( strstr($err, '(idelemento,idsubelemento)') )
+					$this->AddError('A composição elemento e subelemento não existe no sistema, informe a correta.');
+				else
+					$this->AddError($e->GetMessage());
+			}
+		}
+		
+	}
+}
+?>

@@ -1,0 +1,169 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmLoginMD5 extends MForm
+{
+    var $auth, $tries;
+
+    function __construct()
+    {   
+        parent::__construct('Login');               
+        $this->SetIcon($this->manager->GetUI()->GetImage('common','login.gif'));
+        $this->page->AddScript('m_md5.js');
+        $this->AddJsCode($this->doChallengeResponse());
+        $this->OnSubmit('doChallengeResponse()');
+        if ($this->page->isPostBack())
+        {
+            $this->EventHandler();
+        }
+    }
+
+    function CreateFields()
+    {
+        global $MIOLO;
+
+        $this->auth = $this->manager->auth;
+        $challenge = uniqid(rand());
+
+        $fields = Array(
+		//Mensagem de aviso a todos os usuario
+            //new MLabel( '<div align="center" STYLE="color:#ff0000; "><b><font size="2">Atenção: <BR> O Siga está de visual novo! <BR> Qualquer observação entre em contato com o e-mail abaixo.</font></b></div>' ),
+            new MTextField('uid',$this->auth->login->iduser,'Usuário',20),
+            new MPasswordField('pwd','','Senha',20),
+            new MTextLabel('username',$this->auth->login->user,'Nome',40),
+            new MLink('mail','Email para contato', 'mailto:'.$this->manager->GetConf('theme.email'),$this->manager->GetConf('theme.email')),
+            new MHiddenField('tries', ''),
+            new MHiddenField('return_to', ''),
+            new MHiddenField('challenge', $challenge),
+            new MHiddenField('response', ''),
+new MLabel( '<div align="center" STYLE="color:#000000; "><b><font size="1">Obrigado por sua atenção! <BR> Equipe de desenvolvimento do SIGA.</font></b></div>' ),
+        );
+        $this->SetFields($fields);
+        $this->AddButton(new MButton('btnLogin', 'Entrar'));
+        $this->AddButton(new MButton('btnLogout', 'Logout'));
+        
+        $urlFaq = $MIOLO->getActionUrl('common','html:files:faq.html');
+        $this->AddButton(new MOpenWindow('', 'Ajuda', $urlFaq));
+
+
+        $this->SetButtonAttr('btnLogin'	,'visible'	, !$this->isAuthenticated());
+        $this->SetButtonAttr('btnLogout'	,'visible'	,  $this->isAuthenticated());
+        $this->SetFieldAttr('uid'			,'readonly'	,  $this->isAuthenticated());
+        $this->SetFieldAttr('pwd'			,'visible'	, !$this->isAuthenticated());
+        $this->SetFieldAttr('username'	,'visible'	,$this->isAuthenticated());
+        $this->SetFieldAttr('mail'	,'formMode'	,MControl::FORM_MODE_SHOW_SIDE);
+    }
+
+    function btnLogin_click()
+    {   
+        global $MIOLO;
+
+        $this->GetData();
+        $MIOLO->LogMessage('[LOGIN] Validating login information MD5');
+        
+        // Max login tries
+        $max_tries = 3;
+        
+        // autenticar usuário e obter dados do login
+        $uid = $this->GetFormValue('uid');
+        $pwd = $this->GetFormValue('pwd');
+        $challenge = $this->GetFieldValue('challenge');
+        $response = $this->GetFieldValue('response');
+
+        if ( !$this->LoginPermitted($uid) )
+        {
+           $err = 'Acesso não permitido.';
+        }
+        else
+        {
+           if ( $this->auth->Authenticate($uid, $challenge, $response) )
+           {
+	           $return_to = $this->GetFormValue('return_to');
+               // ToDo: voltar para onde estava...
+	           if ( $return_to )
+               {
+                  $url = $return_to;
+	           }
+               else
+               {
+                  $url = $MIOLO->GetActionURL('common','login');
+               }
+               $this->page->Redirect($url);
+            }
+            else
+            {      
+               $tries = $this->GetFormValue('tries');
+               if ( $tries >= $max_tries )
+               {
+                  $MIOLO->Error('Erro na identificação do usuário!');
+               }
+               else
+               {
+                    $err = 'Erro na identificação do usuário!' . ' - Restam ' . ( $max_tries - $tries) . 
+                         ' ' . 'tentativa(s).';
+                    $tries++;
+                    $this->SetFormValue('tries',$tries);
+                    $pwd = null;
+                    if ( $err )
+                    {
+                        $this->AddError($err);
+                    }
+               }
+            }
+        }
+    }
+
+    function doChallengeResponse()
+    {
+        $code = "function doChallengeResponse() { 
+".
+                "  var str = miolo.getElementById('uid').value + \":\" + 
+" .
+                "        MD5(miolo.getElementById('pwd').value) + \":\" + 
+" .
+                "        miolo.getElementById('challenge').value; 
+".
+                "        miolo.setElementValueById('pwd','');
+".
+                "        miolo.setElementValueById('response',MD5(str));
+".
+                "  return true;
+".
+                "}
+";
+        return $code;
+    }
+
+    function LoginPermitted($uid)
+    {  
+        global $MIOLO;
+
+        $ok = true;
+        return $ok;
+    }
+
+    function isAuthenticated()
+    {
+        return $this->auth->isLogged();
+    }
+}
+?>

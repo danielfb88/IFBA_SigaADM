@@ -1,0 +1,103 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class gridUoAlmoxarifadoOrdemEntregaRequisicoesFind extends MObjectGrid
+{
+    protected $uoalmoxarifado;
+    function __construct($objUo)
+    {
+        global $MIOLO, $page;
+        $this->uoalmoxarifado = $objUo;
+		$cf = new MCurrencyFormatter();
+        $this->setTitle('Resultados encontrados');
+        $href = $MIOLO->getActionURL('adm','main:uoalmoxarifado',$this->uoalmoxarifado->idUo,array('form'=>'ordementrega','idOrdemEntrega'=>'#0#'));
+        $columns = array(
+            new MObjectGridColumn('idOrdemEntrega','Número Ordem','','','',false),
+            new MObjectGridHyperlink('numero','Número Ordem',$href,'8%'),
+			new MObjectGridColumn('movimento[0]->idRequisicao','Número Requisição','center','true','12%'),
+			new MObjectGridColumn('data','Data','center','true','13%'),
+			new MObjectGridColumn('movimento[0]->itemNota->empenhado->empenho->numero','Número Empenho','center','true','14%'),
+			new MObjectGridColumn('movimento[0]->requisicao->uoRequisitante->sigla','UO','center','true','13%'),
+            new MObjectGridHyperlink('movimento[0]->requisicao->usuario->pessoa->nome','Requisitante',$href,'40%'),
+			//new MGridColumn('Valor','center','true','16%'),
+         );
+        $this->setFilter(false);
+        $numero = Form::getFormValue('numero');
+        $idRequisicao = Form::getFormValue('idRequisicao');
+        $requisitante = Form::getFormValue('requisitante');
+        $dataInicio = Form::getFormValue('dataInicio');
+        $dataFim = Form::getFormValue('dataFim');
+        if ($dataInicio && $dataFim)
+        {
+            $ordens = $this->uoalmoxarifado->listOrdemEntregaForPeriodo($dataInicio,$dataFim);
+        }
+        elseif(is_numeric($numero) or is_numeric($idRequisicao)) 
+        {
+            $ordens = $this->uoalmoxarifado->listOrdemEntregaForAlmoxarifado($numero,$idRequisicao,$requisitante);
+        }
+	else
+	{
+	    $ordens = $this->uoalmoxarifado->listOrdemEntregaForAlmoxarifado($numero=null,$idRequisicao=null,$requisitante);
+	}
+        /*
+        foreach ($requisicoes as $r)
+        {
+            $r->retrieveAssociation('materialAlmoxarifado');
+            foreach ($r->materialAlmoxarifado as $m)
+            {
+                $m->retrieveAssociation('movimento');
+                foreach ($m->movimento as $mo)
+                {
+                    if ($mo->tipoMovimento == 3) $r->idOrdemEntrega == $mo->idOrdemEntrega;
+                }
+            }
+        }
+        */
+        $cf = new MCurrencyFormatter();
+        /*
+        if ( count($requisicoes) == 1 )
+        {
+            $page->redirect($MIOLO->getActionURL('adm','main:uoalmoxarifado:main',$this->uoalmoxarifado->idUo,array('form'=>'saidamaterial','idRequisicao'=>$requisicoes[0]->idRequisicao)));
+        }
+        */
+        $href_grid = $MIOLO->getActionURL('adm','main:uoalmoxarifado',$this->uoalmoxarifado->idUo,array('form'=>'ordementrega'));
+        parent::__construct($ordens, $columns, $href_grid,25);
+        $this->SetLinkType('hyperlink');
+        $this->with = '100%';
+        //$href = $this->manager->GetActionURL('adm','main:empenho:new','', array('idEmpenho'=>'$id') );
+    }
+    /*
+    function GenerateFooter()
+    {
+        $footer[] = new MSeparator();
+        if ($dataInicio = Form::getFormValue('dataInicio') && $dataFim = Form::getFormValue('dataFim'))
+        {
+            $footer[] = new MButton('btnOrdemEntregaPorPeriodo','Consolidar as do Período');
+        }
+        else
+        {
+            $footer[] = new MButton('btnOrdemEntrega','Consolidar Todas');
+        }
+        return $footer;
+    }
+    */
+}

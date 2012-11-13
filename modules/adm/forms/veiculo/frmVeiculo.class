@@ -1,0 +1,109 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+/**
+ * Form Veiculo
+ */
+class frmVeiculo extends CompoundForm
+{
+	public $oid;
+    protected $veiculo;
+    /**
+     * Construtor
+     */
+    function __construct($objVeiculo)
+    {
+      global $MIOLO;
+      $this->veiculo = $objVeiculo;
+      parent::__construct();
+      $this->SetClose($MIOLO->GetActionURL('adm','main:veiculo:find'));
+      $this->SetTitle($this->veiculo->placa);
+      $this->SetIcon($MIOLO->GetUi()->GetImage('adm','default_mini.png'));
+    }
+
+    function CreateFields()
+    {
+        global $MIOLO, $page, $module, $context, $history;
+
+        $veiculo = $this->veiculo;
+        if ($this->oid == NULL) $this->oid = $veiculo->placa;
+
+// form
+        $ui = $MIOLO->GetUI();
+        $form = Form::GetFormValue('form');
+        switch ($form)
+        {
+            case 'editar' : 
+				$this->_form[0] = $ui->GetForm($module,'frmVeiculoEditar', $veiculo, 'veiculo'); 
+                break;
+            case 'excluir'     : 
+                 $this->_form[0] = $ui->GetForm($module,'frmVeiculoExcluir', $veiculo, 'veiculo'); 
+                 break;
+        }
+        if ($this->_form[0])
+        {
+            $this->_form[0]->SetClose($MIOLO->GetActionURL('adm','main:veiculo',$uo->idVeiculo));
+        	$page->SetAction($history->Top('action'));
+        }
+		
+// info
+	   $tabelaGeral = $this->manager->getBusiness('common','tabelageral');
+           $instituicao = $this->manager->GetBusiness('common','instituicao');
+		$this->_info[1]	= new TextLabel('placa',$this->veiculo->placa,'Placa');
+	   $query = $tabelaGeral->getByItem('AD_TIPOVEICULO',$this->veiculo->tipoVeiculo);
+		$this->_info[2]	= new TextLabel('tipoveiculo',$query->item2,'Tipo de Veículo'); 
+		$this->_info[3]	= new TextLabel('renavam',$this->veiculo->renavam,'Renavam'); 
+		$this->_info[4]	= new TextLabel('chassis',$this->veiculo->chassis,'Chassis'); 
+		$this->_info[5]	= new TextLabel('marca',$this->veiculo->marca,'Marca'); 
+		$this->_info[6]	= new TextLabel('modelo',$this->veiculo->modelo,'Modelo'); 
+		$this->_info[7]	= new TextLabel('anoFab',$this->veiculo->anoFab,'Ano Fabricação'); 
+		$this->_info[8]	= new TextLabel('anoMod',$this->veiculo->anoMod,'Ano Modelo'); 
+		$this->_info[9]	= new TextLabel('capacidade',$this->veiculo->capacidade,'Capacidade'); 
+	        $query = $tabelaGeral->getByItem('AD_TIPOCOMBUSTIVEL',$this->veiculo->combustivel);
+		$this->_info[10] = new TextLabel('combustivel',$query->item2,'Combustível'); 
+		$this->_info[11] = new TextLabel('valorKm',$this->veiculo->valorKm,'Custo por Km'); 
+//IFSP          
+//Alterado em 02/02/2010
+// 
+
+$IdInstituicao = $this->veiculo->idinstituicao;
+
+try
+{
+		$inst = $instituicao->GetById($IdInstituicao);
+		$value = $inst->instituicao;
+}
+catch(Exception $e)
+{
+$value = '';
+}				
+//Alterado em 02/02/2010
+		$this->_info[12]= new TextLabel('idinstituicao',$value,'Instituição');   
+//IFSP
+// panel        
+        $action = $context->action;
+        $this->_panel[0] = $panel = new ActionPanel('pnlCompound','Opções','',false);
+        $panel->AddUserAction('ADM_EXECUTORGARAG',A_EXECUTE,'Editar',$ui->GetImage('adm','edit.png'),'adm',$action, $this->oid, array("form"=>"editar"));
+        $panel->AddUserAction('ADM_EXECUTORGARAG',A_EXECUTE,'Excluir',$ui->GetImage('adm','excluir.png'),'adm',$action, $this->oid, array("form"=>"excluir"));
+ 	}
+}
+?>

@@ -1,0 +1,43 @@
+    Após um longo período de muito trabalho, finalmente está sendo liberada oficialmente a primeira
+versão do MIOLO 2. Esta versão traz uma série de novas características e funcionalidades, ampliando
+consideravelmente as suas potencialidades.
+    Quando trabalhamos num projeto em Software Livre, além de esperar que o mesmo seja útil para a 
+comunidade, espera-se que mesma colabore e contribua para que a ferramenta possa evoluir, agregando
+novas funcionalidades, características, idéias, etc...
+Nesse sentido, o Ely Edison Matos da UFJF teve um papel fundamental na evolução do MIOLO. Muito além
+de idéias e sugestões, o Ely arregaçou as mangas e trabalhou intensamente no framework...
+... um pouco de história... no ano de 2002, mas especificamente na primeira quinzena de dezembro, 
+realizei um treinamento de MIOLO lá na UFJF, que estava também instalando o Gnuteca 
+(http://www.gnuteca.org.br). Na época, o treinamento ainda foi realizado com a versão RC 4 do MIOLO 
+que, se não me falha a memória, foi lançada justamente naquela ocasião.
+    Após o treinamento, várias alterações foram feitas no framework pelo Ely e seu pessoal e muitas
+delas foram incorporadas nas versões RC 5 e Final 1.0. Porém, outras tantas acabaram não podendo ser
+introduzidas nesses momentos, o que foi um dos motivos que levou ao surgimento da versão "MIOLO-UFJF"
+que mantinha algumas características distintas da versão "oficial" do MIOLO.
+    Há cerca de 1 ano, voltamos a trocar idéias no sentido de buscar a união das duas versões, visto 
+que o objetivo de ambos era de que não tivessemos duas ferramentas, mas sim, uma única na qual pudesse-
+mos concentrar os esforços e evoluir conjuntamente.
+    Eu já tinha uma série de idéias para serem implementadas no MIOLO 2 e tomando conhecimento das
+modificações feitas na versão MIOLO-UFJF, optamos por utilizá-la como base para a nova versão uma vez
+que era mais fácil implementar as novas características nessa versão do que ter que trazer tudo para
+a versão oficial.
+    Basicamente, foi assim que iniciaram os trabalhos na versão 2.... e atualmente já existe uma 
+pequena comunidade de desenvolvedores (a maioria em Juiz de Fora) que já está utilizando a nova 
+versão intensivamente.
+    A nova versão do MIOLO traz uma série de novidades, entre elas, o conceito de Controles/Widgets, 
+mudanças na renderização do tema, possibilitando que o mesmo conteúdo seja gerado em html, xhtml,...
+bastando para isso apenas a criação de um método apropriado. Outro acréscimo importante é a camada de
+persistência, o que, entre outras coisas, aumenta a performance do sistema. De forma geral, além de 
+terem sido criadas novas classes e funcionalidades, as classes existentes do MIOLO sofreram alguma
+reformulação no sentido agrupá-las em arquivos distintos, de acordo com suas funcionalidades.
+Por exemplo, o diretório <miolo>/classes/security mantém as funcionalidades relativas a segurança/login
+e assim por diante.
+    Um dos principais objetivos nessa nova fase do projeto, é construir uma documentação consistente
+que facilite a vida dos programadores que estão iniciando e tendo seus primeiros contatos com o MIOLO.
+Existe muita coisa a ser feita e convidamos a todos aqueles que puderem dedicar um pouco do seu tempo,
+a contribuir para que possamos melhorar a ferramenta, afinal, toda a ajuda é bem vinda. :-)
+    Para informações sobre a instalação, veja o arquivo INSTALL.
+
+Vilson Cristiano Gärtner
+vilson@miolo.org.br
+Coordenador Projeto MIOLO

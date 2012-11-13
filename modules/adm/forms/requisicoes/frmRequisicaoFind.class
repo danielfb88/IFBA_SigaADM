@@ -1,0 +1,268 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?php
+global $MIOLO;
+/**
+ * Use Module Control
+ */
+$MIOLO->Uses('controls/linkrequisicao.class','adm');
+
+/**
+ * Formulário básico para seleção de uos
+ * 
+ */
+class frmRequisicaoFind extends Form
+{
+    function __construct()
+    {
+        $this->Form('Pesquisar Requisição');
+		$this->SetClose($this->manager->GetActionURL('adm','main'));
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+		global $perms;
+	
+		$idUsuario = $this->manager->GetLogin()->idkey;
+		$uo = $this->manager->GetBusiness('adm','uo');
+		$gestor = $this->manager->GetBusiness('adm','gestor');
+		$result = $gestor->listUoByUsuario($idUsuario);             
+      
+		if ( $result )
+		{
+		    $options = $result->chunkResult();
+
+		    if (count($options) == 1)
+		    {
+			$uo = each($options);
+			$selectionUOs = new Selection('idUoGestor',$uo[key],'',$options);           
+		    }
+		    else
+		    {
+			$options['X'] = "TODAS";
+			$selectionUOs = new Selection('idUoGestor','','',$options);
+		    }
+
+			//array opcoes dos gestores
+			$opcoes = array(
+			    "1_solicitadas"=>"Pendentes",
+                            "2_solicitadas"=>"A serem autorizadas",
+			    "4_solicitadas"=>"Autorizadas pelo Gestor",
+			    "7_solicitadas"=>"Aguardando Execução",
+			    "A_solicitadas"=>"Recusadas pelo Executor",
+			    "8_solicitadas"=>"Parcialmente Executadas",
+			    "9_solicitadas"=>"Aguardando avaliação",
+			    "E_solicitadas"=>"Avaliadas pela sua UO",
+			    "D_solicitadas"=>"Não pagas pelo requisitante",
+			    "G_solicitadas"=>"Finalizadas"
+    			    );
+            
+			$controls = array(
+			    new Text('','Listar Requisições'),
+						new Selection('opcao','','',$opcoes),
+			    new Text('','para a UO:'),
+						$selectionUOs,
+						new FormButton('btnPost','Enviar')
+			);
+			
+			// Só mostra o basegroup se tiver a transacao necessaria
+			if ($perms->CheckAccess('adm_gestoruo',A_EXECUTE))
+				$controlGroup = new BaseGroup('controlGroup','Opções do Gestor',$controls,'horizontal','css');
+		}
+        
+ 		$executor = $this->manager->GetBusiness('adm','executor');
+ 		$executorServInt = $this->manager->GetBusiness('adm','executorservint');
+        
+        // Execução + Serviços Prestados
+		$result2a = $executorServInt->listUoByUsuario($idUsuario);
+		$result2b = $executor->listUoByUsuario($idUsuario);
+        
+        if (!is_array($result2a->result) && is_array($result2b->result))
+            $result2 = $result2b->chunkResult();
+            
+        if (!is_array($result2b->result) && is_array($result2a->result))
+            $result2 = $result2a->chunkResult();
+        
+        if (is_array($result2a->result) && is_array($result2b->result))
+        {
+            foreach($result2a->result as $rs1)
+            {
+                $result2[] = array($rs1[0],$rs1[1]);
+            }
+            
+            foreach($result2b->result as $rs2)
+            {
+                $result2[] = array($rs2[0],$rs2[1]);
+            }
+        }
+		if ( $result2 )
+		{
+			//array opcoes dos executores
+            if (count($result2) == 1)
+            {
+                $uo = each($result2);
+                $selectionUOs2 = new Selection('idUoExecutor',$uo[key],'',$result2);           
+            }
+            else
+            {
+                $selectionUOs2 = new Selection('idUoExecutor','','',$result2);
+            }
+            
+			$opcoes2 = array(
+                            "4_autorizadas"=>"Autorizadas pelo Gestor",
+                            "7_autorizadas"=>"A serem executadas",
+                            "9_autorizadas"=>"Aguardando avaliação",
+                            "A_autorizadas"=>"Anuladas",
+                            "G_autorizadas"=>"Finalizadas"
+            			    );
+            
+			$controls2 = array(
+                    new Text('','Listar Requisições'),
+					new Selection('opcao2','','',$opcoes2),
+                    new Text('','para a UO:'),
+                    $selectionUOs2,
+
+					new FormButton('btnPost2','Enviar')
+			);
+			// Só mostra o basegroup se tiver a transacao necessaria
+			if ($perms->CheckAccess('adm_executoruo',A_EXECUTE))
+				$controlGroup2 = new BaseGroup('controlGroup2','Opções do Executor',$controls2,'horizontal','css');
+		}
+        
+  		$acessouoreq = $this->manager->GetBusiness('adm','acessouoreq');
+
+		$result3 = $acessouoreq->listUoByUsuario($idUsuario);      
+		if ( $result3 )
+		{
+		        // Opções do requisitante
+		    	$opcoes3 = array(
+                               "1"=>"Pendentes",
+                               "2"=>"Aguardando autorização pelo Gestor",
+                               "4"=>"Autorizadas pelo Gestor",
+                               "5"=>"Devolvidas para alteração pelo Gestor",
+                               "6"=>"Recusadas pelo Gestor",
+                               "7"=>"Liberadas pelo Executor",
+                               "A"=>"Recusadas pelo Executor",
+				   			   "8"=>"Parcialmente Executadas",
+                               "9"=>"Executadas, aguardando avaliação",
+                               "G"=>"Finalizadas"
+					  );
+         			$controls3 = array(
+        	        new Text('','Listar Requisições'),
+					new Selection('opcao3','','',$opcoes3),
+					new FormButton('btnPost3','Enviar')
+			);
+			$controlGroup3 = new BaseGroup('controlGroup3','Opções do Requisitante',$controls3,'horizontal','css');
+                
+            $lnkNew = new LinkRequisicao('lnkNew', FALSE);
+            $lnkNew->setNew();
+ 		}
+    
+    	// Inclusão do Filtro por Tipo de Requisição
+    	$requisita = $this->manager->getbusiness('adm','requisita');
+		$tiposDeRequisicao = $requisita->listByUo('-');
+		$controleTipoReq = array( 
+					new Text('','Tipo de Requisição'),
+					new Selection('opcaoTipoReq','','',$tiposDeRequisicao->chunkResult()) ,
+					new FormButton('btnPost4', 'Enviar'));
+		$controlTipoReq = new BaseGroup('controlTipoReq','Filtragem por Tipo de Requisição:',$controleTipoReq,'horizontal','css');
+	    
+	    // Inclusão do Filtro por Destino
+		$controleDestino = array( 
+					new Text('','Destino'),
+		            new LookupTextField('lkpMunicipio','','Municipio',26),
+		            new HiddenField('idMunicipio',''),
+		            new Text('','Data de Saída da Origem'),
+		            new CalendarField('dataPesq','','',8),
+				    new FormButton('btnPost5', 'Enviar'));
+		$controlDestino = new BaseGroup('controlDestino','Filtragem por Destino:',$controleDestino,'horizontal','css');
+		
+        $ui = $this->manager->GetUI();
+        $grid = $ui->GetGrid('adm','gridRequisicoes');
+        $grid->SetTitle(NULL);        
+        
+        $findButton = new ButtonFind('');
+        $findButton->SetName('btnFind');
+       /* 
+        if ($acessouoreq->isRequisitanteDaUo($idUsuario,181))
+    	{
+            $fields = array(
+                array(
+                    new Text('','Número da Requisição:'),
+                    new TextField('requisicao','','',15),
+                    $findButton,
+                    $lnkNew
+                ),
+            );
+    		$fields[] = $controlGroup3;
+    	}
+        else*/ if ( $controlGroup3 )
+    	{
+
+            $fields = array(
+                array(
+                    new Text('','Número da Requisição:'),
+                    new TextField('requisicao','','',15),
+                    $findButton,
+                    $lnkNew
+                ),
+            );
+            $fields[] = $controlTipoReq;
+            $fields[] = $controlDestino;
+    		$fields[] = $controlGroup3;
+    	}
+        else
+     	{
+            $fields = array(
+                array(
+                    new Text('','Número da Requisição:'),
+                    new TextField('requisicao','','',15),
+                    $findButton
+                ),
+            );
+			$fields[] = $controlTipoReq;
+            $fields[] = $controlDestino;
+    	}
+       
+        if ( $controlGroup )
+    	{
+    		$fields[] = $controlGroup;
+    	}
+        
+        if ( $controlGroup2 )
+    	{
+    		$fields[] = $controlGroup2;
+    	}       
+		
+    	$fields[] = $grid;
+        $this->SetFields($fields);
+
+		$this->SetFieldAttr('lkpMunicipio','module','common');
+        $this->SetFieldAttr('lkpMunicipio','item','municipio');
+        $this->SetFieldAttr('lkpMunicipio','event','filler');
+        $this->SetFieldAttr('lkpMunicipio','related','idMunicipio,lkpMunicipio');
+        
+        $this->defaultButton = false;
+    }
+}
+?>

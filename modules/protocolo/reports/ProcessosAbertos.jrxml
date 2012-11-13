@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ProcessosAbertos" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA["/var/www/miolo/modules"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pIdSetorPai" class="java.math.BigDecimal" isForPrompting="false"/>
+	<parameter name="pURL" class="java.lang.String"/>
+	<parameter name="pIdUsuario" class="java.lang.Integer"/>
+	<parameter name="pTitulo" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select s.siglasetor, upper(s.nomesetor) as nomesetor
+from cm_setor s, cm_usuario u 
+where s.idsetor = u.idsetor and u.idusuario = CAST( $P{pIdUsuario} AS INTEGER)]]>
+	</queryString>
+	<field name="siglasetor" class="java.lang.String"/>
+	<field name="nomesetor" class="java.lang.String"/>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="109">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" x="0" y="0" width="535" height="74" isPrintInFirstWholeBand="true"/>
+				<subreportParameter name="pTitulo">
+					<subreportParameterExpression><![CDATA[$P{pTitulo}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pURL">
+					<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pConsulta">
+					<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "/common/reports/Cabecalho.jasper"]]></subreportExpression>
+			</subreport>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="14" y="85" width="507" height="17"/>
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="14" isBold="true" isItalic="false" isUnderline="false" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["PROCESSOS E PROTOCOLADOS ABERTOS PELO SETOR " + $F{nomesetor}]]></textFieldExpression>
+			</textField>
+			<line direction="BottomUp">
+				<reportElement x="1" y="82" width="532" height="1"/>
+			</line>
+			<line direction="BottomUp">
+				<reportElement positionType="Float" x="1" y="105" width="532" height="1"/>
+			</line>
+			<textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="false">
+				<reportElement key="textField-16" x="372" y="0" width="161" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band/>
+	</columnHeader>
+	<detail>
+		<band height="110">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-4" x="7" y="28" width="520" height="24"/>
+				<subreportParameter name="tipo">
+					<subreportParameterExpression><![CDATA["P"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="siglasetor">
+					<subreportParameterExpression><![CDATA[$F{siglasetor}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "/protocolo/reports/ProcessosAbertosSubreport.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement key="staticText-1" mode="Opaque" x="140" y="4" width="254" height="20"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[RELAÇÃO DE PROCESSOS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-2" positionType="Float" mode="Opaque" x="140" y="61" width="254" height="20"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[RELAÇÃO DE PROTOCOLADOS]]></text>
+			</staticText>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-5" positionType="Float" x="7" y="85" width="520" height="24"/>
+				<subreportParameter name="tipo">
+					<subreportParameterExpression><![CDATA["A"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="siglasetor">
+					<subreportParameterExpression><![CDATA[$F{siglasetor}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "/protocolo/reports/ProcessosAbertosSubreport.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="16" isSplitAllowed="false">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-19" x="290" y="4" width="25" height="12"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-27" x="212" y="4" width="73" height="12"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Página:]]></text>
+			</staticText>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>
