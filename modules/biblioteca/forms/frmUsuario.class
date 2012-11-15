@@ -71,7 +71,7 @@ class frmUsuario extends Form {
 				new MHiddenField('idMunicipio'),
 				new MHiddenField('idGrupo'),
 				new MHiddenField('idGrupoAnterior'),
-				new MHiddenField('idPaisNascimentoento'),
+				new MHiddenField('idPaisNascimento'),
 				new MHiddenField('idUsuario'),
 				new MHiddenField('idPessoa'),
 
@@ -117,8 +117,32 @@ class frmUsuario extends Form {
 		$this->txCep->addAttribute('onBlur','makeMask(this, \'#####-###\');');
 		$this->txCep->AddAttribute('maxlength','9');
 
+		// Validação do campo serieCartPro
+		$this->txSerieCarteiraProfissional->AddAttribute('maxlength','5');
+
 		//Validaçao do campo Ano de Chegada
 		$this->txAnoChegada->AddAttribute('maxlength','4');
+
+		// Validação do campo txTelefone
+		$this->txTelefone->AddAttribute('maxlength','20');
+
+		// Validação do campo txCelular
+		$this->txCelular->AddAttribute('maxlength','20');
+
+		// Validação do campo txEmail
+		$this->txEmail->AddAttribute('maxlength','50');
+
+		// Validação do campo txNumRG
+		$this->txNumRG->AddAttribute('maxlength','15');
+
+		// Validação do campo txOrgaoRg
+		$this->txOrgaoRg->AddAttribute('maxlength','20');
+
+		// Validação do campo txNumCarteiraProfissional
+		$this->txNumCarteiraProfissional->AddAttribute('maxlength','10');
+
+		// Validação do campo txLogin
+		$this->txLogin->AddAttribute('maxlength','20');
 
 		//Validaçao do campo CPF
 		$this->txCPF->AddAttribute('maxlength','14');
@@ -128,6 +152,7 @@ class frmUsuario extends Form {
 		$this->txDataNascimento->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
 		$this->txDataNascimento->addAttribute('onBlur','makeMask(this, \'##/##/####\');');
 
+		// Obrigatórios
 		$validators = array(
 				new RequiredValidator('txNome'),
 				new MMaskValidator('txCep','','99999-999','required'),
@@ -164,15 +189,16 @@ class frmUsuario extends Form {
 		*/
 		//Utilizamos o lookup do modulo common para o campo municipio
 		$this->SetFieldAttr('lkpMunicipio','module','common');
-		$this->SetFieldAttr('lkpMunicipio','item','municipio');
+		$this->SetFieldAttr('lkpMunicipio','item','municipioBiblioteca');
 		$this->SetFieldAttr('lkpMunicipio','event','filler');
 		//'m.idmunicipio, municipio, m.iduf, p.idpais, p.pais
-		$this->SetFieldAttr('lkpMunicipio','related', 'idMunicipio,lkpMunicipio,none,idPais');
+		$this->SetFieldAttr('lkpMunicipio','related', 'idMunicipio,lkpMunicipio,null,idPais');
 
 		//Utilizamos o lookup do módulo Biblioteca para o campo Pais de nascimento
 		$this->SetFieldAttr('lkpPaisNascimento','module','biblioteca');
 		$this->SetFieldAttr('lkpPaisNascimento','item','pais');
 		$this->SetFieldAttr('lkpPaisNascimento','event','filler');
+		// m.idmunicipio,m.municipio,m.iduf,p.pais
 		$this->SetFieldAttr('lkpPaisNascimento','related', 'idPaisNascimento,lkpPaisNascimento');
 
 		//Utilizamos o lookup do módulo Common para o campo Setor
@@ -283,7 +309,7 @@ class frmUsuario extends Form {
 		// 30 fields (+passmd5)
 		$data->nome = $this->GetFormValue('txNome');
 		$data->bairro = $this->GetFormValue('txBairro');
-		$data->cep = $this->SubstituirPorVazio($this->GetFormValue('txCep'));
+		$data->cep = ereg_replace('[-]', '', $this->GetFormValue('txCep'));
 		$data->dataNascimento = $this->GetFormValue('txDataNascimento');
 		$data->nomePai = $this->GetFormValue('txNomePai');
 		$data->nomeMae = $this->GetFormValue('txNomeMae');
@@ -293,8 +319,8 @@ class frmUsuario extends Form {
 		$data->celular = $this->GetFormValue('txCelular');
 		$data->email = $this->GetFormValue('txEmail');
 		$data->grupoSanguineo = $this->GetFormValue('slGrupoSanguineo');
-		$data->cpf = $this->SubstituirPorVazio($this->GetFormValue('txCPF'));
-		$data->numRg = $this->SubstituirPorVazio($this->GetFormValue('txNumRG'));
+		$data->cpf = ereg_replace('[-.]', '', $this->GetFormValue('txCPF'));
+		$data->numRg = $this->GetFormValue('txNumRG');
 		$data->tipoRg = $this->GetFormValue('txTipoRg');
 		$data->orgaoRg = $this->GetFormValue('txOrgaoRg');
 		$data->ufRg = $this->GetFormValue('slUF_RG');

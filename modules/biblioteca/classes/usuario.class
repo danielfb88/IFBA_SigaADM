@@ -156,36 +156,50 @@ class BusinessBibliotecaUsuario extends Business
 	// TODO: DEBUGAR! (Daniel Bonfim - 31/10/2012)
 	function SaveUsuario($data)
 	{
+		echo '<pre>';
+		print_r($data);
+		echo '</pre>';
+
 		global $MIOLO,$module;
 
 		$commands = array();
 		$okVinculo = false;
 
-		if ($data->idUsuario == NULL)
+		if (!$data->idUsuario)
 		{
-			var_dump("sem idUsuario... <br/>");
-			die;
-
 			$idUsuario = $this->GetNextIdUsuario();
 			$idPessoa = $this->GetNextIdPessoa();
 
+			// Criando Pessoa
 			$sql = new sql('
-					idpessoa, nome, bairro, cep, datanasc, nomepai, nomemae, sexo, anochegbrasil, telefone, celular,
-					email, gruposanguineo, cpf, numrg, tiporg, orgaorg, ufrg, numcartpro, seriecartpro, ufcartpro,
-					idmunicipio, idpais, idpaisnascimento',
+					idpessoa,
+					nome,
+					bairro,
+					cep,
+					datanasc,
+					nomepai,
+					nomemae,
+					sexo,
+					anochegbrasil,
+					telefone,
+					celular,
+					email,
+					gruposanguineo,
+					cpf,
+					numrg,
+					tiporg,
+					orgaorg,
+					ufrg,
+					numcartpro,
+					seriecartpro,
+					ufcartpro,
+					idmunicipio,
+					idpais,
+					idpaisnascimento',
 					'cm_pessoa'
 			);
 
-			$sql2 = new sql(
-					'idusuario, idpessoa, idsetor, login, password, nick, passmd5',
-					'cm_usuario'
-			);
-
-			$sql3 = new sql(
-					'matricula, anoingresso, semingresso, situacaoaluno, idtipoingresso, idsituacao, idinstituicao, idpessoa',
-					'ga_aluno'
-			);
-
+			/*
 			$commands[] = $sql->Insert(
 					array(
 							$idPessoa,
@@ -214,6 +228,76 @@ class BusinessBibliotecaUsuario extends Business
 							$data->idPaisNascimento
 					)
 			);
+			*/
+
+			$ok = $this->Execute(
+					$sql->Insert(
+							array(
+									$idPessoa,
+									$data->nome,
+									$data->bairro,
+									$data->cep,
+									$data->dataNascimento,
+									$data->nomePai,
+									$data->nomeMae,
+									$data->sexo,
+									$data->anoChegada,
+									$data->telefone,
+									$data->celular,
+									$data->email,
+									$data->grupoSanguineo,
+									$data->cpf,
+									$data->numRg,
+									$data->tipoRg,
+									$data->orgaoRg,
+									$data->ufRg,
+									$data->numCartPro,
+									$data->serieCartPro,
+									$data->UfCartPro,
+									$data->idMunicipio,
+									$data->idPais,
+									$data->idPaisNascimento
+							)
+					)
+			);
+			if($ok)
+				echo 'ok';
+			else
+				echo 'nao ok';
+			die;
+
+
+
+
+
+
+
+
+
+			$sql2 = new sql('
+					idusuario,
+					idpessoa,
+					idsetor,
+					login,
+					password,
+					nick,
+					passmd5',
+					'cm_usuario'
+			);
+
+			$sql3 = new sql('
+					matricula,
+					anoingresso,
+					semingresso,
+					situacaoaluno,
+					idtipoingresso,
+					idsituacao,
+					idinstituicao,
+					idpessoa',
+					'ga_aluno'
+			);
+
+
 
 			$commands[] = $sql2->Insert(
 					array(
