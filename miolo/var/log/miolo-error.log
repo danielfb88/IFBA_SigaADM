@@ -1610,3 +1610,7 @@ LINE 1: ...','ssp','AL','2131321312','dsadsada','AL','X3462','BRASIL',n...
       127.0.0.1 - josesilva  - [14/11/2012 22:04:26] "Error in Database: sigaept; ERROR:  null value in column "idpaisnascimento" violates not-null constraint"
       127.0.0.1 - josesilva  - [14/11/2012 22:11:04] "Error in Database: sigaept; ERROR:  null value in column "idpaisnascimento" violates not-null constraint"
       127.0.0.1 - josesilva  - [14/11/2012 22:11:15] "Error in Database: sigaept; ERROR:  null value in column "idpaisnascimento" violates not-null constraint"
+      127.0.0.1 - josesilva  - [14/11/2012 22:33:54] "Error in Database: sigaept; ERROR:  null value in column "idgrupo" violates not-null constraint"
+      127.0.0.1 - josesilva  - [14/11/2012 22:38:51] "Error in Database: sigaept; ERROR:  null value in column "idgrupo" violates not-null constraint"
+      127.0.0.1 - josesilva  - [14/11/2012 22:39:37] "Error in Database: sigaept; <br>ERROR:  duplicate key value violates unique constraint "uk_cm_usuario_login"
+DETAIL:  Key (login)=(lalala.la) already exists."

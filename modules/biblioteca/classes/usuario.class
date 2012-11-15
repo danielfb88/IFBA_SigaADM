@@ -199,7 +199,6 @@ class BusinessBibliotecaUsuario extends Business
 					'cm_pessoa'
 			);
 
-			/*
 			$commands[] = $sql->Insert(
 					array(
 							$idPessoa,
@@ -228,52 +227,10 @@ class BusinessBibliotecaUsuario extends Business
 							$data->idPaisNascimento
 					)
 			);
-			*/
-
-			$ok = $this->Execute(
-					$sql->Insert(
-							array(
-									$idPessoa,
-									$data->nome,
-									$data->bairro,
-									$data->cep,
-									$data->dataNascimento,
-									$data->nomePai,
-									$data->nomeMae,
-									$data->sexo,
-									$data->anoChegada,
-									$data->telefone,
-									$data->celular,
-									$data->email,
-									$data->grupoSanguineo,
-									$data->cpf,
-									$data->numRg,
-									$data->tipoRg,
-									$data->orgaoRg,
-									$data->ufRg,
-									$data->numCartPro,
-									$data->serieCartPro,
-									$data->UfCartPro,
-									$data->idMunicipio,
-									$data->idPais,
-									$data->idPaisNascimento
-							)
-					)
-			);
-			if($ok)
-				echo 'ok';
-			else
-				echo 'nao ok';
-			die;
 
 
-
-
-
-
-
-
-
+			
+			// Criando Usuario
 			$sql2 = new sql('
 					idusuario,
 					idpessoa,
@@ -285,20 +242,6 @@ class BusinessBibliotecaUsuario extends Business
 					'cm_usuario'
 			);
 
-			$sql3 = new sql('
-					matricula,
-					anoingresso,
-					semingresso,
-					situacaoaluno,
-					idtipoingresso,
-					idsituacao,
-					idinstituicao,
-					idpessoa',
-					'ga_aluno'
-			);
-
-
-
 			$commands[] = $sql2->Insert(
 					array(
 							$idUsuario,
@@ -309,6 +252,19 @@ class BusinessBibliotecaUsuario extends Business
 							$data->apelido,
 							$data->passmd5
 					)
+			);
+
+			// Criando Aluno
+			$sql3 = new sql('
+					matricula,
+					anoingresso,
+					semingresso,
+					situacaoaluno,
+					idtipoingresso,
+					idsituacao,
+					idinstituicao,
+					idpessoa',
+					'ga_aluno'
 			);
 
 			$commands[] = $sql3->Insert(
@@ -324,10 +280,10 @@ class BusinessBibliotecaUsuario extends Business
 					)
 			);
 
-			var_dump("executando... <br/>");
-
+			// Executando tudo
 			$okInsert = $this->Execute($commands);
-			var_dump("status: $okInsert"); die;
+			
+			// OK ATE AQUI. CONSIDERE USAR UMA TRANSAÇÃO FUTURAMENTE. CONTINUE....
 
 			$data->idUsuario = $idUsuario;
 
