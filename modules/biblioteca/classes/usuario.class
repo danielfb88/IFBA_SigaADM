@@ -117,14 +117,21 @@ class BusinessBibliotecaUsuario extends Business
 		return $query->result[0][0];
 	}
 
-	function insertVinculo($idUsuario,$idGrupo)
+	function insertVinculo($idUsuario, $idGrupo)
 	{
 		$sql = new sql('idusuario,idgrupo','bt_vinculo');
+
 		$args = array(
 				$idUsuario,
 				$idGrupo
 		);
-		$ok = $this->execute($sql->insert($args));
+
+		$ok = $this->execute(
+				$sql->insert(
+						$args
+				)
+		);
+
 		return $ok;
 	}
 
@@ -158,10 +165,13 @@ class BusinessBibliotecaUsuario extends Business
 	{
 		global $MIOLO, $module;
 
-
+		
+		
 		echo '<pre>';
 		print_r($data);
 		echo '</pre>';
+		
+		
 
 		$db = $MIOLO->GetDatabase('sigaept');
 		$transaction = $db->getTransaction();
@@ -291,22 +301,26 @@ class BusinessBibliotecaUsuario extends Business
 					)
 			);
 
-			if($okInsertPessoa && $okInsertUsuario && $okInsertAluno) {
+			// Insere o usuário num Grupo
+			$data->idUsuario = $idUsuario;
+			$okVinculo = $this->InsereGrupoUsuario($idUsuario, $data);
+
+			if($okInsertPessoa && $okInsertUsuario && $okInsertAluno && $okVinculo) {
 				$transaction->commit();
-				
+
+				// Fechando Tranzação
+				$this->EndTransaction();
+
+				return true;
+
 			} else {
 				$transaction->rollback();
+
+				// Fechando Tranzação
+				$this->EndTransaction();
+
+				return false;
 			}
-
-			// Fechando Tranzação
-			$this->EndTransaction();
-
-			// OK ATE AQUI. CONSIDERE USAR UMA TRANSAÇÃO FUTURAMENTE. CONTINUE....
-
-			$data->idUsuario = $idUsuario;
-
-			//Insere o usuário num Grupo
-			$okVinculo = $this->InsereGrupoUsuario($idUsuario, $data);
 
 		}
 		else
@@ -514,6 +528,7 @@ class BusinessBibliotecaUsuario extends Business
 	}
 
 	/**
+	 * @author Daniel Bonfim
 	 * Converte para objeto FormData
 	 *
 	 * @param unknown $tabela
@@ -523,18 +538,17 @@ class BusinessBibliotecaUsuario extends Business
 	{
 		$data = new FormData();
 
-		// 9 ids
+		// 7 ids
 		$data->idPais = $tabela->idpais;
 		$data->idInstituicao = $tabela->idinstituicao;
 		$data->idSetor    = $tabela->idsetor;
 		$data->idMunicipio = $tabela->idmunicipio;
 		$data->idgrupo = $tabela->idgrupo ;
-		$data->idGrupoAnterior = $tabela->idgrupo;
 		$data->idPaisNascimento = $tabela->idpaisnascimento;
 		$data->idUsuario = $tabela->idusuario;
 		$data->idPessoa= $tabela->idpessoa;
 
-		// 30 fields (+passmd5)
+		// 29 fields (+passmd5)
 		$data->nome = $tabela->nome;
 		$data->bairro = $tabela->bairro;
 		$data->cep = $tabela->cep;
@@ -559,7 +573,6 @@ class BusinessBibliotecaUsuario extends Business
 		$data->municipio = $tabela->municipio;
 		$data->instituicao = $tabela->instituicao;
 		$data->paisNascimento = $tabela->pais;
-		$data->idGrupo = $tabela->idgrupo;
 		$data->login  = $tabela->login;
 		$data->apelido = $tabela->nick;
 		$data->senha   = $tabela->password;
@@ -606,16 +619,17 @@ class BusinessBibliotecaUsuario extends Business
 	{
 		global $MIOLO,$module;
 
-		$okVinculo =  $this->insertVinculo($idUsuario, $data->idgrupo);
+		$okVinculo =  $this->insertVinculo($idUsuario, $data->idGrupo);
 
 		$identificador = $idUsuario;
-		$ident1 = $data->idgrupo;
+		$ident1 = $data->idGrupo;
 		$mnemonicogrupo = 'INCVINCULO';
 
 		// LOG
 		$log = $MIOLO->GetBusiness($module,'log');
 		$log->SetData($this->getDataLog($identificador,$ident1,'',$mnemonicogrupo));
 		$log->save();
+		
 		return $okVinculo;
 	}
 

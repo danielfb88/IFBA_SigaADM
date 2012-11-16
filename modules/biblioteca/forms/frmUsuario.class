@@ -64,13 +64,13 @@ class frmUsuario extends Form {
 		*/
 
 		$fields = Array (
-				// 9 Ids
+				// 7 Ids
 				new MHiddenField('idPais'),
 				new MHiddenField('idInstituicao'),
 				new MHiddenField('idSetor'),
 				new MHiddenField('idMunicipio'),
-				new MHiddenField('idGrupo'),
-				new MHiddenField('idGrupoAnterior'),
+				// 				new MHiddenField('idGrupo'),
+				// 				new MHiddenField('idGrupoAnterior'),
 				new MHiddenField('idPaisNascimento'),
 				new MHiddenField('idUsuario'),
 				new MHiddenField('idPessoa'),
@@ -233,6 +233,9 @@ class frmUsuario extends Form {
 		} elseif (Form::GetformValue('slSexo') == null) {
 			$this->AddError('Informe o campo "Sexo"');
 
+		} elseif (Form::GetformValue('slGrupo') == null) {
+			$this->AddError('Informe o campo "Grupo"');
+
 		} else {
 			$status = true;
 		}
@@ -247,13 +250,12 @@ class frmUsuario extends Form {
 	 */
 	function setData($data)
 	{
-		// 9 ids
+		// 8 ids
 		$this->SetFieldValue('idPais',$data->idPais);
 		$this->SetFieldValue('idInstituicao',$data->idInstituicao);
 		$this->SetFieldValue('idSetor',$data->idSetor);
 		$this->SetFieldValue('idMunicipio',$data->idMunicipio);
-		$this->SetFieldValue('idGrupo',$data->idGrupo);
-		$this->SetFieldValue('idGrupoAnterior',$data->idGrupoAnterior);
+		// 		$this->SetFieldValue('idGrupo',$data->idGrupo);
 		$this->SetFieldValue('idPaisNascimento',$data->idPaisNascimento);
 		$this->SetFieldValue('idUsuario', $data->idUsuario);
 		$this->SetFieldValue('idPessoa',$data->idPessoa);
@@ -265,8 +267,8 @@ class frmUsuario extends Form {
 		$this->SetFieldValue('txDataNascimento',$this->formatarData($data->dataNascimento));
 		$this->SetFieldValue('txNomePai',$data->nomePai);
 		$this->SetFieldValue('txNomeMae',$data->nomeMae);
-		$this->SetFieldValue('slSexo',$data->sexo);
 		$this->SetFieldValue('txAnoChegada',$data->anoChegada);
+		$this->SetFieldValue('slSexo',$data->sexo);
 		$this->SetFieldValue('txTelefone',$data->telefone);
 		$this->SetFieldValue('txCelular',$data->celular);
 		$this->SetFieldValue('txEmail',$data->email);
@@ -283,7 +285,7 @@ class frmUsuario extends Form {
 		$this->SetFieldValue('lkpMunicipio',$data->municipio);
 		$this->SetFieldValue('lkpInstituicao',$data->instituicao);
 		$this->SetFieldValue('lkpPaisNascimento',$data->paisNascimento);
-		$this->SetFieldValue('slGrupo',$data->idgrupo);
+		$this->SetFieldValue('slGrupo',$data->idGrupo);
 		$this->SetFieldValue('txLogin', $data->login);
 		$this->SetFieldValue('txNick', $data->apelido);
 		$this->SetFieldValue('passSenha',$data->senha);
@@ -295,13 +297,12 @@ class frmUsuario extends Form {
 	{
 		$data = new FormData();
 
-		// 9 Ids
+		// 7 Ids
 		$data->idPais = $this->GetFormValue('idPais');
 		$data->idInstituicao = $this->getFormValue('idInstituicao');
 		$data->idSetor    = $this->GetFormValue('idSetor');
 		$data->idMunicipio = $this->GetFormValue('idMunicipio');
-		$data->idgrupo = $this->GetFieldValue('idGrupo');
-		$data->idGrupoAnterior = $this->GetFieldValue('idGrupoAnterior');
+		// 		$data->idgrupo = $this->GetFieldValue('idGrupo');
 		$data->idPaisNascimento = $this->GetFormValue('idPaisNascimento');
 		$data->idUsuario = $this->GetFormValue('idUsuario');
 		$data->idPessoa = $this->GetFormValue('idPessoa');
@@ -331,7 +332,7 @@ class frmUsuario extends Form {
 		$data->municipio  = $this->GetFormValue('lkpMunicipio');
 		$data->instituicao  = $this->GetFormValue('lkpInstituicao');
 		$data->paisNascimento  = $this->GetFormValue('lkpPaisNascimento');
-		$data->idGrupo  = $this->GetFormValue('slGrupo');
+		$data->idGrupo = $this->GetFormValue('slGrupo');
 		$data->login  = $this->GetFormValue('txLogin');
 		$data->apelido = $this->GetFormValue('txNick');
 		$data->senha   = $this->GetFormValue('passSenha');
@@ -398,12 +399,12 @@ class frmUsuario extends Form {
 
 		if($this->validarFields()) {
 			try {
-				var_dump("executando... <br/>");
 				$ok = $objUsuario->SaveUsuario($data);
 
 				if($ok) {
-					$MIOLO->Prompt(Prompt::Information("Usuário salvo com sucesso.",$MIOLO->GetActionURL($module,'main:controleacesso',$data->idUsuario,array('event'=>'btnEdit:click') )));
-					$this->objUsuario->Log(OP_UPD,'Alterado o usuário '.$data->login.' com o id = '. $data->idUsuario);
+					//$MIOLO->Prompt(Prompt::Information("Usuário salvo com sucesso.",$MIOLO->GetActionURL($module,'main:controleacesso',$data->idUsuario,array('event'=>'btnEdit:click') )));
+					$MIOLO->Information("Usuário ".$data->nome . " salvo com sucesso.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')));
+					$objUsuario->Log(OP_UPD,'Alterado o usuário '.$data->login.' com o id = '. $data->idUsuario);
 				}
 
 			} catch(Exception $e) {
@@ -411,6 +412,7 @@ class frmUsuario extends Form {
 				$MIOLO->Error("O usuário não foi salvo com sucesso", $action);
 			}
 		}
+		
 	}
 
 	function btnExcluir_click() {
