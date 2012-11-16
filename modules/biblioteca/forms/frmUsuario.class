@@ -412,27 +412,49 @@ class frmUsuario extends Form {
 				$MIOLO->Error("O usuário não foi salvo com sucesso", $action);
 			}
 		}
-		
+
 	}
 
 	function btnExcluir_click() {
 		global $MIOLO,$item,$theme,$action,$module;
 
 		$idUsuario = $item;
-		$objUsuario = $MIOLO->GetBusiness($module,'usuario');
 
-		if($idUsuario != 0){
+		$objUsuario = $MIOLO->GetBusiness($module,'usuario');
+		$data = $objUsuario->buscarPorId($idUsuario);
+
+		//$conf é a variável que confirma a exclusão do registro no momento
+		//em que é questionado ao usuário se ele deseja relmente excluir o registro
+		$conf = Form::GetFormValue('conf');
+
+		if( $conf == 'sim') //Caso o usuário tenha escolhido a opção sim
+		{
 			try
 			{
-				$ok = $objUsuario->DeleteUsuario($item);
-				$MIOLO->Information("Usuário ".$data->nome . " excluído com sucesso.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')));
-			}
-			catch (Exception $e)
+				$ok = $objUsuario->DeleteUsuario($idUsuario);
+				$MIOLO->prompt(Prompt::information("Usuário ".$data->nome . " excluído com sucesso.", $MIOLO->GetActionURL($module,$action)));
+				// 				$MIOLO->Information("Usuário ".$data->nome . " excluído com sucesso.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')));
+
+			} catch(EMioloException $e)
 			{
-				$MIOLO->Error("Usuário não foi deletado com sucesso.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')) );
+				$MIOLO->Error("Não foi possível deletar este Usuário.", $MIOLO->GetActionURL($module,$action));
 			}
-		}else{
-			$MIOLO->Error("Usuário administrador não pode ser deletado.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')));
+		}
+		elseif( $conf == 'nao')
+		{
+			$MIOLO->prompt(Prompt::information('Exclusão cancelada.', $MIOLO->GetActionURL($module,$action)));
+		}
+		else
+		{
+			//Caso a variável não possua o valor "sim" ou "não" significa que ainda não lhe foi atribuído um valor,
+			//ou seja, deve-se perguntar ao usuário se deseja realmente excluir o registro
+
+			$msg = "Tem certeza que deseja realmente excluir o usuário " . $data->nome . " ?";
+
+			$action_sim = $MIOLO->getActionURL($module,'main:secretaria:gerenciausuario&event=btnExcluir:click',$data->nome, array('conf'=>'sim', 'item' => $idUsuario));
+			$action_nao = $MIOLO->getActionURL($module,'main:secretaria:gerenciausuario&event=btnExcluir:click',$idUsuario, array('conf'=>'nao'));
+
+			$MIOLO->prompt(Prompt::question($msg, $action_sim, $action_nao));
 		}
 	}
 
