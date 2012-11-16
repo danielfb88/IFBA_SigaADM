@@ -156,11 +156,15 @@ class BusinessBibliotecaUsuario extends Business
 	// TODO: DEBUGAR! (Daniel Bonfim - 31/10/2012)
 	function SaveUsuario($data)
 	{
+		global $MIOLO, $module;
+
+
 		echo '<pre>';
 		print_r($data);
 		echo '</pre>';
 
-		global $MIOLO,$module;
+		$db = $MIOLO->GetDatabase('sigaept');
+		$transaction = $db->getTransaction();
 
 		$commands = array();
 		$okVinculo = false;
@@ -169,6 +173,9 @@ class BusinessBibliotecaUsuario extends Business
 		{
 			$idUsuario = $this->GetNextIdUsuario();
 			$idPessoa = $this->GetNextIdPessoa();
+
+			// Iniciando Tranzação
+			$transaction->begin();
 
 			// Criando Pessoa
 			$sql = new sql('
@@ -199,37 +206,37 @@ class BusinessBibliotecaUsuario extends Business
 					'cm_pessoa'
 			);
 
-			$commands[] = $sql->Insert(
-					array(
-							$idPessoa,
-							$data->nome,
-							$data->bairro,
-							$data->cep,
-							$data->dataNascimento,
-							$data->nomePai,
-							$data->nomeMae,
-							$data->sexo,
-							$data->anoChegada,
-							$data->telefone,
-							$data->celular,
-							$data->email,
-							$data->grupoSanguineo,
-							$data->cpf,
-							$data->numRg,
-							$data->tipoRg,
-							$data->orgaoRg,
-							$data->ufRg,
-							$data->numCartPro,
-							$data->serieCartPro,
-							$data->UfCartPro,
-							$data->idMunicipio,
-							$data->idPais,
-							$data->idPaisNascimento
+			$okInsertPessoa = $this->Execute(
+					$sql->Insert(
+							array(
+									$idPessoa,
+									$data->nome,
+									$data->bairro,
+									$data->cep,
+									$data->dataNascimento,
+									$data->nomePai,
+									$data->nomeMae,
+									$data->sexo,
+									$data->anoChegada,
+									$data->telefone,
+									$data->celular,
+									$data->email,
+									$data->grupoSanguineo,
+									$data->cpf,
+									$data->numRg,
+									$data->tipoRg,
+									$data->orgaoRg,
+									$data->ufRg,
+									$data->numCartPro,
+									$data->serieCartPro,
+									$data->UfCartPro,
+									$data->idMunicipio,
+									$data->idPais,
+									$data->idPaisNascimento
+							)
 					)
 			);
 
-
-			
 			// Criando Usuario
 			$sql2 = new sql('
 					idusuario,
@@ -242,15 +249,17 @@ class BusinessBibliotecaUsuario extends Business
 					'cm_usuario'
 			);
 
-			$commands[] = $sql2->Insert(
-					array(
-							$idUsuario,
-							$idPessoa,
-							$data->idSetor,
-							$data->login,
-							$data->senha,
-							$data->apelido,
-							$data->passmd5
+			$okInsertUsuario = $this->Execute(
+					$sql2->Insert(
+							array(
+									$idUsuario,
+									$idPessoa,
+									$data->idSetor,
+									$data->login,
+									$data->senha,
+									$data->apelido,
+									$data->passmd5
+							)
 					)
 			);
 
@@ -267,22 +276,31 @@ class BusinessBibliotecaUsuario extends Business
 					'ga_aluno'
 			);
 
-			$commands[] = $sql3->Insert(
-					array(
-							$data->login,
-							$data->anoChegada,
-							$data->semestreIngresso,
-							'1',
-							'1',
-							'1',
-							$data->idInstituicao,
-							$idPessoa
+			$okInsertAluno = $this->Execute(
+					$sql3->Insert(
+							array(
+									$data->login,
+									$data->anoChegada,
+									$data->semestreIngresso,
+									'1',
+									'1',
+									'1',
+									$data->idInstituicao,
+									$idPessoa
+							)
 					)
 			);
 
-			// Executando tudo
-			$okInsert = $this->Execute($commands);
-			
+			if($okInsertPessoa && $okInsertUsuario && $okInsertAluno) {
+				$transaction->commit();
+				
+			} else {
+				$transaction->rollback();
+			}
+
+			// Fechando Tranzação
+			$this->EndTransaction();
+
 			// OK ATE AQUI. CONSIDERE USAR UMA TRANSAÇÃO FUTURAMENTE. CONTINUE....
 
 			$data->idUsuario = $idUsuario;

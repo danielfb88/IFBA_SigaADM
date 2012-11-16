@@ -1,0 +1,4 @@
+/var/log/apache2/error.log 
+/var/www/sigaadm/miolo/var/log/miolo-error.log
+/var/www/sigaadm/miolo/var/log/sigaept-error.log
+/var/www/sigaadm/miolo/var/log/common-sql.log
