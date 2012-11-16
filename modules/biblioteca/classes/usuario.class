@@ -160,18 +160,15 @@ class BusinessBibliotecaUsuario extends Business
 		return $query->result[0];
 	}
 
-	// TODO: DEBUGAR! (Daniel Bonfim - 31/10/2012)
-	function SaveUsuario($data)
-	{
+	/**
+	 * @author Daniel Bonfim
+	 * @since 16/11/2012
+	 *
+	 * @param unknown $data
+	 * @return boolean
+	 */
+	function SaveUsuario($data) {
 		global $MIOLO, $module;
-
-		
-		
-		echo '<pre>';
-		print_r($data);
-		echo '</pre>';
-		
-		
 
 		$db = $MIOLO->GetDatabase('sigaept');
 		$transaction = $db->getTransaction();
@@ -303,9 +300,9 @@ class BusinessBibliotecaUsuario extends Business
 
 			// Insere o usuário num Grupo
 			$data->idUsuario = $idUsuario;
-			$okVinculo = $this->InsereGrupoUsuario($idUsuario, $data);
+			$okInsertVinculo = $this->InsereGrupoUsuario($idUsuario, $data);
 
-			if($okInsertPessoa && $okInsertUsuario && $okInsertAluno && $okVinculo) {
+			if($okInsertPessoa && $okInsertUsuario && $okInsertAluno && $okInsertVinculo) {
 				$transaction->commit();
 
 				// Fechando Tranzação
@@ -325,89 +322,147 @@ class BusinessBibliotecaUsuario extends Business
 		}
 		else
 		{
-			die("Com ID usuario (UPDATE): $data->idUsuario");
+			// Iniciando Tranzação
+			$transaction->begin();
 
-			$sql1 = new sql('idpessoa', 'cm_usuario', 'idusuario = ?');
-			$query = $this->Query($sql1, $data->idUsuario);
-			$idPessoa = $query->result[0][0];
-
+			// Alterando Pessoa
 			$sql = new sql(
-					'nome, bairro, cep, datanasc, nomepai, nomemae, sexo, anochegbrasil, telefone,
-					celular, email, gruposanguineo, cpf, numrg, tiporg, orgaorg, ufrg, numcartpro,
-					seriecartpro, ufcartpro, idmunicipio, idpais, idpaisnascimento',
+					//idpessoa,
+					'nome,
+					bairro,
+					cep,
+					datanasc,
+					nomepai,
+					nomemae,
+					sexo,
+					anochegbrasil,
+					telefone,
+					celular,
+					email,
+					gruposanguineo,
+					cpf,
+					numrg,
+					tiporg,
+					orgaorg,
+					ufrg,
+					numcartpro,
+					seriecartpro,
+					ufcartpro,
+					idmunicipio,
+					idpais,
+					idpaisnascimento',
 					'cm_pessoa',
-					"idpessoa = $idPessoa"
+					"idpessoa = $data->idPessoa"
 			);
 
+			$okUpdatePessoa = $this->Execute(
+					$sql->Update(
+							array(
+									// 									$data->idPessoa,
+									$data->nome,
+									$data->bairro,
+									$data->cep,
+									$data->dataNascimento,
+									$data->nomePai,
+									$data->nomeMae,
+									$data->sexo,
+									$data->anoChegada,
+									$data->telefone,
+									$data->celular,
+									$data->email,
+									$data->grupoSanguineo,
+									$data->cpf,
+									$data->numRg,
+									$data->tipoRg,
+									$data->orgaoRg,
+									$data->ufRg,
+									$data->numCartPro,
+									$data->serieCartPro,
+									$data->UfCartPro,
+									$data->idMunicipio,
+									$data->idPais,
+									$data->idPaisNascimento
+							)
+					)
+			);
+
+			// Alterando Usuario
 			$sql2 = new sql(
-					'idsetor, login, password, nick, passmd5',
+					//idusuario,
+					'idpessoa,
+					idsetor,
+					login,
+					password,
+					nick,
+					passmd5',
 					'cm_usuario',
-					"idusuario= $data->idUsuario"
+					"idusuario = $data->idUsuario"
 			);
 
+			$okUpdateUsuario = $this->Execute(
+					$sql2->Update(
+							array(
+									// 									$data->idUsuario,
+									$data->idPessoa,
+									$data->idSetor,
+									$data->login,
+									$data->senha,
+									$data->apelido,
+									$data->passmd5
+							)
+					)
+			);
+
+			// Alterando Aluno
 			$sql3 = new sql(
-					'matricula, anoingresso, semingresso, situacaoaluno, idtipoingresso, idsituacao, idinstituicao',
+					//matricula,
+					'anoingresso,
+					semingresso,
+					situacaoaluno,
+					idtipoingresso,
+					idsituacao,
+					idinstituicao,
+					idpessoa',
 					'ga_aluno',
-					"idpessoa = $idPessoa"
+					"idpessoa = $data->idPessoa"
 			);
 
-			$commands[] = $sql->Update(
-					array(
-							$data->nome,
-							$data->bairro,
-							$data->cep,
-							$data->dataNascimento,
-							$data->nomePai,
-							$data->nomeMae,
-							$data->sexo,
-							$data->anoChegada,
-							$data->telefone,
-							$data->celular,
-							$data->email,
-							$data->grupoSanguineo,
-							$data->cpf,
-							$data->numRg,
-							$data->tipoRg,
-							$data->orgaoRg,
-							$data->ufRg,
-							$data->numCartPro,
-							$data->serieCartPro,
-							$data->UfCartPro,
-							$data->idMunicipio,
-							$data->idPais,
-							$data->idPaisNascimento
+			$okUpdateAluno = $this->Execute(
+					$sql3->Update(
+							array(
+									// 									$data->login,
+									$data->anoChegada,
+									$data->semestreIngresso,
+									'1',
+									'1',
+									'1',
+									$data->idInstituicao,
+									$data->idPessoa
+							)
 					)
 			);
 
-			$commands[] = $sql2->Update(
-					array(
-							$data->idSetor,
-							$data->login,
-							$data->senha,
-							$data->apelido,
-							$data->passmd5
-					)
-			);
+			// Altera o usuário num Grupo
+			$okUpdateVinculo = $this->AlteraGrupoUsuario($data);
 
-			$commands[] = $sql3->Update(
-					array(
-							$data->login,
-							$data->anoChegada,
-							$data->semestreIngresso,
-							'1',
-							'1',
-							'1',
-							$data->idInstituicao
-					)
-			);
+			if($okUpdatePessoa && $okUpdateUsuario && $okUpdateAluno && $okUpdateVinculo) {
+				$transaction->commit();
 
-			$okUpdate = $this->Execute($commands);
+				// Fechando Tranzação
+				$this->EndTransaction();
 
-			//Altera o usuário num Grupo
-			$okVinculo = $this->AlteraGrupoUsuario($data);
+				return true;
+
+			} else {
+				$transaction->rollback();
+
+				// Fechando Tranzação
+				$this->EndTransaction();
+
+				return false;
+			}
+
 		}
-
-		return ($okInsert || $okUpdate) && $okVinculo;
 	}
 
 	function DeleteUsuario($idUsuario)
@@ -543,7 +598,7 @@ class BusinessBibliotecaUsuario extends Business
 		$data->idInstituicao = $tabela->idinstituicao;
 		$data->idSetor    = $tabela->idsetor;
 		$data->idMunicipio = $tabela->idmunicipio;
-		$data->idgrupo = $tabela->idgrupo ;
+		$data->idGrupo = $tabela->idgrupo;
 		$data->idPaisNascimento = $tabela->idpaisnascimento;
 		$data->idUsuario = $tabela->idusuario;
 		$data->idPessoa= $tabela->idpessoa;
@@ -609,7 +664,12 @@ class BusinessBibliotecaUsuario extends Business
 	function UpdateGrupo($data)
 	{
 		$sql = new sql('idgrupo','bt_vinculo','idusuario = ?');
-		$values = array($data->idgrupo,$data->idUsuario);
+
+		$values = array(
+				$data->idGrupo,
+				$data->idUsuario
+		);
+
 		$ok = $this->Execute($sql->Update($values));
 		return $ok;
 	}
@@ -629,19 +689,22 @@ class BusinessBibliotecaUsuario extends Business
 		$log = $MIOLO->GetBusiness($module,'log');
 		$log->SetData($this->getDataLog($identificador,$ident1,'',$mnemonicogrupo));
 		$log->save();
-		
+
 		return $okVinculo;
 	}
 
 	//Altera o relacionamento entre um dado usuário e um dos grupos de usuários que possuem acesso a biblioteca.
 	function AlteraGrupoUsuario($data){
 		global $MIOLO,$module;
+
 		$log = $MIOLO->GetBusiness($module,'log');
 		$okVinculo =  $this->UpdateGrupo($data);
+
 		$identificador = $data->idUsuario;
 		$ident1 = $data->idGrupoAnterior;
 		$ident2 = $data->idgrupo;
 		$mnemonicogrupo = 'ALTGRUPO';
+
 		// LOG
 		$log->SetData($this->getDataLog($identificador,$ident1,$ident2,$mnemonicogrupo));
 		$log->save();
