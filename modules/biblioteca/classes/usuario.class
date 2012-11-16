@@ -164,7 +164,7 @@ class BusinessBibliotecaUsuario extends Business
 	 * @author Daniel Bonfim
 	 * @since 16/11/2012
 	 *
-	 * @param unknown $data
+	 * @param FormData $data
 	 * @return boolean
 	 */
 	function SaveUsuario($data) {
@@ -174,7 +174,6 @@ class BusinessBibliotecaUsuario extends Business
 		$transaction = $db->getTransaction();
 
 		$commands = array();
-		$okVinculo = false;
 
 		if (!$data->idUsuario)
 		{
@@ -327,7 +326,6 @@ class BusinessBibliotecaUsuario extends Business
 
 			// Alterando Pessoa
 			$sql = new sql(
-					//idpessoa,
 					'nome,
 					bairro,
 					cep,
@@ -358,7 +356,6 @@ class BusinessBibliotecaUsuario extends Business
 			$okUpdatePessoa = $this->Execute(
 					$sql->Update(
 							array(
-									// 									$data->idPessoa,
 									$data->nome,
 									$data->bairro,
 									$data->cep,
@@ -388,7 +385,6 @@ class BusinessBibliotecaUsuario extends Business
 
 			// Alterando Usuario
 			$sql2 = new sql(
-					//idusuario,
 					'idpessoa,
 					idsetor,
 					login,
@@ -402,7 +398,6 @@ class BusinessBibliotecaUsuario extends Business
 			$okUpdateUsuario = $this->Execute(
 					$sql2->Update(
 							array(
-									// 									$data->idUsuario,
 									$data->idPessoa,
 									$data->idSetor,
 									$data->login,
@@ -415,8 +410,8 @@ class BusinessBibliotecaUsuario extends Business
 
 			// Alterando Aluno
 			$sql3 = new sql(
-					//matricula,
-					'anoingresso,
+					'matricula,
+					anoingresso,
 					semingresso,
 					situacaoaluno,
 					idtipoingresso,
@@ -430,7 +425,7 @@ class BusinessBibliotecaUsuario extends Business
 			$okUpdateAluno = $this->Execute(
 					$sql3->Update(
 							array(
-									// 									$data->login,
+									$data->login,
 									$data->anoChegada,
 									$data->semestreIngresso,
 									'1',
