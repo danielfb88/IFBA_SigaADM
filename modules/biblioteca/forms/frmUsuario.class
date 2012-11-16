@@ -401,14 +401,13 @@ class frmUsuario extends Form {
 					//$MIOLO->Prompt(Prompt::Information("Usuário salvo com sucesso.",$MIOLO->GetActionURL($module,'main:controleacesso',$data->idUsuario,array('event'=>'btnEdit:click') )));
 					$MIOLO->Information("Usuário ".$data->nome . " salvo com sucesso.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')));
 					$objUsuario->Log(OP_UPD,'Alterado o usuário '.$data->login.' com o id = '. $data->idUsuario);
-					
+						
 				} else {
 					$MIOLO->Information("Não foi possível salvar o usuário.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')));
 				}
 
 			} catch(Exception $e) {
-				$action = 'onclick= history.go(-1);';
-				$MIOLO->Error("O usuário não foi salvo com sucesso", $action);
+				$MIOLO->Error("Não foi possível salvar o usuário.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')));
 			}
 		}
 
