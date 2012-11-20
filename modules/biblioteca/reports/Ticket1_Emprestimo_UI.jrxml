@@ -1,60 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="null" pageWidth="230" pageHeight="460" columnWidth="180" leftMargin="13" rightMargin="13" topMargin="10" bottomMargin="10">
-	<subDataset name="dataset1"/>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="null" pageWidth="230" pageHeight="460" whenNoDataType="AllSectionsNoDetail" columnWidth="204" leftMargin="13" rightMargin="13" topMargin="10" bottomMargin="10">
+	<subDataset name="dataset1">
+		<queryString language="SQL">
+			<![CDATA[]]>
+		</queryString>
+		<filterExpression><![CDATA[Boolean.TRUE]]></filterExpression>
+	</subDataset>
 	<parameter name="CODIGOACESSO" class="java.lang.String"/>
-	<queryString>
-		<![CDATA[select cm_pessoa.nome, bt_validacao.codigoacesso, bt_obra.titulo, bt_material.conteudo as autor, 
-bt_exemplar.volume, bt_exemplar.numerodotombo, bt_exemplar.numinventario, 
-bt_emprestimo.datahoradoemprestimo, bt_emprestimo.datahoraprevisaodevolucao
-from bt_emprestimo INNER JOIN bt_exemplar ON bt_exemplar.idexemplar = bt_emprestimo.idexemplar
-INNER JOIN cm_usuario ON bt_emprestimo.idusuario = cm_usuario.idusuario
-INNER JOIN cm_pessoa ON cm_usuario.idpessoa = cm_pessoa.idpessoa
-INNER JOIN bt_obra ON bt_exemplar.idobra = bt_obra.idobra 
-INNER JOIN bt_validacao ON cm_usuario.idusuario = bt_validacao.idusuario
-INNER JOIN bt_obra ON bt_material.idobra = bt_obra.idobra
-INNER JOIN bt_material ON bt_material.idobra = bt_obra.idobra  
-WHERE (bt_validacao.codigoacesso = $P{CODIGOACESSO} 
-and bt_emprestimo.datahoradadevolucao is null    
-and bt_material.idetiqueta=53
-and bt_material.idsubcampo =a
-  )]]>
+	<queryString language="SQL">
+		<![CDATA[SELECT 
+p.nome,
+v.codigoacesso,
+obr.titulo,
+a.conteudo as autor,
+exemp.volume,
+exemp.numerodotombo,
+exemp.numinventario,
+empr.datahoradoemprestimo,
+empr.datahoraprevisaodevolucao
+
+FROM cm_pessoa p
+JOIN cm_usuario u ON (p.idpessoa = u.idpessoa)
+JOIN bt_validacao v ON (u.idusuario = v.idusuario)
+JOIN bt_emprestimo empr ON (u.idusuario = empr.idusuario)
+JOIN bt_obra obr ON (empr.idobra = obr.idobra)
+JOIN bt_autor a ON (obr.idautor = a.idautor)
+JOIN bt_exemplar exemp ON (exemp.idexemplar = empr.idexemplar)
+
+WHERE 
+v.codigoacesso = $P{CODIGOACESSO} AND
+empr.datahoradadevolucao IS NULL AND
+a.idetiqueta = 53 AND
+a.subcampo = 'a']]>
 	</queryString>
-	<field name="nome" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="codigoacesso" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="titulo" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="autor" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="volume" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="numerodotombo" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="numinventario" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="datahoradoemprestimo" class="java.sql.Timestamp">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="datahoraprevisaodevolucao" class="java.sql.Timestamp">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<background>
-		<band/>
-	</background>
+	<field name="nome" class="java.lang.String"/>
+	<field name="codigoacesso" class="java.lang.String"/>
+	<field name="titulo" class="java.lang.String"/>
+	<field name="autor" class="java.lang.String"/>
+	<field name="volume" class="java.lang.String"/>
+	<field name="numerodotombo" class="java.lang.String"/>
+	<field name="numinventario" class="java.lang.String"/>
+	<field name="datahoradoemprestimo" class="java.sql.Timestamp"/>
+	<field name="datahoraprevisaodevolucao" class="java.sql.Timestamp"/>
 	<title>
-		<band height="102">
-			<line>
+		<band height="102" splitType="Stretch">
+			<line direction="BottomUp">
 				<reportElement x="1" y="5" width="200" height="1"/>
 			</line>
-			<line>
+			<line direction="BottomUp">
 				<reportElement x="1" y="25" width="200" height="1"/>
 			</line>
 			<staticText>
@@ -78,7 +71,7 @@ and bt_material.idsubcampo =a
 				</textElement>
 				<text><![CDATA[Usuário...:]]></text>
 			</staticText>
-			<textField hyperlinkType="None">
+			<textField>
 				<reportElement x="71" y="53" width="135" height="14"/>
 				<textElement>
 					<font fontName="Monospaced" size="10" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
@@ -99,7 +92,7 @@ and bt_material.idsubcampo =a
 				</textElement>
 				<text><![CDATA[Codigo....:]]></text>
 			</staticText>
-			<textField hyperlinkType="None">
+			<textField>
 				<reportElement x="71" y="68" width="135" height="14"/>
 				<textElement>
 					<font fontName="Monospaced" size="10" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
@@ -109,10 +102,10 @@ and bt_material.idsubcampo =a
 		</band>
 	</title>
 	<pageHeader>
-		<band/>
+		<band splitType="Stretch"/>
 	</pageHeader>
 	<detail>
-		<band height="106">
+		<band height="106" splitType="Stretch">
 			<staticText>
 				<reportElement x="1" y="4" width="68" height="14"/>
 				<textElement>
@@ -155,45 +148,45 @@ and bt_material.idsubcampo =a
 				</textElement>
 				<text><![CDATA[Tombo.....:]]></text>
 			</staticText>
-			<line>
+			<line direction="BottomUp">
 				<reportElement x="2" y="102" width="199" height="1"/>
 			</line>
-			<textField hyperlinkType="None">
+			<textField>
 				<reportElement x="71" y="4" width="135" height="14"/>
 				<textElement>
 					<font fontName="Monospaced" size="10" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{titulo}]]></textFieldExpression>
 			</textField>
-			<textField hyperlinkType="None">
+			<textField>
 				<reportElement x="71" y="20" width="135" height="14"/>
 				<textElement>
 					<font fontName="Monospaced" size="10" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{autor}]]></textFieldExpression>
 			</textField>
-			<textField hyperlinkType="None">
+			<textField>
 				<reportElement x="71" y="36" width="135" height="14"/>
 				<textElement>
 					<font fontName="Monospaced" size="10" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{volume}]]></textFieldExpression>
 			</textField>
-			<textField hyperlinkType="None">
+			<textField>
 				<reportElement x="71" y="52" width="135" height="14"/>
 				<textElement>
 					<font fontName="Monospaced" size="10" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{numerodotombo}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yyyy HH.mm.ss" hyperlinkType="None">
+			<textField pattern="dd/MM/yyyy HH.mm.ss">
 				<reportElement x="71" y="68" width="135" height="14"/>
 				<textElement>
 					<font fontName="Monospaced" size="10" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression class="java.util.Date"><![CDATA[$F{datahoradoemprestimo}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd/MM/yyyy HH.mm.ss" hyperlinkType="None">
+			<textField pattern="dd/MM/yyyy HH.mm.ss">
 				<reportElement x="71" y="84" width="135" height="14"/>
 				<textElement>
 					<font fontName="Monospaced" size="10" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
@@ -203,11 +196,11 @@ and bt_material.idsubcampo =a
 		</band>
 	</detail>
 	<columnFooter>
-		<band/>
+		<band splitType="Stretch"/>
 	</columnFooter>
 	<summary>
-		<band height="126">
-			<textField pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="false" hyperlinkType="None">
+		<band height="126" splitType="Stretch">
+			<textField pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="false">
 				<reportElement key="textField" x="15" y="102" width="172" height="19" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -234,7 +227,7 @@ and bt_material.idsubcampo =a
 				</textElement>
 				<text><![CDATA[Assinatura]]></text>
 			</staticText>
-			<line>
+			<line direction="BottomUp">
 				<reportElement x="1" y="81" width="199" height="1"/>
 			</line>
 		</band>
