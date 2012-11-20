@@ -143,6 +143,9 @@ class frmUsuario extends Form {
 
 		// Validação do campo txLogin
 		$this->txLogin->AddAttribute('maxlength','20');
+		
+		// Validação do campo txTipoRg
+		$this->txTipoRg->AddAttribute('maxlength','20');
 
 		//Validaçao do campo CPF
 		$this->txCPF->AddAttribute('maxlength','14');
