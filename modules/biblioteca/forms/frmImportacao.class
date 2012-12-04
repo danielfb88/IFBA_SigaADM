@@ -91,6 +91,12 @@ class frmImportacao extends MForm
 	function btnEnviar_click()
 	{
 		$dados = $this->GetData();
+
+		echo '<pre>';
+		print_r($this->GetFormValue('txtObraMarc'));
+		echo '</pre>';
+		die;
+
 		//Obtem Livros a serem importados. Inicialmente, não estou considerando a importação de mais de um livro.
 		for($indLivros = 0; $indLivros< count($dados->livros);$indLivros++ ){
 			$livro = $dados->livros[$indLivros];
