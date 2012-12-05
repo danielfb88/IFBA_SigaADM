@@ -88,14 +88,78 @@ class frmImportacao extends MForm
 
 	}
 
-	function btnEnviar_click()
-	{
-		$dados = $this->GetData();
+	/**
+	 * @author Daniel Bonfim
+	 * @since 05/12/2012
+	 *
+	 * Divide o código em 3 partes:
+	 * 		Líder;
+	 *		Diretório;
+	 *		Campos de controle variável
+	 *
+	 * @param String $marc
+	 * @return array com informaçoes sobre lider, diretorio e campos do registro.
+	 */
+	private function separarPartes($marc) {
+		// TODO: DETALHAR CADA CARACTERE E INSERIR NO ARRAY EM SUA DEVIDA POSICAO
+
+		$livro = array(
+				'lider' => null,
+				'diretorio' => null,
+				'campos' => null
+		);
+
+		// Obtendo lider
+		$livro['lider'] = substr($marc, 0, 23);
+
+		// Obtendo Diretorio
+		$i = 24;
+		#nFimdiretorio = 0;
+		$sairLoop = false;
+		while($sairLoop == false) {
+			$livro['diretorio'] = $livro['diretorio'] . $marc[$i];
+
+			if ($marc[$i] == '^') {
+				$livro['diretorio'] = str_replace('^', '', $livro['diretorio']);
+				$sairLoop = true;
+				$nFimDiretorio = $i;
+			} else {
+				$i++;
+			}
+		}
+
+		// Obtendo Campos
+		for($i=$nFimDiretorio+1; $i < strlen($marc); $i++) {
+			$livro['campos'] = $livro['campos'] . $marc[$i];
+		}
+
+		return $livro;
+	}
+
+	/**
+	 * @author Daniel Bonfim
+	 * @since 05/12/2012
+	 */
+	function btnEnviar_click() {
+		$txtObraMarc = $this->GetFormValue('txtObraMarc');
+
+		$livro = $this->separarPartes($txtObraMarc);
 
 		echo '<pre>';
-		print_r($this->GetFormValue('txtObraMarc'));
+		echo '<br/><br/> ' . $txtObraMarc;
+		print_r($livro);
 		echo '</pre>';
 		die;
+
+
+
+
+
+
+
+
+
+
 
 		//Obtem Livros a serem importados. Inicialmente, não estou considerando a importação de mais de um livro.
 		for($indLivros = 0; $indLivros< count($dados->livros);$indLivros++ ){
