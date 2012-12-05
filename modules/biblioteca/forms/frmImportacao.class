@@ -101,26 +101,30 @@ class frmImportacao extends MForm
 	 * @return array com informaçoes sobre lider, diretorio e campos do registro.
 	 */
 	private function separarPartes($marc) {
-		// TODO: DETALHAR CADA CARACTERE E INSERIR NO ARRAY EM SUA DEVIDA POSICAO
+		// Removendo caractere de quebra-linha
+		$marc = str_replace("\r\n", '', $marc);
+
+
+		echo '<br/><br/>'.$marc;
 
 		$livro = array(
-				'lider' => null,
+				'lider' => array(),
 				'diretorio' => null,
 				'campos' => null
 		);
 
 		// Obtendo lider
-		$livro['lider'] = substr($marc, 0, 23);
+		$lider = substr($marc, 0, 24); // 24 primeiros caracteres, contando com 0
+		$livro['lider'] = $this->obterLiderDetalhes($lider);
 
 		// Obtendo Diretorio
 		$i = 24;
-		#nFimdiretorio = 0;
 		$sairLoop = false;
 		while($sairLoop == false) {
-			$livro['diretorio'] = $livro['diretorio'] . $marc[$i];
+			$diretorio = $diretorio . $marc[$i];
 
 			if ($marc[$i] == '^') {
-				$livro['diretorio'] = str_replace('^', '', $livro['diretorio']);
+				$diretorio = str_replace('^', '', $diretorio);
 				$sairLoop = true;
 				$nFimDiretorio = $i;
 			} else {
@@ -128,12 +132,89 @@ class frmImportacao extends MForm
 			}
 		}
 
+		echo '<br/><br/>';
+		var_dump($diretorio);
+		echo '<br/><br/>';
+		$livro['diretorio'] = $this->obterDiretorioDetalhes($diretorio);
+
+		// 		echo '<br/><br/>';
+		echo '<pre>';
+		print_r($livro);
+		echo '</pre>';
+		die;
+
 		// Obtendo Campos
 		for($i=$nFimDiretorio+1; $i < strlen($marc); $i++) {
 			$livro['campos'] = $livro['campos'] . $marc[$i];
 		}
 
 		return $livro;
+	}
+
+	/**
+	 * Obtem Lider com todos os seus detalhes em um array
+	 *
+	 * @param unknown $marc
+	 * @return multitype:unknown NULL
+	 */
+	private function obterLiderDetalhes($marcLider) {
+		$lider = array();
+
+		$lider['infoCompleta'] = $marcLider;
+		$lider['comprimentoLogico'] = substr($marcLider, 0, 5);
+		$lider['status'] = $marcLider[5];
+		$lider['tipo'] = $marcLider[6];
+		$lider['nivelBibliografico'] = $marcLider[7];
+		$lider['tipoDeControle'] = $marcLider[8];
+		$lider['esquemaCodificacaoCaractere'] = $marcLider[9];
+		$lider['contagemIndicadores'] = $marcLider[10];
+		$lider['contagemCodigoSubcampo'] = $marcLider[11];
+		$lider['enderecoBaseDosDados'] = substr($marcLider, 12, 5);
+		$lider['nivelCodificacao'] = $marcLider[17];
+		$lider['formaCatalogacaoDescritiva'] = $marcLider[18];
+		$lider['exigenciaRegistroVinculado'] = $marcLider[19];
+		$lider['extensaoParteTamanhoCampo'] = $marcLider[20];
+		$lider['extensaoPartePosicaoCaractereInicio'] = $marcLider[21];
+		$lider['extensaoParteDefinidaImplementacao'] = $marcLider[22];
+		$lider['indefinido'] = $marcLider[23];
+
+		return $lider;
+	}
+
+	/**
+	 * Obtem Diretorio com detalhes em array
+	 *
+	 * @param unknown $marcDiretorio
+	 * @return multitype:
+	 */
+	private function obterDiretorioDetalhes($marcDiretorio) {
+		$diretorioStrLength = strLen($marcDiretorio);
+		
+		$arrCampo = null;
+		$aux = null;
+
+		for($i=0; $i <= $diretorioStrLength; $i++) {
+			
+			if($i % 12 == 0 && $i > 0) {
+				$campo = null;
+
+				$campo['infoCompleta'] = $aux;
+				$campo['tag'] = substr($aux, 0, 3);
+				$campo['numCaracteres'] = substr($aux, 3, 4);
+				$campo['posicaoNaSequencia'] = substr($aux, 7, 5);
+
+				$arrCampo[] = $campo;
+				$aux = null;
+			}
+			
+			$aux .= $marcDiretorio[$i];
+		}
+
+		return $arrCampo;
+	}
+
+	private function obterCampos($markCompleto) {
+		// TODO: DEsenvolver
 	}
 
 	/**
