@@ -104,22 +104,25 @@ class frmImportacao extends MForm
 		// Removendo caractere de quebra-linha
 		$marc = str_replace("\r\n", '', $marc);
 
-
-		echo '<br/><br/>'.$marc;
-
 		$livro = array(
 				'lider' => array(),
-				'diretorio' => null,
-				'campos' => null
+				'diretorio' => array(),
+				'campos' => array()
 		);
 
-		// Obtendo lider
+		/*
+		 *  Obtendo lider
+		*/
 		$lider = substr($marc, 0, 24); // 24 primeiros caracteres, contando com 0
 		$livro['lider'] = $this->obterLiderDetalhes($lider);
 
-		// Obtendo Diretorio
+		/*
+		 * Obtendo Diretorio
+		*/
 		$i = 24;
 		$sairLoop = false;
+		$nFimDiretorio = 0;
+
 		while($sairLoop == false) {
 			$diretorio = $diretorio . $marc[$i];
 
@@ -131,22 +134,18 @@ class frmImportacao extends MForm
 				$i++;
 			}
 		}
-
-		echo '<br/><br/>';
-		var_dump($diretorio);
-		echo '<br/><br/>';
 		$livro['diretorio'] = $this->obterDiretorioDetalhes($diretorio);
 
-		// 		echo '<br/><br/>';
-		echo '<pre>';
-		print_r($livro);
-		echo '</pre>';
-		die;
+		/*
+		 * Obtendo Campos
+		*/
+		$campos = null;
 
-		// Obtendo Campos
-		for($i=$nFimDiretorio+1; $i < strlen($marc); $i++) {
-			$livro['campos'] = $livro['campos'] . $marc[$i];
+		for($i = $nFimDiretorio + 1; $i < strlen($marc); $i++) {
+			$campos .= $marc[$i];
 		}
+		$livro['campos'] = $this->obterCamposDetalhes($campos);
+
 
 		return $livro;
 	}
@@ -189,12 +188,12 @@ class frmImportacao extends MForm
 	 */
 	private function obterDiretorioDetalhes($marcDiretorio) {
 		$diretorioStrLength = strLen($marcDiretorio);
-		
+
 		$arrCampo = null;
 		$aux = null;
 
 		for($i=0; $i <= $diretorioStrLength; $i++) {
-			
+
 			if($i % 12 == 0 && $i > 0) {
 				$campo = null;
 
@@ -206,15 +205,17 @@ class frmImportacao extends MForm
 				$arrCampo[] = $campo;
 				$aux = null;
 			}
-			
+
 			$aux .= $marcDiretorio[$i];
 		}
 
 		return $arrCampo;
 	}
 
-	private function obterCampos($markCompleto) {
-		// TODO: DEsenvolver
+	// TODO: DEsenvolver
+	private function obterCamposDetalhes($marcCampos) {
+
+		return $marcCampos;
 	}
 
 	/**
