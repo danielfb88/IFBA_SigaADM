@@ -146,7 +146,6 @@ class frmImportacao extends MForm
 		}
 		$livro['campos'] = $this->obterCamposDetalhes($campos);
 
-
 		return $livro;
 	}
 
