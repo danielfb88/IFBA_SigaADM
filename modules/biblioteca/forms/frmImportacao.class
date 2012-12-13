@@ -225,7 +225,7 @@ class frmImportacao extends MForm
 	 */
 	private function obterCamposDetalhes($marcCampos, array $arrDiretorio) {
 		$arrCamposVariaveis = null;
-		$arrCamposVariaveis['infoCompleta'] = $marcCampos;
+		// 		$arrCamposVariaveis['infoCompleta'] = $marcCampos;
 
 		for($i = 0; $i < count($arrDiretorio); $i++) {
 			$campoVariavel = null;
@@ -266,16 +266,72 @@ class frmImportacao extends MForm
 
 	/**
 	 * @author Daniel Bonfim
+	 * @since 13-12-2012
+	 *
+	 * Verifica se a editora existe e em caso negativo, salva.
+	 *
+	 * Salva Editora
+	 * @param array $livro
+	 * @return Int $idEditora
+	 */
+	function salvarEditora(array $livro) {
+		$editora = array(
+				'municipio' => null,
+				'descricao' => null
+		);
+
+		for($i = 0; $i < count($livro['campos']); $i++) {
+
+			if ($livro['campos'][$i]['tag'] == 260) {
+
+				for($j = 0; $j < count($livro['campos'][$i]['info']); $j++) {
+					if ($livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+						$editora['municipio'] = $livro['campos'][$i]['info'][$j]['conteudo'];
+
+					} else if ($livro['campos'][$i]['info'][$j]['subCampo'] == 'b') {
+						$editora['descricao'] = $livro['campos'][$i]['info'][$j]['conteudo'];
+					}
+				}
+			}
+		}
+
+		$bussEditora = $MIOLO->GetBusiness($module, 'editora');
+
+		$idEditora = $bussEditora->getIdByDesc($editora['descricao']);
+
+		// Se a editora não estiver cadastrada, insira
+		if($idEditora == null) {
+			$idEditora = $bussEditora->InsertImportacao($editora['descricao'], $editora['municipio']);
+		}
+
+		return $idEditora;
+	}
+
+	/**
+	 * @author Daniel Bonfim
 	 * @since 05/12/2012
 	 */
 	function btnEnviar_click() {
-		$txtObraMarc = $this->GetFormValue('txtObraMarc');
+		global $MIOLO, $module;
 
+		$txtObraMarc = $this->GetFormValue('txtObraMarc');
 		$livro = $this->separarPartes($txtObraMarc);
+
+		// Editora
+		$idEditora = salvarEditora($livro);
+		// Autor
+		// TODO: Desenvolva
+		// Obra
+		// TODO: Desenvolva
+
+
+
+		var_dump($statusEditora);die;
+			
 
 		echo '<pre>';
 		echo '<br/><br/> ' . $txtObraMarc;
-		print_r($livro);
+		print_r($editora);
 		echo '</pre>';
 		die;
 
