@@ -144,12 +144,14 @@ class frmImportacao extends MForm
 		for($i = $nFimDiretorio + 1; $i < strlen($marc); $i++) {
 			$campos .= $marc[$i];
 		}
-		$livro['campos'] = $this->obterCamposDetalhes($campos);
+		$livro['campos'] = $this->obterCamposDetalhes($campos, $livro['diretorio']);
 
 		return $livro;
 	}
 
 	/**
+	 * @author Daniel Bonfim
+	 *
 	 * Obtem Lider com todos os seus detalhes em um array
 	 *
 	 * @param unknown $marc
@@ -180,6 +182,8 @@ class frmImportacao extends MForm
 	}
 
 	/**
+	 * @author Daniel Bonfim
+	 *
 	 * Obtem Diretorio com detalhes em array
 	 *
 	 * @param unknown $marcDiretorio
@@ -211,10 +215,53 @@ class frmImportacao extends MForm
 		return $arrCampo;
 	}
 
-	// TODO: DEsenvolver
-	private function obterCamposDetalhes($marcCampos) {
+	/**
+	 * @author Daniel Bonfim
+	 *
+	 * Obtem os campos baseado nas informações extraídas do Diretório em forma de array
+	 * @param String $marcCampos
+	 * @param array $arrDiretorio
+	 * @return array
+	 */
+	private function obterCamposDetalhes($marcCampos, array $arrDiretorio) {
+		$arrCamposVariaveis = null;
+		$arrCamposVariaveis['infoCompleta'] = $marcCampos;
 
-		return $marcCampos;
+		for($i = 0; $i < count($arrDiretorio); $i++) {
+			$campoVariavel = null;
+
+			$campoVariavel['infoCompletaCampo'] = substr($marcCampos, $arrDiretorio[$i]['posicaoNaSequencia'], $arrDiretorio[$i]['numCaracteres']);
+
+			// Tag
+			$campoVariavel['tag'] = $arrDiretorio[$i]['tag'];
+
+			// SubCampo e Conteudo
+			$j = 0;
+
+			for($x = 0; $x < strlen($campoVariavel['infoCompletaCampo']); $x++) {
+
+				if($campoVariavel['infoCompletaCampo'][$x] == '$') {
+					$campoVariavel['info'][$j]['subCampo'] = null;
+					$campoVariavel['info'][$j]['conteudo'] = null;
+
+					$campoVariavel['info'][$j]['subCampo'] = $campoVariavel['infoCompletaCampo'][$x + 1];
+
+					$aux = substr($campoVariavel['infoCompletaCampo'], $x + 2);
+					for($q = 0; $q < strlen($aux); $q++) {
+						if($aux[$q] == '$' || $aux[$q] == '^')
+							break;
+							
+						$campoVariavel['info'][$j]['conteudo'] .= $aux[$q];
+					}
+
+					$j++;
+				}
+			}
+
+			$arrCamposVariaveis[] = $campoVariavel;
+		}
+
+		return $arrCamposVariaveis;
 	}
 
 	/**

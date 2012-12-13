@@ -38,3 +38,32 @@ Para exportação:
 - bt_exportacao_temp
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+Salvar:
+1 - Editora
+	Faz uma pesquisa pelo nome. Se não encontrar, insere.
+
+2 - Autor
+	Pesquisa pelo nome. Se não encontrar, insere. 
+	campos:
+		linha = 1
+		idetiqueta = 154
+		subcampo = a
+
+3 - Obra
+
+4 - Campos Fixos
+5 - Material
+
