@@ -275,6 +275,8 @@ class frmImportacao extends MForm
 	 * @return Int $idEditora
 	 */
 	function salvarEditora(array $livro) {
+		global $MIOLO, $module;
+		
 		$editora = array(
 				'municipio' => null,
 				'descricao' => null
@@ -318,7 +320,7 @@ class frmImportacao extends MForm
 		$livro = $this->separarPartes($txtObraMarc);
 
 		// Editora
-		$idEditora = salvarEditora($livro);
+		$idEditora = $this->salvarEditora($livro);
 		// Autor
 		// TODO: Desenvolva
 		// Obra
@@ -326,12 +328,10 @@ class frmImportacao extends MForm
 
 
 
-		var_dump($statusEditora);die;
-			
 
 		echo '<pre>';
 		echo '<br/><br/> ' . $txtObraMarc;
-		print_r($editora);
+		print_r($livro);
 		echo '</pre>';
 		die;
 
