@@ -30,6 +30,8 @@ Tabelas envolvidas:
 - bt_material
 - bt_camposfixos
 - bt_indicadores
+- bt_genero
+- bt_assunto
 
 Apenas para consulta:
 - bt_etiqueta
