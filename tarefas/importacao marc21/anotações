@@ -54,9 +54,11 @@ Para exportação:
 
 
 Salvar:
+ok
 1 - Editora
 	Faz uma pesquisa pelo nome. Se não encontrar, insere.
 
+ok
 2 - Autor
 	Pesquisa pelo nome. Se não encontrar, insere. 
 	campos:

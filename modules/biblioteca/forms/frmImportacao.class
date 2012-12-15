@@ -133,15 +133,21 @@ class frmImportacao extends MForm {
 		 * Verificação de erros
 		*/
 
+		// Se o número de caractetes recuperado através do código do diretório for diferente do numero real de caracteres da string completa dos campos variáveis
+		if($livro['campos']['numCaracteres_total'] != $livro['campos']['numCaracteresMarcCampos'])
+			$this->addError('O código marc é inválido.');
+
 		// Cada campo definido no diretório deve obrigatoriamente ter 12 caracteres. Portanto a soma deles deve ser um número divisível por 12
 		if(strlen($diretorio) % 12 != 0)
 			$this->addError('Foram encontrados erros no código do Diretório.');
 
-		// Número total de caracteres calculados pelo diretório é igual ao total do número de caracteres da soma dos campos ?
+		/*
+		 // Número total de caracteres calculados pelo diretório é igual ao total do número de caracteres da soma dos campos ?
 		if($livro['campos']['numCaracteres_total'] != $livro['diretorio']['numCaracteres_total'])
-			$this->addError('O número de caracteres definido no diretório não é igual ao número de caracteres encontrado nos campos.');
+			$this->addError('O total do número de caracteres definido no diretório não é igual ao total do número de caracteres encontrado nos campos.');
+		*/
 
-		
+
 		return $livro;
 	}
 
@@ -222,6 +228,7 @@ class frmImportacao extends MForm {
 	 * @return array
 	 */
 	private function obterCamposDetalhes($marcCampos, array $arrDiretorio) {
+		$numCaracteresMarcCampos = strlen($marcCampos);
 		$arrCamposVariaveis = null;
 		$arrCamposVariaveis['numCaracteres_total'] = 0;
 		// 		$arrCamposVariaveis['infoCompleta'] = $marcCampos;
@@ -232,6 +239,8 @@ class frmImportacao extends MForm {
 			$campoVariavel['infoCompletaCampo'] = substr($marcCampos, $arrDiretorio[$i]['posicaoNaSequencia'], $arrDiretorio[$i]['numCaracteres']);
 			$campoVariavel['numCaracteresCampo'] = strlen($campoVariavel['infoCompletaCampo']);
 			$arrCamposVariaveis['numCaracteres_total'] += $campoVariavel['numCaracteresCampo'];
+			// Retirando o ultimo caractere da contagem
+			$arrCamposVariaveis['numCaracteresMarcCampos'] = ($marcCampos[$numCaracteresMarcCampos - 1] == '\\') ? $numCaracteresMarcCampos - 1 : $numCaracteresMarcCampos;
 
 			// Tag
 			$campoVariavel['tag'] = $arrDiretorio[$i]['tag'];
@@ -374,8 +383,6 @@ class frmImportacao extends MForm {
 						$autor[$i]['conteudo']
 				);
 
-				var_dump($idAutor_salvo);//die;
-
 				if($idAutor_salvo) {
 					$arrIdAutor[] = $idAutor_salvo;
 					$this->info[] = 'Autor '. $autor[$i]['conteudo'] . ' cadastrado com sucesso!';
@@ -387,6 +394,9 @@ class frmImportacao extends MForm {
 	}
 
 	/**
+	 * /* TODO URGENTE: SE CONTIVER INFORMAÇÃO DE MENOS NOS CAMPOS, ELE EMITE UM ERRO POR CAUSA DA DEFINIÇÃO DO DIRETORIO, MAS SE EXISTIR INFO DEMAIS, ELE DEIXA PASSAR E ARRUMA OS CARACTERES
+	 // TUDO ERRADO. ESTOU FALANDO DA SEÇÃO DOS CAMPOS.
+
 	 * @author Daniel Bonfim
 	 * @since 05/12/2012
 	 */
@@ -411,7 +421,7 @@ class frmImportacao extends MForm {
 		echo '<br/><br/> ' . $txtObraMarc;
 		print_r($livro);
 		echo '</pre>';
-		// 		die;
+// 						die;
 
 
 
