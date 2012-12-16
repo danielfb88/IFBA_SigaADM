@@ -30,9 +30,12 @@ class frmImportacao extends MForm {
 	protected $error;
 	protected $info;
 
-	function __construct()
-	{
-		global $MIOLO,$module;
+	private $bussEtiqueta;
+	private $bussAutor;
+	private $bussEditora;
+
+	function __construct() {
+		global $MIOLO, $module;
 		parent::__construct('Importação Marc para Livro');
 		$this->SetClose($this->manager->GetActionURL('biblioteca', 'main:importacao'));
 		$this->EventHandler();
@@ -68,6 +71,10 @@ class frmImportacao extends MForm {
 		);
 		$this->SetButtons($buttons);
 
+		// Business
+		$this->bussEtiqueta = $MIOLO->GetBusiness($module, 'etiqueta');
+		$this->bussAutor = $MIOLO->GetBusiness($module, 'autor');
+		$this->bussEditora = $MIOLO->GetBusiness($module, 'editora');
 	}
 
 	/**
@@ -278,6 +285,7 @@ class frmImportacao extends MForm {
 	 * @author Daniel Bonfim
 	 * @since 13-12-2012
 	 *
+	 * Salva na tabela bt_editora.
 	 * Verifica se a editora existe e em caso negativo, salva.
 	 *
 	 * Salva Editora
@@ -287,6 +295,37 @@ class frmImportacao extends MForm {
 	function salvarEditora(array $livro) {
 		global $MIOLO, $module;
 
+		$editora = $this->getInfoEditora($livro);
+
+		$idEditora = $this->bussEditora->getIdByDesc($editora['descricao']);
+		$idEditora_salvo = false;
+
+		// Se a editora não estiver cadastrada, insira
+		if($idEditora == null) {
+			$idEditora_salvo = $this->bussEditora->InsertImportacao2($editora['descricao'], $editora['municipio']);
+		}
+
+		if($idEditora_salvo) {
+			$this->info[] = 'Editora '. $editora['descricao'] . ' cadastrada com sucesso!';
+
+			return $idEditora_salvo;
+
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * @author Daniel Bonfim
+	 * @since 16-12-2012
+	 *
+	 * Obtém informações da editora
+	 *
+	 * @param array $livro
+	 * @return array
+	 */
+	function getInfoEditora(array $livro) {
+		// TODO: Obter mais informações da editora
 		$editora = array(
 				'municipio' => null,
 				'descricao' => null
@@ -307,60 +346,39 @@ class frmImportacao extends MForm {
 			}
 		}
 
-		$bussEditora = $MIOLO->GetBusiness($module, 'editora');
-
-		$idEditora = $bussEditora->getIdByDesc($editora['descricao']);
-		$idEditora_salvo = false;
-
-		// Se a editora não estiver cadastrada, insira
-		if($idEditora == null) {
-			$idEditora_salvo = $bussEditora->InsertImportacao2($editora['descricao'], $editora['municipio']);
-		}
-
-		if($idEditora_salvo) {
-			$mensagem = 'Editora '. $editora['descricao'] . ' cadastrada com sucesso!';
-			$this->info[] = $mensagem;
-
-			return $idEditora_salvo;
-
-		} else {
-			return false;
-		}
+		return $editora;
 	}
 
 	/**
 	 * @author Daniel Bonfim
-	 * @since 14-12-2012
+	 * @since 16-12-2012
 	 *
-	 * Verifica se o autor existe e em caso negativo, salva.
+	 * Obtém informações do autor
 	 *
 	 * @param array $livro
-	 * @return Int $idEditor	-	Id do editor salvo
+	 * @return array
 	 */
-	function salvarAutor(array $livro) {
-		global $MIOLO, $module;
-
-		$bussEtiqueta = $MIOLO->GetBusiness($module, 'etiqueta');
-		$bussAutor = $MIOLO->GetBusiness($module, 'autor');
-		$arrIdAutor = false;
-		$k = 0;
-
+	function getInfoAutor(array $livro) {
+		// TODO: Obter mais informações do autor
 		// Pode ter mais de um autor
 		$autor = array(
 				array(
 						'idetiqueta' => null,
+						'tag' => null,
 						'subcampo' => null,
 						'conteudo' => null
 				)
 		);
 
+		$k = 0;
 		for($i = 0; $i < count($livro['campos']); $i++) {
 			// 100 = Entrada Principal - Nome Pessoal
 			// 700 = Entrada secundária - Nome pessoal
 			if ($livro['campos'][$i]['tag'] == 100 || $livro['campos'][$i]['tag'] == 700) {
 
 				// Obtendo o idEtiqueta
-				$autor[$k]['idetiqueta'] = $bussEtiqueta->getIdByTag2($livro['campos'][$i]['tag']);
+				$autor[$k]['idetiqueta'] = $this->bussEtiqueta->getIdByTag2($livro['campos'][$i]['tag']);
+				$autor[$k]['tag'] = $livro['campos'][$i]['tag'];
 
 				for($j = 0; $j < count($livro['campos'][$i]['info']); $j++) {
 					$autor[$k]['subcampo'] = $livro['campos'][$i]['info'][$j]['subCampo'];
@@ -370,14 +388,34 @@ class frmImportacao extends MForm {
 			}
 		}
 
+		return $autor;
+	}
+
+	/**
+	 * @author Daniel Bonfim
+	 * @since 14-12-2012
+	 *
+	 * Salva na tabela bt_autor.
+	 * Verifica se o autor existe e em caso negativo, salva.
+	 *
+	 * @param array $livro
+	 * @return Int $idEditor	-	Id do editor salvo
+	 */
+	function salvarAutor(array $livro) {
+		global $MIOLO, $module;
+
+		$arrIdAutor = false;
+
+		$autor = $this->getInfoAutor($livro);
+
 		// Salvando
 		for($i = 0; $i < count($autor); $i++) {
 			// Verificando se existem autor com o nome e idEtiqueta informado
-			$idAutor = $bussAutor->getIdAutorByNomeAndIdEtiqueta($autor[$i]['conteudo'], $autor[$i]['idetiqueta']);
+			$idAutor = $this->bussAutor->getIdAutorByNomeAndIdEtiqueta($autor[$i]['conteudo'], $autor[$i]['idetiqueta']);
 
 			// Se não encontrar, insira-o
 			if($idAutor == null) {
-				$idAutor_salvo = $bussAutor->insertImportacao2(
+				$idAutor_salvo = $this->bussAutor->insertImportacao2(
 						$autor[$i]['idetiqueta'],
 						$autor[$i]['subcampo'],
 						$autor[$i]['conteudo']
@@ -394,9 +432,23 @@ class frmImportacao extends MForm {
 	}
 
 	/**
-	 * /* TODO URGENTE: SE CONTIVER INFORMAÇÃO DE MENOS NOS CAMPOS, ELE EMITE UM ERRO POR CAUSA DA DEFINIÇÃO DO DIRETORIO, MAS SE EXISTIR INFO DEMAIS, ELE DEIXA PASSAR E ARRUMA OS CARACTERES
-	 // TUDO ERRADO. ESTOU FALANDO DA SEÇÃO DOS CAMPOS.
+	 * @author Daniel Bonfim
+	 * @since 16-12-2012
+	 *
+	 * Verifica se a obra existe e em caso negativo, insere-a
+	 *
+	 * @param array $livro
+	 * @return number
+	 */
+	function salvarObra(array $livro) {
+		global $MIOLO, $module;
 
+		// Analizar cada tag e desconbrir aonde inserir suas informações
+
+		return 3;
+	}
+
+	/**
 	 * @author Daniel Bonfim
 	 * @since 05/12/2012
 	 */
@@ -421,7 +473,7 @@ class frmImportacao extends MForm {
 		echo '<br/><br/> ' . $txtObraMarc;
 		print_r($livro);
 		echo '</pre>';
-// 						die;
+		// 		die;
 
 
 
