@@ -376,9 +376,9 @@ class BusinessBibliotecaAutor extends Business
 		$ok = $this->Execute($sql->Insert($values));
 
 		if ($ok)
-			return $idautor;
-		else
-			return null;
+			$ok = $idautor;
+		
+		return $ok;
 	}
 
 	/**

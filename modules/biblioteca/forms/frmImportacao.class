@@ -33,6 +33,7 @@ class frmImportacao extends MForm {
 	private $bussEtiqueta;
 	private $bussAutor;
 	private $bussEditora;
+	private $bussObra;
 
 	function __construct() {
 		global $MIOLO, $module;
@@ -75,6 +76,7 @@ class frmImportacao extends MForm {
 		$this->bussEtiqueta = $MIOLO->GetBusiness($module, 'etiqueta');
 		$this->bussAutor = $MIOLO->GetBusiness($module, 'autor');
 		$this->bussEditora = $MIOLO->GetBusiness($module, 'editora');
+		$this->bussObra = $MIOLO->GetBusiness($module, 'obra');
 	}
 
 	/**
@@ -301,18 +303,15 @@ class frmImportacao extends MForm {
 		$idEditora_salvo = false;
 
 		// Se a editora não estiver cadastrada, insira
-		if($idEditora == null) {
-			$idEditora_salvo = $this->bussEditora->InsertImportacao2($editora['descricao'], $editora['municipio']);
+		if(!$idEditora) {
+			$idEditora = $this->bussEditora->InsertImportacao2($editora['descricao'], $editora['municipio']);
 		}
 
-		if($idEditora_salvo) {
+		if($idEditora) {
 			$this->info[] = 'Editora '. $editora['descricao'] . ' cadastrada com sucesso!';
-
-			return $idEditora_salvo;
-
-		} else {
-			return false;
 		}
+
+		return $idEditora;
 	}
 
 	/**
@@ -410,19 +409,19 @@ class frmImportacao extends MForm {
 
 		// Salvando
 		for($i = 0; $i < count($autor); $i++) {
-			// Verificando se existem autor com o nome e idEtiqueta informado
+			// Verificando se existem autores com o nome e idEtiqueta informado
 			$idAutor = $this->bussAutor->getIdAutorByNomeAndIdEtiqueta($autor[$i]['conteudo'], $autor[$i]['idetiqueta']);
 
 			// Se não encontrar, insira-o
-			if($idAutor == null) {
-				$idAutor_salvo = $this->bussAutor->insertImportacao2(
+			if(!$idAutor) {
+				$idAutor = $this->bussAutor->insertImportacao2(
 						$autor[$i]['idetiqueta'],
 						$autor[$i]['subcampo'],
 						$autor[$i]['conteudo']
 				);
 
-				if($idAutor_salvo) {
-					$arrIdAutor[] = $idAutor_salvo;
+				if($idAutor) {
+					$arrIdAutor[] = $idAutor;
 					$this->info[] = 'Autor '. $autor[$i]['conteudo'] . ' cadastrado com sucesso!';
 				}
 			}
@@ -435,7 +434,8 @@ class frmImportacao extends MForm {
 	 * @author Daniel Bonfim
 	 * @since 16-12-2012
 	 *
-	 * Verifica se a obra existe e em caso negativo, insere-a
+	 * Salva na tabela bt_obra.
+	 * Verifica se a obra existe e em caso negativo, salva.
 	 *
 	 * @param array $livro
 	 * @return number
@@ -443,9 +443,147 @@ class frmImportacao extends MForm {
 	function salvarObra(array $livro) {
 		global $MIOLO, $module;
 
-		// Analizar cada tag e desconbrir aonde inserir suas informações
+		$obra = $this->getInfoObra($livro);
 
-		return 3;
+		// TODO: verifique se o titulo e o subtitulo da obra já existem no banco antes de salvar. Em caso negativo apenas insire o conteudo de $obra. Vou dormir...
+
+		echo '<pre>';
+		print_r($obra);
+		echo '</pre>';
+		die;
+
+	}
+
+	function getInfoObra(array $livro) {
+		$obra = array(
+				'idobra' => $this->bussObra->GetNextIdObra(),
+				'numerodaobra' => $this->bussObra->GetNextNumeroObra(),
+				'titulo' => null,
+				'subtitulo' => null,
+				'edicao' => null,
+				'localpublicacao' => null,
+				'editora' => null,
+				'datapublicacao' => null,
+				'idgenero' => null,
+				'descfisica' => null,
+				'ideditora' => null,
+				'idautor' => null,
+				'autor' => null
+		);
+
+		/**
+		 * tag 245 = Titulo
+		 * a (titulo)
+		 * b (subtitulo)
+		 *
+		 * Tag 250 = Edição
+		 * a (edicao)
+		 *
+		 * Tag 260 = Imprenta
+		 * a (localpublicacao)
+		 * b (editora)
+		 * c (datapublicacao)
+		 *
+		 * Tag 902 = Gênero do Material
+		 * a (idgenero)
+		 *
+		 * Tag 300 = Descrição Física
+		 * a (descfisica)
+		 *
+		 * Tag 100 = Entrada Principal - Nome Pessoal (Autor)
+		 *
+		*/
+
+		for($i = 0; $i < count($livro['campos']); $i++) {
+
+			// Titulo
+			if ($livro['campos'][$i]['tag'] == 245) {
+				for($j = 0; $j < count($livro['campos'][$i]['info']); $j++) {
+
+					// titulo
+					if($livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+						$obra['titulo'] = $livro['campos'][$i]['info'][$j]['conteudo'];
+					}
+
+					// subtitulo
+					if($livro['campos'][$i]['info'][$j]['subCampo'] == 'b') {
+						$obra['subtitulo'] = $livro['campos'][$i]['info'][$j]['conteudo'];
+					}
+				}
+			}
+
+			// Edição
+			if ($livro['campos'][$i]['tag'] == 250) {
+				for($j = 0; $j < count($livro['campos'][$i]['info']); $j++) {
+
+					// edição
+					if($livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+						$obra['edicao'] = $livro['campos'][$i]['info'][$j]['conteudo'];
+					}
+				}
+			}
+
+			// Imprenta
+			if ($livro['campos'][$i]['tag'] == 260) {
+				for($j = 0; $j < count($livro['campos'][$i]['info']); $j++) {
+
+					// localpublicacao
+					if($livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+						$obra['localpublicacao'] = $livro['campos'][$i]['info'][$j]['conteudo'];
+					}
+
+					// editora
+					if($livro['campos'][$i]['info'][$j]['subCampo'] == 'b') {
+						$obra['editora'] = $livro['campos'][$i]['info'][$j]['conteudo'];
+						$obra['ideditora'] = $this->bussEditora->getIdByDesc($obra['editora']);
+					}
+
+					// datapublicacao
+					if($livro['campos'][$i]['info'][$j]['subCampo'] == 'b') {
+						$obra['datapublicacao'] = $livro['campos'][$i]['info'][$j]['conteudo'];
+					}
+				}
+			}
+
+			// Gênero do Material
+			if ($livro['campos'][$i]['tag'] == 902) {
+				for($j = 0; $j < count($livro['campos'][$i]['info']); $j++) {
+
+					// idgenero
+					if($livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+						$obra['idgenero'] = $livro['campos'][$i]['info'][$j]['conteudo'];
+					}
+				}
+			}
+
+			// Descrição Física
+			if ($livro['campos'][$i]['tag'] == 300) {
+				for($j = 0; $j < count($livro['campos'][$i]['info']); $j++) {
+
+					// descfisica
+					if($livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+						$obra['descfisica'] = $livro['campos'][$i]['info'][$j]['conteudo'];
+					}
+				}
+			}
+
+			// Entrada Principal - Autor
+			if ($livro['campos'][$i]['tag'] == 100) {
+				for($j = 0; $j < count($livro['campos'][$i]['info']); $j++) {
+
+					// autor
+					if($livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+						$idEtiqueta = $this->bussEtiqueta->getIdByTag2(100);
+						$obra['autor'] = $livro['campos'][$i]['info'][$j]['conteudo'];
+						$obra['idautor'] = $this->bussAutor->getIdAutorByNomeAndIdEtiqueta($obra['autor'], $idEtiqueta);
+					}
+				}
+			}
+
+
+		}
+
+		return $obra;
 	}
 
 	/**
@@ -459,12 +597,9 @@ class frmImportacao extends MForm {
 		$livro = $this->separarPartes($txtObraMarc);
 
 		if(!$this->hasErrors()) {
-			// Editora
 			$idEditora = $this->salvarEditora($livro);
-			// Autor
 			$idAutor = $this->salvarAutor($livro);
-			// Obra
-			// TODO: Desenvolva
+			$idObra = $this->salvarObra($livro);
 		}
 
 
@@ -473,7 +608,7 @@ class frmImportacao extends MForm {
 		echo '<br/><br/> ' . $txtObraMarc;
 		print_r($livro);
 		echo '</pre>';
-		// 		die;
+		die;
 
 
 

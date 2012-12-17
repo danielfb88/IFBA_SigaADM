@@ -71,3 +71,43 @@ ok
 4 - Campos Fixos
 5 - Material
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// tag = 245 a (titulo)
+		// tag = 245 b (subtitulo)
+
+		// tag = 250 a (edicao)
+
+		// tag = 260 a (localpublicacao)
+		// tag = 260 b (editora)
+		// tag = 260 c (datapublicacao)
+
+		// tag = 902 a (idgenero)
+		// tag 300 a (descfisica)
+
+		// 100 = Entrada Principal - Nome Pessoal
+		// 700 = Entrada secundária - Nome pessoal
+
+		// ideditora
+		// idautor
+		// editora
+		// autor
+
