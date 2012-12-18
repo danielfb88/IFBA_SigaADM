@@ -1,0 +1,322 @@
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+* Este arquivo é parte do programa SigaEPT
+*
+* O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+* termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+* na versão 2 da Licença.
+*
+* Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+* uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+* Pública Geral GNU/GPL em português para maiores detalhes.
+*
+* Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+* junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+* www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+* St, Fifth Floor, Boston, MA 02110-1301, USA
+*/
+?>
+<?php
+/**
+ * @author Daniel Bonfim
+ * @since 17/12/2012
+ */
+
+class BusinessBibliotecaLivroImportacao extends Business {
+	private $marc;
+	private $livro;
+
+	private $nFimDiretorio;
+
+	private $bussEtiqueta;
+	private $bussAutor;
+	private $bussEditora;
+	private $bussObra;
+
+	private $info;
+
+	function BusinessBibliotecaLivroImportacao( $data = null ) {
+		global $MIOLO;
+
+		$this->Business( 'sigaept', $data );
+
+		$this->bussEtiqueta = $MIOLO->GetBusiness('biblioteca', 'etiqueta');
+		$this->bussAutor = $MIOLO->GetBusiness('biblioteca', 'autor');
+		$this->bussEditora = $MIOLO->GetBusiness('biblioteca', 'editora');
+		$this->bussObra = $MIOLO->GetBusiness('biblioteca', 'obra');
+	}
+
+	/**
+	 * Define código marc a ser trabalhado.
+	 *
+	 * @param String $marc
+	 * @throws Exception
+	 */
+	public function setMarc($marc) {
+		if ($marc) {
+			// Removendo caractere de quebra-linha
+			$this->marc = str_replace("\r\n", '', $marc);
+			// Organizando informações
+			$this->livro = $this->separarPartesDoMarc($this->marc);
+
+		} else {
+			throw new EMarcException('Código marc nulo ou vazio.');
+		}
+	}
+
+	/**
+	 * Retorna o array do com as informações do livro
+	 * @return array
+	 */
+	public function getLivro() {
+		if(!$this->marc) {
+			throw new EMarcException('O código marc não foi definido.');
+
+		} else {
+			return $this->livro;
+		}
+	}
+
+	/**
+	 * Retorna Informações sobre operações realizadas.
+	 */
+	public function getInfo() {
+		return $this->info;
+	}
+
+	/**
+	 * Separa o código marc em 3 partes:
+	 * 		- lider
+	 * 		- diretorio
+	 * 		- campos
+	 *
+	 * @return array
+	 */
+	private function separarPartesDoMarc($marc) {
+
+		$livro['lider'] = $this->getLider($marc);
+		$livro['diretorio'] = $this->getDiretorio($marc);
+		$livro['campos'] = $this->getCamposVariaveis($marc, $this->nFimDiretorio);
+
+		/**
+		 * Verificação de erros
+		*/
+
+		// Se o número de caractetes recuperado através do código do diretório for diferente do numero real de caracteres da string completa dos campos variáveis
+		if($livro['campos']['numCaracteres_total'] != $livro['campos']['numCaracteresMarcCampos'])
+			throw new EMarcException('O código marc é inválido.');
+
+		// Cada campo definido no diretório deve obrigatoriamente ter 12 caracteres. Portanto a soma deles deve ser um número divisível por 12
+		if(strlen($diretorio) % 12 != 0)
+			throw new EMarcException('Foram encontrados erros no código do Diretório.');
+
+		return $livro;
+	}
+
+	/**
+	 * Obtem o código do lider do código do marc.
+	 * O código do Lider são os 24 primeiros caracteres contando com o 0 "zero"
+	 *
+	 * @param String $marc
+	 */
+	private function getLider($marc) {
+		$marcLider = substr($marc, 0, 24);
+
+		$lider['infoCompleta'] = $marcLider;
+		$lider['comprimentoLogico'] = substr($marcLider, 0, 5);
+		$lider['status'] = $marcLider[5];
+		$lider['tipo'] = $marcLider[6];
+		$lider['nivelBibliografico'] = $marcLider[7];
+		$lider['tipoDeControle'] = $marcLider[8];
+		$lider['esquemaCodificacaoCaractere'] = $marcLider[9];
+		$lider['contagemIndicadores'] = $marcLider[10];
+		$lider['contagemCodigoSubcampo'] = $marcLider[11];
+		$lider['enderecoBaseDosDados'] = substr($marcLider, 12, 5);
+		$lider['nivelCodificacao'] = $marcLider[17];
+		$lider['formaCatalogacaoDescritiva'] = $marcLider[18];
+		$lider['exigenciaRegistroVinculado'] = $marcLider[19];
+		$lider['extensaoParteTamanhoCampo'] = $marcLider[20];
+		$lider['extensaoPartePosicaoCaractereInicio'] = $marcLider[21];
+		$lider['extensaoParteDefinidaImplementacao'] = $marcLider[22];
+		$lider['indefinido'] = $marcLider[23];
+
+		return $lider;
+	}
+
+	/**
+	 * Obtém o código do diretório do código do marc.
+	 * @param String $marc
+	 */
+	private function getDiretorio($marc) {
+		$i = 24;
+		$sairLoop = false;
+		$marcDiretorio = null;
+		$this->nFimDiretorio = 0;
+
+		// Obtendo o marcDiretorio
+		while($sairLoop == false) {
+			$marcDiretorio .= $marc[$i];
+
+			if ($marc[$i] == '^') {
+				$marcDiretorio = str_replace('^', '', $marcDiretorio);
+				$sairLoop = true;
+				$this->nFimDiretorio = $i;
+			} else {
+				$i++;
+			}
+		}
+
+		// numero de caracteres do marcDiretorio
+		$marcDiretorioStrLength = strLen($marcDiretorio);
+
+		$arrCampo = null;
+		$arrCampo['numCaracteres_total'] = 0;
+		$aux = null;
+
+		for($i=0; $i <= $marcDiretorioStrLength; $i++) {
+
+			if($i % 12 == 0 && $i > 0) {
+				$campo = null;
+
+				$campo['infoCompleta'] = $aux;
+				$campo['tag'] = substr($aux, 0, 3);
+				$campo['numCaracteres'] = substr($aux, 3, 4);
+				$campo['posicaoNaSequencia'] = substr($aux, 7, 5);
+
+				$arrCampo['numCaracteres_total'] += $campo['numCaracteres'];
+				$arrCampo[] = $campo;
+				$aux = null;
+			}
+
+			$aux .= $marcDiretorio[$i];
+		}
+
+		return $arrCampo;
+	}
+
+	/**
+	 * Obtém informações da editora
+	 * @return array
+	 */
+	public function getEditora() {
+		if($this->livro && $this->marc) {
+
+			$editora = array(
+					'municipio' => null,
+					'descricao' => null
+			);
+
+			for($i = 0; $i < count($this->livro['campos']); $i++) {
+
+				// 260 = Edição
+				if ($this->livro['campos'][$i]['tag'] == 260) {
+
+					for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+						if ($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+							$editora['municipio'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+
+						} else if ($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'b') {
+							$editora['descricao'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+						}
+					}
+				}
+			}
+
+			return $editora;
+
+		} else {
+			throw new EMarcException('O marc não foi inserido.');
+		}
+	}
+
+	/**
+	 * Salva na tabela bt_editora.
+	 * Verifica se a editora existe e em caso negativo, salva.
+	 *
+	 */
+	public function salvarEditora() {
+		$editora = $this->getEditora();
+
+		// Verificando se a editora existe
+		$idEditora = $this->bussEditora->getIdByDesc($editora['descricao']);
+
+		// Se a editora não estiver cadastrada, insira
+		if(!$idEditora) {
+			$idEditora = $this->bussEditora->InsertImportacao2($editora['descricao'], $editora['municipio']);
+				
+			if($idEditora)
+				$this->info[] = 'Editora '. $editora['descricao'] . ' cadastrada com sucesso!';
+				
+		} else {
+			$this->info[] = 'Editora '. $editora['descricao'] . ' já cadastrada na base de dados.';
+		}
+
+		return $idEditora;
+	}
+
+	/**
+	 * Obtém o código dos campos variáveis atravéz do código do marc e do número que informa qual o index do ultimo
+	 * caracter do diretório
+	 *
+	 * @param String $marc
+	 * @param Integer $nFimDiretorio
+	 */
+	private function getCamposVariaveis($marc, $nFimDiretorio) {
+		$marcCampos = null;
+
+		// Obtendo o marcCampos
+		for($i = $nFimDiretorio + 1; $i < strlen($marc); $i++) {
+			$marcCampos .= $marc[$i];
+		}
+
+		$numCaracteresMarcCampos = strlen($marcCampos);
+		$arrCamposVariaveis = null;
+
+		$arrCamposVariaveis['numCaracteres_total'] = 0;
+		$arrDiretorio = $this->getDiretorio($marc);
+
+		for($i = 0; $i < count($arrDiretorio) - 1; $i++) {
+			$campoVariavel = null;
+
+			$campoVariavel['infoCompletaCampo'] = substr($marcCampos, $arrDiretorio[$i]['posicaoNaSequencia'], $arrDiretorio[$i]['numCaracteres']);
+			$campoVariavel['numCaracteresCampo'] = strlen($campoVariavel['infoCompletaCampo']);
+			$arrCamposVariaveis['numCaracteres_total'] += $campoVariavel['numCaracteresCampo'];
+			// Retirando o ultimo caractere da contagem
+			$arrCamposVariaveis['numCaracteresMarcCampos'] = ($marcCampos[$numCaracteresMarcCampos - 1] == '\\') ? $numCaracteresMarcCampos - 1 : $numCaracteresMarcCampos;
+
+			// Tag
+			$campoVariavel['tag'] = $arrDiretorio[$i]['tag'];
+
+			// SubCampo e Conteudo
+			$j = 0;
+
+			for($x = 0; $x < strlen($campoVariavel['infoCompletaCampo']); $x++) {
+
+				if($campoVariavel['infoCompletaCampo'][$x] == '$') {
+					$campoVariavel['info'][$j]['subCampo'] = null;
+					$campoVariavel['info'][$j]['conteudo'] = null;
+
+					$campoVariavel['info'][$j]['subCampo'] = $campoVariavel['infoCompletaCampo'][$x + 1];
+
+					$aux = substr($campoVariavel['infoCompletaCampo'], $x + 2);
+					for($q = 0; $q < strlen($aux); $q++) {
+						if($aux[$q] == '$' || $aux[$q] == '^')
+							break;
+							
+						$campoVariavel['info'][$j]['conteudo'] .= $aux[$q];
+					}
+
+					$j++;
+				}
+			}
+
+			$arrCamposVariaveis[] = $campoVariavel;
+		}
+
+		return $arrCamposVariaveis;
+	}
+
+}
+
+?>
