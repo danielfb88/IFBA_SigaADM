@@ -244,15 +244,259 @@ class BusinessBibliotecaLivroImportacao extends Business {
 		// Se a editora não estiver cadastrada, insira
 		if(!$idEditora) {
 			$idEditora = $this->bussEditora->InsertImportacao2($editora['descricao'], $editora['municipio']);
-				
+
 			if($idEditora)
 				$this->info[] = 'Editora '. $editora['descricao'] . ' cadastrada com sucesso!';
-				
+
 		} else {
 			$this->info[] = 'Editora '. $editora['descricao'] . ' já cadastrada na base de dados.';
 		}
 
 		return $idEditora;
+	}
+
+	/**
+	 * Obtém informações do Autor
+	 * @return array
+	 */
+	public function getAutor() {
+		if($this->livro && $this->marc) {
+
+			// Pode ter mais de um autor
+			$autor = array(
+					array(
+							'idetiqueta' => null,
+							'tag' => null,
+							'subcampo' => null,
+							'conteudo' => null
+					)
+			);
+
+			$k = 0;
+			for($i = 0; $i < count($this->livro['campos']); $i++) {
+
+				// 100 = Entrada Principal - Nome Pessoal
+				// 700 = Entrada secundária - Nome pessoal
+				if ($this->livro['campos'][$i]['tag'] == 100 || $this->livro['campos'][$i]['tag'] == 700) {
+
+					// Obtendo o idEtiqueta
+					$autor[$k]['idetiqueta'] = $this->bussEtiqueta->getIdByTag2($this->livro['campos'][$i]['tag']);
+					$autor[$k]['tag'] = $this->livro['campos'][$i]['tag'];
+
+					for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+						$autor[$k]['subcampo'] = $this->livro['campos'][$i]['info'][$j]['subCampo'];
+						$autor[$k]['conteudo'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+						$k++;
+					}
+				}
+			}
+
+			return $autor;
+
+		} else {
+			throw new EMarcException('O marc não foi inserido.');
+		}
+	}
+
+	/**
+	 * Salva na tabela bt_autor.
+	 * Verifica se o autor existe e em caso negativo, salva.
+	 *
+	 */
+	public function salvarAutor() {
+		$arrIdAutor = false;
+
+		$autor = $this->getAutor();
+
+		// Salvando
+		for($i = 0; $i < count($autor); $i++) {
+			// Verificando se existem autores com o nome e idEtiqueta informado
+			$idAutor = $this->bussAutor->getIdAutorByNomeAndIdEtiqueta($autor[$i]['conteudo'], $autor[$i]['idetiqueta']);
+
+			// Se não encontrar, insira-o
+			if(!$idAutor) {
+				$idAutor = $this->bussAutor->insertImportacao2(
+						$autor[$i]['idetiqueta'],
+						$autor[$i]['subcampo'],
+						$autor[$i]['conteudo']
+				);
+
+				if($idAutor) {
+					$arrIdAutor[] = $idAutor;
+					$this->info[] = 'Autor '. $autor[$i]['conteudo'] . ' cadastrado com sucesso!';
+				}
+
+			} else {
+				$this->info[] = 'Autor '. $autor[$i]['conteudo'] . ' já cadastrado na base de dados.';
+			}
+		}
+
+		return $arrIdAutor;
+	}
+
+	/**
+	 * TODO: Continuar.........
+	 * Salva na tabela bt_obra.
+	 * Verifica se a obra existe e em caso negativo, salva.
+	 */
+	function salvarObra() {
+		$obra = $this->getObra();
+
+		$idObra = $this->bussObra->getIdByTituloAndSubtitulo($obra['titulo'], $obra['subtitulo']);
+
+		// Se a editora não estiver cadastrada, insira
+		if(!$idObra) {
+			$idObra = $this->bussObra->inserirObra($obra);
+
+			if($idObra)
+				$this->info[] = 'Obra \''. $obra['titulo'] . ' - ' . $obra['subtitulo'] . '\' cadastrada com sucesso!';
+
+		} else {
+			$this->info[] = 'Obra \''. $obra['titulo'] . ' - ' . $obra['subtitulo'] . '\' já cadastrada na base de dados.';
+		}
+
+		return $idObra;
+	}
+
+	/**
+	 * Obtém informações da Obra
+	 *
+	 * tag 245 = Titulo
+	 * a (titulo)
+	 * b (subtitulo)
+	 *
+	 * Tag 250 = Edição
+	 * a (edicao)
+	 *
+	 * Tag 260 = Imprenta
+	 * a (localpublicacao)
+	 * b (editora)
+	 * c (datapublicacao)
+	 *
+	 * Tag 902 = Gênero do Material
+	 * a (idgenero)
+	 *
+	 * Tag 300 = Descrição Física
+	 * a (descfisica)
+	 *
+	 * Tag 100 = Entrada Principal - Nome Pessoal (Autor)
+	 *
+	 * @return array
+	 */
+	public function getObra() {
+		if($this->livro && $this->marc) {
+
+			$obra = array(
+					'idobra' => $this->bussObra->GetNextIdObra(),
+					'numerodaobra' => $this->bussObra->GetNextNumeroObra(),
+					'titulo' => null,
+					'subtitulo' => null,
+					'edicao' => null,
+					'localpublicacao' => null,
+					'editora' => null,
+					'datapublicacao' => null,
+					'idgenero' => null,
+					'descfisica' => null,
+					'ideditora' => null,
+					'idautor' => null,
+					'autor' => null
+			);
+
+			for($i = 0; $i < count($this->livro['campos']); $i++) {
+
+				switch($this->livro['campos'][$i]['tag']) {
+
+					// Titulo
+					case 245:
+						for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+
+							// titulo
+							if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+								$obra['titulo'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+							}
+
+							// subtitulo
+							if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'b') {
+								$obra['subtitulo'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+							}
+						}
+						break;
+
+						// Edição
+					case 250:
+						for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+
+							// edição
+							if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+								$obra['edicao'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+							}
+						}
+						break;
+
+						// Imprenta
+					case 260:
+						for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+
+							// localpublicacao
+							if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+								$obra['localpublicacao'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+							}
+
+							// editora
+							if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'b') {
+								$obra['editora'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+								$obra['ideditora'] = $this->bussEditora->getIdByDesc($obra['editora']);
+							}
+
+							// datapublicacao
+							if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'c') {
+								$obra['datapublicacao'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+							}
+						}
+						break;
+
+						// Gênero do Material
+					case 902:
+						for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+
+							// idgenero
+							if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+								$obra['idgenero'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+							}
+						}
+						break;
+
+						// Descrição Física
+					case 300:
+						for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+
+							// descfisica
+							if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+								$obra['descfisica'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+							}
+						}
+						break;
+
+						// Entrada Principal - Autor
+					case 100:
+						for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+
+							// autor
+							if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+								$idEtiqueta = $this->bussEtiqueta->getIdByTag2(100);
+								$obra['autor'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+								$obra['idautor'] = $this->bussAutor->getIdAutorByNomeAndIdEtiqueta($obra['autor'], $idEtiqueta);
+							}
+						}
+						break;
+				}
+			}
+
+			return $obra;
+
+		} else {
+			throw new EMarcException('O marc não foi inserido.');
+		}
 	}
 
 	/**
