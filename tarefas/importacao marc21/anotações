@@ -81,7 +81,7 @@ ok
 
 
 
-
+$this->addError('O código marc é inválido.');
 
 
 

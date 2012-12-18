@@ -335,7 +335,6 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	}
 
 	/**
-	 * TODO: Continuar.........
 	 * Salva na tabela bt_obra.
 	 * Verifica se a obra existe e em caso negativo, salva.
 	 */
@@ -498,6 +497,29 @@ class BusinessBibliotecaLivroImportacao extends Business {
 			throw new EMarcException('O marc não foi inserido.');
 		}
 	}
+
+	/**
+	 * TODO: Salvar Lider em bt_camposfixos com o idetiqueta = 1 (tag 000)
+	 */
+	public function salvarLider() {
+
+	}
+
+	/**
+	 * TODO: Os subcampos vão para bt_material
+	 */
+	public function salvarMaterial() {
+
+	}
+
+	/**
+	 * TODO: vai para para bt_camposfixos com o idtiqueta = 7
+	 */
+	public function salvarCamposFixos() {
+
+	}
+	
+	// TODO: Analizar se deve salvar algo em bt_indicador.
 
 	/**
 	 * Obtém o código dos campos variáveis atravéz do código do marc e do número que informa qual o index do ultimo
