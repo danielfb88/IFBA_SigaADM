@@ -41,19 +41,6 @@ class frmImportacao extends MForm {
 		parent::__construct('Importação Marc para Livro');
 		$this->SetClose($this->manager->GetActionURL('biblioteca', 'main:importacao'));
 		$this->EventHandler();
-
-		/*
-		 * Excluindo script que insere texto rico ao textarea
-		$this->page->AddScript("/tinymce/jscripts/tiny_mce/tiny_mce.js");
-
-		$script = "tinyMCE.init({
-				mode : \"textareas\",
-				theme : \"simple\",
-				});";
-
-		$this->page->AddJsCode($script);
-		*/
-			
 	}
 
 	function CreateFields()
@@ -63,7 +50,6 @@ class frmImportacao extends MForm {
 		$fields = array
 		(
 				new MultiLineField('txtObraMarc','','Livro', 25, 20,50,null,null),
-				//new MTextField('txtObraMarc','','Livro', 250, 200,250,null,null),
 		);
 		$this->SetFields($fields);
 
@@ -99,8 +85,8 @@ class frmImportacao extends MForm {
 			$idObra = $this->livroImportacao->salvarObra();
 
 			echo '<pre>';
-			echo $idObra . '<br/>';
-			print_r($this->livroImportacao->getInfo());
+			$livro = $this->livroImportacao->getLivro();
+			print_r($livro);
 			echo '</pre>';
 			die;
 		}

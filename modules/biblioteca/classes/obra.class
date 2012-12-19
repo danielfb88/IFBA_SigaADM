@@ -2400,7 +2400,12 @@ class BusinessBibliotecaObra extends Business
 		$values = array($obra['idobra'], $obra['numerodaobra'], $obra['titulo'], $obra['autor'], $obra['edicao'], $obra['localpublicacao'], $obra['datapublicacao'], $obra['idgenero'],
 				$obra['subtitulo'], $obra['descfisica'], $obra['ideditora'], $obra['idautor'], $obra['editora']);
 
-		return $this->Execute($sql->Insert($values));
+		$status = $this->Execute($sql->Insert($values));
+
+		if ($status)
+			return $obra['idobra'];
+		else
+			return false;
 
 	}
 
