@@ -347,7 +347,6 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 	/**
 	 * Retorna o código dos Campos Fixos de Dados. Tag 008, idtiqueta = 7
-	 * // TODO: DESCOBRIR PORQUE ESTÁ RETORNANDO 41
 	 */
 	private function getCamposFixos() {
 		$camposFixos = null;
@@ -356,7 +355,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 			if (isset($this->livro['campos'][$i]['tag'])) {
 				if($this->livro['campos'][$i]['tag'] == '008') {
-					$camposFixos = $this->livro['campos'][$i]['numCaracteresCampo'];
+					$camposFixos = str_replace('^', '', $this->livro['campos'][$i]['infoCompletaCampo']);
 				}
 			}
 		}
@@ -370,9 +369,6 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	 * @param int $idObra
 	 */
 	private function inserirCamposFixos($camposFixos, $idObra) {
-		var_dump($camposFixos);
-		die;
-
 		$conteudo = $camposFixos;
 
 		$sql = new sql('idetiqueta, idobra, conteudo', 'bt_camposfixos');
@@ -383,27 +379,48 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 	/**
 	 * Salva na tabela bt_obra.
+	 * Salvamentos indiretos: bt_camposfixos
+	 *
 	 * Verifica se a obra existe e em caso negativo, salva.
 	 */
-	function salvarObra() {
-		$obra = $this->getObra();
+	public function salvarObra() {
+		global $MIOLO;
 
+		$db = $MIOLO->GetDatabase('sigaept');
+		$transaction = $db->getTransaction();
+
+		$obra = $this->getObra();
 		$idObra = $this->bussObra->getIdByTituloAndSubtitulo($obra['titulo'], $obra['subtitulo']);
 
 		// Se a editora não estiver cadastrada, insira
 		if(!$idObra) {
-			// TODO: INICIAR TRANSAÇÃO AQUI - PRIORIDADE MAXIMA. vou dormir...
+
+			// Iniciando Tranzação
+			$transaction->begin();
+
 			$idObra = $this->bussObra->inserirObra($obra);
 
 			// Se a obra for inserida corretamente
 			if($idObra) {
 				// Salve o lider
 				$statusLider = $this->inserirLider($this->getLider($this->marc), $idObra);
-				$camposFixos = $this->inserirCamposFixos($this->getCamposFixos(), $idObra);
+				// Salve os campos Fixos
+				$camposFixos = $this->getCamposFixos();
+				$statusCamposFixos = $this->inserirCamposFixos($camposFixos, $idObra);
 
 
-				// TODO: FINALIZAR TRANSACAO AQUI
-				$this->info[] = 'Obra \''. $obra['titulo'] . ' - ' . $obra['subtitulo'] . '\' cadastrada com sucesso!';
+				// Se der tudo certo
+				if($statusLider && $statusCamposFixos) {
+					$transaction->commit();
+					$this->info[] = 'Obra \''. $obra['titulo'] . ' - ' . $obra['subtitulo'] . '\' cadastrada com sucesso!';
+
+				} else {
+					$transaction->rollback();
+					$idObra = false;
+				}
+					
+				// Fechando Tranzação
+				$this->EndTransaction();
 			}
 		}
 
