@@ -347,22 +347,16 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 	/**
 	 * Retorna o código dos Campos Fixos de Dados. Tag 008, idtiqueta = 7
+	 * // TODO: DESCOBRIR PORQUE ESTÁ RETORNANDO 41
 	 */
 	private function getCamposFixos() {
-		// TODO: Retorne a string dos camposFixos deste demonio!
-
 		$camposFixos = null;
-		for($i = 0; $i < count($this->livro['campos']); $i++) {
+
+		for($i = 0; $i < count($this->livro['campos']) - 2; $i++) {
 
 			if (isset($this->livro['campos'][$i]['tag'])) {
-				switch($this->livro['campos'][$i]['tag']) {
-
-					// Campos Fixos
-					case 008:
-						$camposFixos[] = $this->livro['campos'][$i]['infoCompletaCampo'];
-
-						break;
-
+				if($this->livro['campos'][$i]['tag'] == '008') {
+					$camposFixos = $this->livro['campos'][$i]['numCaracteresCampo'];
 				}
 			}
 		}
@@ -371,9 +365,14 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	}
 
 	/**
-	 * TODO: aguarde a conclusão de getCamposFixos()
+	 * Salva Campos Fisicos na tabela bt_camposfixos. Idetiqueta = 7 (tag 008)
+	 * @param string $camposFixos
+	 * @param int $idObra
 	 */
 	private function inserirCamposFixos($camposFixos, $idObra) {
+		var_dump($camposFixos);
+		die;
+
 		$conteudo = $camposFixos;
 
 		$sql = new sql('idetiqueta, idobra, conteudo', 'bt_camposfixos');
@@ -393,16 +392,13 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 		// Se a editora não estiver cadastrada, insira
 		if(!$idObra) {
-			// TODO: INICIAR TRANSAÇÃO AQUI
+			// TODO: INICIAR TRANSAÇÃO AQUI - PRIORIDADE MAXIMA. vou dormir...
 			$idObra = $this->bussObra->inserirObra($obra);
 
 			// Se a obra for inserida corretamente
 			if($idObra) {
 				// Salve o lider
 				$statusLider = $this->inserirLider($this->getLider($this->marc), $idObra);
-
-				// Salve Campos Fixos de Dados
-				// TODO: InserirCamposFixos
 				$camposFixos = $this->inserirCamposFixos($this->getCamposFixos(), $idObra);
 
 
@@ -410,13 +406,6 @@ class BusinessBibliotecaLivroImportacao extends Business {
 				$this->info[] = 'Obra \''. $obra['titulo'] . ' - ' . $obra['subtitulo'] . '\' cadastrada com sucesso!';
 			}
 		}
-		
-		//TODO: Teste
-		echo '<pre>';
-		echo 'campos Fixos: ';
-		print_r($this->getCamposFixos());
-		echo '</pre>';
-		die;
 
 		return $idObra;
 	}
