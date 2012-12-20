@@ -85,6 +85,16 @@ class frmImportacao extends MForm {
 			$idObra = $this->livroImportacao->salvarObra();
 
 			echo '<pre>';
+			echo 'IdEditora: ' . $idEditora . '<br/>';
+			echo 'IdAutor: ';
+			var_dump($idAutor); echo '<br/>';
+			echo 'IdObra: ' . $idObra . '<br/><br/><br/>';
+				
+			echo '<pre>';
+			print_r($this->livroImportacao->getInfo());
+			echo '</pre>';
+			echo '<br/><br/><br/>';
+
 			$livro = $this->livroImportacao->getLivro();
 			print_r($livro);
 			echo '</pre>';

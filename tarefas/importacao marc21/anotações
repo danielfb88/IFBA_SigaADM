@@ -8,11 +8,11 @@ O que importa é a TAG + SUBCAMPO para saber o que aquela informação represent
 Cada tag possui o seu conjunto de subcampos. Descubra quais são os subcampos de cada TAG e para que servem.
 R: Nao precisa fazer isso. Voce já tem o lider, a tag e os subcampos. Apenas descubra aonde salvar cada um. e Tarefa concluída.
 
-- O lider vai para bt_camposfixos com o idetiqueta = 1 (tag 000)
+- ok - O lider vai para bt_camposfixos com o idetiqueta = 1 (tag 000)
 
-- O diretório não precisa salvar, pois é calculado.
+- ok - O diretório não precisa salvar, pois é calculado.
 
-- O Conteudo logo após o diretório e antes dos campos variáveis vai para para bt_camposfixos com o idtiqueta = 7
+- ok - O Conteudo logo após o diretório e antes dos campos variáveis vai para para bt_camposfixos com o idtiqueta = 7
 ex: 120608                 r               d
 
 - Os subcampos vão para bt_material
@@ -66,9 +66,13 @@ ok
 		idetiqueta = 154
 		subcampo = a
 
+ok
 3 - Obra
 
+ok
 4 - Campos Fixos
+
+
 5 - Material
 
 
