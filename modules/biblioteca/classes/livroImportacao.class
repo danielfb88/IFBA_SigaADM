@@ -58,10 +58,16 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	 */
 	public function setMarc($marc) {
 		if (!is_null($marc) && !empty($marc)) {
-			// Removendo caractere de quebra-linha
-			$this->marc = str_replace("\r\n", '', trim($marc));
-			// Organizando informações
-			$this->livro = $this->separarPartesDoMarc($this->marc);
+				
+			if(strLen($marc) >= 36) {
+				// Removendo caractere de quebra-linha
+				$this->marc = str_replace("\r\n", '', trim($marc));
+				// Organizando informações
+				$this->livro = $this->separarPartesDoMarc($this->marc);
+					
+			} else {
+				throw new EMarcException('Código do marc inválido.');
+			}
 
 		} else {
 			throw new EMarcException('Código marc nulo ou vazio.');
@@ -109,10 +115,6 @@ class BusinessBibliotecaLivroImportacao extends Business {
 		// Se o número de caractetes recuperado através do código do diretório for diferente do numero real de caracteres da string completa dos campos variáveis
 		if($livro['campos']['numCaracteres_total'] != $livro['campos']['numCaracteresMarcCampos'])
 			throw new EMarcException('O código marc é inválido.');
-
-		// Cada campo definido no diretório deve obrigatoriamente ter 12 caracteres. Portanto a soma deles deve ser um número divisível por 12
-		if(strlen($diretorio) % 12 != 0)
-			throw new EMarcException('Foram encontrados erros no código do Diretório.');
 
 		return $livro;
 	}
@@ -168,6 +170,11 @@ class BusinessBibliotecaLivroImportacao extends Business {
 			} else {
 				$i++;
 			}
+		}
+
+		// Validando o código do diretório
+		if(!is_numeric($marcDiretorio) || (strLen($marcDiretorio) < 12)) {
+			throw new EMarcException("O código do diretório do marc é inválido.");
 		}
 
 		// numero de caracteres do marcDiretorio
@@ -249,7 +256,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 			$idEditora = $this->bussEditora->InsertImportacao2($editora['descricao'], $editora['municipio']);
 
 			if($idEditora)
-				$this->info[] = 'Editora '. $editora['descricao'] . ' cadastrada com sucesso!';
+				$this->info[] = 'Editora \''. $editora['descricao'] . '\' cadastrada com sucesso!';
 
 		}
 
@@ -328,7 +335,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 				// se o novo autor foi salvo
 				if($idAutor_novo) {
 					$arrIdAutor[] = $idAutor_novo;
-					$this->info[] = 'Autor '. $autor[$i]['conteudo'] . ' cadastrado com sucesso!';
+					$this->info[] = 'Autor \''. $autor[$i]['conteudo'] . '\' cadastrado com sucesso!';
 				} else {
 					throw new EMarcException('Houve um erro ao tentar inserir o autor. \'' . $autor[$i]['conteudo'] . '\'');
 				}
@@ -468,7 +475,6 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 			// Se a obra foi inserida corretamente
 			if($idObra_nova) {
-				echo 'obra inserida';
 				// Salve o lider
 				$statusLider = $this->inserirLider($this->getLider($this->marc), $idObra_nova);
 
@@ -494,7 +500,6 @@ class BusinessBibliotecaLivroImportacao extends Business {
 				// Fechando Tranzação
 				$this->EndTransaction();
 			} else {
-				echo 'obra nao inserida';die;
 				throw new Exception('Não foi possível inserir a obra.');
 			}
 		}
