@@ -157,10 +157,11 @@ class BusinessBibliotecaLivroImportacao extends Business {
 		/**
 		 * Verificação de erros
 		*/
-
-		// Se o número de caractetes recuperado através do código do diretório for diferente do numero real de caracteres da string completa dos campos variáveis
+		/*
+		 // Se o número de caractetes recuperado através do código do diretório for diferente do numero real de caracteres da string completa dos campos variáveis
 		if(strLen($livro['lider']['infoCompleta']) != 24)
 			throw new EMarcException('O líder deve possuir 24 números de caracteres.');
+		*/
 
 		return $livro;
 	}
@@ -800,6 +801,8 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	}
 
 	/**
+	 * TODO: DADOS ORGANIZADOS. PROXIMO PASSO: SALVAR.
+	 *
 	 * Obtém o código dos campos variáveis através do array do código marc.
 	 *
 	 * @since 22-12-2012
@@ -827,7 +830,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 					break;
 				}
 			}
-			$campoVariavel['indicadores'] = (strLen(trim($indicadores)) == 2) ? trim($indicadores) : null;
+			$campoVariavel['indicadores'] = (strLen(trim($indicadores)) <= 4) ? trim($indicadores) : null;
 
 			// Obtendo Info do campo
 			$campoVariavel['infoCompletaCampo'] = trim(substr($aux, $nFimIndicadores));
