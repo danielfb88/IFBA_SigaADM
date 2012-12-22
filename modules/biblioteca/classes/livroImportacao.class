@@ -87,6 +87,11 @@ class BusinessBibliotecaLivroImportacao extends Business {
 		} else {
 			throw new EMarcException('Código marc nulo ou vazio.');
 		}
+
+		echo '<pre>';
+		print_r($this->livro);
+		echo '</pre>';
+		die;
 	}
 
 	/**
@@ -141,6 +146,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	 * 		- lider
 	 * 		- campos
 	 *
+	 * @since 22-12-2012
 	 * @return array
 	 */
 	private function separarPartesDoMarc2(array $arrMarc) {
@@ -153,8 +159,8 @@ class BusinessBibliotecaLivroImportacao extends Business {
 		*/
 
 		// Se o número de caractetes recuperado através do código do diretório for diferente do numero real de caracteres da string completa dos campos variáveis
-		if($livro['campos']['numCaracteres_total'] != $livro['campos']['numCaracteresMarcCampos'])
-			throw new EMarcException('O código marc é inválido.');
+		if(strLen($livro['lider']['infoCompleta']) != 24)
+			throw new EMarcException('O líder deve possuir 24 números de caracteres.');
 
 		return $livro;
 	}
@@ -202,6 +208,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	 *
 	 * Obtem o código do lider do código do marc em forma de array.
 	 *
+	 * @since 22-12-2012
 	 * @param array $arrMarc
 	 */
 	private function getLider2(array $arrMarc) {
@@ -793,9 +800,9 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	}
 
 	/**
-	 * TODO: Desenvolver
 	 * Obtém o código dos campos variáveis através do array do código marc.
 	 *
+	 * @since 22-12-2012
 	 * @param array $arrMarc
 	 */
 	private function getCamposVariaveis2(array $arrMarc) {
@@ -828,10 +835,18 @@ class BusinessBibliotecaLivroImportacao extends Business {
 			$aux = null;
 			$m = 0;
 			for($k=1; $k < strLen($campoVariavel['infoCompletaCampo']); $k++) {
-				if(($campoVariavel['infoCompletaCampo'][$k] != '|') && ($campoVariavel['infoCompletaCampo'][$k] != '$') && ($k != strLen($campoVariavel['infoCompletaCampo']) - 1)) {
+				if((($campoVariavel['infoCompletaCampo'][$k] != '|') && ($campoVariavel['infoCompletaCampo'][$k] != '$'))
+					&& ($k != strLen($campoVariavel['infoCompletaCampo']) - 1)) {
+
 					$aux .= $campoVariavel['infoCompletaCampo'][$k];
 
 				} else {
+
+ 					// pegando o ultimo caractere
+ 					if($k == strLen($campoVariavel['infoCompletaCampo']) - 1) {
+						$aux .= $campoVariavel['infoCompletaCampo'][$k];
+					}
+
 					$campoVariavel['info'][$m]['subCampo'] = $aux[0];
 					$campoVariavel['info'][$m]['conteudo'] = trim(substr($aux, 1));
 
@@ -840,47 +855,15 @@ class BusinessBibliotecaLivroImportacao extends Business {
 				}
 			}
 
-
-			echo '<pre>';
-			print_r($campoVariavel);
-			echo '</pre>';
-		}
-		die;
-
-
-		for($i = 0; $i < count($arrDiretorio) - 1; $i++) {
-			$campoVariavel = null;
-
-			$campoVariavel['infoCompletaCampo'] = substr($marcCampos, $arrDiretorio[$i]['posicaoNaSequencia'], $arrDiretorio[$i]['numCaracteres']);
-			$campoVariavel['numCaracteresCampo'] = strlen($campoVariavel['infoCompletaCampo']);
-			$arrCamposVariaveis['numCaracteres_total'] += $campoVariavel['numCaracteresCampo'];
-			// Retirando o ultimo caractere da contagem
-			$arrCamposVariaveis['numCaracteresMarcCampos'] = ($marcCampos[$numCaracteresMarcCampos - 1] == '\\') ? $numCaracteresMarcCampos - 1 : $numCaracteresMarcCampos;
-
-			// Tag
-			$campoVariavel['tag'] = $arrDiretorio[$i]['tag'];
-
-			// SubCampo e Conteudo
-			$j = 0;
-
-			for($x = 0; $x < strlen($campoVariavel['infoCompletaCampo']); $x++) {
-
-				if($campoVariavel['infoCompletaCampo'][$x] == '$') {
-					$campoVariavel['info'][$j]['subCampo'] = null;
-					$campoVariavel['info'][$j]['conteudo'] = null;
-
-					$campoVariavel['info'][$j]['subCampo'] = $campoVariavel['infoCompletaCampo'][$x + 1];
-
-					$aux = substr($campoVariavel['infoCompletaCampo'], $x + 2);
-					for($q = 0; $q < strlen($aux); $q++) {
-						if($aux[$q] == '$' || $aux[$q] == '^')
-							break;
-							
-						$campoVariavel['info'][$j]['conteudo'] .= $aux[$q];
-					}
-
-					$j++;
-				}
+			// Removendo info de tags que não a possuem
+			switch ($campoVariavel['tag']) {
+				case 'LDR':
+				case '001':
+				case '003':
+				case '005':
+				case '008':
+					unset($campoVariavel['info']);
+					break;
 			}
 
 			$arrCamposVariaveis[] = $campoVariavel;
