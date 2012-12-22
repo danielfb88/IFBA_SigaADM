@@ -57,16 +57,31 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	 * @throws Exception
 	 */
 	public function setMarc($marc) {
+		$marc = trim($marc);
+
 		if (!is_null($marc) && !empty($marc)) {
-				
-			if(strLen($marc) >= 36) {
-				// Removendo caractere de quebra-linha
-				$this->marc = str_replace("\r\n", '', trim($marc));
-				// Organizando informações
-				$this->livro = $this->separarPartesDoMarc($this->marc);
-					
-			} else {
-				throw new EMarcException('Código do marc inválido.');
+
+			// Verificando se existem quebra de linha
+			$arrMarc = explode("\r\n", $marc);
+
+			// Se existir quebra de linha, está no formato friendly-user
+			if (count($arrMarc) > 1) {
+
+				$this->marc = $marc;
+				$this->livro = $this->separarPartesDoMarc2($arrMarc);
+
+			} else {	// Formato codificado
+
+				// 24 do Lider + no mínimo 12 do diretório
+				if(strLen($marc) >= 36) {
+					// Removendo caractere de quebra-linha
+					$this->marc = str_replace("\r\n", '', $marc);
+					// Organizando informações
+					$this->livro = $this->separarPartesDoMarc($this->marc);
+
+				} else {
+					throw new EMarcException('Código do marc inválido.');
+				}
 			}
 
 		} else {
@@ -120,14 +135,37 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	}
 
 	/**
-	 * Obtem o código do lider do código do marc.
-	 * O código do Lider são os 24 primeiros caracteres contando com o 0 "zero"
+	 * Modo: Friendly-user
 	 *
-	 * @param String $marc
+	 * Separa o código marc em 2 partes:
+	 * 		- lider
+	 * 		- campos
+	 *
+	 * @return array
 	 */
-	private function getLider($marc) {
-		$marcLider = substr($marc, 0, 24);
+	private function separarPartesDoMarc2(array $arrMarc) {
 
+		$livro['lider'] = $this->getLider2($arrMarc);
+		$livro['campos'] = $this->getCamposVariaveis2($arrMarc);
+
+		/**
+		 * Verificação de erros
+		*/
+
+		// Se o número de caractetes recuperado através do código do diretório for diferente do numero real de caracteres da string completa dos campos variáveis
+		if($livro['campos']['numCaracteres_total'] != $livro['campos']['numCaracteresMarcCampos'])
+			throw new EMarcException('O código marc é inválido.');
+
+		return $livro;
+	}
+
+	/**
+	 * Organiza as informações do lider em um array
+	 *
+	 * @param string $marcLider
+	 * @return array $lider
+	 */
+	private function organizarLider($marcLider) {
 		$lider['infoCompleta'] = $marcLider;
 		$lider['comprimentoLogico'] = substr($marcLider, 0, 5);
 		$lider['status'] = $marcLider[5];
@@ -147,6 +185,33 @@ class BusinessBibliotecaLivroImportacao extends Business {
 		$lider['indefinido'] = $marcLider[23];
 
 		return $lider;
+	}
+
+	/**
+	 * Obtem o código do lider do código do marc.
+	 * O código do Lider são os 24 primeiros caracteres contando com o 0 "zero"
+	 *
+	 * @param String $marc
+	 */
+	private function getLider($marc) {
+		return $this->organizarLider(substr($marc, 0, 24));
+	}
+
+	/**
+	 * Modo: Friendly-user
+	 *
+	 * Obtem o código do lider do código do marc em forma de array.
+	 *
+	 * @param array $arrMarc
+	 */
+	private function getLider2(array $arrMarc) {
+		$marcLider = null;
+
+		for($i=0; $i<count($arrMarc); $i++) {
+			if(substr($arrMarc[$i], 0, 3) == 'LDR') {
+				return $this->organizarLider(trim(substr($arrMarc[$i], 3)));
+			}
+		}
 	}
 
 	/**
@@ -685,6 +750,103 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 		$arrCamposVariaveis['numCaracteres_total'] = 0;
 		$arrDiretorio = $this->getDiretorio($marc);
+
+		for($i = 0; $i < count($arrDiretorio) - 1; $i++) {
+			$campoVariavel = null;
+
+			$campoVariavel['infoCompletaCampo'] = substr($marcCampos, $arrDiretorio[$i]['posicaoNaSequencia'], $arrDiretorio[$i]['numCaracteres']);
+			$campoVariavel['numCaracteresCampo'] = strlen($campoVariavel['infoCompletaCampo']);
+			$arrCamposVariaveis['numCaracteres_total'] += $campoVariavel['numCaracteresCampo'];
+			// Retirando o ultimo caractere da contagem
+			$arrCamposVariaveis['numCaracteresMarcCampos'] = ($marcCampos[$numCaracteresMarcCampos - 1] == '\\') ? $numCaracteresMarcCampos - 1 : $numCaracteresMarcCampos;
+
+			// Tag
+			$campoVariavel['tag'] = $arrDiretorio[$i]['tag'];
+
+			// SubCampo e Conteudo
+			$j = 0;
+
+			for($x = 0; $x < strlen($campoVariavel['infoCompletaCampo']); $x++) {
+
+				if($campoVariavel['infoCompletaCampo'][$x] == '$') {
+					$campoVariavel['info'][$j]['subCampo'] = null;
+					$campoVariavel['info'][$j]['conteudo'] = null;
+
+					$campoVariavel['info'][$j]['subCampo'] = $campoVariavel['infoCompletaCampo'][$x + 1];
+
+					$aux = substr($campoVariavel['infoCompletaCampo'], $x + 2);
+					for($q = 0; $q < strlen($aux); $q++) {
+						if($aux[$q] == '$' || $aux[$q] == '^')
+							break;
+							
+						$campoVariavel['info'][$j]['conteudo'] .= $aux[$q];
+					}
+
+					$j++;
+				}
+			}
+
+			$arrCamposVariaveis[] = $campoVariavel;
+		}
+
+		return $arrCamposVariaveis;
+	}
+
+	/**
+	 * TODO: Desenvolver
+	 * Obtém o código dos campos variáveis através do array do código marc.
+	 *
+	 * @param array $arrMarc
+	 */
+	private function getCamposVariaveis2(array $arrMarc) {
+		$arrCamposVariaveis = null;
+
+		for($i=0; $i<count($arrMarc); $i++) {
+			$campoVariavel = null;
+
+			// Obtendo a tag
+			$campoVariavel['tag'] = substr(trim($arrMarc[$i]), 0, 3);
+
+			// Obtendo Indicadores
+			$aux = substr(trim($arrMarc[$i]), 3);
+			$nFimIndicadores = 0;
+
+			$indicadores = null;
+			for($x=0; $x<strLen($aux); $x++) {
+				if($aux[$x] != '|' && $aux[$x] != '$') {
+					$indicadores .= $aux[$x];
+				} else {
+					$nFimIndicadores = $x;
+					break;
+				}
+			}
+			$campoVariavel['indicadores'] = (strLen(trim($indicadores)) == 2) ? trim($indicadores) : null;
+
+			// Obtendo Info do campo
+			$campoVariavel['infoCompletaCampo'] = trim(substr($aux, $nFimIndicadores));
+
+			$aux = null;
+			$m = 0;
+			for($k=1; $k < strLen($campoVariavel['infoCompletaCampo']); $k++) {
+				if(($campoVariavel['infoCompletaCampo'][$k] != '|') && ($campoVariavel['infoCompletaCampo'][$k] != '$') && ($k != strLen($campoVariavel['infoCompletaCampo']) - 1)) {
+					$aux .= $campoVariavel['infoCompletaCampo'][$k];
+
+				} else {
+					$campoVariavel['info'][$m]['subCampo'] = $aux[0];
+					$campoVariavel['info'][$m]['conteudo'] = trim(substr($aux, 1));
+
+					$m++;
+					$aux = null;
+				}
+			}
+
+
+			echo '<pre>';
+			print_r($campoVariavel);
+			echo '</pre>';
+		}
+		die;
+
 
 		for($i = 0; $i < count($arrDiretorio) - 1; $i++) {
 			$campoVariavel = null;
