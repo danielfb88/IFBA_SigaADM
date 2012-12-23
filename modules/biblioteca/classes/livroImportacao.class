@@ -88,10 +88,6 @@ class BusinessBibliotecaLivroImportacao extends Business {
 			throw new EMarcException('Código marc nulo ou vazio.');
 		}
 
-		echo '<pre>';
-		print_r($this->livro);
-		echo '</pre>';
-		die;
 	}
 
 	/**
@@ -450,6 +446,13 @@ class BusinessBibliotecaLivroImportacao extends Business {
 			}
 		}
 
+		/*
+		 *  A coluna conteudo na tabela bt_camposfixos é NOT NULL.
+		* Portanto, caso não haja esta informação no marc será lançada uma excessão.
+		*/
+		if(is_null($camposFixos))
+			throw new EMarcException("Não existe a informação sobre os campos fixos no marc. (Tag 008)");
+
 		return $camposFixos;
 	}
 
@@ -512,11 +515,10 @@ class BusinessBibliotecaLivroImportacao extends Business {
 						}
 					}
 				}
+
+				if(count($campos[$i]['info']) == $nInfoSalva)
+					$nMateriaisSalvos++;
 			}
-
-			if(count($campos[$i]['info']) == $nInfoSalva)
-				$nMateriaisSalvos++;
-
 		}
 
 		return ($nMateriais == $nMateriaisSalvos);
@@ -525,6 +527,8 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	/**
 	 * Salva na tabela bt_obra.
 	 * Salvamentos indiretos: bt_camposfixos
+	 *
+	 * @param $friendly_user - Modo amigável de importação
 	 *
 	 * Verifica se a obra existe e em caso negativo, salva.
 	 */
@@ -549,7 +553,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 			// Se a obra foi inserida corretamente
 			if($idObra_nova) {
 				// Salve o lider
-				$statusLider = $this->inserirLider($this->getLider($this->marc), $idObra_nova);
+				$statusLider = $this->inserirLider($this->livro['lider'], $idObra_nova);
 
 				// Salve os campos Fixos
 				$statusCamposFixos = $this->inserirCamposFixos($this->getCamposFixos(), $idObra_nova);
@@ -617,7 +621,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 					'localpublicacao' => null,
 					'editora' => null,
 					'datapublicacao' => null,
-					'idgenero' => null,
+					'idgenero' => 1,
 					'descfisica' => null,
 					'ideditora' => null,
 					'idautor' => null,
@@ -627,6 +631,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 			for($i = 0; $i < count($this->livro['campos']); $i++) {
 
 				if (isset($this->livro['campos'][$i]['tag'])) {
+
 					switch($this->livro['campos'][$i]['tag']) {
 
 						// Titulo
@@ -799,9 +804,20 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 		return $arrCamposVariaveis;
 	}
+	
+	// TODO: Desenvolver
+	private function getIndicadores(array $arrMarc) {
+	
+	}
+	
+	// TODO: Desenvolver
+	public function salvarIndicadores($idObra) {
+		
+	}
 
 	/**
 	 * TODO: DADOS ORGANIZADOS. PROXIMO PASSO: SALVAR.
+	 * TODO: Salvar Indicadores
 	 *
 	 * Obtém o código dos campos variáveis através do array do código marc.
 	 *

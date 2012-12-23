@@ -2417,11 +2417,21 @@ class BusinessBibliotecaObra extends Business
 	 * @param String $subtitulo
 	 * @return boolean
 	 */
-	function getIdByTituloAndSubtitulo($titulo, $subtitulo) {
-    	$sql = new sql('idobra', 'bt_obra', "(titulo = ?) AND (subtitulo = ?)");
+	function getIdByTituloAndSubtitulo($titulo, $subtitulo = null) {
+		$values = null;
+		$values[] = $titulo;
 
-    	$query = $this->Query($sql, array($titulo, $subtitulo));
-    	return $query->result[0][0];
+		$where = "(titulo = ?)";
+
+		if(!is_null($subtitulo) && !empty($subtitulo)) {
+			$where = " AND (subtitulo = ?)";
+			$values[] = $subtitulo;
+		}
+
+		$sql = new sql('idobra', 'bt_obra', $where);
+
+		$query = $this->Query($sql, $values);
+		return $query->result[0][0];
     }
 
 }

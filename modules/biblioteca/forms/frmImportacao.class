@@ -78,8 +78,10 @@ class frmImportacao extends MForm {
 			$idEditora = $this->livroImportacao->salvarEditora();
 			$idAutor = $this->livroImportacao->salvarAutor();
 			$idObra = $this->livroImportacao->salvarObra();
+			// TODO: desenvolver...
+			$idIndicadores = $this->livroImportacao->salvarIndicadores(); 
 
-			if($idEditora && $idAutor && $idObra) {
+			if($idEditora && $idAutor && $idObra && $idIndicadores) {
 				$infos = $this->livroImportacao->getInfo();
 				$msg = '';
 
