@@ -2418,13 +2418,12 @@ class BusinessBibliotecaObra extends Business
 	 * @return boolean
 	 */
 	function getIdByTituloAndSubtitulo($titulo, $subtitulo = null) {
-		$values = null;
 		$values[] = $titulo;
 
 		$where = "(titulo = ?)";
 
 		if(!is_null($subtitulo) && !empty($subtitulo)) {
-			$where = " AND (subtitulo = ?)";
+			$where .= " AND (subtitulo = ?)";
 			$values[] = $subtitulo;
 		}
 

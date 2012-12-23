@@ -23,7 +23,6 @@
  * @since 02/12/2012
  */
 
-// TODO: Analizar se deve salvar algo em bt_indicador. Parece que não
 class BusinessBibliotecaLivroImportacao extends Business {
 	private $marc;
 	private $livro;
@@ -35,8 +34,10 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	private $bussEditora;
 	private $bussObra;
 	private $bussMaterial;
+	private $bussIndicadores;
 
 	private $info;
+	private $friendlyUser_mode;
 
 	function BusinessBibliotecaLivroImportacao( $data = null ) {
 		global $MIOLO;
@@ -48,6 +49,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 		$this->bussEditora = $MIOLO->GetBusiness('biblioteca', 'editora');
 		$this->bussObra = $MIOLO->GetBusiness('biblioteca', 'obra');
 		$this->bussMaterial = $MIOLO->GetBusiness('biblioteca', 'material');
+		$this->bussIndicadores = $MIOLO->GetBusiness('biblioteca', 'indicadores');
 	}
 
 	/**
@@ -67,11 +69,13 @@ class BusinessBibliotecaLivroImportacao extends Business {
 			// Se existir quebra de linha, está no formato friendly-user
 			if (count($arrMarc) > 1) {
 
+				$this->friendlyUser_mode = true;
 				$this->marc = $marc;
 				$this->livro = $this->separarPartesDoMarc2($arrMarc);
 
 			} else {	// Formato codificado
 
+				$this->friendlyUser_mode = false;
 				// 24 do Lider + no mínimo 12 do diretório
 				if(strLen($marc) >= 36) {
 					// Removendo caractere de quebra-linha
@@ -204,6 +208,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	 * Modo: Friendly-user
 	 *
 	 * Obtem o código do lider do código do marc em forma de array.
+	 * A tag do lider geralmente é '000', mas pode ser encontrado no formato 'LDR'
 	 *
 	 * @since 22-12-2012
 	 * @param array $arrMarc
@@ -212,7 +217,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 		$marcLider = null;
 
 		for($i=0; $i<count($arrMarc); $i++) {
-			if(substr($arrMarc[$i], 0, 3) == 'LDR') {
+			if(substr($arrMarc[$i], 0, 3) == 'LDR' || substr($arrMarc[$i], 0, 3) === '000') {
 				return $this->organizarLider(trim(substr($arrMarc[$i], 3)));
 			}
 		}
@@ -561,9 +566,18 @@ class BusinessBibliotecaLivroImportacao extends Business {
 				// Salve o material
 				$statusMaterial = $this->salvarMaterial($idObra_nova);
 
+				// Salve os indicadores.
+				// Apenas se estiver no modo marc friendly-user
+				if($this->friendlyUser_mode) {
+					$statusIndicadores = $this->salvarindicadores($idObra_nova);
+					// 					die("statusIndicador: $statusIndicadores");
+				} else {
+					die('false');
+					$statusIndicadores = true;
+				}
 
 				// Se der tudo certo
-				if($statusLider && $statusCamposFixos && $statusMaterial) {
+				if($statusLider && $statusCamposFixos && $statusMaterial && $statusIndicadores) {
 
 					$transaction->commit();
 					$this->info[] = 'Obra \''. $obra['titulo'] . ' - ' . $obra['subtitulo'] . '\' cadastrada com sucesso!';
@@ -804,21 +818,113 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 		return $arrCamposVariaveis;
 	}
-	
-	// TODO: Desenvolver
-	private function getIndicadores(array $arrMarc) {
-	
+
+	/**
+	 * Obtém os indicadores para o Modo: Firendly-user.
+	 *
+	 * @param int $idObra
+	 * @return array
+	 */
+	private function getIndicadores($idObra) {
+		$arrIndicador = null;
+
+		$indicador = array(
+				'idindicador' => null,
+				'idetiqueta' => null,
+				'idobra' => null,
+				'indicadores' => array(
+						1 => null,
+						2 => null
+				),
+				'ocorrencia' => null,
+		);
+
+		// campos
+		for($i = 0; $i<count($this->livro['campos']); $i++) {
+			// idIndicador
+			$indicador['idindicador'] = $this->bussIndicadores->getNextId();
+
+			// idetiqueta
+			$indicador['idetiqueta'] = $this->bussEtiqueta->getIdByTag2($this->livro['campos'][$i]['tag']);
+
+			// idobra
+			$indicador['idobra'] = $idObra;
+
+			// indicadores
+			$nIndicador = 0;
+			// caracteres de indicadores
+			if(isset($this->livro['campos'][$i]['indicadores'])) {
+				for($j=0; $j < strLen($this->livro['campos'][$i]['indicadores']); $j++) {
+					if(is_numeric($this->livro['campos'][$i]['indicadores'][$j])) {
+						// indicador => conteudo
+						$indicador['indicadores'][++$nIndicador] = $this->livro['campos'][$i]['indicadores'][$j];
+					}
+				}
+			}
+
+			// ocorrencia
+			$indicador['ocorrencia'] = 1; // TODO: Analizar depois
+
+			$arrIndicador[] = $indicador;
+		}
+
+		$arrIndicador_ok = null;
+
+		// Mantendo no array apenas os aque possuem indicadores
+		for($i = 0; $i<count($arrIndicador); $i++) {
+			// Se nem o indicador 1 ou nem o indicador 2 forem nulos, insira o indice no array
+			if(!is_null($arrIndicador[$i]['indicadores'][1]) || !is_null($arrIndicador[$i]['indicadores'][2])) {
+				$arrIndicador_ok[] = $arrIndicador[$i];
+			}
+		}
+
+		return $arrIndicador_ok;
 	}
-	
-	// TODO: Desenvolver
-	public function salvarIndicadores($idObra) {
-		
+
+	// TODO: Desenvolver. Erros grotescos aqui. Resolva isso.
+	private function salvarIndicadores($idObra) {
+		$arrIndicador = $this->getIndicadores($idObra);
+
+		echo '<pre>';
+		print_r($arrIndicador);
+		echo '</pre>';
+		die;
+
+		$elementoSalvoCorretamente = array();
+
+		for($i=0; $i<count($arrIndicador); $i++) {
+
+			$nIndicadoresValidos = 0;
+			$nIdentificadoresValidosSalvos = 0;
+
+			for($j = 0; $j<count($arrIndicador[$i]['indicadores']); $j++) {
+				if(isset($arrIndicador[$i]['indicadores'][$j]) && !is_null($arrIndicador[$i]['indicadores'][$j])) {
+					$nIndicadoresValidos++;
+
+					$idindicador = $arrIndicador[$i]['idindicador'];
+					$idetiqueta = $arrIndicador[$i]['idetiqueta'];
+					$idobra = $arrIndicador[$i]['idobra'];
+					$indicador = $j;
+					$conteudo = $arrIndicador[$i]['indicadores'][$j];
+					$ocorrencia = $arrIndicador[$i]['ocorrencia'];
+
+					$statusOk = $this->bussIndicadores->insertIndicador($idindicador, $idetiqueta, $idobra, $indicador, $conteudo, $ocorrencia);
+
+					if($statusOk) {
+						$nIdentificadoresValidosSalvos++;
+					}
+				}
+					
+			}
+
+			if(($nIndicadoresValidos == $nIdentificadoresValidosSalvos))
+				$elementoSalvoCorretamente[$i] = true;
+		}
+
+		return (count($arrIndicador) == count($elementoSalvoCorretamente));
 	}
 
 	/**
-	 * TODO: DADOS ORGANIZADOS. PROXIMO PASSO: SALVAR.
-	 * TODO: Salvar Indicadores
-	 *
 	 * Obtém o código dos campos variáveis através do array do código marc.
 	 *
 	 * @since 22-12-2012
