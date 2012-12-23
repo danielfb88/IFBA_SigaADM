@@ -25,17 +25,8 @@
  * @author Daniel Bonfim
  */
 
-
-
 class frmImportacao extends MForm {
-	protected $error;
-	protected $info;
-
 	private $livroImportacao;
-	private $bussEtiqueta;
-	private $bussAutor;
-	private $bussEditora;
-	private $bussObra;
 
 	function __construct() {
 		global $MIOLO, $module;
@@ -81,7 +72,6 @@ class frmImportacao extends MForm {
 
 			if($idEditora && $idAutor && $idObra) {
 				$infos = $this->livroImportacao->getInfo();
-				$msg = '';
 
 				if($infos == null) {
 					$msg = "As informações já se encontram cadastradas na base de dados.";
@@ -90,7 +80,6 @@ class frmImportacao extends MForm {
 				}
 
 				$this->manager->Information($msg, $this->manager->GetActionURL('biblioteca', 'main:catalogacao', null));
-				//$this->page->redirect($this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
 			}
 		}
 	}

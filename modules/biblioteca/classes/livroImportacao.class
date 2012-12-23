@@ -19,7 +19,7 @@
 ?>
 <?php
 /**
- * @author Daniel Bonfim
+ * @author Daniel Bonfim <daniel.fb88@gmail.com>
  * @since 02/12/2012
  */
 
@@ -570,9 +570,9 @@ class BusinessBibliotecaLivroImportacao extends Business {
 				// Apenas se estiver no modo marc friendly-user
 				if($this->friendlyUser_mode) {
 					$statusIndicadores = $this->salvarindicadores($idObra_nova);
-					// 					die("statusIndicador: $statusIndicadores");
+					
 				} else {
-					die('false');
+					// apenas libere o acesso para indicadores
 					$statusIndicadores = true;
 				}
 
@@ -646,6 +646,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 				if (isset($this->livro['campos'][$i]['tag'])) {
 
+					// TODO: Tirar caracteres especiais (do inicio e do fim) de cada elemento que compõe a obra e dar um trim
 					switch($this->livro['campos'][$i]['tag']) {
 
 						// Titulo
