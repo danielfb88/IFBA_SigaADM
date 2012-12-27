@@ -35,6 +35,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	private $bussObra;
 	private $bussMaterial;
 	private $bussIndicadores;
+	private $bussSubCampo;
 
 	private $info;
 	private $friendlyUser_mode;
@@ -50,6 +51,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 		$this->bussObra = $MIOLO->GetBusiness('biblioteca', 'obra');
 		$this->bussMaterial = $MIOLO->GetBusiness('biblioteca', 'material');
 		$this->bussIndicadores = $MIOLO->GetBusiness('biblioteca', 'indicadores');
+		$this->bussSubCampo = $MIOLO->GetBusiness('biblioteca', 'subcampo');
 	}
 
 	/**
@@ -362,11 +364,10 @@ class BusinessBibliotecaLivroImportacao extends Business {
 				if (isset($this->livro['campos'][$i]['tag'])) {
 					if ($this->livro['campos'][$i]['tag'] == 100 || $this->livro['campos'][$i]['tag'] == 700) {
 
-						// Obtendo o idEtiqueta
-						$autor[$k]['idetiqueta'] = $this->bussEtiqueta->getIdByTag2($this->livro['campos'][$i]['tag']);
-						$autor[$k]['tag'] = $this->livro['campos'][$i]['tag'];
 
 						for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+							$autor[$k]['idetiqueta'] = $this->bussEtiqueta->getIdByTag2($this->livro['campos'][$i]['tag']);
+							$autor[$k]['tag'] = $this->livro['campos'][$i]['tag'];
 							$autor[$k]['subcampo'] = $this->livro['campos'][$i]['info'][$j]['subCampo'];
 							$autor[$k]['conteudo'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
 							$k++;
@@ -505,6 +506,18 @@ class BusinessBibliotecaLivroImportacao extends Business {
 						$linha = 1; // TODO: Verificar depois
 						$ocorrencia = 1; // TODO: Verificar depois
 
+						/*
+						 * Se possui idetiqueta e subcampo, e nenhum deles foram encontrados na tabela bt_subcampo lance um erro
+						*
+						* Existe uma restrição na tabela bt_material (fk_bt_material1_bt_su),
+						* relacionada aos campos 'idetiqueta' e 'subcampo' na tabela bt_subcampo.
+						* Por isso deve-se verificar antes de tentar inserir.
+						*/
+						if(((!is_null($idetiqueta) && !is_null($subcampo))
+								&& !$this->bussSubCampo->existe_SubcampoByIdetiquetaAndSubcampo($idetiqueta, $subcampo))) {
+							throw new EMarcException('A Tag \''. $campos[$i]['tag'] . '\' e o subcampo \'' . $subcampo . '\' não foram identificados como informações válidas.');
+						}
+
 						$statusMaterial = $this->bussMaterial->insertMaterial(
 								$idmaterial,
 								$idObra,
@@ -558,7 +571,8 @@ class BusinessBibliotecaLivroImportacao extends Business {
 			// Se a obra foi inserida corretamente
 			if($idObra_nova) {
 				// Salve o lider
-				$statusLider = $this->inserirLider($this->livro['lider'], $idObra_nova);
+				if(!is_null($this->livro['lider']))
+					$statusLider = $this->inserirLider($this->livro['lider'], $idObra_nova);
 
 				// Salve os campos Fixos
 				$statusCamposFixos = $this->inserirCamposFixos($this->getCamposFixos(), $idObra_nova);
@@ -570,7 +584,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 				// Apenas se estiver no modo marc friendly-user
 				if($this->friendlyUser_mode) {
 					$statusIndicadores = $this->salvarindicadores($idObra_nova);
-					
+
 				} else {
 					// apenas libere o acesso para indicadores
 					$statusIndicadores = true;
@@ -886,10 +900,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	private function salvarIndicadores($idObra) {
 		$arrIndicador = $this->getIndicadores($idObra);
 
-		echo '<pre>';
-		print_r($arrIndicador);
-		echo '</pre>';
-		die;
+		$this->debug($arrIndicador);
 
 		$elementoSalvoCorretamente = array();
 
@@ -962,7 +973,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 			$m = 0;
 			for($k=1; $k < strLen($campoVariavel['infoCompletaCampo']); $k++) {
 				if((($campoVariavel['infoCompletaCampo'][$k] != '|') && ($campoVariavel['infoCompletaCampo'][$k] != '$'))
-					&& ($k != strLen($campoVariavel['infoCompletaCampo']) - 1)) {
+						&& ($k != strLen($campoVariavel['infoCompletaCampo']) - 1)) {
 
 					$aux .= $campoVariavel['infoCompletaCampo'][$k];
 
@@ -996,6 +1007,17 @@ class BusinessBibliotecaLivroImportacao extends Business {
 		}
 
 		return $arrCamposVariaveis;
+	}
+
+	/**
+	 * Debug de array
+	 * @param array $array
+	 */
+	protected function debug(array $array) {
+		echo '<pre>';
+		print_r($array);
+		echo '</pre>';
+		die;
 	}
 
 }

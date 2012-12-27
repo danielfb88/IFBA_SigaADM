@@ -1,54 +1,54 @@
 <?php
 /* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
  *
- * Este arquivo é parte do programa SigaEPT
- *
- * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
- * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
- * na versão 2 da Licença.
- *
- * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
- * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
- * Pública Geral GNU/GPL em português para maiores detalhes.
- *
- * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
- * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
- * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
- * St, Fifth Floor, Boston, MA 02110-1301, USA
- */
+* Este arquivo é parte do programa SigaEPT
+*
+* O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+* termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+* na versão 2 da Licença.
+*
+* Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+* uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+* Pública Geral GNU/GPL em português para maiores detalhes.
+*
+* Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+* junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+* www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+* St, Fifth Floor, Boston, MA 02110-1301, USA
+*/
 ?>
 <?php
 /**
-* @package SIGA
-* @subpackage Biblioteca
-* @author SETEC/MEC
-*/
+ * @package SIGA
+ * @subpackage Biblioteca
+ * @author SETEC/MEC
+ */
 
 class BusinessBibliotecaSubcampo extends Business
 {
 	public $idEtiqueta;
-    public $subampo;
-    public $descricao;
-    public $temRepeticoes;
-    public $estaAtivo;
-    public $emListas;
-    public $emDemonstracao;
-    public $obsoleto;
-    public $mnemonico;
-    public $observacao;
-    public $emConsultas;
-    public $idOpcao; 
+	public $subampo;
+	public $descricao;
+	public $temRepeticoes;
+	public $estaAtivo;
+	public $emListas;
+	public $emDemonstracao;
+	public $obsoleto;
+	public $mnemonico;
+	public $observacao;
+	public $emConsultas;
+	public $idOpcao;
 
 
-    
-    private $allFields;
+
+	private $allFields;
 
 	function __construct($data = NULL)
 	{
-        parent::__construct('sigaept', $data);
-        $this->allFields = 'idetiqueta, subampo,descricao,temrepeticoes ,estaativo,
-        emListas,emdemonstracao,obsoleto ,mnemonico ,observacao,
-        emconsultas, idopcao';
+		parent::__construct('sigaept', $data);
+		$this->allFields = 'idetiqueta, subampo,descricao,temrepeticoes ,estaativo,
+		emListas,emdemonstracao,obsoleto ,mnemonico ,observacao,
+		emconsultas, idopcao';
 	}
 
 	function GetById($idEtiqueta)
@@ -57,7 +57,7 @@ class BusinessBibliotecaSubcampo extends Business
 		$query = $this->Query($sql,$idEtiqueta);
 		if ( !$query->eof() )
 			$this->SetData($query->GetRowObject());
-        	return $this;
+		return $this;
 	}
 
 
@@ -68,128 +68,144 @@ class BusinessBibliotecaSubcampo extends Business
 		return $data;
 	}
 
-    function GetByCodigo($idetiqueta)
-    {
-        $sql = new sql('idetiqueta, subcampo,descricao,temrepeticoes ,estaativo,
-                       emlistas,emdemonstracao,obsoleto ,mnemonico ,observacao,
-                       emconsultas, idopcao','bt_subcampo',
-                       'idetiqueta = ?');
-	
-        $query = $this->Query($sql,$idetiqueta);
+	function GetByCodigo($idetiqueta)
+	{
+		$sql = new sql('idetiqueta, subcampo,descricao,temrepeticoes ,estaativo,
+				emlistas,emdemonstracao,obsoleto ,mnemonico ,observacao,
+				emconsultas, idopcao','bt_subcampo',
+				'idetiqueta = ?');
 
-        if ( !$query->eof() )
-            $this->SetData($query->GetRowObject());
+		$query = $this->Query($sql,$idetiqueta);
 
-        return $this;
-        
-    }
+		if ( !$query->eof() )
+			$this->SetData($query->GetRowObject());
+
+		return $this;
+
+	}
 
 
-    
+
 	function SetData($data)
 	{
-        $this->idEtiqueta     = $data->idetiqueta;   
-        $this->subcampo        = $data->subcampo;
-        $this->mnemonico      = $data->mnemonico;
-        $this->descricao      = $data->descricao;    
-        $this->observacao     = $data->observacao;   
-        $this->emListas        = $data->emlistas;
-        $this->estaAtivo      = $data->estaativo;    
-        $this->emDemonstracao = $data->emdemonstracao;
-        
-
-
-
-    }
-
-
-    function SubcamposPorEtiqueta($idetiqueta)
-    {
-
-               //$sql = new sql("s.idetiqueta, s.subcampo, s.descricao from bt_etiqueta e ,bt_subcampo s where
-                     //  s.idetiqueta = e.idetiqueta and  s.idetiqueta=$idetiqueta");
-
-               $sql = new sql('idetiqueta, subcampo, descricao',' bt_subcampo ',
-                    "(idetiqueta=$idetiqueta)");
-
-        $query = $this->Query($sql);
-        return $query;
-    }
+		$this->idEtiqueta     = $data->idetiqueta;
+		$this->subcampo        = $data->subcampo;
+		$this->mnemonico      = $data->mnemonico;
+		$this->descricao      = $data->descricao;
+		$this->observacao     = $data->observacao;
+		$this->emListas        = $data->emlistas;
+		$this->estaAtivo      = $data->estaativo;
+		$this->emDemonstracao = $data->emdemonstracao;
 
 
 
 
-    function desvinculaSubcampo($idetiqueta,$sub)
-    {
-
-        global $MIOLO,$module;
-        try
-        {
-          
-            $sql = new sql('','bt_subcampo','(idetiqueta = ?) and (subcampo = ?) ');
-            $ok = $this->execute($sql->delete(array($idetiqueta,$sub)));
-
-            return $ok;
-        }
-
-        
-        catch (Exception $ok)
-        {
-            $MIOLO->Error("Subcampo não poderá ser excluido. ",$MIOLO->GetActionURL($module, $action,null ));
-        }
-    }
-
-    function verificar($idetiqueta, $subcampo)
-    {
-
- global $module,$MIOLO;
- $commands = array();
- $sql = new sql('idetiqueta, subcampo','bt_subcampo',"(idetiqueta = ?) and (subcampo = ?)");
- 
- $this->execute($sql->select(array($idetiqueta,$subcampo)));
- 
- 
- return $query;
+	}
 
 
-    }
+	function SubcamposPorEtiqueta($idetiqueta)
+	{
+
+		//$sql = new sql("s.idetiqueta, s.subcampo, s.descricao from bt_etiqueta e ,bt_subcampo s where
+		//  s.idetiqueta = e.idetiqueta and  s.idetiqueta=$idetiqueta");
+
+		$sql = new sql('idetiqueta, subcampo, descricao',' bt_subcampo ',
+				"(idetiqueta=$idetiqueta)");
+
+		$query = $this->Query($sql);
+		return $query;
+	}
 
 
-    
-
-        function saveSubcampo($idetiqueta,$subcampo)
-{
-    $sql1 = new sql('idetiqueta,descricao,temrepeticoes,estaativo,emlistas,emdemonstracao,obsoleto,mnemonico,observacao','bt_etiqueta', "idetiqueta=$idetiqueta");
-       $query1 = $this->Query($sql1);
-       $idetiqueta = $query1->result[0][0];
-   //    $subcampo = $query1->result[0][1];
-       $descricao = $query1->result[0][1];
-       $temrepeticoes = $query1->result[0][2];
-       $estaativo = $query1->result[0][3];
-       $emlistas = $query1->result[0][4];
-       $emdemosntracao = $query1->result[0][5];
-       $obsoleto = $query1->result[0][6];
-       $mnemonico = $query1->result[0][7];
-       $observacao = $query1->result[0][8];
-       $emconsultas = 1;
-       $idopcao     = 1;
 
 
-       $sql = new sql('idetiqueta, subcampo,descricao,temrepeticoes ,estaativo,
-                      emlistas,emdemonstracao,obsoleto ,mnemonico ,observacao,
-                      emconsultas, idopcao','bt_subcampo');
-       $values = array($idetiqueta, $subcampo,$descricao,$temrepeticoes ,$estaativo,
+	function desvinculaSubcampo($idetiqueta,$sub)
+	{
+
+		global $MIOLO,$module;
+		try
+		{
+
+			$sql = new sql('','bt_subcampo','(idetiqueta = ?) and (subcampo = ?) ');
+			$ok = $this->execute($sql->delete(array($idetiqueta,$sub)));
+
+			return $ok;
+		}
+
+
+		catch (Exception $ok)
+		{
+			$MIOLO->Error("Subcampo não poderá ser excluido. ",$MIOLO->GetActionURL($module, $action,null ));
+		}
+	}
+
+	function verificar($idetiqueta, $subcampo)
+	{
+
+		global $module,$MIOLO;
+		$commands = array();
+		$sql = new sql('idetiqueta, subcampo','bt_subcampo',"(idetiqueta = ?) and (subcampo = ?)");
+
+		$this->execute($sql->select(array($idetiqueta,$subcampo)));
+
+
+		return $query;
+
+
+	}
+
+
+
+
+	function saveSubcampo($idetiqueta,$subcampo)
+	{
+		$sql1 = new sql('idetiqueta,descricao,temrepeticoes,estaativo,emlistas,emdemonstracao,obsoleto,mnemonico,observacao','bt_etiqueta', "idetiqueta=$idetiqueta");
+		$query1 = $this->Query($sql1);
+		$idetiqueta = $query1->result[0][0];
+		//    $subcampo = $query1->result[0][1];
+		$descricao = $query1->result[0][1];
+		$temrepeticoes = $query1->result[0][2];
+		$estaativo = $query1->result[0][3];
+		$emlistas = $query1->result[0][4];
+		$emdemosntracao = $query1->result[0][5];
+		$obsoleto = $query1->result[0][6];
+		$mnemonico = $query1->result[0][7];
+		$observacao = $query1->result[0][8];
+		$emconsultas = 1;
+		$idopcao     = 1;
+
+
+		$sql = new sql('idetiqueta, subcampo,descricao,temrepeticoes ,estaativo,
+				emlistas,emdemonstracao,obsoleto ,mnemonico ,observacao,
+				emconsultas, idopcao','bt_subcampo');
+		$values = array($idetiqueta, $subcampo,$descricao,$temrepeticoes ,$estaativo,
                        $emlistas,$emdemonstracao,$obsoleto ,$mnemonico ,$observacao,
                        $emconsultas, $idopcao);
        $result = $this->Execute($sql->Insert($values));
        return $result;
 
-    
-}
+
+	}
+
+	/**
+	 * @author Daniel Bonfim
+	 * @since 15-12-2012
+	 *
+	 * Retorna se o registro existe pelo idEtiqueta e subcampo
+	 *
+	 * @param int $idEtiqueta
+	 * @param string $subCampo
+	 * @return boolean
+	 */
+	function existe_SubcampoByIdetiquetaAndSubcampo($idEtiqueta, $subCampo) {
+		$sql = new sql('descricao', 'bt_subcampo', "idetiqueta = ? AND subcampo = ?");
+		$values = array($idEtiqueta, $subCampo);
+
+		$query = $this->Query($sql, $values);
+		return !is_null($query->result[0][0]);
+	}
 
 
 
-
-    
 }
 ?>

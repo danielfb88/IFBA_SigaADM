@@ -32,9 +32,11 @@ Tabelas envolvidas:
 - bt_indicadores
 - bt_genero
 - bt_assunto
+- bt_subcampo
 
 Apenas para consulta:
 - bt_etiqueta
+- bt_subcampo
 
 Para exportação:
 - bt_exportacao_temp
