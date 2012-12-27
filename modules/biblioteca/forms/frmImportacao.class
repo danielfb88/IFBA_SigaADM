@@ -66,6 +66,8 @@ class frmImportacao extends MForm {
 		}
 
 		if(!$this->hasErrors()) {
+			$msg = null;
+			
 			$idEditora = $this->livroImportacao->salvarEditora();
 			$idAutor = $this->livroImportacao->salvarAutor();
 			$idObra = $this->livroImportacao->salvarObra();
@@ -79,8 +81,11 @@ class frmImportacao extends MForm {
 					$msg = $infos;
 				}
 
-				$this->manager->Information($msg, $this->manager->GetActionURL('biblioteca', 'main:catalogacao', null));
+			} else {
+				$msg = "Houve um erro ao importar a obra.";
 			}
+				
+			$this->manager->Information($msg, $this->manager->GetActionURL('biblioteca', 'main:catalogacao', null));
 		}
 	}
 

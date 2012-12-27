@@ -573,6 +573,8 @@ class BusinessBibliotecaLivroImportacao extends Business {
 				// Salve o lider
 				if(!is_null($this->livro['lider']))
 					$statusLider = $this->inserirLider($this->livro['lider'], $idObra_nova);
+				else // libere. O lider não é obrigatório que esteja no marc
+					$statusLider = true;
 
 				// Salve os campos Fixos
 				$statusCamposFixos = $this->inserirCamposFixos($this->getCamposFixos(), $idObra_nova);
@@ -583,15 +585,20 @@ class BusinessBibliotecaLivroImportacao extends Business {
 				// Salve os indicadores.
 				// Apenas se estiver no modo marc friendly-user
 				if($this->friendlyUser_mode) {
-					$statusIndicadores = $this->salvarindicadores($idObra_nova);
-
-				} else {
-					// apenas libere o acesso para indicadores
-					$statusIndicadores = true;
+					$this->salvarindicadores($idObra_nova);
 				}
 
+				/*
+				 * Debug:
+				*
+				$this->show('st_lider', $statusLider);
+				$this->show('st_camposFixos', $statusCamposFixos);
+				$this->show('st_material', $statusMaterial);
+				$this->show('st_indicadores', $statusIndicadores, true);
+				*/
+
 				// Se der tudo certo
-				if($statusLider && $statusCamposFixos && $statusMaterial && $statusIndicadores) {
+				if($statusLider && $statusCamposFixos && $statusMaterial) {
 
 					$transaction->commit();
 					$this->info[] = 'Obra \''. $obra['titulo'] . ' - ' . $obra['subtitulo'] . '\' cadastrada com sucesso!';
@@ -843,97 +850,82 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	private function getIndicadores($idObra) {
 		$arrIndicador = null;
 
-		$indicador = array(
-				'idindicador' => null,
-				'idetiqueta' => null,
-				'idobra' => null,
-				'indicadores' => array(
-						1 => null,
-						2 => null
-				),
-				'ocorrencia' => null,
-		);
-
 		// campos
 		for($i = 0; $i<count($this->livro['campos']); $i++) {
-			// idIndicador
-			$indicador['idindicador'] = $this->bussIndicadores->getNextId();
-
-			// idetiqueta
-			$indicador['idetiqueta'] = $this->bussEtiqueta->getIdByTag2($this->livro['campos'][$i]['tag']);
-
-			// idobra
-			$indicador['idobra'] = $idObra;
-
-			// indicadores
-			$nIndicador = 0;
-			// caracteres de indicadores
 			if(isset($this->livro['campos'][$i]['indicadores'])) {
-				for($j=0; $j < strLen($this->livro['campos'][$i]['indicadores']); $j++) {
-					if(is_numeric($this->livro['campos'][$i]['indicadores'][$j])) {
+
+				// Removendo qualquer caractere que não seja numérico
+				$strIndicadores = ereg_replace('[^0-9]', '', $this->livro['campos'][$i]['indicadores']);
+
+				if(!empty($strIndicadores)) {
+					$indicador = null;
+
+					// idetiqueta
+					$indicador['idetiqueta'] = $this->bussEtiqueta->getIdByTag2($this->livro['campos'][$i]['tag']);
+
+					// idobra
+					$indicador['idobra'] = $idObra;
+
+					// ocorrencia
+					$indicador['ocorrencia'] = 1; // TODO: Analizar depois
+
+					// indicadores
+					$nIndicador = 0;
+
+					// caracteres de indicadores
+					for($j=0; $j < strLen($strIndicadores); $j++) {
 						// indicador => conteudo
-						$indicador['indicadores'][++$nIndicador] = $this->livro['campos'][$i]['indicadores'][$j];
+						$indicador['indicadores'][++$nIndicador] = $strIndicadores[$j];
 					}
+
+
+					$arrIndicador[] = $indicador;
 				}
 			}
-
-			// ocorrencia
-			$indicador['ocorrencia'] = 1; // TODO: Analizar depois
-
-			$arrIndicador[] = $indicador;
 		}
+		// 		$this->debug($arrIndicador);
 
-		$arrIndicador_ok = null;
-
-		// Mantendo no array apenas os aque possuem indicadores
-		for($i = 0; $i<count($arrIndicador); $i++) {
-			// Se nem o indicador 1 ou nem o indicador 2 forem nulos, insira o indice no array
-			if(!is_null($arrIndicador[$i]['indicadores'][1]) || !is_null($arrIndicador[$i]['indicadores'][2])) {
-				$arrIndicador_ok[] = $arrIndicador[$i];
-			}
-		}
-
-		return $arrIndicador_ok;
+		return $arrIndicador;
 	}
 
-	// TODO: Desenvolver. Erros grotescos aqui. Resolva isso.
+	/**
+	 * Salvar Indicadores
+	 * @param int $idObra
+	 *
+	 * @throws EMarcException
+	 */
 	private function salvarIndicadores($idObra) {
 		$arrIndicador = $this->getIndicadores($idObra);
 
-		$this->debug($arrIndicador);
-
-		$elementoSalvoCorretamente = array();
+		$nElementoSalvoCorretamente = 0;
 
 		for($i=0; $i<count($arrIndicador); $i++) {
+			$nIdentificadoresSalvos = 0;
 
-			$nIndicadoresValidos = 0;
-			$nIdentificadoresValidosSalvos = 0;
+			for($j = 0; $j < count($arrIndicador[$i]['indicadores']); $j++) {
+				$indicador = null;
+				$indicador['idindicador'] = $this->bussIndicadores->getNextId();
+				$indicador['idetiqueta'] = $arrIndicador[$i]['idetiqueta'];
+				$indicador['idobra'] = $arrIndicador[$i]['idobra'];
+				$indicador['indicador'] = $j + 1;
+				$indicador['conteudo'] = $arrIndicador[$i]['indicadores'][$j + 1];
+				$indicador['ocorrencia'] = $arrIndicador[$i]['ocorrencia'];
 
-			for($j = 0; $j<count($arrIndicador[$i]['indicadores']); $j++) {
-				if(isset($arrIndicador[$i]['indicadores'][$j]) && !is_null($arrIndicador[$i]['indicadores'][$j])) {
-					$nIndicadoresValidos++;
+				try {
+					$this->bussIndicadores->insertIndicador(
+							$indicador['idindicador'],
+							$indicador['idetiqueta'],
+							$indicador['idobra'],
+							$indicador['indicador'],
+							$indicador['conteudo'],
+							$indicador['ocorrencia']
+					);
 
-					$idindicador = $arrIndicador[$i]['idindicador'];
-					$idetiqueta = $arrIndicador[$i]['idetiqueta'];
-					$idobra = $arrIndicador[$i]['idobra'];
-					$indicador = $j;
-					$conteudo = $arrIndicador[$i]['indicadores'][$j];
-					$ocorrencia = $arrIndicador[$i]['ocorrencia'];
-
-					$statusOk = $this->bussIndicadores->insertIndicador($idindicador, $idetiqueta, $idobra, $indicador, $conteudo, $ocorrencia);
-
-					if($statusOk) {
-						$nIdentificadoresValidosSalvos++;
-					}
+				} catch (Exception $e) {
+					throw new EMarcException('Houve um problema ao salvar os indicadores. ' . $e->getMessage());
 				}
-					
 			}
-
-			if(($nIndicadoresValidos == $nIdentificadoresValidosSalvos))
-				$elementoSalvoCorretamente[$i] = true;
 		}
-
-		return (count($arrIndicador) == count($elementoSalvoCorretamente));
 	}
 
 	/**
@@ -979,8 +971,8 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 				} else {
 
- 					// pegando o ultimo caractere
- 					if($k == strLen($campoVariavel['infoCompletaCampo']) - 1) {
+					// pegando o ultimo caractere
+					if($k == strLen($campoVariavel['infoCompletaCampo']) - 1) {
 						$aux .= $campoVariavel['infoCompletaCampo'][$k];
 					}
 
@@ -1013,11 +1005,25 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	 * Debug de array
 	 * @param array $array
 	 */
-	protected function debug(array $array) {
+	protected function debug($array, $die = true) {
 		echo '<pre>';
 		print_r($array);
 		echo '</pre>';
-		die;
+		if($die) die;
+	}
+
+	/**
+	 * Debug para variaveis.
+	 *
+	 * @param string $label
+	 * @param string $value
+	 * @param boolean $die
+	 */
+	protected function show($label, $value, $die = false) {
+		echo $label . ': ';
+		var_dump($value);
+		echo '<br/>';
+		if($die) die;
 	}
 
 }
