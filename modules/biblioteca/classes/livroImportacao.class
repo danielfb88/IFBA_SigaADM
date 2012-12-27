@@ -397,7 +397,10 @@ class BusinessBibliotecaLivroImportacao extends Business {
 		// Salvando
 		for($i = 0; $i < count($autor); $i++) {
 			// Verificando se existem autores com o nome e idEtiqueta informado
-			$idAutor = $this->bussAutor->getIdAutorByNomeAndIdEtiqueta($autor[$i]['conteudo'], $autor[$i]['idetiqueta']);
+			if($autor[$i]['conteudo'] && $autor[$i]['idetiqueta'])
+				$idAutor = $this->bussAutor->getIdAutorByNomeAndIdEtiqueta($autor[$i]['conteudo'], $autor[$i]['idetiqueta']);
+			else
+				throw new EMarcException("Autor não encontrado no marc");
 
 			// Se não encontrar, insira-o
 			if(!$idAutor) {
