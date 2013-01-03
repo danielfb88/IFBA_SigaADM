@@ -148,6 +148,11 @@ class ESecurityException extends EMioloException
     }
 }
 
+/**
+ * Excessão para Marc (Biblioteca)
+ * @author Daniel Bonfim
+ *
+ */
 class EMarcException extends EMioloException
 {
     public function __construct($msg)

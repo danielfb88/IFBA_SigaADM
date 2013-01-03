@@ -324,19 +324,25 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	public function salvarEditora() {
 		$editora = $this->getEditora();
 
-		// Verificando se a editora existe
-		$idEditora = $this->bussEditora->getIdByDesc($editora['descricao']);
+		if(!is_null($editora['descricao'])) {
+			// Verificando se a editora existe
+			$idEditora = $this->bussEditora->getIdByDesc($editora['descricao']);
 
-		// Se a editora não estiver cadastrada, insira
-		if(!$idEditora) {
-			$idEditora = $this->bussEditora->InsertImportacao2($editora['descricao'], $editora['municipio']);
+			// Se a editora não estiver cadastrada, insira
+			if(!$idEditora) {
+				$idEditora = $this->bussEditora->InsertImportacao2($editora['descricao'], $editora['municipio']);
 
-			if($idEditora)
-				$this->info[] = 'Editora \''. $editora['descricao'] . '\' cadastrada com sucesso!';
+				if($idEditora)
+					$this->info[] = 'Editora \''. $editora['descricao'] . '\' cadastrada com sucesso!';
 
+			}
+
+			return $idEditora;
+				
+		} else {
+			// se não tiver informaçoes sobre a editora, apenas libere o acesso
+			return true;
 		}
-
-		return $idEditora;
 	}
 
 	/**
