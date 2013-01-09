@@ -4,5 +4,6 @@
 .settings/
 *~
 .metadata/
-miolo/*
 *.swp
+miolo/var/log/*
+miolo/var/reports/*
