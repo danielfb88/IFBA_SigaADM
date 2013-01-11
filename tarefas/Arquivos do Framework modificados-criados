@@ -1,0 +1,9 @@
+Arquivos do Framework modificados/criados
+
+Modificados:
+miolo/classes/ui/reports/mjasperreport.class
+miolo/classes/flow/mexception.class
+
+Criados:
+miolo/classes/extensions/jasper/lib/itext-2.1.7.jar
+miolo/classes/extensions/jasper/lib/jasperreports-4.8.0.jar
