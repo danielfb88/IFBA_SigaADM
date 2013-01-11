@@ -21,6 +21,9 @@
 /**
  * @author Daniel Bonfim <daniel.fb88@gmail.com>
  * @since 02/12/2012
+ * @version 1.0
+ * 
+ * Ultima modificação: 11-01-2013
  */
 
 class BusinessBibliotecaLivroImportacao extends Business {
@@ -282,7 +285,11 @@ class BusinessBibliotecaLivroImportacao extends Business {
 	}
 
 	/**
-	 * Obtém informações da editora
+	 * Obtém informações da editora.
+	 *
+	 * Obs: Modificações no município e descrição da editora deverão também serem refletidas no
+	 * método getObra, no case 'Imprenta'. Não foi possível reutilizar o código neste caso.
+	 *
 	 * @return array
 	 */
 	public function getEditora() {
@@ -300,10 +307,10 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 					for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
 						if ($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
-							$editora['municipio'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+							$editora['municipio'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
 
 						} else if ($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'b') {
-							$editora['descricao'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+							$editora['descricao'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
 						}
 					}
 				}
@@ -338,7 +345,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 			}
 
 			return $idEditora;
-				
+
 		} else {
 			// se não tiver informaçoes sobre a editora, apenas libere o acesso
 			return true;
@@ -676,7 +683,6 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 				if (isset($this->livro['campos'][$i]['tag'])) {
 
-					// TODO: Tirar caracteres especiais (do inicio e do fim) de cada elemento que compõe a obra e dar um trim
 					switch($this->livro['campos'][$i]['tag']) {
 
 						// Titulo
@@ -685,12 +691,12 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 								// titulo
 								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
-									$obra['titulo'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+									$obra['titulo'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
 								}
 
 								// subtitulo
 								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'b') {
-									$obra['subtitulo'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+									$obra['subtitulo'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
 								}
 							}
 							break;
@@ -707,23 +713,24 @@ class BusinessBibliotecaLivroImportacao extends Business {
 							break;
 
 							// Imprenta
+							// Obs: Modificações aqui deverão também refletidas no método getEditora
 						case 260:
 							for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
 
 								// localpublicacao
 								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
-									$obra['localpublicacao'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+									$obra['localpublicacao'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
 								}
 
 								// editora
 								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'b') {
-									$obra['editora'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+									$obra['editora'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
 									$obra['ideditora'] = $this->bussEditora->getIdByDesc($obra['editora']);
 								}
 
 								// datapublicacao
 								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'c') {
-									$obra['datapublicacao'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+									$obra['datapublicacao'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
 								}
 							}
 							break;
@@ -745,7 +752,7 @@ class BusinessBibliotecaLivroImportacao extends Business {
 
 								// descfisica
 								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
-									$obra['descfisica'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+									$obra['descfisica'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
 								}
 							}
 							break;
@@ -1008,6 +1015,17 @@ class BusinessBibliotecaLivroImportacao extends Business {
 		}
 
 		return $arrCamposVariaveis;
+	}
+
+	/**
+	 * Remove alguns caracteres especiais no final da String
+	 * @since 11-01-2013
+	 *
+	 * @param String $string
+	 */
+	protected function limparString($string) {
+		$pattern = "[:,/]$";
+		return trim(ereg_replace($pattern, "", trim($string)));
 	}
 
 	/**
