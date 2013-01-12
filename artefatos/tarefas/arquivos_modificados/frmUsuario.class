@@ -1,0 +1,495 @@
+<?PHP
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+* Este arquivo é parte do programa SigaEPT
+*
+* O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+* termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+* na versão 2 da Licença.
+*
+* Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+* uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+* Pública Geral GNU/GPL em português para maiores detalhes.
+*
+* Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+* junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+* www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+* St, Fifth Floor, Boston, MA 02110-1301, USA
+*/
+?>
+<?
+// Daniel Bonfim - 24-10-2012
+class frmUsuario extends Form {
+	private $data;
+
+	function frmUsuario()
+	{
+		global $MIOLO,$module;
+
+		// Título do Formulário
+		$this->Form('Criar Usuários');
+		//Chama o CreateFileds, etc.
+		$this->EventHandler();
+
+		// Caso existam dados carregados, inserir no form
+		if($this->data) {
+			$this->setData($this->data);
+		}
+
+		// Botão "enviar" não aparece
+		$this->defaultButton = false;
+		// Botão 'fechar', direcionando para o handler biblioteca/main/circulacao/usuario
+		$this->SetClose($this->manager->GetActionURL($module, 'main:secretaria:usuários'));
+		$this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../ui/js/mask.js'));
+	}
+
+	function CreateFields() {
+		global $MIOLO,$module;
+
+		$objUsuarioValidacao = $MIOLO->GetBusiness($module,'usuariovalidacao');
+		$queryUsuarioValidacao = $objUsuarioValidacao->ListGrupos();
+
+		$objUF = $MIOLO->GetBusiness('common','uf');
+		$queryEstadosBrasileiros = $objUF->listEstadosBrasileiros()->result;
+
+		$grupoSanguineo = Array("A+"=>"A+","A-"=>"A-","B+"=>"B+","B-"=>"B-","AB+"=>"AB+",
+				"AB-"=>"AB-","O+"=>"O+","O-"=>"O-");
+
+		/*
+		 // Campos que aparecem no formulário
+		$estados = Array("AC"=>"Acre","AL"=>"Alagoas","AM"=>"Amazonas","AP"=>"Amapá","BA"=>"Bahia","CE"=>"Ceará","DF"=>"Distrito Federal",
+				"ES"=>"Espírito Santo","GO"=>"Goiás","MA"=>"Maranhão","MG"=>"Minas Gerais","MS"=>"Mato Grosso do Sul","MT"=>"Mato Grosso",
+				"PA"=>"Pará","PB"=>"Paraíba","PE"=>"Pernambuco","PI"=>"Piauí","PR"=>"Paraná","RJ"=>"Rio de Janeiro","RN"=>"Rio Grande do Norte",
+				"RO"=>"Rondônia","RS"=>"Rio Grande do Sul","SC"=>"Santa Catarina","SE"=>"Sergipe","SP"=>"São Paulo","TO"=>"Tocantins");
+		*/
+
+		$fields = Array (
+				// 7 Ids
+				new MHiddenField('idPais'),
+				new MHiddenField('idInstituicao'),
+				new MHiddenField('idSetor'),
+				new MHiddenField('idMunicipio'),
+				// 				new MHiddenField('idGrupo'),
+				// 				new MHiddenField('idGrupoAnterior'),
+				new MHiddenField('idPaisNascimento'),
+				new MHiddenField('idUsuario'),
+				new MHiddenField('idPessoa'),
+
+				// 29 fields e 1 label
+				new MTextField('txNome', '', 'Nome', 50, "Obrigatório"),
+				new MTextField('txBairro', '', 'Bairro', 45),
+				new MTextField('txCep', '', 'CEP', 10, 'Ex.: 36200-000 - Obrigatório'),
+				new MTextField('txDataNascimento', '', 'Data Nascimento', 15, "Ex: 20/05/2008 - Obrigatório"),
+				new MTextField('txNomePai', '', 'Nome do Pai', 50),
+				new MTextField('txNomeMae', '', 'Nome da Mae', 50),
+				new MSelection('slSexo', '', 'Sexo', Array('M' => "Masculino", 'F' => "Feminino"), '', "Obrigatório"),
+				new MTextField('txAnoChegada', '', 'Ano de Chegada', 4, "Obrigatório"),
+				new MTextField('txTelefone', '', 'Telefone', 20),
+				new MTextField('txCelular', '', 'Celular', 20),
+				new MTextField('txEmail', '', 'E-mail', 50),
+				new MSelection('slGrupoSanguineo', '', 'Grupo Sanguíneo', $grupoSanguineo),
+				new MTextField('txCPF', '', 'CPF', 15),
+				new MTextField('txNumRG', '', 'Número do RG', 15),
+				new MTextField('txTipoRg', '', 'Tipo do RG', 20),
+				new MTextField('txOrgaoRg', '', 'Orgão Expedidor do RG', 20),
+				new MSelection('slUF_RG', '', 'UF do RG', $queryEstadosBrasileiros),
+				new MTextField('txNumCarteiraProfissional', '', 'Número da carteira profissional', 25),
+				new MTextField('txSerieCarteiraProfissional', '', 'Série da carteira profissional',25),
+				new MSelection('slUFCarteiraProfissional', '', 'UF Carteira Profissional', $queryEstadosBrasileiros),
+				new MSelection('slSemestreIngresso', '', 'Semestre Ingresso', array(1 => "1º Semestre", 2 => "2º Semestre"), false, 'Obrigatório'),
+				new MLookupTextField('lkpMunicipio', '', 'Município', 47, 'Use a lupa - Obrigatório'),
+				new MLookupTextField('lkpInstituicao', '', 'Instituição', 47, 'Use a lupa - Obrigatório'),
+				new MLookupTextField('lkpPaisNascimento', '', 'País de nascimento', 47, 'Use a lupa - Obrigatório'),
+				new MSelection('slGrupo', '', 'Grupo', $queryUsuarioValidacao),
+				new MTextLabel('lbDica', '&nbsp; --Dados de acesso do Usuário-- &nbsp;', '&nbsp;'),
+				new MTextField('txLogin', '', 'Login - Matrícula',20,"Obrigatório ser númerico para alunos"),
+				new MTextField('txNick', '', 'Apelido', 50),
+				new MPasswordField('passSenha', '', 'Senha', 20, "Obrigatório"),
+				new MLookupTextField('lkpSetor', '', 'Setor', 30, 'Use a lupa ,não Obrigatório para alunos')
+		);
+
+		// Insere os campos
+		$this->SetFields($fields);
+		$this->SetClose(NULL);
+
+		//Validação do campo cep
+		$this->txCep->addAttribute('onKeyUp','makeMask(this, \'#####-###\');');
+		$this->txCep->addAttribute('onBlur','makeMask(this, \'#####-###\');');
+		$this->txCep->AddAttribute('maxlength','9');
+
+		// Validação do campo serieCartPro
+		$this->txSerieCarteiraProfissional->AddAttribute('maxlength','5');
+
+		//Validaçao do campo Ano de Chegada
+		$this->txAnoChegada->AddAttribute('maxlength','4');
+
+		// Validação do campo txTelefone
+		$this->txTelefone->AddAttribute('maxlength','20');
+
+		// Validação do campo txCelular
+		$this->txCelular->AddAttribute('maxlength','20');
+
+		// Validação do campo txEmail
+		$this->txEmail->AddAttribute('maxlength','50');
+
+		// Validação do campo txNumRG
+		$this->txNumRG->AddAttribute('maxlength','15');
+
+		// Validação do campo txOrgaoRg
+		$this->txOrgaoRg->AddAttribute('maxlength','20');
+
+		// Validação do campo txNumCarteiraProfissional
+		$this->txNumCarteiraProfissional->AddAttribute('maxlength','10');
+
+		// Validação do campo txLogin
+		$this->txLogin->AddAttribute('maxlength','20');
+		
+		// Validação do campo txTipoRg
+		$this->txTipoRg->AddAttribute('maxlength','20');
+
+		//Validaçao do campo CPF
+		$this->txCPF->AddAttribute('maxlength','14');
+		$this->txCPF->addAttribute('onKeyUp','makeMask(this, \'###.###.###-##\');');
+
+		//Validação do campo de Data
+		$this->txDataNascimento->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+		$this->txDataNascimento->addAttribute('onBlur','makeMask(this, \'##/##/####\');');
+
+		// Obrigatórios
+		$validators = array(
+				new RequiredValidator('txNome'),
+				new MMaskValidator('txCep','','99999-999','required'),
+				new RequiredValidator('txDataNascimento'),
+				new RequiredValidator('txAnoChegada'),
+				new RequiredValidator('lkpMunicipio'),
+				new RequiredValidator('lkpInstituicao'),
+				new RequiredValidator('lkpPaisNascimento'),
+				new MDATEDMYValidator('txDataNascimento'),
+				new EMAILValidator('txEmail','','','e-mail inválido'),
+				new MIntegerValidator('txAnoChegada'),
+				new MCPFValidator('txCPF'),
+		);
+			
+		$this->SetValidators($validators);
+
+		// Botões que aparecem no formulário
+		$buttons = Array(
+				new FormButton('btnEnviar', 'Salvar'),
+				new MLink('btnLinkRelacao','Relação de Usuários',
+						$this->manager->getActionURL($module, $self, '', array('event'=>'btnList:click'))),
+		);
+
+		//Insere os Botões
+		$this->SetButtons($buttons);
+		//$this->SetbuttonAttr('btnVoltar','visible',false);
+
+		/*
+		 As 4 propriedades de um lookup:
+		module = módulo usado
+		item = A funcao que chama no arquivo classes/lookup.class
+		event = O evento relacionado quando o usuário clica em 'acao'
+		related = Os campos retornados após a ação
+		*/
+		//Utilizamos o lookup do modulo common para o campo municipio
+		$this->SetFieldAttr('lkpMunicipio','module','common');
+		$this->SetFieldAttr('lkpMunicipio','item','municipioBiblioteca');
+		$this->SetFieldAttr('lkpMunicipio','event','filler');
+		//'m.idmunicipio, municipio, m.iduf, p.idpais, p.pais
+		$this->SetFieldAttr('lkpMunicipio','related', 'idMunicipio,lkpMunicipio,null,idPais');
+
+		//Utilizamos o lookup do módulo Biblioteca para o campo Pais de nascimento
+		$this->SetFieldAttr('lkpPaisNascimento','module','biblioteca');
+		$this->SetFieldAttr('lkpPaisNascimento','item','pais');
+		$this->SetFieldAttr('lkpPaisNascimento','event','filler');
+		// m.idmunicipio,m.municipio,m.iduf,p.pais
+		$this->SetFieldAttr('lkpPaisNascimento','related', 'idPaisNascimento,lkpPaisNascimento');
+
+		//Utilizamos o lookup do módulo Common para o campo Setor
+		$this->SetFieldAttr('lkpSetor','module','common');
+		$this->SetFieldAttr('lkpSetor','item','setor');
+		$this->SetFieldAttr('lkpSetor','event','filler');
+		$this->SetFieldAttr('lkpSetor','related', 'idSetor,lkpSetor');
+			
+		//Utilizamos o lookup do módulo Common para o campo Instituição
+		$this->SetFieldAttr('lkpInstituicao','module','common');
+		$this->SetFieldAttr('lkpInstituicao','item','instituicao');
+		$this->SetFieldAttr('lkpInstituicao','event','filler');
+		$this->SetFieldAttr('lkpInstituicao','related', 'idInstituicao,lkpInstituicao');
+	}
+
+	/**
+	 * Valida campos
+	 *
+	 * @return boolean
+	 */
+	function validarFields() {
+		$status = false;
+
+		//Verifica se o nome contém apenas espaços em branco e se os outros campos são preenchidos
+		if (strlen(trim(Form::GetFormValue('txNome'))) == 0) {
+			$this->AddError('Informe o campo "Nome"');
+
+		} elseif (Form::GetFormValue('slSemestreIngresso') == null) {
+			//Verifica se o combo "Semestre Ingresso" não está selecionado
+			$this->AddError('Informe o campo "Semestre Ingresso"');
+
+		} elseif (Form::GetformValue('slSexo') == null) {
+			$this->AddError('Informe o campo "Sexo"');
+
+		} elseif (Form::GetformValue('slGrupo') == null) {
+			$this->AddError('Informe o campo "Grupo"');
+
+		} else {
+			$status = true;
+		}
+
+		return $status;
+	}
+
+	/**
+	 * Insere os dados nos campos do form
+	 *
+	 * @param unknown $data
+	 */
+	function setData($data)
+	{
+		// 8 ids
+		$this->SetFieldValue('idPais',$data->idPais);
+		$this->SetFieldValue('idInstituicao',$data->idInstituicao);
+		$this->SetFieldValue('idSetor',$data->idSetor);
+		$this->SetFieldValue('idMunicipio',$data->idMunicipio);
+		// 		$this->SetFieldValue('idGrupo',$data->idGrupo);
+		$this->SetFieldValue('idPaisNascimento',$data->idPaisNascimento);
+		$this->SetFieldValue('idUsuario', $data->idUsuario);
+		$this->SetFieldValue('idPessoa',$data->idPessoa);
+
+		// 29 fields
+		$this->SetFieldValue('txNome',$data->nome);
+		$this->SetFieldValue('txBairro',$data->bairro);
+		$this->SetFieldValue('txCep',$this->formatarCEP($data->cep));
+		$this->SetFieldValue('txDataNascimento',$this->formatarData($data->dataNascimento));
+		$this->SetFieldValue('txNomePai',$data->nomePai);
+		$this->SetFieldValue('txNomeMae',$data->nomeMae);
+		$this->SetFieldValue('txAnoChegada',$data->anoChegada);
+		$this->SetFieldValue('slSexo',$data->sexo);
+		$this->SetFieldValue('txTelefone',$data->telefone);
+		$this->SetFieldValue('txCelular',$data->celular);
+		$this->SetFieldValue('txEmail',$data->email);
+		$this->SetFieldValue('slGrupoSanguineo',$data->grupoSanguineo);
+		$this->SetFieldValue('txCPF',$this->formatarCPF($data->cpf));
+		$this->SetFieldValue('txNumRG',$data->numRg);
+		$this->SetFieldValue('txTipoRg',$data->tipoRg);
+		$this->SetFieldValue('txOrgaoRg',$data->orgaoRg);
+		$this->SetFieldValue('slUF_RG',$data->ufRg);
+		$this->SetFieldValue('txNumCarteiraProfissional',$data->numCartPro);
+		$this->SetFieldValue('txSerieCarteiraProfissional',$data->serieCartPro);
+		$this->SetFieldValue('slUFCarteiraProfissional',$data->UfCartPro);
+		$this->SetFieldValue('slSemestreIngresso',$data->semestreIngresso);
+		$this->SetFieldValue('lkpMunicipio',$data->municipio);
+		$this->SetFieldValue('lkpInstituicao',$data->instituicao);
+		$this->SetFieldValue('lkpPaisNascimento',$data->paisNascimento);
+		$this->SetFieldValue('slGrupo',$data->idGrupo);
+		$this->SetFieldValue('txLogin', $data->login);
+		$this->SetFieldValue('txNick', $data->apelido);
+		$this->SetFieldValue('passSenha',$data->senha);
+		$this->SetFieldValue('lkpSetor',$data->setor);
+
+	}
+
+	function GetData()
+	{
+		$data = new FormData();
+
+		// 7 Ids
+		$data->idPais = $this->GetFormValue('idPais');
+		$data->idInstituicao = $this->getFormValue('idInstituicao');
+		$data->idSetor    = $this->GetFormValue('idSetor');
+		$data->idMunicipio = $this->GetFormValue('idMunicipio');
+		// 		$data->idgrupo = $this->GetFieldValue('idGrupo');
+		$data->idPaisNascimento = $this->GetFormValue('idPaisNascimento');
+		$data->idUsuario = $this->GetFormValue('idUsuario');
+		$data->idPessoa = $this->GetFormValue('idPessoa');
+
+		// 30 fields (+passmd5)
+		$data->nome = $this->GetFormValue('txNome');
+		$data->bairro = $this->GetFormValue('txBairro');
+		$data->cep = ereg_replace('[-]', '', $this->GetFormValue('txCep'));
+		$data->dataNascimento = $this->GetFormValue('txDataNascimento');
+		$data->nomePai = $this->GetFormValue('txNomePai');
+		$data->nomeMae = $this->GetFormValue('txNomeMae');
+		$data->anoChegada = $this->GetFormValue('txAnoChegada');
+		$data->sexo = $this->GetFormValue('slSexo');
+		$data->telefone = $this->GetFormValue('txTelefone');
+		$data->celular = $this->GetFormValue('txCelular');
+		$data->email = $this->GetFormValue('txEmail');
+		$data->grupoSanguineo = $this->GetFormValue('slGrupoSanguineo');
+		$data->cpf = ereg_replace('[-.]', '', $this->GetFormValue('txCPF'));
+		$data->numRg = $this->GetFormValue('txNumRG');
+		$data->tipoRg = $this->GetFormValue('txTipoRg');
+		$data->orgaoRg = $this->GetFormValue('txOrgaoRg');
+		$data->ufRg = $this->GetFormValue('slUF_RG');
+		$data->numCartPro = $this->GetFormValue('txNumCarteiraProfissional');
+		$data->serieCartPro = $this->GetFormValue('txSerieCarteiraProfissional');
+		$data->UfCartPro = $this->GetFormValue('slUFCarteiraProfissional');
+		$data->semestreIngresso = $this->getFormValue('slSemestreIngresso');
+		$data->municipio  = $this->GetFormValue('lkpMunicipio');
+		$data->instituicao  = $this->GetFormValue('lkpInstituicao');
+		$data->paisNascimento  = $this->GetFormValue('lkpPaisNascimento');
+		$data->idGrupo = $this->GetFormValue('slGrupo');
+		$data->login  = $this->GetFormValue('txLogin');
+		$data->apelido = $this->GetFormValue('txNick');
+		$data->senha   = $this->GetFormValue('passSenha');
+		$data->passmd5 = md5($this->GetFormValue('passSenha'));
+		$data->setor = $this->GetFormValue('lkpSetor');
+
+		return $data;
+	}
+
+	function btnList_click() {
+		global $MIOLO, $module, $self, $theme, $action, $page;
+
+		//Instancia o objeto autor
+		$objUsuario = $MIOLO->GetBusiness($module,'usuario');
+
+		$columns = array(
+				new DataGridColumn('nome','Nome','left',true, '25%',true, null, true,true),
+				new DataGridColumn('login','Login','left',true, '25%',true, null, true,true),
+				new DataGridColumn('nick','Apelido','center',true, '25%',true, null, true,true),
+				new DataGridColumn('cpf','CPF','center',true, '25%',true, null, true,true),
+		);
+
+		$href_datagrid = $MIOLO->GetActionURL($module,$self,'', Array('event'=>'btnList_click'));
+		$page->SetAction($href_datagrid);
+
+		$query = $objUsuario->ListUsuario();
+
+		$datagrid = new DataGrid2($query, $columns, $href_datagrid,20);
+		$datagrid->SetTitle('Relação de Usuários');
+		$datagrid->SetLinkType('linkbutton');
+		$datagrid->SetWidth('100%');
+		$href_edit = $MIOLO->GetActionURL($module,$self,'%0%',Array('event'=>'btnConsulta:click'));
+		$href_dele = $MIOLO->GetActionURL($module,$self,'%0%',Array('event'=>'btnExcluir:click'));
+		$datagrid->HeaderLink('new', 'Novo Usuário',$MIOLO->GetActionURL($module,$self,'',Array('event'=>'')));
+		$datagrid->AddActionIcon('Salvar', 'edit', $href_edit);
+		$datagrid->AddActionIcon('Excluir', 'delete.gif', $href_dele);
+		$theme->InsertContent($datagrid);
+	}
+
+	function btnConsulta_click() {
+		global $MIOLO,$item,$theme,$module;
+
+		$idUsuario = $item;
+
+		$objUsuario = $MIOLO->GetBusiness($module,'usuario');
+		$this->data = $objUsuario->buscarPorId($idUsuario);
+	}
+
+	function btnEnviar_click() {
+		global $MIOLO,$module,$self, $action;
+
+		$data = $this->GetData();
+
+		//Instanciando o objeto usuário
+		$objUsuario = $MIOLO->GetBusiness($module, 'usuario');
+			
+		if (trim($data->idSetor) == '') {
+			$data->idSetor = 1;
+		}
+
+		if($this->validarFields()) {
+			try {
+				$ok = $objUsuario->SaveUsuario($data);
+
+				if($ok) {
+					//$MIOLO->Prompt(Prompt::Information("Usuário salvo com sucesso.",$MIOLO->GetActionURL($module,'main:controleacesso',$data->idUsuario,array('event'=>'btnEdit:click') )));
+					$MIOLO->Information("Usuário ".$data->nome . " salvo com sucesso.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')));
+					$objUsuario->Log(OP_UPD,'Alterado o usuário '.$data->login.' com o id = '. $data->idUsuario);
+						
+				} else {
+					$MIOLO->Information("Não foi possível salvar o usuário.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')));
+				}
+
+			} catch(Exception $e) {
+				$MIOLO->Error("Não foi possível salvar o usuário.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')));
+			}
+		}
+
+	}
+
+	function btnExcluir_click() {
+		global $MIOLO,$item,$theme,$action,$module;
+
+		$idUsuario = $item;
+
+		$objUsuario = $MIOLO->GetBusiness($module,'usuario');
+		$data = $objUsuario->buscarPorId($idUsuario);
+
+		//$conf é a variável que confirma a exclusão do registro no momento
+		//em que é questionado ao usuário se ele deseja relmente excluir o registro
+		$conf = Form::GetFormValue('conf');
+
+		if( $conf == 'sim') //Caso o usuário tenha escolhido a opção sim
+		{
+			try
+			{
+				$ok = $objUsuario->DeleteUsuario($idUsuario);
+				$MIOLO->prompt(Prompt::information("Usuário ".$data->nome . " excluído com sucesso.", $MIOLO->GetActionURL($module,$action)));
+				// 				$MIOLO->Information("Usuário ".$data->nome . " excluído com sucesso.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')));
+
+			} catch(EMioloException $e)
+			{
+				$MIOLO->Error("Não foi possível deletar este Usuário.", $MIOLO->GetActionURL($module,$action));
+			}
+		}
+		elseif( $conf == 'nao')
+		{
+			$MIOLO->prompt(Prompt::information('Exclusão cancelada.', $MIOLO->GetActionURL($module,$action)));
+		}
+		else
+		{
+			//Caso a variável não possua o valor "sim" ou "não" significa que ainda não lhe foi atribuído um valor,
+			//ou seja, deve-se perguntar ao usuário se deseja realmente excluir o registro
+
+			$msg = "Tem certeza que deseja realmente excluir o usuário " . $data->nome . " ?";
+
+			$action_sim = $MIOLO->getActionURL($module,'main:secretaria:gerenciausuario&event=btnExcluir:click',$data->nome, array('conf'=>'sim', 'item' => $idUsuario));
+			$action_nao = $MIOLO->getActionURL($module,'main:secretaria:gerenciausuario&event=btnExcluir:click',$idUsuario, array('conf'=>'nao'));
+
+			$MIOLO->prompt(Prompt::question($msg, $action_sim, $action_nao));
+		}
+	}
+
+	function formatarData($string)
+	{
+		$resultado = '';
+		if($string)
+		{
+			$data =  explode('-',$string);
+			$resultado = $data[2].'/'.$data[1].'/'.$data[0];
+		}
+		return $resultado;
+	}
+
+	function formatarCPF($string)
+	{
+		$resultado = '';
+		if($string)
+		{
+			$resultado = substr($string,0,3).'.'.substr($string,3,3).'.'.substr($string,6,3).'-'.substr($string,9);
+		}
+		return $resultado;
+	}
+
+	function formatarCEP($string)
+	{
+		$resultado = '';
+		if($string)
+		{
+			$resultado = substr($string,0,5).'-'.substr($string,5);
+		}
+		return $resultado;
+	}
+}
+?>
+
+

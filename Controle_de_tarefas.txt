@@ -1,0 +1,56 @@
+
+// Tarefa 1 - Crud de Município
+
+modules/biblioteca/handlers/admin.inc
+modules/common/classes/lookup.class:	// Daniel Bonfim - 23/10/2012
+modules/common/classes/municipio.class:    // Daniel Bonfim - 23/10/2012
+modules/biblioteca/handlers/admin/municipioBiblioteca.inc
+modules/biblioteca/handlers/admin/municipioBibliotecaFind.inc
+modules/biblioteca/forms/municipioBiblioteca/frmMunicipio.class
+modules/biblioteca/forms/municipioBiblioteca/frmMunicipioFind.class:// Daniel Bonfim - 16-10-2012
+modules/biblioteca/grids/gridMunicipio.class:// Daniel Bonfim - 18/10/2012
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+// Tarefa 2 - Tela para inserir usuário
+
+modules/biblioteca/forms/frmUsuario.class:// Daniel Bonfim - 24-10-2012
+modules/biblioteca/classes/usuario.class
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+
+// Tarefa 3 - Tela para importação marc
+
+miolo/classes/flow/mexception.class:
+modules/biblioteca/forms/frmImportacao.class
+modules/biblioteca/classes/subcampo.class
+modules/biblioteca/classes/editora.class
+modules/biblioteca/classes/autor.class
+modules/biblioteca/classes/autor.class
+modules/biblioteca/classes/livroImportacao.class
+modules/biblioteca/classes/material.class
+modules/biblioteca/classes/map/material.xml
+modules/biblioteca/classes/etiqueta.class
+modules/biblioteca/classes/indicadores.class
+modules/biblioteca/classes/map/indicadores.xml
+modules/biblioteca/classes/obra.class
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+// Tarefa 4 - Corrigir bug no relatório de empréstimo
+
+modules/biblioteca/reports/Ticket1_Emprestimo_UI.jrxml
+modules/biblioteca/reports/Ticket1_Emprestimo_UI.jasper
+
+Sub-tarefa:  Corrigir problemas com geração de relatórios Jasper
+
+miolo/classes/ui/reports/mjasperreport.class:
+miolo/classes/extensions/jasper/lib/itext-2.1.7.jar
+miolo/classes/extensions/jasper/lib/jasperreports-4.8.0.jar
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+

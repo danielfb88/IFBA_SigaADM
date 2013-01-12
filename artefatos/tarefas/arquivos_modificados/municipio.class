@@ -1,0 +1,173 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+
+class BusinessCommonMunicipio extends MBusiness
+{
+   var $idMunicipio;
+   var $municipio;
+   var $idUF;
+   var $UF;
+   var $idPais;
+   var $pais;
+   var $categoriaDiaria;
+   var $populacao;
+ 
+	function __construct($data=null)
+	{
+       parent::__construct('common',$data);
+    }
+    
+    // Daniel Bonfim - 23/10/2012
+	function SetData2($data) {
+       $this->idMunicipio = $data->idMunicipio;
+       $this->municipio = strtoupper($data->municipio);
+       $this->idPais = $data->idPais;
+       $this->idUF = $data->idUF;
+       $this->categoriaDiaria = $data->categoriaDiaria;
+       $this->populacao = $data->populacao;
+    }
+
+    function SetData($data)
+   
+    {
+    //   $this->idMunicipio = $data->idMunicipio;
+       $this->municipio = strtoupper($data->municipio);
+       $this->idPais = $data->idPais;
+       $this->idUF = $data->idUF;
+       $this->categoriaDiaria = $data->categoriaDiaria;
+       $this->populacao = $data->populacao;
+    }
+
+    function Insert()
+    {   global $MIOLO;
+        $sql = new sql('idmunicipio, municipio, iduf,categoriadiaria,populacao','cm_municipio');
+        $args = array(
+    		$this->idMunicipio,
+		    strtoupper($this->municipio),
+            $this->idUF,
+	$this->categoriaDiaria,
+	$this->populacao
+        );
+        $ok = $this->Execute($sql->Insert($args));
+        if ($ok) {$this->Log(OP_INS,"idmunicipio = $this->idmunicipio");} 
+        return $ok;
+    }
+
+    function Update()
+    {
+        $sql = new sql('municipio, iduf,categoriadiaria,populacao','cm_municipio','idmunicipio = ?');
+        $args = array(
+		    strtoupper($this->municipio),
+            $this->idUF,
+	$this->categoriaDiaria,
+	$this->populacao,
+    		$this->idMunicipio,
+        );
+        $ok = $this->Execute($sql->Update($args));
+        if ($ok) {$this->Log(OP_UPD,"idmunicipio = $this->idmunicipio");} 
+        return $ok;
+    }
+    
+    // Daniel Bonfim / 20/10/2012
+	function deleteById($id)
+    {
+        $sql = new sql('','cm_municipio', 'idmunicipio = ?');
+        $ok = $this->Execute( $sql->Delete($id) );
+        if ($ok) {$this->Log(OP_DEL,"idmunicipio = $id");} 
+        return $ok;
+    }
+    
+    function Delete()
+    {
+        $sql = new sql('','cm_municipio', 'idmunicipio = ?');
+        $ok = $this->Execute( $sql->Delete($this->idMunicipio) );
+        if ($ok) {$this->Log(OP_DEL,"idmunicipio = $this->idmunicipio");} 
+        return $ok;
+    }
+
+    function ListRange($range=NULL)
+    {
+        $sql = new sql('idmunicipio, municipio, iduf', 'cm_municipio', '','municipio');
+        $sql->SetRange($range); 
+        $query = $this->Query($sql);
+        return $query;
+    }
+
+	function ListAll()
+    {
+		return $this->ListRange();
+    }
+
+    function CountWhere($where='')
+    {
+        $sql = new sql('*','cm_municipio',$where);
+        return $this->_db->Count($sql->Select());
+    }
+
+	function GetById($id)
+    {
+        $this->idMunicipio = $id;
+        $this->retrieve();
+        return $this;
+   }
+
+   function GetById2($id)
+    {
+       $this->idMunicipio = $id;
+       $this->retrieve();
+       return $this;
+    }
+    
+    function GetIdByNomeEstado($municipio,$idUF)
+    {
+        $municipio = strtoupper($municipio);
+        $idUF = strtoupper($idUF);
+        $criteria =  $this->getCriteria();
+        $criteria->addCriteria('municipio','=',"'$municipio'");
+        $criteria->addCriteria('idUF','=',"'$idUF'");
+        return $this->retrieveFromCriteria($criteria);
+    }
+	function listByNome($nome)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->addCriteria('municipio', 'like', strtoupper("'%{$nome}%'"));
+		return $criteria->retrieveAsQuery();
+	}
+	
+	// Daniel Bonfim - 22/10/2012
+	/*
+	 * Verifica se o registro já existe atraves da constraint unique (municipio, idUF)
+	 */
+	function existe() {
+		$criteria = $this->getCriteria();
+		$criteria->addCriteria('municipio', '=', trim(strtoupper("'$this->municipio'")));
+		$criteria->addCriteria('idUF', '=', trim(strtoupper("'$this->idUF'")));
+		
+		if($criteria->retrieveAsQuery()->result[0])
+			return true;
+		else
+			return false;
+	}
+
+}
+?>

@@ -480,14 +480,13 @@ class frmPesquisaSimples extends frmPesquisa
 
 		// Primeiro, montar um grid com os exemplares
 		$columns = array(
-			new DataGridColumn('obra','Obra','center',true, '10%',true, null, true,true),
-			new DataGridColumn('exemplar','Exemplar','center',true, '16%',true, null, true,true),
-			new DataGridColumn('tipo','Tipo','center',true, '20%',true, null, true,true),
-			new DataGridColumn('estado','Estado','center',true, '14%',true, null, true,true),
-			new DataGridColumn('prevdev','Previsão Devolução','center',true, '17%',true, null, true,true),
-			new DataGridColumn('unidade','Unidade','center',true, '15%',true, null, true,true),
+			//new DataGridColumn('obra','Obra','center',true, '10%',true, null, true,true),
+			new DataGridColumn('exemplar','Número do tombo','center',true, '18%',true, null, true,true),
+			new DataGridColumn('tipo','Tipo','center',true, '22%',true, null, true,true),
+			new DataGridColumn('estado','Estado','center',true, '16%',true, null, true,true),
+			new DataGridColumn('prevdev','Previsão Devolução','center',true, '19%',true, null, true,true),
+			new DataGridColumn('unidade','Unidade','center',true, '17%',true, null, true,true),
 			new DataGridColumn('volume','Volume','center',true, '8%',true, null, true,true),
-			
         );
 
 		//endereco (para pag de resultados) nao pode conter "&", para nao confundir com novos parametros
@@ -501,6 +500,7 @@ class frmPesquisaSimples extends frmPesquisa
         }else{
             $query = $this->objSimples->ListExemplaresByIdArtigo($item);
         }
+		
        /*
         var_dump("Item: </br>");
         var_dump($item);

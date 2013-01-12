@@ -24,21 +24,25 @@
 * @author SETEC/MEC
 */
 
+//require_once "cutter.php";
+//require_once "class.pdfbarcode.php";
+//require_once "etiqueta.php";
+
 class repEtiquetasLombada extends MPDFReport
 {
    var $img;
    var $timestamp;
+   var $etiqueta;
    
    function __construct()
    {
       global $MIOLO, $module, $page, $context, $self, $action, $perms; 
-      parent::__construct(NULL, NULL, 0, NULL, 'landscape', 'a4'); 
+      parent::__construct(NULL, NULL, 0, NULL, /*'landscape'*/'portrait', /*'a4'*/'letter'); 
       $ui = $MIOLO->GetUI();
       $this->img = $ui->GetImageSrc('logonet.png','biblioteca');
       $this->timestamp = date('d/m/Y G:i');
-      $this->pdf->ezStartPageNumbers(800,540, 10, 'rigth', 'Pagina: {PAGENUM}');
-      $this->pdf->ezSetMargins(100, 40, 20, 20);
 
+      $this->pdf->ezSetMargins(100, 40, 20, 20);
    }
 
   function GeneratePageHeader()
@@ -132,63 +136,227 @@ class repEtiquetasLombada extends MPDFReport
       $this->pdf->ezStream();
    }  
  	
-   function gerarParaMuitosExemplares($x,$y,$width,$data,$lista)
+   function gerarParaMuitosExemplares($x,$y,$width,$data,$lista,$skip)
    {
       global $MIOLO, $module;
-      $page = 1;
-      $yinicial = $y;
+      $this->etiqueta = $MIOLO->GetBusiness($module,'etiquetaPronta');
+      $this->etiqueta->SetData(6180,'Letter',$this->pdf);  
+	  
+	  if(!is_numeric($skip) || $skip > $this->etiqueta->quantity['horizontal']*$this->etiqueta->quantity['vertical'])
+		$skip = 1;	   
+		
+	   for(;$skip-1 > 0; $skip--)
+		$this->etiqueta->next();  
+
+      foreach($lista as $idexemplar)
+      {
+            $objEtiqueta = $MIOLO->GetBusiness($module,'etiquetaLombada');
+            
+            $this->pdf->setLineStyle(1,'','',array(3));
+
+            $this->pdf->rectangle($this->etiqueta->currentX,
+               $this->etiqueta->currentY - $this->etiqueta->dimensions['height'],
+               $this->etiqueta->dimensions['width'],
+               $this->etiqueta->dimensions['height']);
+			
+			$toprint = array();
+
+   	      $valor = $objEtiqueta->getConteudoTag($idexemplar[0],'082','a');
+		  
+		  if(!empty($valor))
+			array_push($toprint,$valor);
+
+           $cutter = $MIOLO->GetBusiness($module,'cutter');
+
+           $valor2 = $objEtiqueta->getConteudoTag($idexemplar[0],'245','a') ;
+
+           if($valor1 = $objEtiqueta->getConteudoTag($idexemplar[0],'100','a'))
+              $valor1 =  $cutter->getCutter($valor1,$valor2);
+           else if($valor1 = $objEtiqueta->getConteudoTag($idexemplar[0],'111','a'))
+              $valor1 =  $cutter->getCutter($valor1,$valor2);
+           else
+               $valor1 =  $cutter->getCutter($objEtiqueta->getConteudoTag($idexemplar[0],'130','a'));
+
+		if(!empty($valor1))
+			array_push($toprint,$valor1);			 
+     
+   	    $valor = $valor2 = $objEtiqueta->getConteudoTag($idexemplar[0],'250','a');
+   	    if(!empty($valor))
+		  array_push($toprint,$valor);
+
+   	    $valor = $objEtiqueta->getVolumeExemplar($idexemplar[0]);
+
+   	    if(!empty($valor))
+		  array_push($toprint,"v. $valor");			  
+     
+   	    $valor = $valor2 = $objEtiqueta->getNumeroExemplar($idexemplar[0]);
+   	    if(!empty($valor))
+		  array_push($toprint,"ex. $valor");	
+
+		  $x = $this->etiqueta->currentX + (($this->etiqueta->dimensions['width'] - $this->pdf->getTextWidth(11,$toprint[0]))/2);
+		  $posicionaLetrasY = $this->etiqueta->currentY - 11 - (($this->etiqueta->dimensions['height'] - (count($toprint)*11))/2);
+		  foreach($toprint as $k => $v)
+		  {
+			$this->pdf->addText($x,$posicionaLetrasY,11,$v,0);
+			$posicionaLetrasY -= 11;
+		  }
+
+            $this->etiqueta->next();  
+      }
+   }
+
+function gerarParaMuitosExemplaresCapa($x,$y,$width,$data,$lista)
+   {
+      global $MIOLO, $module;
+
+      $this->etiqueta = $MIOLO->GetBusiness($module,'etiquetaPronta');
+      $this->etiqueta->SetData(6182,'Letter',$this->pdf);
+     
+
       foreach($lista as $idexemplar)
       {
          $objEtiqueta = $MIOLO->GetBusiness($module,'etiquetaLombada');
          
-         $height = 105;
-         
-         $this->pdf->setLineStyle(1,'','',array(3));   
-         $this->pdf->rectangle($x,$y,$width,$height);
-         $this->pdf->setLineStyle(1,'','',array(5,0)); 
-         $this->pdf->rectangle($x+3,$y+3,$width-6,$height-6);
-         $y = $y + 3 + $height - 2;
-         $tagsEscolhidas = explode('[-]',$data->listaTags);
-         $posicionaLetrasY = $y;
-         if($data->listaTags != '')
-         {           
-            foreach($tagsEscolhidas as $tag)
-            {
-               $posicionaLetrasY = $posicionaLetrasY - 11 - 4 ;
-               $tags = explode('-',$tag);
-               $campo = $objEtiqueta->getDescricaoMarcByTag($tags[0]);
-               $valor = $objEtiqueta->getConteudoTag($idexemplar[0],$tags[0],$tags[1]) ;
-               $this->pdf->addText($x+12,$posicionaLetrasY,11,"<b>$campo</b> : <i>$valor</i>",0);      
-            }
-         }
-         if($data->NumeroTombo)
-         {
-            $posicionaLetrasY = $posicionaLetrasY - 11 - 4 ;
-            $campo = 'Numero do Tombo';
-            $valor = $objEtiqueta->getNumeroTomboExemplar($idexemplar[0]);
-            $this->pdf->addText($x+12,$posicionaLetrasY,11,"<b>$campo</b> : <i>$valor</i>",0);
-            $id++;      
-         }
-         
-         if($data->VolumeExemplar)
-         {
-            $posicionaLetrasY = $posicionaLetrasY - 11 - 4 ;
-            $campo = 'Volume';
-            $valor = $objEtiqueta->getVolumeExemplar($idexemplar[0]);
-            $this->pdf->addText($x+12,$posicionaLetrasY,11,"<b>$campo</b> : <i>$valor</i>",0);
-         }
-         
-         $page++;
-         //posiciona próxima etiqueta de lombada
-         $y -= 215;
-         if($page > 4)
-         {
-            $page = 1;
-            $this->pdf->ezNewPage();
-            $y = $yinicial;
-         }
+         $this->pdf->setLineStyle(1,'','',array(3));
+
+         $this->pdf->rectangle($this->etiqueta->currentX,
+            $this->etiqueta->currentY - $this->etiqueta->dimensions['height'],
+            $this->etiqueta->dimensions['width'],
+            $this->etiqueta->dimensions['height']);
+
+         $x = $this->etiqueta->currentX + 12;
+         $posicionaLetrasY = $this->etiqueta->currentY;
+
+         $primeiraLinha = null;
+
+         $posicionaLetrasY -= 11;
+         $cdd = $objEtiqueta->getConteudoTag($idexemplar[0],'082','a') ;
+         $primeiraLinha .= $cdd . ' ';
+
+        $cutter = $MIOLO->GetBusiness($module,'cutter');
+
+         $titulo = $objEtiqueta->getConteudoTag($idexemplar[0],'245','a');
+
+          if($autor = $objEtiqueta->getConteudoTag($idexemplar[0],'100','a'))  
+             $primeiraLinha .= $cutter->getCutter($autor,$titulo);
+          else if($autor = $objEtiqueta->getConteudoTag($idexemplar[0],'111','a'))
+             $primeiraLinha .= $cutter->getCutter($autor,$titulo);
+          else
+             $primeiraLinha .= $cutter->getCutter($objEtiqueta->getConteudoTag($idexemplar[0],'130','a'));      
+
+          $valor  = $objEtiqueta->getConteudoTag($idexemplar[0],'250','a');
+
+          $primeiraLinha .= ' '. $valor;  
+
+          $this->pdf->addText($x,$posicionaLetrasY,9, utf8_decode('Nº de cham. ' .$primeiraLinha),0);
+
+          $posicionaLetrasY -= 10  ;  
+
+          $this->pdf->addText($x,$posicionaLetrasY,9, utf8_decode('Autor: ' .$autor),0);
+
+         $posicionaLetrasY -= 10  ;  
+
+          $this->pdf->addText($x,$posicionaLetrasY,9, utf8_decode('Título: ' .$titulo),0);     
+          
+         $posicionaLetrasY -= 10 ;
+
+         $tombo = $objEtiqueta->getNumeroTomboExemplar($idexemplar[0]);         
+
+         $barcode_options = array (
+                'scale'     => 1,
+                'fontscale' => 0,
+                'font'      => '',
+                'rotation'  => 0,
+                'samesize'  => true,
+            );
+
+	 $barcode = $MIOLO->GetBusiness($module,'PDFBarcode');
+         $barcode->SetData($this->pdf, $barcode_options);     
+
+         $fp=popen(dirname(__FILE__).'/genbarcode-0.4/genbarcode '.str_pad($tombo,6,'0',STR_PAD_LEFT).' 128',"r");
+         $bars=rtrim(fgets($fp, 1024));
+         $text=rtrim(fgets($fp, 1024));
+         $encoding=rtrim(fgets($fp, 1024));
+         pclose($fp);
+
+         if (preg_match('/^(EAN|ISBN|code 39)/', $encoding)) { $fontscale = 4; } else { $fontscale = 0; }
+
+         $id = $barcode->generate($text, $bars, $x+73, $posicionaLetrasY, 0);
+
+         $this->pdf->addObject($id);
+
+          $this->pdf->addText($x+180,$posicionaLetrasY-10,9, 'Tombo '. $tombo,0);
+
+          $nobra = $objEtiqueta->getNumeroObra($idexemplar[0]);
+
+          $this->pdf->addText($x+180,$posicionaLetrasY-23,9, utf8_decode('Nº da obra '). $nobra,0);
+
+         $un =  $objEtiqueta->getUnidade($idexemplar[0]);
+
+         $this->pdf->addText($x,$posicionaLetrasY-45,9, utf8_decode($un),0);  
+
+         $this->etiqueta->next();
       } 
    }
+
+   function gerarParaMuitosExemplaresCustom($x,$y,$width,$data,$lista)
+      {
+         global $MIOLO, $module;
+         $page = 1;
+         $yinicial = $y;
+         foreach($lista as $idexemplar)
+         {
+            $objEtiqueta = $MIOLO->GetBusiness($module,'etiquetaLombada');
+            
+            $height = 105;
+            
+            $this->pdf->setLineStyle(1,'','',array(3));   
+            $this->pdf->rectangle($x,$y,$width,$height);
+            $this->pdf->setLineStyle(1,'','',array(5,0)); 
+            $this->pdf->rectangle($x+3,$y+3,$width-6,$height-6);
+            $y = $y + 3 + $height - 2;
+            $tagsEscolhidas = explode('[-]',$data->listaTags);
+            $posicionaLetrasY = $y;
+            if($data->listaTags != '')
+            {           
+               foreach($tagsEscolhidas as $tag)
+               {
+                  $posicionaLetrasY = $posicionaLetrasY - 11 - 4 ;
+                  $tags = explode('-',$tag);
+                  $campo = $objEtiqueta->getDescricaoMarcByTag($tags[0]);
+                  $valor = $objEtiqueta->getConteudoTag($idexemplar[0],$tags[0],$tags[1]) ;
+                  $this->pdf->addText($x+12,$posicionaLetrasY,11,"<b>$campo</b> : <i>$valor</i>",0);      
+               }
+            }
+            if($data->NumeroTombo)
+            {
+               $posicionaLetrasY = $posicionaLetrasY - 11 - 4 ;
+               $campo = 'Numero do Tombo';
+               $valor = $objEtiqueta->getNumeroTomboExemplar($idexemplar[0]);
+               $this->pdf->addText($x+12,$posicionaLetrasY,11,"<b>$campo</b> : <i>$valor</i>",0);
+               $id++;      
+            }
+            
+            if($data->VolumeExemplar)
+            {
+               $posicionaLetrasY = $posicionaLetrasY - 11 - 4 ;
+               $campo = 'Volume';
+               $valor = $objEtiqueta->getVolumeExemplar($idexemplar[0]);
+               $this->pdf->addText($x+12,$posicionaLetrasY,11,"<b>$campo</b> : <i>$valor</i>",0);
+            }
+            
+            $page++;
+            //posiciona próxima etiqueta de lombada
+            $y -= 215;
+            if($page > 4)
+            {
+               $page = 1;
+               $this->pdf->ezNewPage();
+               $y = $yinicial;
+            }
+         } 
+      }
+
    
    function gerarParaUMExemplarPeriodico($x,$y,$width,$data)
    {

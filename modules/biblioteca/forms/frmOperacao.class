@@ -100,7 +100,7 @@ class frmOperacao extends Form
 	function SetData($data)
 	{
 		$this->SetFieldValue('lkpDescricao', ucfirst(strtolower($data->descricao)));
-		$this->SetFieldValue('edtMnemonico', ucfirst(strtolower($data->mnemonico)));
+		$this->SetFieldValue('edtMnemonico', ucfirst(strtolower($data->mnemonico));
 		$this->SetFieldValue('hidKey',$data->idoperacao);
 	}
 

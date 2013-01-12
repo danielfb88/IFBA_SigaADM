@@ -258,9 +258,9 @@ class BusinessBibliotecaAssunto extends Business
 	}
 
 
-	function getAssunto($item, $subcampo, $idEtiqueta)
+	function getAssunto($idEtiqueta, $subcampo, $ocorrencia)
     	{
-		$sql = new sql('idassunto,linha,conteudo,classificacao','bt_assunto',"(idassunto = $item) and (subcampo = '$subcampo') and (idetiqueta = $idEtiqueta)",'linha');
+		$sql = new sql('idassunto,linha,conteudo','bt_assunto',"(idetiqueta = $idEtiqueta) and (subcampo = '$subcampo') and (ocorrencia = $ocorrencia)",'linha');
 		$query = $this->Query($sql);
         	return $query;
     	}
@@ -372,9 +372,12 @@ class BusinessBibliotecaAssunto extends Business
 		$sql =  new sql('a.ocorrencia','bt_assunto a, bt_etiqueta e',"conteudo='$principal' and a.subcampo='a' and e.tag='$etiqueta' and a.idetiqueta=a.idetiqueta");
 		$query = $this->Query($sql)->result;
 		$ocorrencia = $query[0][0];
+
 		if ($ocorrencia<>Null)
 		{
-			$sql =  new sql('a.subcampo, a.conteudo','bt_assunto a, bt_etiqueta e',"e.tag=$etiqueta and a.ocorrencia = $ocorrencia and indicador is null and e.idetiqueta=a.idetiqueta", 'a.subcampo');
+			//echo "<p/>Teste Ocorrencia: ".$ocorrencia."<p/>";
+			//$ocorrencia=(integer)$ocorrencia;
+			$sql =  new sql('a.subcampo, a.conteudo','bt_assunto a, bt_etiqueta e',"e.tag='$etiqueta' and a.ocorrencia = $ocorrencia and a.indicador is null and e.idetiqueta=a.idetiqueta", 'a.subcampo');
 			$query = $this->Query($sql)->result;
 
 			if (array_diff($query,$assuntos) == null) $retorno=$ocorrencia ;
@@ -403,128 +406,6 @@ class BusinessBibliotecaAssunto extends Business
 		return $query->result;
 	}	
 	
-	function getIndicadorById($item)
-	{
-		$sql = new sql('conteudo','bt_assunto',"(idassunto = $item) and indicador is not null");
-        $query = $this->Query($sql);
-        return $query;
-	}
-	
-	function insereFields($fields,$idAssunto,$ocorrencia,$classificacao,$idSubficha,$idEtiqueta,$transactionLocal = true)
-	{
-        global $MIOLO,$module;
-	   
-        if ($transactionLocal) {
-             $this->BeginTransaction();;
-        }
-       
-        
-        foreach($fields as $campoArray)
-        {
-            $campo = explode('_',$campoArray[0]);
-            $value = $campoArray[1];
-            if ($campo[0] == $idSubficha)
-            {
-                if (is_array($value))
-                {
-                    foreach($value as $i=>$v)
-                    {
-                        $t = explode('] [',$v);
-                        $linha = substr($t[0],1);
-                        $conteudo = substr($t[1],0,strlen($t[1])-1);
-                        $conteudo = trim($this->RetirarCaracteresEspeciais($conteudo));
-                        if($conteudo != null)
-                        {
-                            $this->Insert($idAssunto,$idEtiqueta, $campo[2],$conteudo,$linha,$ocorrencia, $classificacao);
-                        }
-                    }
-                }
-                else
-                {
-                    if ($campo[1] == "IND")
-                    {
-                        $this->saveIndicador($idAssunto,$idEtiqueta, $campo[2],$value,1,$ocorrencia,$classificacao,$campo[2]);
-                    }
-                    else
-                    {
-                        if($value != null)
-                        {
-                            $value = trim($this->RetirarCaracteresEspeciais($value));
-                            $this->Insert($idAssunto, $idEtiqueta, $campo[2],$value,1,$ocorrencia, $classificacao);
-                        }
-                    }
-                }
-            }
-        }
-        
-        if ( $transactionLocal) 
-        {
-            try 
-            {
-                $this->EndTransaction();
-            } 
-            catch (EDatabaseTransactionException $e) 
-            {
-                $msg = $e->getMessage();
-                $MIOLO->logMessage('[ERROR]' . $msg);
-                $MIOLO->error($msg, $MIOLO->GetActionURL($module, $action,null ), 'Fatal Error');            
-            }
-        }
-
-        
-        $ok = ( ! $this->checkError() );
-        return $ok;	
-	}
-	
-	function ListObraByAssunto($idAssunto)
-	{
-		$sql = new sql('idobra','bt_assuntoobra','(idassunto= ?)');
-		$query = $this->Query($sql,$idAssunto);
-		return $query->result[0][0];
-	}   	
-	
-    function updateFields($fields,$idAssunto,$ocorrencia,$classificacao,$idSubficha,$idEtiqueta)
-    {
-        global $MIOLO,$module;
-   
-        $y=0;
-        $ObrasAssunto = $this->getObrasDoAssunto($idAssunto);        
-        $this->BeginTransaction();
-        $this->Delete($idAssunto);
-        $this->insereFields($fields,$idAssunto,$ocorrencia,$classificacao,$idSubficha,$idEtiqueta,false);
-        $obra = $MIOLO->GetBusiness($module,'obra');
-        while ($ObrasAssunto[$y]!=NULL)
-        {
-            $idobra = $ObrasAssunto[$y][1];
-            $y++;
-            $ocorrencia = $temp;
-            $idassunto = $this->getIdAssuntoAtualizado($idEtiqueta,$ocorrencia);
-            $arrayAssunto = $this->GetAssuntoCompleto($idEtiqueta,$ocorrencia);
-            $arrayIndicadores = $this->GetIndicadorAssunto($idEtiqueta,$ocorrencia);
-            $ocorrencia = $obra->GetNextOcorrencia($idobra,$idEtiqueta);
-            for ($x=0;$x<sizeof($arrayAssunto);$x++)
-            {
-                $idmaterial = $obra->saveMaterialAssunto($idobra,$idEtiqueta,$arrayAssunto[$x][0],$arrayAssunto[$x][1],$arrayAssunto[$x][2],$ocorrencia+1);
-            }
-            for ($x=0;$x<sizeof($arrayIndicadores);$x++)
-            {
-                $obra->saveIndicadorObra($idobra,$idEtiqueta,$ocorrencia+1,$arrayIndicadores[$x][0],$arrayIndicadores[$x][1],0);
-            }
-            $this->saveAssuntoObra($idassunto,$idobra,$ocorrencia+1,$idEtiqueta);             
-        }
-       
-        try {
-            $this->EndTransaction();
-        } catch (EDatabaseTransactionException $e) {
-            $msg = $e->getMessage();
-            $MIOLO->logMessage('[ERROR]' . $msg);
-            $MIOLO->error($msg, $MIOLO->GetActionURL($module, $action,null ), 'Fatal Error');            
-        }
-        
-        $ok = ( ! $this->checkError() );
-        return $ok;
-    }
-    
 	function getIdAssuntoByObra($idObra)
 	{
 	  $sql = new sql('idassunto','bt_assuntoobra',"(idobra = $idObra)");
@@ -532,13 +413,11 @@ class BusinessBibliotecaAssunto extends Business
 	  return $query->result;
 	}
 	
-	
-	function getCamposAssunto($idassunto)
-    {
-		$sql = new sql('a.subcampo, a.conteudo, a.linha, a.indicador, a.idetiqueta, e.tag','bt_assunto a, bt_etiqueta e'," a.idetiqueta = e.idetiqueta AND a.idassunto = $idassunto ");
-		$query = $this->Query($sql);
-       	return $query;
-    }
-
+	function getIndicadorById($item)
+	{
+		$sql = new sql('conteudo','bt_assunto',"(idassunto = $item) and indicador is not null");
+        $query = $this->Query($sql);
+        return $query->result;
+	}
 }
 ?>

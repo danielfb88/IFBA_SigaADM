@@ -172,10 +172,12 @@ class BusinessBibliotecaExemplar extends Business
 	{
                 //Modificado 20/04/2009 : retirada do campo texto "Autor" da tabela id_Obra e incluso campo idautor
 		
-                $sql = new sql('o.idobra,o.numerodaobra,o.titulo,o.idautor,a.conteudo as autor',"bt_obra o left join bt_autor a on a.idautor=o.idautor and (a.idetiqueta >= 53  and a.idetiqueta <= 59)  and a.subcampo ='a'","numerodaobra = ? ");
+                $sql = new sql('o.idobra,o.numerodaobra,o.titulo,o.idautor,a.conteudo as autor',"bt_obra o 
+		left join bt_autor a on a.idautor=o.idautor 
+		and (a.idetiqueta >= 53  and a.idetiqueta <= 59)  and a.subcampo ='a'","numerodaobra = ?    Order by  o.idobra");
 
 
-                
+               // var_dump('sql');
 	
 		$query = $this->Query($sql,$numerodaobra);
 
@@ -206,17 +208,29 @@ class BusinessBibliotecaExemplar extends Business
             
             "e.idexemplar = ? and e.idobra=o.idobra and es.idestado=e.idestado and a.idautor=o.idautor and a.idetiqueta = 53 and a.subcampo ='a'    ");
            
-*/
+
   
   
        
     
-        $sql = new sql('e.idexemplar,o.numerodaobra,o.titulo,e.idobra,o.idautor,e.numerodotombo,e.volume,e.preco,e.notainterna,e.notaopac,e.notacirculacao
+        
+
+
+*/
+
+
+  
+       $sql = new sql('e.idexemplar,o.numerodaobra,o.titulo,e.idobra,o.idautor,e.numerodotombo,e.volume,e.preco,e.notainterna,e.notaopac,e.notacirculacao
             ,e.numinventario,e.idestado,e.idregracirculacao,e.idunidade,e.idcolecao,es.mnemonico, e.idunidade,e.idcolecao,es.mnemonico, a.conteudo as autor' ,
-           "bt_obra o inner join bt_exemplar e on e.idobra=o.idobra inner join bt_estado es on es.idestado=e.idestado left join bt_autor a on a.idautor=o.idautor and a.idetiqueta = 53 and a.subcampo ='a' " ,
-             "e.idexemplar = ?  ");
+           "bt_obra o inner join bt_exemplar e on e.idobra=o.idobra inner join bt_estado es on es.idestado=e.idestado left join bt_autor a on a.idautor=o.idautor
+		 and a.idetiqueta = 53 and a.subcampo ='a' " ,
+             "e.idexemplar = ? Order by e.numerodotombo   DESC LIMIT 1 ");
+
+
+		//var_dump($sql);
     
 		$query = $this->Query($sql,$idexemplar);
+		
 		
 		
 		
@@ -227,6 +241,9 @@ class BusinessBibliotecaExemplar extends Business
 
 	return $result;
 	}
+
+
+
 
 	function GetIdByTombo($tombo)
 	{
@@ -240,10 +257,13 @@ class BusinessBibliotecaExemplar extends Business
 	function GetObraIdExemplarByTombo($tombo)
 	{
 	
-	
-		$sql = new sql('o.numerodaobra, e.idexemplar , a.conteudo as autor', "bt_obra o inner join bt_exemplar e on e.idobra = o.idobra left join bt_autor a on a.idautor=o.idautor and a.idetiqueta = 53 and a.subcampo ='a' ", "  e.numerodotombo =? ");
+	//var_dump('teste');
+		$sql = new sql('o.numerodaobra, e.idexemplar , a.conteudo as autor', "bt_obra o inner join bt_exemplar e on e.idobra = o.idobra
+ left join bt_autor a on a.idautor=o.idautor and a.idetiqueta = 53 and a.subcampo ='a' ", "  e.numerodotombo =?   Order by e.idexemplar ");
 						
-		$query = $this->Query($sql,$tombo);		
+		$query = $this->Query($sql,$tombo);
+
+		//var_dump($sql);		
 		
 		return $query->result[0];	
 	
@@ -290,7 +310,12 @@ class BusinessBibliotecaExemplar extends Business
 	   
 		$query = $this->Query($sql,$numerodotombo);
 */       	
-		$sql2 = new MSql ("ex.numerodotombo,ex.volume,ex.preco,ex.notainterna,ex.notaopac,ex.notacirculacao,ex.numinventario,ob.idautor, ex.idestado as keyestado,es.descricao as idestado,ex.idregracirculacao as keyregracirculacao,re.descricao as idregracirculacao,ex.idunidade as keyunidade,un.descricao as idunidade,ex.idcolecao as keycolecao,co.descricao as idcolecao,ex.idobra as keyobra,ob.titulo as idobra FROM bt_estado es,bt_exemplar ex,bt_regracirculacao re,bt_unidade un, bt_colecao co, bt_obra ob WHERE (ex.numerodotombo = ?) and (ex.idestado = es.idestado) and (ex.idregracirculacao = re.idregracirculacao) and (ex.idunidade = un.idunidade) and (ex.idcolecao = co.idcolecao) and (ex.idobra = ob.idobra)");
+		$sql2 = new MSql ("ex.numerodotombo,ex.volume,ex.preco,ex.notainterna,ex.notaopac,ex.notacirculacao,
+ex.numinventario,ob.idautor, ex.idestado as keyestado,es.descricao as idestado,ex.idregracirculacao as keyregracirculacao,re.descricao 
+as idregracirculacao,ex.idunidade as keyunidade,un.descricao as idunidade,ex.idcolecao as keycolecao,co.descricao as
+ idcolecao,ex.idobra as keyobra,ob.titulo as idobra FROM bt_estado es,bt_exemplar ex,bt_regracirculacao re,bt_unidade un,
+ bt_colecao co, bt_obra ob WHERE (ex.numerodotombo = ?) and (ex.idestado = es.idestado) and (ex.idregracirculacao = re.idregracirculacao) 
+and (ex.idunidade = un.idunidade) and (ex.idcolecao = co.idcolecao) and (ex.idobra = ob.idobra)   ");
 		$query2 = $this->Query($sql2,$numerodotombo);
 
 		if ( !$query2->eof() )
@@ -414,9 +439,21 @@ class BusinessBibliotecaExemplar extends Business
 	{
 		/*
 		$sql = new sql('e.idexemplar, e.numerodotombo, r.descricao as descregra, u.descricao as descunidade, c.descricao as desccolecao','bt_exemplar e, bt_obra o, bt_regracirculacao r, bt_unidade u, bt_colecao c','(e.idobra = o.idobra) and (e.idregracirculacao = r.idregracirculacao) and (e.idunidade = u.idunidade) and (e.idcolecao = c.idcolecao) and (o.numerodaobra=?)', 'descunidade, e.numerodotombo');
-		*/
+		
+
+       $sql = new sql('e.idexemplar, e.numerodotombo, r.descricao as descregra, u.descricao as descunidade, c.descricao as descestado
+ ,e.numeroexemplar','bt_exemplar e, bt_obra o, bt_regracirculacao r, bt_unidade u, bt_estado c','(e.idobra = o.idobra) and
+ (e.idregracirculacao = r.idregracirculacao) and (e.idunidade = u.idunidade) and (e.idestado = c.idestado) and (o.numerodaobra=?)',
+ 'descunidade, e.numerodotombo');
+
+*/
         
-                $sql = new sql('e.idexemplar, e.numerodotombo, r.descricao as descregra, u.descricao as descunidade, c.descricao as descestado ,e.numeroexemplar','bt_exemplar e, bt_obra o, bt_regracirculacao r, bt_unidade u, bt_estado c','(e.idobra = o.idobra) and (e.idregracirculacao = r.idregracirculacao) and (e.idunidade = u.idunidade) and (e.idestado = c.idestado) and (o.numerodaobra=?)', 'descunidade, e.numerodotombo');
+                $sql = new sql('e.idexemplar, e.numerodotombo, r.descricao as descregra, u.descricao as descunidade, c.descricao as descestado
+ ,e.numeroexemplar','bt_exemplar e, bt_obra o, bt_regracirculacao r, bt_unidade u, bt_estado c','(e.idobra = o.idobra) and
+ (e.idregracirculacao = r.idregracirculacao) and (e.idunidade = u.idunidade) and (e.idestado = c.idestado) and (o.numerodaobra=?)',
+ ' e.idexemplar ');
+
+		//var_dump($sql);
 
 		$query = $this->Query($sql,$numerodaobra);
         return $query;

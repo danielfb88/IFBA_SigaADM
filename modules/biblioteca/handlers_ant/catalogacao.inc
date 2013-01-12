@@ -44,7 +44,7 @@ $Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Autores da Obra',$ui->GetImage
 $Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Exemplares',$ui->GetImage($module,'exemplares.png'),$module,'main:catalogacao:exemplar');
 
 //ALterado, adicionado
-$Panel->AddUserAction('BIB_CATALOGACAOPERIODICOS',A_ACCESS,'Periódicos',$ui->GetImage($module,'periodicos.png'),$module,'main:catalogacao:periodicos');
+$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Periódicos',$ui->GetImage($module,'periodicos.png'),$module,'main:catalogacao:periodicos');
 $Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Importação MARC',$ui->GetImage($module,'importacao_marc.png'),$module,'main:catalogacao:importacaoMARC');
 $Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Importacao na Tela',$ui->GetImage($module,'importacao_marc.png'),$module,'main:catalogacao:importacao');
 $Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Exportacao MARC',$ui->GetImage($module,'exportacao_marc.png'),$module,'main:catalogacao:exportacaoMARC');

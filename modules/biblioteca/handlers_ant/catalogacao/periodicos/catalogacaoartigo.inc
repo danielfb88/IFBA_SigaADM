@@ -19,7 +19,7 @@
 ?>
 <?
 
-$perms->CheckAccess('BIB_ARTIGO',A_ACCESS,true);
+$perms->CheckAccess('BIB_CATALOGACAO',A_ACCESS,true);
 
 // obter acesso as classes de Interface de Usuário
     $ui = $MIOLO->GetUI();

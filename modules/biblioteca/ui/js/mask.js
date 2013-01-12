@@ -30,6 +30,9 @@ function makeMask(_RefObjeto, _Modelo)
 		if(valorAtual.length==13) _Modelo="##-###-####-#";	
 	}
 
+	//if(_RefObjeto.id=="edtISSN"){
+	//			_Modelo="#######@";
+	//}
 
 	for ( i=0; i<_Modelo.length; i++ )//retira o que já for do modelo como o '-'
 	{

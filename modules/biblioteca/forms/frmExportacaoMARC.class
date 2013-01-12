@@ -107,8 +107,19 @@ class frmExportacaoMarc extends MForm
     function btnEnviar_click()
     {
 	$exportacao = $this->objObra->getObrasExportacao()->result;
+	//var_dump($exportacao);
 	for ($cont=0;$cont<sizeof($exportacao);$cont++)
 	{
+		$diretorio="";
+		$lider="";
+		$string="";
+		$indicadores=NULL;
+		$fixos=NULL;
+		$variaveis=NULL;
+		$material=NULL;
+		$etiqueta=NULL;
+		
+
 		$idobra = $this->objObra->GetIdByNumero($exportacao[$cont][0]);
 		$variaveis = $this->objObra->getMaterialExportacao($idobra)->result;
 		$fixos = $this->objObra->getCamposFixosExportacao($idobra)->result;
@@ -147,7 +158,6 @@ class frmExportacaoMarc extends MForm
 			$diretorio = $diretorio . $etiqueta[$x] . ($this->converteQtdDigitos(strlen($indicadores[2*$x][3] . $indicadores[(2*$x)+1][3] .$material[$x])+1,4)). ($this->converteQtdDigitos($tamanho,5));
 			$tamanho = $tamanho + strlen($indicadores[2*$x][3] . $indicadores[(2*$x)+1][3] .$material[$x]) + 1;
 		}
-		
 		$string = $lider . $diretorio . $string . "\\\n" ;
 		$saida = $saida . $string;
 	}

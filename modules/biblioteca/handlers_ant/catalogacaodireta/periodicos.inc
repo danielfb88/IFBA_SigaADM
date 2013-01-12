@@ -32,14 +32,14 @@ $theme->ClearContent();
 $close = $MIOLO->GetActionURL('biblioteca','main');
 //acho que tenho que criar outro pnl
 $Panel = new ActionPanel('pnlCatalogacao','Catalogação Periódicos','',$close);
-$Panel->AddUserAction('BIB_PRECATALOGACAOPERIODICO',A_ACCESS,'Pré - Catalogação',$ui->GetImage($module,'pre_catalogacao.png'),$module,'main:catalogacao:periodicos:precatalogacaoperiodico');
+$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Pré - Catalogação',$ui->GetImage($module,'pre_catalogacao.png'),$module,'main:catalogacao:periodicos:precatalogacaoperiodico');
 
-$Panel->AddUserAction('BIB_CATALOGACAOPERIODICO',A_ACCESS,'Catalogação',$ui->GetImage($module,'catalogacao.png'),$module,'main:catalogacao:periodicos:catalogacaoperiodico');
+$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Catalogação',$ui->GetImage($module,'catalogacao.png'),$module,'main:catalogacao:periodicos:catalogacaoperiodico');
 
-$Panel->AddUserAction('BIB_EXEMPLARPERIODICO',A_ACCESS,'Exemplares',$ui->GetImage($module,'exemplares.png'),$module,'main:catalogacao:periodicos:exemplarperiodico');
+$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Exemplares',$ui->GetImage($module,'exemplares.png'),$module,'main:catalogacao:periodicos:exemplarperiodico');
 
 
-$Panel->AddUserAction('BIB_ARTIGO',A_ACCESS,'Artigos',$ui->GetImage($module,'artigos.png'),$module,'main:catalogacao:periodicos:catalogacaoartigo');
+$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Artigos',$ui->GetImage($module,'artigos.png'),$module,'main:catalogacao:periodicos:catalogacaoartigo');
 
 $theme->AppendContent($Panel);
 $handled = $MIOLO->InvokeHandler($module, 'catalogacao/periodicos/' . $context->ShiftAction());

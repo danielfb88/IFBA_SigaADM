@@ -27,12 +27,23 @@ class frmEtiquetaLombada extends Form
       global $MIOLO,$module;
 
       $ui = $MIOLO->getUI();
+	  
+	  $unidades = $this->manager->GetBusiness('biblioteca','unidade');
+	  
+	  $unidades = $unidades->ListUnidade()->result;
+	  /*echo '<pre>';
+	  var_dump($unidades);
+	  echo '</pre>';
+	  
+	  exit();*/
   
       $fields = array(
+		 new MSelection('selBib','','Selecione a Unidade da Biblioteca',$unidades,false),
          new MTextLabel('dica0','&nbsp; -Selecione o intervalo de exemplares para criação da etiqueta - &nbsp;','&nbsp;'),
-         new TextField('edtExemplares','','Exemplares', '15'," Número do Tombo. <b>Ex: 1-100 </b>"),
+         new TextField('edtExemplares','','Número do Tombo', '15'," <b>Ex: 1-100 </b>"),
          new MTextLabel('dica2','&nbsp; -Selecione os campos que devem ser exibidos na etiqueta - &nbsp;','&nbsp;'),
          new TextField('edtTags','','TAG', '10'," Tag-Subcampo. <b>Ex: 245-a</b>"),
+		 new TextField('edtSkip','1','Começar a partir da Etiqueta: ','2'),
          new MButton('btnMais','Adicionar Tags','',$ui->getImage($module,'cartao_mini.png')),
 	 new MButton('btnMenos','Remover Última Tag','',$ui->getImage($module,'cartao_mini.png')),
          new HiddenField('listaTags',''),
@@ -51,6 +62,8 @@ class frmEtiquetaLombada extends Form
  	
       $buttons = Array(
           new FormButton('btnCriar', 'Gerar Etiquetas','PDF'),
+          new FormButton('btnCriar2', 'Gerar Etiquetas - Capa','PDF'),
+          new FormButton('btnCriar3', 'Gerar Etiquetas Personalizadas','PDF'),
           new MButton('btnLimpar', 'Nova Etiqueta'),
       );
 
@@ -77,6 +90,8 @@ class frmEtiquetaLombada extends Form
          $this->SetFieldValue('mlinTags',$value);
          $this->SetFieldValue('listaTags',$lista);
       }
+
+	  //$this->SetFieldValue('edtSkip','1');
    }
 
 
@@ -227,6 +242,7 @@ function btnMenos_click()
 
 
 
+
    function btnLimpar_click()
    { 
       global $MIOLO,$module;
@@ -252,22 +268,28 @@ function btnMenos_click()
       $data = $this->GetData();
       $this->objEtiqueta->delete();
       $interval = $this->GetFieldValue('edtExemplares');
+	  $bib = $this->GetFieldValue('selBib');
       $intervalo = explode('-',$interval);
-      $exemplares = $this->objEtiqueta->getExemplaresByInterval($intervalo[0],$intervalo[1]);    
+	  $skip = $this->GetFormValue('edtSkip');
+	  
+	  if(count($intervalo) == 1 && is_numeric($intervalo[0]))
+		$intervalo[1] = $intervalo[0]--;
+	  else if(count($intervalo) == 1 && !is_numeric($intervalo[0]))
+	  {
+         $go = $this->manager->GetActionURL('biblioteca','main:admin:etiqueta');
+         $MIOLO->Error("É necessário informar o intervalo do  número dos tombos", $go );
+	  }
+	  
+	  if(empty($bib))
+		$exemplares = $this->objEtiqueta->getExemplaresByInterval($intervalo[0],$intervalo[1]);
+	  else
+		$exemplares = $this->objEtiqueta->getExemplaresByIntervalAndBib($intervalo[0],$intervalo[1],$bib);
      
       if($exemplares->result)
-      {
-         $tagsEscolhidas = explode('[-]',$data->listaTags);
-         $idetiqueta = 1 ;    
-         foreach($tagsEscolhidas as $tag1)
-         {
-           $tags = explode('-',$tag1);
-           $this->objEtiqueta->insert($idetiqueta,'t',$tags[0],$tags[1]);
-           $idetiqueta++;
-         }   
+      {  
          $ui = $MIOLO->GetUI();
          $report = $ui->GetReport($module,'repEtiquetasLombada',$data);
-         $report->gerarParaMuitosExemplares(19,420,450,$data,$exemplares->result);
+         $report->gerarParaMuitosExemplares(19,420,450,$data,$exemplares->result,$skip);
          $report->Generate();	
       }
       else
@@ -276,6 +298,89 @@ function btnMenos_click()
          $MIOLO->Error("Nao existe exemplares para o intervalo solicitado", $go );
       }
 
-   }  
+   }
+
+   function btnCriar2_click()
+   {
+      global $MIOLO,$module;
+      $data = $this->GetData();
+      $this->objEtiqueta->delete();
+      $interval = $this->GetFieldValue('edtExemplares');
+	  $bib = $this->GetFieldValue('selBib');
+      $intervalo = explode('-',$interval);
+	  $skip = $this->GetFieldValue('edtSkip');
+	  
+	  if(count($intervalo) == 1 && is_numeric($intervalo[0]))
+		$intervalo[1] = $intervalo[0]--;
+	  else if(count($intervalo) == 1 && !is_numeric($intervalo[0]))
+	  {
+         $go = $this->manager->GetActionURL('biblioteca','main:admin:etiqueta');
+         $MIOLO->Error("É necessário informar o intervalo do  número dos tombos", $go );
+	  }
+	  
+	  if(empty($bib))
+		$exemplares = $this->objEtiqueta->getExemplaresByInterval($intervalo[0],$intervalo[1]);
+	  else
+		$exemplares = $this->objEtiqueta->getExemplaresByIntervalAndBib($intervalo[0],$intervalo[1],$bib); 
+     
+      if($exemplares->result)
+      {
+         $ui = $MIOLO->GetUI();
+         $report = $ui->GetReport($module,'repEtiquetasLombada',$data);
+         $report->gerarParaMuitosExemplaresCapa(19,420,450,$data,$exemplares->result,$skip);
+         $report->Generate(); 
+      }
+      else
+      {
+         $go = $this->manager->GetActionURL('biblioteca','main:admin:etiqueta');
+         $MIOLO->Error("Nao existe exemplares para o intervalo solicitado", $go );
+      }
+
+   }
+
+   function btnCriar3_click()
+   {
+      global $MIOLO,$module;
+      $data = $this->GetData();
+      $this->objEtiqueta->delete();
+      $interval = $this->GetFieldValue('edtExemplares');
+      $intervalo = explode('-',$interval);
+	  $bib = $this->GetFieldValue('selBib');
+	  if(empty($bib))
+		$exemplares = $this->objEtiqueta->getExemplaresByInterval($intervalo[0],$intervalo[1]);
+	  else
+		$exemplares = $this->objEtiqueta->getExemplaresByIntervalAndBib($intervalo[0],$intervalo[1],$bib);     
+     
+      if($exemplares->result)
+      {
+         $tagsEscolhidas = explode('[-]',$data->listaTags);
+         $idetiqueta = 1 ;
+         if(!empty($data->listaTags))
+         {    
+            foreach($tagsEscolhidas as $tag1)
+            {
+              $tags = explode('-',$tag1);
+              $this->objEtiqueta->insert($idetiqueta,'t',$tags[0],$tags[1]);
+              $idetiqueta++;
+            }
+            $ui = $MIOLO->GetUI();
+            $report = $ui->GetReport($module,'repEtiquetasLombada',$data);
+            $report->gerarParaMuitosExemplaresCustom(19,420,450,$data,$exemplares->result);
+            $report->Generate(); 
+         }
+         else
+         {
+            $go = $this->manager->GetActionURL('biblioteca','main:admin:etiqueta');
+            $MIOLO->Error("Você precisa escolher as tags para gerar este tipo de etiqueta", $go );           
+         } 
+      }
+      else
+      {
+         $go = $this->manager->GetActionURL('biblioteca','main:admin:etiqueta');
+         $MIOLO->Error("Nao existe exemplares para o intervalo solicitado", $go );
+      }
+
+   } 
+
 }
 ?>

@@ -3,7 +3,7 @@
 	<subDataset name="dataset1"/>
 	<parameter name="CODIGOACESSO" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[select cm_pessoa.nome, bt_validacao.codigoacesso, bt_obra.titulo, bt_material.conteudo as autor, 
+		<![CDATA[select cm_pessoa.nome, bt_validacao.codigoacesso, bt_obra.titulo, bt_obra.autor, 
 bt_exemplar.volume, bt_exemplar.numerodotombo, bt_exemplar.numinventario, 
 bt_emprestimo.datahoradoemprestimo, bt_emprestimo.datahoraprevisaodevolucao
 from bt_emprestimo INNER JOIN bt_exemplar ON bt_exemplar.idexemplar = bt_emprestimo.idexemplar
@@ -11,9 +11,7 @@ INNER JOIN cm_usuario ON bt_emprestimo.idusuario = cm_usuario.idusuario
 INNER JOIN cm_pessoa ON cm_usuario.idpessoa = cm_pessoa.idpessoa
 INNER JOIN bt_obra ON bt_exemplar.idobra = bt_obra.idobra 
 INNER JOIN bt_validacao ON cm_usuario.idusuario = bt_validacao.idusuario
-INNER JOIN bt_material ON bt_material.idobra = bt_obra.idobra  
 WHERE (bt_validacao.codigoacesso =  $P{CODIGOACESSO} 
-and bt_material.idetiqueta=53  
 and bt_emprestimo.datahoradadevolucao is null)]]>
 	</queryString>
 	<field name="nome" class="java.lang.String">

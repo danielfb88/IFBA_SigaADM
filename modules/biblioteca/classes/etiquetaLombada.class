@@ -44,16 +44,35 @@ class BusinessBibliotecaEtiquetaLombada extends Business
       $sql = new sql('numerodotombo','bt_exemplar','idexemplar = ?');
       $query = $this->Query($sql,$idexemplar);
       return $query->result[0][0];
-   }  
+   }
+
+   function getNumeroExemplar($idexemplar)
+   {
+      $sql = new sql('numeroexemplar','bt_exemplar','idexemplar = ?');
+      $query = $this->Query($sql,$idexemplar);
+      return $query->result[0][0];
+   }    
 
    function getConteudoTag($idexemplar,$tag,$subcampo)
    {
-   
-   $subcampo = 'a';
       $sql = new sql('m.conteudo','bt_material m,bt_exemplar x,bt_etiqueta e',"(x.idexemplar = $idexemplar) AND (e.tag = '$tag') AND (m.idobra = x.idobra) AND (m.idetiqueta = e.idetiqueta) AND (m.subcampo = '$subcampo')");
       $query = $this->Query($sql);
       return $query->result[0][0];
    }
+
+   function getNumeroObra($idexemplar)
+   {
+      $sql = new sql('o.numerodaobra','bt_obra o, bt_exemplar x',"(x.idexemplar = $idexemplar) AND (o.idobra = x.idobra)");
+      $query = $this->Query($sql);
+      return $query->result[0][0];     
+   }
+
+   function getUnidade($idexemplar)
+   {
+      $sql = new sql('u.descricao','bt_unidade u, bt_exemplar x',"(x.idexemplar = $idexemplar) AND (u.idunidade = x.idunidade)");
+      $query = $this->Query($sql);
+      return $query->result[0][0];     
+   }   
 
    function getDescricaoMarcByTag($tag)
    {
@@ -138,6 +157,13 @@ class BusinessBibliotecaEtiquetaLombada extends Business
    function getExemplaresByInterval($numMinimo,$numMaximo)
    {
       $sql = new sql('idexemplar','bt_exemplar',"cast(numerodotombo as int) BETWEEN $numMinimo AND $numMaximo");
+      $query = $this->Query($sql);
+      return $query;
+   }
+   
+   function getExemplaresByIntervalAndBib($numMinimo,$numMaximo,$bib)
+   {
+      $sql = new sql('idexemplar','bt_exemplar',"(idunidade = $bib) and cast(numerodotombo as int) BETWEEN $numMinimo AND $numMaximo");
       $query = $this->Query($sql);
       return $query;
    }

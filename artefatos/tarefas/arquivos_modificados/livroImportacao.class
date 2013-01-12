@@ -1,0 +1,1058 @@
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+* Este arquivo é parte do programa SigaEPT
+*
+* O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+* termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+* na versão 2 da Licença.
+*
+* Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+* uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+* Pública Geral GNU/GPL em português para maiores detalhes.
+*
+* Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+* junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+* www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+* St, Fifth Floor, Boston, MA 02110-1301, USA
+*/
+?>
+<?php
+/**
+ * @author Daniel Bonfim <daniel.fb88@gmail.com>
+ * @since 02/12/2012
+ * @version 1.0
+ * 
+ * Ultima modificação: 11-01-2013
+ */
+
+class BusinessBibliotecaLivroImportacao extends Business {
+	private $marc;
+	private $livro;
+
+	private $nFimDiretorio;
+
+	private $bussEtiqueta;
+	private $bussAutor;
+	private $bussEditora;
+	private $bussObra;
+	private $bussMaterial;
+	private $bussIndicadores;
+	private $bussSubCampo;
+
+	private $info;
+	private $friendlyUser_mode;
+
+	function BusinessBibliotecaLivroImportacao( $data = null ) {
+		global $MIOLO;
+
+		$this->Business( 'sigaept', $data );
+
+		$this->bussEtiqueta = $MIOLO->GetBusiness('biblioteca', 'etiqueta');
+		$this->bussAutor = $MIOLO->GetBusiness('biblioteca', 'autor');
+		$this->bussEditora = $MIOLO->GetBusiness('biblioteca', 'editora');
+		$this->bussObra = $MIOLO->GetBusiness('biblioteca', 'obra');
+		$this->bussMaterial = $MIOLO->GetBusiness('biblioteca', 'material');
+		$this->bussIndicadores = $MIOLO->GetBusiness('biblioteca', 'indicadores');
+		$this->bussSubCampo = $MIOLO->GetBusiness('biblioteca', 'subcampo');
+	}
+
+	/**
+	 * Define código marc a ser trabalhado.
+	 *
+	 * @param String $marc
+	 * @throws Exception
+	 */
+	public function setMarc($marc) {
+		$marc = trim($marc);
+
+		if (!is_null($marc) && !empty($marc)) {
+
+			// Verificando se existem quebra de linha
+			$arrMarc = explode("\r\n", $marc);
+
+			// Se existir quebra de linha, está no formato friendly-user
+			if (count($arrMarc) > 1) {
+
+				$this->friendlyUser_mode = true;
+				$this->marc = $marc;
+				$this->livro = $this->separarPartesDoMarc2($arrMarc);
+
+			} else {	// Formato codificado
+
+				$this->friendlyUser_mode = false;
+				// 24 do Lider + no mínimo 12 do diretório
+				if(strLen($marc) >= 36) {
+					// Removendo caractere de quebra-linha
+					$this->marc = str_replace("\r\n", '', $marc);
+					// Organizando informações
+					$this->livro = $this->separarPartesDoMarc($this->marc);
+
+				} else {
+					throw new EMarcException('Código do marc inválido.');
+				}
+			}
+
+		} else {
+			throw new EMarcException('Código marc nulo ou vazio.');
+		}
+
+	}
+
+	/**
+	 * Retorna o array do com as informações do livro
+	 * @return array
+	 */
+	public function getLivro() {
+		if(!$this->marc) {
+			throw new EMarcException('O código marc não foi definido.');
+
+		} else {
+			return $this->livro;
+		}
+	}
+
+	/**
+	 * Retorna Informações sobre operações realizadas.
+	 */
+	public function getInfo() {
+		return $this->info;
+	}
+
+	/**
+	 * Separa o código marc em 3 partes:
+	 * 		- lider
+	 * 		- diretorio
+	 * 		- campos
+	 *
+	 * @return array
+	 */
+	private function separarPartesDoMarc($marc) {
+
+		$livro['lider'] = $this->getLider($marc);
+		$livro['diretorio'] = $this->getDiretorio($marc);
+		$livro['campos'] = $this->getCamposVariaveis($marc, $this->nFimDiretorio);
+
+		/**
+		 * Verificação de erros
+		*/
+
+		// Se o número de caractetes recuperado através do código do diretório for diferente do numero real de caracteres da string completa dos campos variáveis
+		if($livro['campos']['numCaracteres_total'] != $livro['campos']['numCaracteresMarcCampos'])
+			throw new EMarcException('O código marc é inválido.');
+
+		return $livro;
+	}
+
+	/**
+	 * Modo: Friendly-user
+	 *
+	 * Separa o código marc em 2 partes:
+	 * 		- lider
+	 * 		- campos
+	 *
+	 * @since 22-12-2012
+	 * @return array
+	 */
+	private function separarPartesDoMarc2(array $arrMarc) {
+
+		$livro['lider'] = $this->getLider2($arrMarc);
+		$livro['campos'] = $this->getCamposVariaveis2($arrMarc);
+
+		/**
+		 * Verificação de erros
+		*/
+		/*
+		 // Se o número de caractetes recuperado através do código do diretório for diferente do numero real de caracteres da string completa dos campos variáveis
+		if(strLen($livro['lider']['infoCompleta']) != 24)
+			throw new EMarcException('O líder deve possuir 24 números de caracteres.');
+		*/
+
+		return $livro;
+	}
+
+	/**
+	 * Organiza as informações do lider em um array
+	 *
+	 * @param string $marcLider
+	 * @return array $lider
+	 */
+	private function organizarLider($marcLider) {
+		$lider['infoCompleta'] = $marcLider;
+		$lider['comprimentoLogico'] = substr($marcLider, 0, 5);
+		$lider['status'] = $marcLider[5];
+		$lider['tipo'] = $marcLider[6];
+		$lider['nivelBibliografico'] = $marcLider[7];
+		$lider['tipoDeControle'] = $marcLider[8];
+		$lider['esquemaCodificacaoCaractere'] = $marcLider[9];
+		$lider['contagemIndicadores'] = $marcLider[10];
+		$lider['contagemCodigoSubcampo'] = $marcLider[11];
+		$lider['enderecoBaseDosDados'] = substr($marcLider, 12, 5);
+		$lider['nivelCodificacao'] = $marcLider[17];
+		$lider['formaCatalogacaoDescritiva'] = $marcLider[18];
+		$lider['exigenciaRegistroVinculado'] = $marcLider[19];
+		$lider['extensaoParteTamanhoCampo'] = $marcLider[20];
+		$lider['extensaoPartePosicaoCaractereInicio'] = $marcLider[21];
+		$lider['extensaoParteDefinidaImplementacao'] = $marcLider[22];
+		$lider['indefinido'] = $marcLider[23];
+
+		return $lider;
+	}
+
+	/**
+	 * Obtem o código do lider do código do marc.
+	 * O código do Lider são os 24 primeiros caracteres contando com o 0 "zero"
+	 *
+	 * @param String $marc
+	 */
+	private function getLider($marc) {
+		return $this->organizarLider(substr($marc, 0, 24));
+	}
+
+	/**
+	 * Modo: Friendly-user
+	 *
+	 * Obtem o código do lider do código do marc em forma de array.
+	 * A tag do lider geralmente é '000', mas pode ser encontrado no formato 'LDR'
+	 *
+	 * @since 22-12-2012
+	 * @param array $arrMarc
+	 */
+	private function getLider2(array $arrMarc) {
+		$marcLider = null;
+
+		for($i=0; $i<count($arrMarc); $i++) {
+			if(substr($arrMarc[$i], 0, 3) == 'LDR' || substr($arrMarc[$i], 0, 3) === '000') {
+				return $this->organizarLider(trim(substr($arrMarc[$i], 3)));
+			}
+		}
+	}
+
+	/**
+	 * Obtém o código do diretório do código do marc.
+	 * @param String $marc
+	 */
+	private function getDiretorio($marc) {
+		$i = 24;
+		$sairLoop = false;
+		$marcDiretorio = null;
+		$this->nFimDiretorio = 0;
+
+		// Obtendo o marcDiretorio
+		while($sairLoop == false) {
+			$marcDiretorio .= $marc[$i];
+
+			if ($marc[$i] == '^') {
+				$marcDiretorio = str_replace('^', '', $marcDiretorio);
+				$sairLoop = true;
+				$this->nFimDiretorio = $i;
+			} else {
+				$i++;
+			}
+		}
+
+		// Validando o código do diretório
+		if(!is_numeric($marcDiretorio) || (strLen($marcDiretorio) < 12)) {
+			throw new EMarcException("O código do diretório do marc é inválido.");
+		}
+
+		// numero de caracteres do marcDiretorio
+		$marcDiretorioStrLength = strLen($marcDiretorio);
+
+		$arrCampo = null;
+		$arrCampo['numCaracteres_total'] = 0;
+		$aux = null;
+
+		for($i=0; $i <= $marcDiretorioStrLength; $i++) {
+
+			if($i % 12 == 0 && $i > 0) {
+				$campo = null;
+
+				$campo['infoCompleta'] = $aux;
+				$campo['tag'] = substr($aux, 0, 3);
+				$campo['numCaracteres'] = substr($aux, 3, 4);
+				$campo['posicaoNaSequencia'] = substr($aux, 7, 5);
+
+				$arrCampo['numCaracteres_total'] += $campo['numCaracteres'];
+				$arrCampo[] = $campo;
+				$aux = null;
+			}
+
+			$aux .= $marcDiretorio[$i];
+		}
+
+		return $arrCampo;
+	}
+
+	/**
+	 * Obtém informações da editora.
+	 *
+	 * Obs: Modificações no município e descrição da editora deverão também serem refletidas no
+	 * método getObra, no case 'Imprenta'. Não foi possível reutilizar o código neste caso.
+	 *
+	 * @return array
+	 */
+	public function getEditora() {
+		if($this->livro && $this->marc) {
+
+			$editora = array(
+					'municipio' => null,
+					'descricao' => null
+			);
+
+			for($i = 0; $i < count($this->livro['campos']); $i++) {
+
+				// 260 = Edição
+				if ($this->livro['campos'][$i]['tag'] == 260) {
+
+					for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+						if ($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+							$editora['municipio'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
+
+						} else if ($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'b') {
+							$editora['descricao'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
+						}
+					}
+				}
+			}
+
+			return $editora;
+
+		} else {
+			throw new EMarcException('O marc não foi inserido.');
+		}
+	}
+
+	/**
+	 * Salva na tabela bt_editora.
+	 * Verifica se a editora existe e em caso negativo, salva.
+	 *
+	 */
+	public function salvarEditora() {
+		$editora = $this->getEditora();
+
+		if(!is_null($editora['descricao'])) {
+			// Verificando se a editora existe
+			$idEditora = $this->bussEditora->getIdByDesc($editora['descricao']);
+
+			// Se a editora não estiver cadastrada, insira
+			if(!$idEditora) {
+				$idEditora = $this->bussEditora->InsertImportacao2($editora['descricao'], $editora['municipio']);
+
+				if($idEditora)
+					$this->info[] = 'Editora \''. $editora['descricao'] . '\' cadastrada com sucesso!';
+
+			}
+
+			return $idEditora;
+
+		} else {
+			// se não tiver informaçoes sobre a editora, apenas libere o acesso
+			return true;
+		}
+	}
+
+	/**
+	 * Obtém informações do Autor
+	 * @return array
+	 */
+	public function getAutor() {
+		if($this->livro && $this->marc) {
+
+			// Pode ter mais de um autor
+			$autor = array(
+					array(
+							'idetiqueta' => null,
+							'tag' => null,
+							'subcampo' => null,
+							'conteudo' => null
+					)
+			);
+
+			$k = 0;
+			for($i = 0; $i < count($this->livro['campos']); $i++) {
+
+				// 100 = Entrada Principal - Nome Pessoal
+				// 700 = Entrada secundária - Nome pessoal
+				if (isset($this->livro['campos'][$i]['tag'])) {
+					if ($this->livro['campos'][$i]['tag'] == 100 || $this->livro['campos'][$i]['tag'] == 700) {
+
+
+						for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+							$autor[$k]['idetiqueta'] = $this->bussEtiqueta->getIdByTag2($this->livro['campos'][$i]['tag']);
+							$autor[$k]['tag'] = $this->livro['campos'][$i]['tag'];
+							$autor[$k]['subcampo'] = $this->livro['campos'][$i]['info'][$j]['subCampo'];
+							$autor[$k]['conteudo'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+							$k++;
+						}
+					}
+				}
+			}
+
+			return $autor;
+
+		} else {
+			throw new EMarcException('O marc não foi inserido.');
+		}
+	}
+
+	/**
+	 * Salva na tabela bt_autor.
+	 * Verifica se o autor existe e em caso negativo, salva.
+	 *
+	 */
+	public function salvarAutor() {
+		$arrIdAutor = false;
+		$idAutor_novo = false;
+
+		$autor = $this->getAutor();
+
+		// Salvando
+		for($i = 0; $i < count($autor); $i++) {
+			// Verificando se existem autores com o nome e idEtiqueta informado
+			if($autor[$i]['conteudo'] && $autor[$i]['idetiqueta'])
+				$idAutor = $this->bussAutor->getIdAutorByNomeAndIdEtiqueta($autor[$i]['conteudo'], $autor[$i]['idetiqueta']);
+			else
+				throw new EMarcException("Autor não encontrado no marc");
+
+			// Se não encontrar, insira-o
+			if(!$idAutor) {
+				$idAutor_novo = $this->bussAutor->insertImportacao2(
+						$autor[$i]['idetiqueta'],
+						$autor[$i]['subcampo'],
+						$autor[$i]['conteudo']
+				);
+
+				// se o novo autor foi salvo
+				if($idAutor_novo) {
+					$arrIdAutor[] = $idAutor_novo;
+					$this->info[] = 'Autor \''. $autor[$i]['conteudo'] . '\' cadastrado com sucesso!';
+				} else {
+					throw new EMarcException('Houve um erro ao tentar inserir o autor. \'' . $autor[$i]['conteudo'] . '\'');
+				}
+
+			} else {
+				$arrIdAutor[] = $idAutor;
+			}
+
+		}
+
+		return $arrIdAutor;
+	}
+
+	/**
+	 * Salva Lider na tabela bt_camposfixos. Idetiqueta = 1 (tag 000)
+	 *
+	 */
+	private function inserirLider(array $lider, $idObra) {
+		$conteudo = $lider['infoCompleta'];
+
+		$sql = new sql('idetiqueta, idobra, conteudo', 'bt_camposfixos');
+		$values = array(1, $idObra, $conteudo);
+
+		return $this->Execute($sql->Insert($values));
+	}
+
+	/**
+	 * Retorna o código dos Campos Fixos de Dados. Tag 008, idtiqueta = 7
+	 */
+	private function getCamposFixos() {
+		$camposFixos = null;
+
+		for($i = 0; $i < count($this->livro['campos']) - 2; $i++) {
+
+			if (isset($this->livro['campos'][$i]['tag'])) {
+				if($this->livro['campos'][$i]['tag'] == '008') {
+					$camposFixos = str_replace('^', '', $this->livro['campos'][$i]['infoCompletaCampo']);
+				}
+			}
+		}
+
+		/*
+		 *  A coluna conteudo na tabela bt_camposfixos é NOT NULL.
+		* Portanto, caso não haja esta informação no marc será lançada uma excessão.
+		*/
+		if(is_null($camposFixos))
+			throw new EMarcException("Não existe a informação sobre os campos fixos no marc. (Tag 008)");
+
+		return $camposFixos;
+	}
+
+	/**
+	 * Salva Campos Fisicos na tabela bt_camposfixos. Idetiqueta = 7 (tag 008)
+	 * @param string $camposFixos
+	 * @param int $idObra
+	 */
+	private function inserirCamposFixos($camposFixos, $idObra) {
+		$conteudo = $camposFixos;
+
+		$sql = new sql('idetiqueta, idobra, conteudo', 'bt_camposfixos');
+		$values = array(7, $idObra, $conteudo);
+
+		return $this->Execute($sql->Insert($values));
+	}
+
+
+	/**
+	 * Salva somente os campos variáveis na tabela bt_material
+	 */
+	private function salvarMaterial($idObra) {
+		$campos = $this->livro['campos'];
+
+		// numero de materiais
+		$nMateriais = 0;
+		// numero de materiais salvos
+		$nMateriaisSalvos = 0;
+
+		for($i = 0; $i < count($campos) - 2; $i++) {
+			// tag 008 não pode ser inserida. (apenas campos variáveis)
+			if($campos[$i]['tag'] != 008) {
+				$nMateriais++;
+				$nInfoSalva = 0;
+
+				if(isset($campos[$i]['info'])) {
+
+					for($j = 0; $j < count($campos[$i]['info']); $j++) {
+						$material = null;
+
+						$idmaterial = $this->bussMaterial->getNextId();
+						$idetiqueta = $this->bussEtiqueta->getIdByTag2($campos[$i]['tag']);
+						$subcampo = $campos[$i]['info'][$j]['subCampo'];
+						$conteudo = $campos[$i]['info'][$j]['conteudo'];
+						$linha = 1; // TODO: Verificar depois
+						$ocorrencia = 1; // TODO: Verificar depois
+
+						/*
+						 * Se possui idetiqueta e subcampo, e nenhum deles foram encontrados na tabela bt_subcampo lance um erro
+						*
+						* Existe uma restrição na tabela bt_material (fk_bt_material1_bt_su),
+						* relacionada aos campos 'idetiqueta' e 'subcampo' na tabela bt_subcampo.
+						* Por isso deve-se verificar antes de tentar inserir.
+						*/
+						if(((!is_null($idetiqueta) && !is_null($subcampo))
+								&& !$this->bussSubCampo->existe_SubcampoByIdetiquetaAndSubcampo($idetiqueta, $subcampo))) {
+							throw new EMarcException('A Tag \''. $campos[$i]['tag'] . '\' e o subcampo \'' . $subcampo . '\' não foram identificados como informações válidas.');
+						}
+
+						$statusMaterial = $this->bussMaterial->insertMaterial(
+								$idmaterial,
+								$idObra,
+								$idetiqueta,
+								$subcampo,
+								$conteudo,
+								$linha,
+								$ocorrencia
+						);
+
+						if ($statusMaterial) {
+							$nInfoSalva++;
+						}
+					}
+				}
+
+				if(count($campos[$i]['info']) == $nInfoSalva)
+					$nMateriaisSalvos++;
+			}
+		}
+
+		return ($nMateriais == $nMateriaisSalvos);
+	}
+
+	/**
+	 * Salva na tabela bt_obra.
+	 * Salvamentos indiretos: bt_camposfixos
+	 *
+	 * @param $friendly_user - Modo amigável de importação
+	 *
+	 * Verifica se a obra existe e em caso negativo, salva.
+	 */
+	public function salvarObra() {
+		global $MIOLO;
+
+		$db = $MIOLO->GetDatabase('sigaept');
+		$transaction = $db->getTransaction();
+
+		$obra = $this->getObra();
+		$idObra_nova = false;
+		$idObra = $this->bussObra->getIdByTituloAndSubtitulo($obra['titulo'], $obra['subtitulo']);
+
+		// Se a editora não estiver cadastrada, insira
+		if(!$idObra) {
+
+			// Iniciando Tranzação
+			$transaction->begin();
+
+			$idObra_nova = $this->bussObra->inserirObra($obra);
+
+			// Se a obra foi inserida corretamente
+			if($idObra_nova) {
+				// Salve o lider
+				if(!is_null($this->livro['lider']))
+					$statusLider = $this->inserirLider($this->livro['lider'], $idObra_nova);
+				else // libere. O lider não é obrigatório que esteja no marc
+					$statusLider = true;
+
+				// Salve os campos Fixos
+				$statusCamposFixos = $this->inserirCamposFixos($this->getCamposFixos(), $idObra_nova);
+
+				// Salve o material
+				$statusMaterial = $this->salvarMaterial($idObra_nova);
+
+				// Salve os indicadores.
+				// Apenas se estiver no modo marc friendly-user
+				if($this->friendlyUser_mode) {
+					$this->salvarindicadores($idObra_nova);
+				}
+
+				/*
+				 * Debug:
+				*
+				$this->show('st_lider', $statusLider);
+				$this->show('st_camposFixos', $statusCamposFixos);
+				$this->show('st_material', $statusMaterial);
+				$this->show('st_indicadores', $statusIndicadores, true);
+				*/
+
+				// Se der tudo certo
+				if($statusLider && $statusCamposFixos && $statusMaterial) {
+
+					$transaction->commit();
+					$this->info[] = 'Obra \''. $obra['titulo'] . ' - ' . $obra['subtitulo'] . '\' cadastrada com sucesso!';
+					$idObra = $idObra_nova;
+
+				} else {
+					$transaction->rollback();
+					$idObra = false;
+				}
+					
+				// Fechando Tranzação
+				$this->EndTransaction();
+			} else {
+				throw new Exception('Não foi possível inserir a obra.');
+			}
+		}
+
+		return $idObra;
+	}
+
+	/**
+	 * Obtém informações da Obra
+	 *
+	 * tag 245 = Titulo
+	 * a (titulo)
+	 * b (subtitulo)
+	 *
+	 * Tag 250 = Edição
+	 * a (edicao)
+	 *
+	 * Tag 260 = Imprenta
+	 * a (localpublicacao)
+	 * b (editora)
+	 * c (datapublicacao)
+	 *
+	 * Tag 902 = Gênero do Material
+	 * a (idgenero)
+	 *
+	 * Tag 300 = Descrição Física
+	 * a (descfisica)
+	 *
+	 * Tag 100 = Entrada Principal - Nome Pessoal (Autor)
+	 *
+	 * @return array
+	 */
+	public function getObra() {
+		if($this->livro && $this->marc) {
+
+			$obra = array(
+					'idobra' => $this->bussObra->GetNextIdObra(),
+					'numerodaobra' => $this->bussObra->GetNextNumeroObra(),
+					'titulo' => null,
+					'subtitulo' => null,
+					'edicao' => null,
+					'localpublicacao' => null,
+					'editora' => null,
+					'datapublicacao' => null,
+					'idgenero' => 1,
+					'descfisica' => null,
+					'ideditora' => null,
+					'idautor' => null,
+					'autor' => null
+			);
+
+			for($i = 0; $i < count($this->livro['campos']); $i++) {
+
+				if (isset($this->livro['campos'][$i]['tag'])) {
+
+					switch($this->livro['campos'][$i]['tag']) {
+
+						// Titulo
+						case 245:
+							for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+
+								// titulo
+								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+									$obra['titulo'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
+								}
+
+								// subtitulo
+								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'b') {
+									$obra['subtitulo'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
+								}
+							}
+							break;
+
+							// Edição
+						case 250:
+							for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+
+								// edição
+								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+									$obra['edicao'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+								}
+							}
+							break;
+
+							// Imprenta
+							// Obs: Modificações aqui deverão também refletidas no método getEditora
+						case 260:
+							for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+
+								// localpublicacao
+								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+									$obra['localpublicacao'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
+								}
+
+								// editora
+								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'b') {
+									$obra['editora'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
+									$obra['ideditora'] = $this->bussEditora->getIdByDesc($obra['editora']);
+								}
+
+								// datapublicacao
+								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'c') {
+									$obra['datapublicacao'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
+								}
+							}
+							break;
+
+							// Gênero do Material
+						case 902:
+							for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+
+								// idgenero
+								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+									$obra['idgenero'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+								}
+							}
+							break;
+
+							// Descrição Física
+						case 300:
+							for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+
+								// descfisica
+								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+									$obra['descfisica'] = $this->limparString($this->livro['campos'][$i]['info'][$j]['conteudo']);
+								}
+							}
+							break;
+
+							// Entrada Principal - Autor
+						case 100:
+							for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
+
+								// autor
+								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
+									$idEtiqueta = $this->bussEtiqueta->getIdByTag2(100);
+									$obra['autor'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
+									$obra['idautor'] = $this->bussAutor->getIdAutorByNomeAndIdEtiqueta($obra['autor'], $idEtiqueta);
+								}
+							}
+							break;
+					}
+				}
+			}
+
+			return $obra;
+
+		} else {
+			throw new EMarcException('O marc não foi inserido.');
+		}
+	}
+
+	/**
+	 * Verifica se existe registro com as informações definidas nos parâmetros.
+	 * Tabela bt_camposfixos
+	 *
+	 * @param int $idEtiqueta
+	 * @param int $idObra
+	 * @param string $conteudo
+	 */
+	private function existeCampoFixo($idEtiqueta, $idObra, $conteudo) {
+		$sql = new sql('idobra','bt_camposfixos','(idetiqueta = ?) AND (idobra = ?) AND (conteudo = ?)');
+
+		$query = $this->Query($sql,array($idEtiqueta, $idObra, $conteudo));
+		return is_null($query->result[0][0]);
+	}
+
+	/**
+	 * Obtém o código dos campos variáveis atravéz do código do marc e do número que informa qual o index do ultimo
+	 * caracter do diretório
+	 *
+	 * @param String $marc
+	 * @param Integer $nFimDiretorio
+	 */
+	private function getCamposVariaveis($marc, $nFimDiretorio) {
+		$marcCampos = null;
+
+		// Obtendo o marcCampos
+		for($i = $nFimDiretorio + 1; $i < strlen($marc); $i++) {
+			$marcCampos .= $marc[$i];
+		}
+
+		$numCaracteresMarcCampos = strlen($marcCampos);
+		$arrCamposVariaveis = null;
+
+		$arrCamposVariaveis['numCaracteres_total'] = 0;
+		$arrDiretorio = $this->getDiretorio($marc);
+
+		for($i = 0; $i < count($arrDiretorio) - 1; $i++) {
+			$campoVariavel = null;
+
+			$campoVariavel['infoCompletaCampo'] = substr($marcCampos, $arrDiretorio[$i]['posicaoNaSequencia'], $arrDiretorio[$i]['numCaracteres']);
+			$campoVariavel['numCaracteresCampo'] = strlen($campoVariavel['infoCompletaCampo']);
+			$arrCamposVariaveis['numCaracteres_total'] += $campoVariavel['numCaracteresCampo'];
+			// Retirando o ultimo caractere da contagem
+			$arrCamposVariaveis['numCaracteresMarcCampos'] = ($marcCampos[$numCaracteresMarcCampos - 1] == '\\') ? $numCaracteresMarcCampos - 1 : $numCaracteresMarcCampos;
+
+			// Tag
+			$campoVariavel['tag'] = $arrDiretorio[$i]['tag'];
+
+			// SubCampo e Conteudo
+			$j = 0;
+
+			for($x = 0; $x < strlen($campoVariavel['infoCompletaCampo']); $x++) {
+
+				if($campoVariavel['infoCompletaCampo'][$x] == '$') {
+					$campoVariavel['info'][$j]['subCampo'] = null;
+					$campoVariavel['info'][$j]['conteudo'] = null;
+
+					$campoVariavel['info'][$j]['subCampo'] = $campoVariavel['infoCompletaCampo'][$x + 1];
+
+					$aux = substr($campoVariavel['infoCompletaCampo'], $x + 2);
+					for($q = 0; $q < strlen($aux); $q++) {
+						if($aux[$q] == '$' || $aux[$q] == '^')
+							break;
+							
+						$campoVariavel['info'][$j]['conteudo'] .= $aux[$q];
+					}
+
+					$j++;
+				}
+			}
+
+			$arrCamposVariaveis[] = $campoVariavel;
+		}
+
+		return $arrCamposVariaveis;
+	}
+
+	/**
+	 * Obtém os indicadores para o Modo: Firendly-user.
+	 *
+	 * @param int $idObra
+	 * @return array
+	 */
+	private function getIndicadores($idObra) {
+		$arrIndicador = null;
+
+		// campos
+		for($i = 0; $i<count($this->livro['campos']); $i++) {
+			if(isset($this->livro['campos'][$i]['indicadores'])) {
+
+				// Removendo qualquer caractere que não seja numérico
+				$strIndicadores = ereg_replace('[^0-9]', '', $this->livro['campos'][$i]['indicadores']);
+
+				if(!empty($strIndicadores)) {
+					$indicador = null;
+
+					// idetiqueta
+					$indicador['idetiqueta'] = $this->bussEtiqueta->getIdByTag2($this->livro['campos'][$i]['tag']);
+
+					// idobra
+					$indicador['idobra'] = $idObra;
+
+					// ocorrencia
+					$indicador['ocorrencia'] = 1; // TODO: Analizar depois
+
+					// indicadores
+					$nIndicador = 0;
+
+					// caracteres de indicadores
+					for($j=0; $j < strLen($strIndicadores); $j++) {
+						// indicador => conteudo
+						$indicador['indicadores'][++$nIndicador] = $strIndicadores[$j];
+					}
+
+
+					$arrIndicador[] = $indicador;
+				}
+			}
+		}
+		// 		$this->debug($arrIndicador);
+
+		return $arrIndicador;
+	}
+
+	/**
+	 * Salvar Indicadores
+	 * @param int $idObra
+	 *
+	 * @throws EMarcException
+	 */
+	private function salvarIndicadores($idObra) {
+		$arrIndicador = $this->getIndicadores($idObra);
+
+		$nElementoSalvoCorretamente = 0;
+
+		for($i=0; $i<count($arrIndicador); $i++) {
+			$nIdentificadoresSalvos = 0;
+
+			for($j = 0; $j < count($arrIndicador[$i]['indicadores']); $j++) {
+				$indicador = null;
+				$indicador['idindicador'] = $this->bussIndicadores->getNextId();
+				$indicador['idetiqueta'] = $arrIndicador[$i]['idetiqueta'];
+				$indicador['idobra'] = $arrIndicador[$i]['idobra'];
+				$indicador['indicador'] = $j + 1;
+				$indicador['conteudo'] = $arrIndicador[$i]['indicadores'][$j + 1];
+				$indicador['ocorrencia'] = $arrIndicador[$i]['ocorrencia'];
+
+				try {
+					$this->bussIndicadores->insertIndicador(
+							$indicador['idindicador'],
+							$indicador['idetiqueta'],
+							$indicador['idobra'],
+							$indicador['indicador'],
+							$indicador['conteudo'],
+							$indicador['ocorrencia']
+					);
+
+				} catch (Exception $e) {
+					throw new EMarcException('Houve um problema ao salvar os indicadores. ' . $e->getMessage());
+				}
+			}
+		}
+	}
+
+	/**
+	 * Obtém o código dos campos variáveis através do array do código marc.
+	 *
+	 * @since 22-12-2012
+	 * @param array $arrMarc
+	 */
+	private function getCamposVariaveis2(array $arrMarc) {
+		$arrCamposVariaveis = null;
+
+		for($i=0; $i<count($arrMarc); $i++) {
+			$campoVariavel = null;
+
+			// Obtendo a tag
+			$campoVariavel['tag'] = substr(trim($arrMarc[$i]), 0, 3);
+
+			// Obtendo Indicadores
+			$aux = substr(trim($arrMarc[$i]), 3);
+			$nFimIndicadores = 0;
+
+			$indicadores = null;
+			for($x=0; $x<strLen($aux); $x++) {
+				if($aux[$x] != '|' && $aux[$x] != '$') {
+					$indicadores .= $aux[$x];
+				} else {
+					$nFimIndicadores = $x;
+					break;
+				}
+			}
+			$campoVariavel['indicadores'] = (strLen(trim($indicadores)) <= 4) ? trim($indicadores) : null;
+
+			// Obtendo Info do campo
+			$campoVariavel['infoCompletaCampo'] = trim(substr($aux, $nFimIndicadores));
+
+			$aux = null;
+			$m = 0;
+			for($k=1; $k < strLen($campoVariavel['infoCompletaCampo']); $k++) {
+				if((($campoVariavel['infoCompletaCampo'][$k] != '|') && ($campoVariavel['infoCompletaCampo'][$k] != '$'))
+						&& ($k != strLen($campoVariavel['infoCompletaCampo']) - 1)) {
+
+					$aux .= $campoVariavel['infoCompletaCampo'][$k];
+
+				} else {
+
+					// pegando o ultimo caractere
+					if($k == strLen($campoVariavel['infoCompletaCampo']) - 1) {
+						$aux .= $campoVariavel['infoCompletaCampo'][$k];
+					}
+
+					$campoVariavel['info'][$m]['subCampo'] = $aux[0];
+					$campoVariavel['info'][$m]['conteudo'] = trim(substr($aux, 1));
+
+					$m++;
+					$aux = null;
+				}
+			}
+
+			// Removendo info de tags que não a possuem
+			switch ($campoVariavel['tag']) {
+				case 'LDR':
+				case '001':
+				case '003':
+				case '005':
+				case '008':
+					unset($campoVariavel['info']);
+					break;
+			}
+
+			$arrCamposVariaveis[] = $campoVariavel;
+		}
+
+		return $arrCamposVariaveis;
+	}
+
+	/**
+	 * Remove alguns caracteres especiais no final da String
+	 * @since 11-01-2013
+	 *
+	 * @param String $string
+	 */
+	protected function limparString($string) {
+		$pattern = "[:,/]$";
+		return trim(ereg_replace($pattern, "", trim($string)));
+	}
+
+	/**
+	 * Debug de array
+	 * @param array $array
+	 */
+	protected function debug($array, $die = true) {
+		echo '<pre>';
+		print_r($array);
+		echo '</pre>';
+		if($die) die;
+	}
+
+	/**
+	 * Debug para variaveis.
+	 *
+	 * @param string $label
+	 * @param string $value
+	 * @param boolean $die
+	 */
+	protected function show($label, $value, $die = false) {
+		echo $label . ': ';
+		var_dump($value);
+		echo '<br/>';
+		if($die) die;
+	}
+
+}
+
+?>

@@ -1,29 +1,4 @@
-<?php
-/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
- *
- * Este arquivo é parte do programa SigaEPT
- *
- * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
- * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
- * na versão 2 da Licença.
- *
- * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
- * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
- * Pública Geral GNU/GPL em português para maiores detalhes.
- *
- * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
- * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
- * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
- * St, Fifth Floor, Boston, MA 02110-1301, USA
- */
-?>
-<?php
-/**
-* @package SIGA
-* @subpackage Biblioteca
-* @author SETEC/MEC
-*/
-
+<?
 class frmEtiquetaLombada extends Form
 {
    var $objEtiqueta;
@@ -52,13 +27,24 @@ class frmEtiquetaLombada extends Form
       global $MIOLO,$module;
 
       $ui = $MIOLO->getUI();
+	  
+	  $unidades = $this->manager->GetBusiness('biblioteca','unidade');
+	  
+	  $unidades = $unidades->ListUnidade()->result;
+	  /*echo '<pre>';
+	  var_dump($unidades);
+	  echo '</pre>';
+	  
+	  exit();*/
   
       $fields = array(
+		 new MSelection('selBib','','Selecione a Unidade da Biblioteca',$unidades,false),
          new MTextLabel('dica0','&nbsp; -Selecione o intervalo de exemplares para criação da etiqueta - &nbsp;','&nbsp;'),
-         new TextField('edtExemplares','','Exemplares', '15'," Número do Tombo. <b>Ex: 1-100 </b>"),
+         new TextField('edtExemplares','','Número do Tombo', '15'," <b>Ex: 1-100 </b>"),
          new MTextLabel('dica2','&nbsp; -Selecione os campos que devem ser exibidos na etiqueta - &nbsp;','&nbsp;'),
          new TextField('edtTags','','TAG', '10'," Tag-Subcampo. <b>Ex: 245-a</b>"),
          new MButton('btnMais','Adicionar Tags','',$ui->getImage($module,'cartao_mini.png')),
+	 new MButton('btnMenos','Remover Última Tag','',$ui->getImage($module,'cartao_mini.png')),
          new HiddenField('listaTags',''),
          new MultiLineField('mlinTags','','Tags Selecionadas',35,7, 35,"<b>Só é possível inserir até 4 tags</b>"),
          new MTextLabel('dica3','&nbsp; -Outros Campos - &nbsp;','&nbsp;'),
@@ -75,6 +61,8 @@ class frmEtiquetaLombada extends Form
  	
       $buttons = Array(
           new FormButton('btnCriar', 'Gerar Etiquetas','PDF'),
+          new FormButton('btnCriar2', 'Gerar Etiquetas - Capa','PDF'),
+          new FormButton('btnCriar3', 'Gerar Etiquetas Personalizadas','PDF'),
           new MButton('btnLimpar', 'Nova Etiqueta'),
       );
 
@@ -146,18 +134,20 @@ class frmEtiquetaLombada extends Form
 
       if($valorTag != null)
       {
-         if($lista =='')
-         {
-            $lista = $tag;      
-         }         
-         else
-         {
-            $lista .= '[-]'.$tag;
-         }
+	 $tagsEscolhidas = explode('[-]',$lista); 
+	 if(count($tagsEscolhidas) < 4){
+		 if($lista =='' )
+		 {
+		    $lista = $tag;      
+		 }         
+		 else
+		 {
+		    $lista .= '[-]'.$tag;
+		 }
+	 
          $tagsEscolhidas = explode('[-]',$lista);     
          $this->SetFieldValue('listaTags',$lista);
-         if(count($tagsEscolhidas) <= 4)         
-         {         
+        
             $valor = '';
             $num = 1;
             foreach($tagsEscolhidas as $tag1){
@@ -167,71 +157,124 @@ class frmEtiquetaLombada extends Form
                $num++;
             }                        
             $this->SetFieldValue('mlinTags',$valor);
-         }
+}
          else
          {
-            $go = $this->manager->GetActionURL('biblioteca','main:admin:etiqueta');
-            $MIOLO->Error('Não é possível inserir mais do que 4 tags na etiqueta', $go );         
+            //$go = $this->manager->GetActionURL('biblioteca','main:admin:etiqueta');
+           // $MIOLO->Error('Não é possível inserir mais do que 4 tags na etiqueta', $go );  
+		echo ("<script>alert('Não é possível inserir mais do que 4 tags na etiqueta');</script>");       
          }
       }
       else
       {
-         $go = $this->manager->GetActionURL('biblioteca','main:admin:etiqueta');
-         $MIOLO->Error("A tag " . $tag . " não foi encontrada", $go );         
+         //$go = $this->manager->GetActionURL('biblioteca','main:admin:etiqueta');
+         //$MIOLO->Error("A tag " . $tag . " não foi encontrada", $go );         
+		echo ("<script>alert('"."A tag " . $tag . " não foi encontrada"."');</script>");
       }      
    }
+
+
+
+function btnMenos_click()
+   { 
+      global $MIOLO,$module,$item;
+
+      //Escondendo alguns campos
+      $this->SetFieldAttr('dica0', 'visible',false);
+      $this->SetFieldAttr('edtExemplares', 'visible',true);
+      
+
+      //Mostrando campos                          
+      $this->SetFieldAttr('dica0', 'visible', true);
+      $this->SetFieldAttr('dica2', 'visible', true);
+      $this->SetFieldAttr('edtTags', 'visible', true);
+      $this->SetFieldAttr('btnMais', 'visible', true);
+      $this->SetFieldAttr('dica3', 'visible', true);
+      $this->SetFieldAttr('chkVolume', 'visible', true);
+      $this->SetFieldAttr('chkNumeroTombo', 'visible', true);   
+      $this->SetFieldAttr('mlinTags', 'visible', true);
+      $this->SetFieldAttr('mlinTags','readonly',true);
+      
+      $this->SetButtonAttr('btnEscolher','visible',false);
+      $this->SetButtonAttr('btnCriar','visible',true);
+      $this->SetButtonAttr('btnLimpar','visible',true); 
+          
+     // $tag = $this->GetFieldValue('edtTags');  
+     // $this->SetFieldValue('edtTags','');
+      $lista = $this->GetFieldValue('listaTags');
+     // $tags = explode('-',$tag);
+     // $valorTag = $this->objEtiqueta->getDescricaoMarcByTag($tags[0]);
+
+      if($lista != null)
+      {
+	
+            $tagsEscolhidas = explode('[-]',$lista);     
+            unset($tagsEscolhidas[count($tagsEscolhidas)-1]);
+            $valor = '';
+            $num = 1;
+	    $lista ='';
+            for($i=0;$i<count($tagsEscolhidas);$i++){
+               $tags = explode('-',$tagsEscolhidas[$i]);
+               $valorTag2 = $this->objEtiqueta->getDescricaoMarcByTag($tags[0]);
+               $valor .= "$num- ". $valorTag2."\n";
+	       	 if($lista =='')
+		 {
+		    $lista = $tagsEscolhidas[$i];      
+		 }         
+		 else
+		 {
+		    $lista .= '[-]'.$tagsEscolhidas[$i];
+		 }	
+               $num++;
+            }                        
+            $this->SetFieldValue('mlinTags',$valor);
+            $this->SetFieldValue('listaTags',$lista);
+
+         
+      }
+      
+   }
+
+
+
+
+
 
    function btnLimpar_click()
    { 
       global $MIOLO,$module;
+      $valor = '';
+      
       $this->objEtiqueta->delete();
       $this->SetFieldValue('listaTags','');
+
+      $this->SetFieldValue('mlinTags',$valor);
       $this->SetFieldValue('mlinTags','');         
-	  
-	  
-	  //edtExemplares
-	  
-       $this->SetFieldValue('edtExemplares','');
-       $this->SetFieldValue('edtTags','');
-       $this->setFieldAttr('chkVolume','checked',0);
-       $this->setFieldAttr('chkNumeroTombo','checked',0);
-		
-		
    } 
   
+
+
+
+
+
+
    
    function btnCriar_click()
    {
-  
-  
-  if( strlen(trim(Form::GetFormValue('edtExemplares'))) == 0)
-		{
-			$this->AddError('A etiqueta não pode ser criada sem o campo "Exemplares".');
-		}
-
-  else	
-
-{	
-	
-	
-	
       global $MIOLO,$module;
       $data = $this->GetData();
       $this->objEtiqueta->delete();
       $interval = $this->GetFieldValue('edtExemplares');
+	  $bib = $this->GetFieldValue('selBib');
       $intervalo = explode('-',$interval);
-      $exemplares = $this->objEtiqueta->getExemplaresByInterval($intervalo[0],$intervalo[1]);    
+	  
+	  if(empty($bib))
+		$exemplares = $this->objEtiqueta->getExemplaresByInterval($intervalo[0],$intervalo[1]);
+	  else
+		$exemplares = $this->objEtiqueta->getExemplaresByIntervalAndBib($intervalo[0],$intervalo[1],$bib);
      
       if($exemplares->result)
-      {
-         $tagsEscolhidas = explode('[-]',$data->listaTags);
-         $idetiqueta = 1 ;    
-         foreach($tagsEscolhidas as $tag1)
-         {
-           $tags = explode('-',$tag1);
-           $this->objEtiqueta->insert($idetiqueta,'t',$tags[0],$tags[1]);
-           $idetiqueta++;
-         }   
+      {  
          $ui = $MIOLO->GetUI();
          $report = $ui->GetReport($module,'repEtiquetasLombada',$data);
          $report->gerarParaMuitosExemplares(19,420,450,$data,$exemplares->result);
@@ -243,9 +286,79 @@ class frmEtiquetaLombada extends Form
          $MIOLO->Error("Nao existe exemplares para o intervalo solicitado", $go );
       }
 
-   }  
-   
    }
-   
+
+   function btnCriar2_click()
+   {
+      global $MIOLO,$module;
+      $data = $this->GetData();
+      $this->objEtiqueta->delete();
+      $interval = $this->GetFieldValue('edtExemplares');
+	  $bib = $this->GetFieldValue('selBib');
+      $intervalo = explode('-',$interval);
+	  if(empty($bib))
+		$exemplares = $this->objEtiqueta->getExemplaresByInterval($intervalo[0],$intervalo[1]);
+	  else
+		$exemplares = $this->objEtiqueta->getExemplaresByIntervalAndBib($intervalo[0],$intervalo[1],$bib);  
+     
+      if($exemplares->result)
+      {
+         $ui = $MIOLO->GetUI();
+         $report = $ui->GetReport($module,'repEtiquetasLombada',$data);
+         $report->gerarParaMuitosExemplaresCapa(19,420,450,$data,$exemplares->result);
+         $report->Generate(); 
+      }
+      else
+      {
+         $go = $this->manager->GetActionURL('biblioteca','main:admin:etiqueta');
+         $MIOLO->Error("Nao existe exemplares para o intervalo solicitado", $go );
+      }
+
+   }
+
+   function btnCriar3_click()
+   {
+      global $MIOLO,$module;
+      $data = $this->GetData();
+      $this->objEtiqueta->delete();
+      $interval = $this->GetFieldValue('edtExemplares');
+      $intervalo = explode('-',$interval);
+	  $bib = $this->GetFieldValue('selBib');
+	  if(empty($bib))
+		$exemplares = $this->objEtiqueta->getExemplaresByInterval($intervalo[0],$intervalo[1]);
+	  else
+		$exemplares = $this->objEtiqueta->getExemplaresByIntervalAndBib($intervalo[0],$intervalo[1],$bib);     
+     
+      if($exemplares->result)
+      {
+         $tagsEscolhidas = explode('[-]',$data->listaTags);
+         $idetiqueta = 1 ;
+         if(!empty($data->listaTags))
+         {    
+            foreach($tagsEscolhidas as $tag1)
+            {
+              $tags = explode('-',$tag1);
+              $this->objEtiqueta->insert($idetiqueta,'t',$tags[0],$tags[1]);
+              $idetiqueta++;
+            }
+            $ui = $MIOLO->GetUI();
+            $report = $ui->GetReport($module,'repEtiquetasLombada',$data);
+            $report->gerarParaMuitosExemplaresCustom(19,420,450,$data,$exemplares->result);
+            $report->Generate(); 
+         }
+         else
+         {
+            $go = $this->manager->GetActionURL('biblioteca','main:admin:etiqueta');
+            $MIOLO->Error("Você precisa escolher as tags para gerar este tipo de etiqueta", $go );           
+         } 
+      }
+      else
+      {
+         $go = $this->manager->GetActionURL('biblioteca','main:admin:etiqueta');
+         $MIOLO->Error("Nao existe exemplares para o intervalo solicitado", $go );
+      }
+
+   } 
+
 }
 ?>

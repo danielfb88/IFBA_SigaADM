@@ -17,36 +17,28 @@
  * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
  * St, Fifth Floor, Boston, MA 02110-1301, USA
  */
-?>
 
-<?
-class frmMunicipioFind extends MForm
-{
-	function __construct()
-	{
-		parent::__construct('Pesquisar Municipio');
-		$this->setClose($this->manager->getActionURL('common','main'));
-		$this->eventHandler();
-	}
-	function createFields()
-	{
-		$ui = $this->manager->GetUI();
-		$grid = $ui->GetGrid('common','gridMunicipio');
-		$grid->setTitle(NULL);
-		$lnkNew = new MLink('lnkNew','&nbsp;','','Inserir Municipio');
-		$lnkNew->setAction('common','main:municipio:new');
-		$findButton = new MButtonFind('');
-		$findButton->setName('btnFind');
-		$fields = array(
-            array(
-               new MTextField('municipio','','Municipio',30),
-               $findButton,
-               $lnkNew
-            ),
-            $grid
-        );
-		$this->SetFields($fields);
+// Daniel Bonfim - 16-10-2012
+class frmMunicipioFind extends MForm {
+
+	function __construct() {
+		parent::__construct('Relação de Municípios');
 		$this->defaultButton = false;
+		$this->eventHandler();
+		//$this->createGrid();
 	}
+
+	function CreateFields()
+	{
+		global $MIOLO, $action, $module, $item, $page;
+
+		$this->grid = $this->manager->getUI()->getGrid($module,'gridMunicipio',null);
+		$this->grid->HeaderLink('new', 'Novo Registro', $MIOLO->GetActionURL($module,'main:admin:municipioBiblioteca'));
+
+		$fields = array(
+			$this->grid
+		);
+		$this->setFields($fields);
+	}
+
 }
-?>

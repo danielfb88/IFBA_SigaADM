@@ -178,14 +178,17 @@ class frmImportacaoMarc extends MForm
                   
 	        }
          
+		//var_dump(trim($modules.$destino.$fileNameTxt));
 	        $arquivo = file(trim($modules.$destino.$fileNameTxt)); //Comando necessário para abertura do arquivo
                   
 		$quantidadeLivros = sizeof($arquivo);
-//		var_dump($arquivo);
+		//var_dump(sizeof($arquivo));
 		for ($posArray=0 ; $posArray<$quantidadeLivros ; $posArray++)
 		{
 			$livro = $arquivo[$posArray]; //"Transforma" o array em string
+			//var_dump($livro);
             $lider = substr($livro,0,24); //Retira-se o líder
+			//var_dump($lider);
             $sair = false;
 			$i=0;
             
@@ -219,6 +222,7 @@ class frmImportacaoMarc extends MForm
 				$conteudo = str_replace("^", "", substr($livro,$inicio,$tamanho)); /*extrai-se o conteudo e retira-se o ^, 
 						que tem função de separador de conteúdos*/
 				$x=0;
+				//var_dump($etiqueta);
 				$idetiqueta = $this->objEtiqueta->GetIdByTag($etiqueta);
 				$idetiqueta = $idetiqueta->result[0][0];
 				//echo $diretorio.'<br>';
@@ -314,6 +318,8 @@ class frmImportacaoMarc extends MForm
 							}
 							try
 							{
+								//echo "<p/>Teste de subcampo: ".$subcampo."<p/>";
+								//if($subcampo=="")$subcampo="a";
 								$this->objObra->saveMaterialImportacao($idobra,$idetiqueta,$subcampo,$valor,$ocorrencia);
 							}
 							catch (Exception $e)
@@ -360,6 +366,7 @@ class frmImportacaoMarc extends MForm
 							}
 							else
 							{
+								//echo "teste de IF()<p/>";
 								$idetiqueta = $this->objEtiqueta->GetIdByTag($etiqueta)->result[0][0];
 								$idassunto = $this->objAssunto->getIdAssuntoAtualizado($idetiqueta, $controle);
 								$this->objAssunto->saveAssuntoObra($idassunto,$idobra,$ocorrencia,$idetiqueta);

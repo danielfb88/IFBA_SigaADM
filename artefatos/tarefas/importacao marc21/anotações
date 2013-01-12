@@ -1,0 +1,119 @@
+$a123456^04$a12a4^04$aAllan^$b123^$aAlgoritmos na web$bInformatica básica^$aTitulo 246^$aEd.^$aSALVADOR$bEditora siga$c2012^$atexto^$aProjetos^$aGuilard , Processamentos^$tProjetos^$aEducação^$a1^\
+
+
+o diretorio possui todas as informações da parte dos campos variáveis.
+O que importa é a TAG + SUBCAMPO para saber o que aquela informação representa. Isto pode ser encontrado no diretório.
+
+
+Cada tag possui o seu conjunto de subcampos. Descubra quais são os subcampos de cada TAG e para que servem.
+R: Nao precisa fazer isso. Voce já tem o lider, a tag e os subcampos. Apenas descubra aonde salvar cada um. e Tarefa concluída.
+
+- ok - O lider vai para bt_camposfixos com o idetiqueta = 1 (tag 000)
+
+- ok - O diretório não precisa salvar, pois é calculado.
+
+- ok - O Conteudo logo após o diretório e antes dos campos variáveis vai para para bt_camposfixos com o idtiqueta = 7
+ex: 120608                 r               d
+
+- Os subcampos vão para bt_material
+
+
+Já tenho tudo o que eu preciso para começar a salvar os dados.
+
+=)
+
+
+Tabelas envolvidas:
+- bt_obra
+- bt_autor
+- bt_editora
+- bt_material
+- bt_camposfixos
+- bt_indicadores
+- bt_genero
+- bt_assunto
+- bt_subcampo
+
+Apenas para consulta:
+- bt_etiqueta
+- bt_subcampo
+
+Para exportação:
+- bt_exportacao_temp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Salvar:
+ok
+1 - Editora
+	Faz uma pesquisa pelo nome. Se não encontrar, insere.
+
+ok
+2 - Autor
+	Pesquisa pelo nome. Se não encontrar, insere. 
+	campos:
+		linha = 1
+		idetiqueta = 154
+		subcampo = a
+
+ok
+3 - Obra
+
+ok
+4 - Campos Fixos
+
+
+5 - Material
+
+
+
+
+
+
+
+
+
+
+
+$this->addError('O código marc é inválido.');
+
+
+
+
+
+
+
+
+
+		// tag = 245 a (titulo)
+		// tag = 245 b (subtitulo)
+
+		// tag = 250 a (edicao)
+
+		// tag = 260 a (localpublicacao)
+		// tag = 260 b (editora)
+		// tag = 260 c (datapublicacao)
+
+		// tag = 902 a (idgenero)
+		// tag 300 a (descfisica)
+
+		// 100 = Entrada Principal - Nome Pessoal
+		// 700 = Entrada secundária - Nome pessoal
+
+		// ideditora
+		// idautor
+		// editora
+		// autor
+

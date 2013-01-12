@@ -110,8 +110,8 @@ class frmPreCatalogacao extends MFormAjax
             $this->SetFields($fields);
 
 
-            $this->edtISBN->addAttribute('onKeyUp','makeMask(this, \'###-##-###-####-#\');');
-            $this->edtISBN->addAttribute('onBlur','makeMask(this,  \'###-##-###-####-#\');');
+  //          $this->edtISBN->addAttribute('onKeyUp','makeMask(this, \'###-##-###-####-#\');');
+  //          $this->edtISBN->addAttribute('onBlur','makeMask(this,  \'###-##-###-####-#\');');
             $this->edtISBN->addAttribute('maxlength',17);
             $this->numero->addAttribute('maxlength',4);
             $this->edtTitulo->addAttribute("onChange","buscaCutter('$url','lkpautor','edtTitulo');");

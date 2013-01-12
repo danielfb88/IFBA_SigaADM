@@ -108,11 +108,11 @@ class frmExemplar extends Form
 			new TextField('edtPreco','','PreÃ§o',20),
 			new TextField('edtNotaInterna','','Nota Interna',60),
 			new TextField('edtNotaOPAC','','Nota OPAC',60),
-			new TextField('edtNotaCirculacao','','Nota de CirculaÃ§Ã£o',60),
-			new TextField('edtNumeroInventario','','Numero do InventÃ¡rio',20),
+			new TextField('edtNotaCirculacao','','Nota de Circulação',60),
+			new TextField('edtNumeroInventario','','Numero do Inventário',20),
 			
-			new Selection('selEstado','DisponÃ­vel','Estado',$optEstado),
-			new Selection('selRegraCirculacao','','Regra de CirculaÃ§Ã£o',$optRegra),
+			new Selection('selEstado','Disponi­vel','Estado',$optEstado),
+			new Selection('selRegraCirculacao','','Regra de Circulação',$optRegra),
 			new Selection('selUnidade','','Unidade',$optUnidade),
  		    new Selection('selColecao','','Areas de conhecimento',$optColecao),
             new TextField('edtQtdExemplar','','Quantidade',10,'Digite a quatidade de exemplares'),
@@ -606,10 +606,12 @@ class frmExemplar extends Form
 
 		$columns = array(
 			new DataGridColumn('numerodotombo','Numero do Tombo','center', true, '20%'),
-			new DataGridColumn('descregra','Regra de CirculaÃƒÂ§ÃƒÂ£o','center', true, '20%'),
+			new DataGridColumn('descregra','Regra de Circulação','center', true, '20%'),
 			new DataGridColumn('descunidade','Unidade','center', true, '25%'),
 			new DataGridColumn('descestado','Estado','center', true, '25%'),
-            new DataGridColumn('numeroexemplar','Numero do Exemplar','center', true, '10%'),
+		       new DataGridColumn('numeroexemplar','Numero do Exemplar','center', true, '10%'),
+
+
 		);
 		$obra = $this->objObra->GetByNumero($this->numerodaobra);
 		$item = $obra->idObra;
@@ -617,8 +619,7 @@ class frmExemplar extends Form
       
 		$query = $this->objExemplar->ListExemplar($this->numerodaobra);
 
-      //  var_dump   ($query->sql);
-		
+	
 		$datagrid = new DataGrid2($query, $columns, $href_datagrid,0);
 		$datagrid->SetTitle('Relacao de exemplares da obra ' . $this->numerodaobra);
 		$datagrid->SetLinkType('linkbutton');
@@ -661,6 +662,12 @@ class frmExemplar extends Form
       //  var_dump  ($this->AddField($datagrid));
         
 	}
+
+
+
+
+
+
 
 	function btnTransferir_click()
 	{

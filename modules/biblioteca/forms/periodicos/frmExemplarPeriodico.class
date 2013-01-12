@@ -151,12 +151,6 @@ class frmExemplarPeriodico extends Form
       {
                $obra = $this->objExemplarPeriodico->GetAllByCodigo($item)->issn;
       }
-      
-      $validators = array(
-            new RequiredValidator('selUnidade','','50'),
-	    new RequiredValidator('edtNotaCirculacao','','100')
-            );
-            $this->SetValidators($validators);
 
       // Botões que aparecem no formulário
       $buttons = Array(
@@ -512,7 +506,7 @@ class frmExemplarPeriodico extends Form
     
       
                $data = $this->GetData();
-      		   
+               
                if ($data->idexemplar)
                {
                         try

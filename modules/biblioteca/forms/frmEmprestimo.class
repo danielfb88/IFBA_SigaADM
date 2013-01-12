@@ -72,7 +72,7 @@ class frmEmprestimo extends Form
 			//new Text('','Use o formulário abaixo para cadastrar uma nova usuarioobservacoes da biblioteca'),
 			new TextField('edtCartaoAcesso','','Cartão de Acesso',15),
 			new TextField('edtNome','','Nome',60),
-			new TextField('edtExemplar','','Exemplar',30),
+			new TextField('edtExemplar','','Tombo',30),
 			new PasswordField('edtSenha','','Senha de Acesso',6),
 			new HiddenField('hidIdusuario'),
 			new HiddenField('hidLogin'),
@@ -386,7 +386,7 @@ class frmEmprestimo extends Form
 							//Grid
 							$columns = array(
 							new DataGridColumn(null),
-							new DataGridColumn('numerodotombo','Exemplar','center',false, '10%',true, null, true,true),
+							new DataGridColumn('numerodotombo','Tombo','center',false, '10%',true, null, true,true),
 							//new DataGridColumn('numerodaobra','Obra','center', false, '10%',true, null, true,true),
 							new DataGridColumn('titulo','Título','left', false, '20%',true, null, true,true),
 							new DataGridColumn('autor','Autor','left', false, '10%',true, null, true,true),			
@@ -401,7 +401,7 @@ class frmEmprestimo extends Form
 							//var_dump($checkemprestimosopenandirreg);
 							
 							$datagrid = new DataGrid2($checkemprestimosopenandirreg, $columns, $href_datagrid,20);
-							$datagrid->SetTitle('Usuário com empréstimos em ATRASO');
+							$datagrid->SetTitle('Usuario com emprestimos em ATRASO');
 							$datagrid->SetLinkType('linkbutton');
 							$datagrid->SetWidth('100%');
 								
