@@ -28,7 +28,6 @@ modules/biblioteca/forms/frmImportacao.class
 modules/biblioteca/classes/subcampo.class
 modules/biblioteca/classes/editora.class
 modules/biblioteca/classes/autor.class
-modules/biblioteca/classes/autor.class
 modules/biblioteca/classes/livroImportacao.class
 modules/biblioteca/classes/material.class
 modules/biblioteca/classes/map/material.xml
