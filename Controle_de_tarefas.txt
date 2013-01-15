@@ -1,5 +1,10 @@
 
-// Tarefa 1 - Crud de Município
+
+Ultima alteração: 15/01/2013
+
+
+[STATUS = ENVIADO]
+// Tarefa 1 - Crud de Município - enviado ok
 
 modules/biblioteca/handlers/admin.inc
 modules/common/classes/lookup.class:	// Daniel Bonfim - 23/10/2012
@@ -13,6 +18,7 @@ modules/biblioteca/grids/gridMunicipio.class:// Daniel Bonfim - 18/10/2012
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
+[STATUS = ENVIADO]
 // Tarefa 2 - Tela para inserir usuário
 
 modules/biblioteca/forms/frmUsuario.class:// Daniel Bonfim - 24-10-2012
@@ -20,7 +26,7 @@ modules/biblioteca/classes/usuario.class
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
-
+[STATUS = NAO ENVIADO]
 // Tarefa 3 - Tela para importação marc
 
 miolo/classes/flow/mexception.class:
@@ -39,7 +45,9 @@ modules/biblioteca/classes/obra.class
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
-// Tarefa 4 - Corrigir bug no relatório de empréstimo
+[STATUS] = ENVIADO. 13-01-2013
+
+// Tarefa 4 - Corrigir bug no relatório de empréstimo 
 
 modules/biblioteca/reports/Ticket1_Emprestimo_UI.jrxml
 modules/biblioteca/reports/Ticket1_Emprestimo_UI.jasper

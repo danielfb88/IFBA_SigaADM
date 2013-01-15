@@ -1,0 +1,33 @@
+
+
+
+Efetue testes na sua versão ANTES DE ENVIAR PARA O SIGADEMO
+
+
+
+
+scp -P 3509 /var/www/sigaadm/miolo/classes/flow/mexception.class root@200.128.35.9:/var/www/miolo/classes/flow/
+
+scp -P 3509 /var/www/sigaadm/miolo/modules/biblioteca/forms/frmImportacao.class root@200.128.35.9:/var/www/miolo/modules/biblioteca/forms/frmImportacao.class
+
+scp -P 3509 /var/www/sigaadm/miolo/modules/biblioteca/classes/subcampo.class root@200.128.35.9:/var/www/miolo/modules/biblioteca/classes/subcampo.class
+
+scp -P 3509 /var/www/sigaadm/miolo/modules/biblioteca/classes/editora.class root@200.128.35.9:/var/www/miolo/modules/biblioteca/classes/editora.class
+
+scp -P 3509 /var/www/sigaadm/miolo/modules/biblioteca/classes/autor.class root@200.128.35.9:/var/www/miolo/modules/biblioteca/classes/autor.class
+
+scp -P 3509 /var/www/sigaadm/miolo/modules/biblioteca/classes/livroImportacao.class root@200.128.35.9:/var/www/miolo/modules/biblioteca/classes/livroImportacao.class
+
+scp -P 3509 /var/www/sigaadm/miolo/modules/biblioteca/classes/material.class root@200.128.35.9:/var/www/miolo/modules/biblioteca/classes/material.class
+
+scp -P 3509 /var/www/sigaadm/miolo/modules/biblioteca/classes/map/material.xml root@200.128.35.9:/var/www/miolo/modules/biblioteca/classes/map/material.xml
+
+scp -P 3509 /var/www/sigaadm/miolo/modules/biblioteca/classes/etiqueta.class root@200.128.35.9:/var/www/miolo/modules/biblioteca/classes/etiqueta.class
+
+scp -P 3509 /var/www/sigaadm/miolo/modules/biblioteca/classes/indicadores.class root@200.128.35.9:/var/www/miolo/modules/biblioteca/classes/indicadores.class
+
+scp -P 3509 /var/www/sigaadm/miolo/modules/biblioteca/classes/map/indicadores.xml root@200.128.35.9:/var/www/miolo/modules/biblioteca/classes/map/indicadores.xml
+
+scp -P 3509 /var/www/sigaadm/miolo/modules/modules/biblioteca/classes/obra.class root@200.128.35.9:/var/www/miolo/modules/biblioteca/classes/obra.class
+
+
