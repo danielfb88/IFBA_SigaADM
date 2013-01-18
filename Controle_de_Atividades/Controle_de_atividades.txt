@@ -26,7 +26,7 @@ modules/biblioteca/classes/usuario.class
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
-[STATUS = NAO ENVIADO]
+[STATUS] = ENVIADO. 18-01-2013
 // Tarefa 3 - Tela para importação marc
 
 miolo/classes/flow/mexception.class:
