@@ -1,0 +1,16 @@
+Para 18 de Janeiro de 2013 [Sexta-Feira]
+[STATUS: ABERTO]
+
+[1]
+enviar arquivos da importação mark para o sigademo. 
+Tentar utilizar o sshpass para não precisar ficar inserindo o password para cada arquivo enviado.
+
+Texto de referência: http://www.cyberciti.biz/faq/noninteractive-shell-script-ssh-password-provider/
+Interessante: http://www.vivaolinux.com.br/artigo/O-poder-do-SSH?pagina=1
+Caso seja útil: http://www.vivaolinux.com.br/artigo/Transferindo-arquivos-com-o-rsync?pagina=3
+
+[2]
+Analizar problemas ao devolver exemplar na biblioteca. Na minha versão antiga isto estava funcionando sem problemas, mas no siga demo não.
+Analizar as duas versões e ver as diferênças.
+
+--------------------------------------------------------------------------

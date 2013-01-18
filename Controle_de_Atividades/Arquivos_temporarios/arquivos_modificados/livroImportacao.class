@@ -21,9 +21,14 @@
 /**
  * @author Daniel Bonfim <daniel.fb88@gmail.com>
  * @since 02/12/2012
- * @version 1.0
+ * @version 1.0.1
  * 
- * Ultima modificação: 11-01-2013
+ * Histórico das alterações:
+ * 
+ * [18-01-2013] - Corrigido bug ao adicionar obra com multiplos autores.
+ * 		O ultimo autor da obra encontrado no marc, será adicionado ao registro da tabela bt_obra no campo autor.
+ * 		Possivelmente, no futuro alguma lógica será implementada para melhorar isso.
+ *
  */
 
 class BusinessBibliotecaLivroImportacao extends Business {
@@ -757,13 +762,18 @@ class BusinessBibliotecaLivroImportacao extends Business {
 							}
 							break;
 
-							// Entrada Principal - Autor
-						case 100:
+							// Autor
+							/*
+							* OBS: Se forem vários autores, ele pegará apenas o ultimo, porque o loop fará com que
+							* os campos sejam substituídos. No final apenas o ultimo autor ocupará a posição no array
+							*/
+						case 100: // Entrada Principal
+						case 700: // Entrada Secundária
 							for($j = 0; $j < count($this->livro['campos'][$i]['info']); $j++) {
 
 								// autor
 								if($this->livro['campos'][$i]['info'][$j]['subCampo'] == 'a') {
-									$idEtiqueta = $this->bussEtiqueta->getIdByTag2(100);
+									$idEtiqueta = $this->bussEtiqueta->getIdByTag2($this->livro['campos'][$i]['tag']);
 									$obra['autor'] = $this->livro['campos'][$i]['info'][$j]['conteudo'];
 									$obra['idautor'] = $this->bussAutor->getIdAutorByNomeAndIdEtiqueta($obra['autor'], $idEtiqueta);
 								}
