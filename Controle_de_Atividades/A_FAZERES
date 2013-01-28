@@ -12,9 +12,20 @@ Caso seja útil: http://www.vivaolinux.com.br/artigo/Transferindo-arquivos-com-o
 ------------------------------------------------------------------------------------
 
 PARA 19 DE Janeiro de 2013 [Segunda-Feira]
-[STATUS: ABERTO]
+[STATUS: CONCLUÍDO]
 
 Analizar problemas ao devolver exemplar na biblioteca. Na minha versão antiga isto estava funcionando sem problemas, mas no siga demo não.
 Analizar as duas versões e ver as diferênças.
 
+RESOLUÇÃO:
+O problema se deu devido a alguns registros mal inseridos no banco.
+
 --------------------------------------------------------------------------
+
+PARA 04 de Fevereiro de 2014 [Segunda-Feira]
+[STATUS: ABERTO]
+
+Gerar relatório para devolução de livro. Igual ao do emprestimo.
+
+--------------------------------------------------------------------
+
