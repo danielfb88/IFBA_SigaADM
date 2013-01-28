@@ -7,3 +7,4 @@
 *.swp
 miolo/var/log/*
 miolo/var/reports/*
+modules/biblioteca/.gitignore
