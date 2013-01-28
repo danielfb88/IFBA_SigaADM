@@ -22,10 +22,30 @@ O problema se deu devido a alguns registros mal inseridos no banco.
 
 --------------------------------------------------------------------------
 
-PARA 04 de Fevereiro de 2014 [Segunda-Feira]
+PARA 04 de Fevereiro de 2013 [Segunda-Feira]
 [STATUS: ABERTO]
 
 Gerar relatório para devolução de livro. Igual ao do emprestimo.
 
 --------------------------------------------------------------------
+
+PARA 11 DE Fevereiro DE 2013 [Segunda-Feira]
+[STATUS: ABERTO]
+
+Verificar a renovação do emprestimo.
+
+Para efetuar testes nesta tarefa, você precisará usar o recurso de alterar a data de renovação, a qual é de 24 horas antes do periodo expirar. Faça pelo sistema para ir se familiarizando com estas funcionalidades. 
+O caminho é: Circulação :: Empréstimos :: Histórico por Usuário
+
+Porém, esta funcionalidade está com defeito. A alteração não é refletida no banco. Corrija primeiro este bug antes de consertar a renovação.
+
+--------------------------------------------------------------------------
+
+PARA 18 de Fevereiro de 2013 [Segunda-Feira]
+[STATUS: ABERTO]
+
+Verificar a tela: 
+Catalogação :: Catalogação/Obra
+
+Segundo Sandala, o cutter e outros campos não estão sendo exibidos.
 
