@@ -339,7 +339,7 @@ class frmDevolucao extends Form
 				// 				$MIOLO->Prompt(Prompt::Information("Devolução efetuada com SUCESSO",$MIOLO->GetActionURL($module,$self)));
 
 				// Daniel Bonfim / 31-01-2013
-				$msg = "Devolução efetuada com SUCESSO.</br> Deseja imprimir o recibo?";
+				$msg = "Devolução efetuada com SUCESSO.</br> Deseja gerar o comprovante?";
 
 				$gotoYes = $MIOLO->GetActionURL($module, $self, null, array('exemplar'=>$data->hidexemplar));
 				$eventYes = 'imprimirRecibo';	// nome do método a ser executado
@@ -414,20 +414,11 @@ class frmDevolucao extends Form
 	}
 
 	// Daniel Bonfim - 31-01-2013
+	// Veja: http://trialforce.nostaljia.eng.br/?tag=thread-php
 	function imprimirRecibo() {
-		global $MIOLO, $theme;
-
-		// Veja: http://trialforce.nostaljia.eng.br/?tag=thread-php
-
-		$exemplar = Form::GetFormValue('exemplar');
-
-		// 		$report = new MJasperReport('sigaept');
-		// 		$parameters[ 'str_NUMERODOTOMBO' ] = $exemplar;
-		// 		$report->Execute('biblioteca','Ticket1_Devolucao_UI', $parameters);
-
-		exec("php ../offline/execRelatorioDevolucaoPDF.php exemplar=$exemplar &", $output);
-		var_dump($output);
-		die;
+		$parameters[ 'str_NUMERODOTOMBO' ] = Form::GetFormValue('exemplar');
+		$report = new MJasperReport('sigaept');
+		$report->Execute('biblioteca','Ticket1_Devolucao_UI', $parameters);
 	}
 
 

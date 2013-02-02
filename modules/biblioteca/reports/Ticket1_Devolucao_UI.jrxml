@@ -23,16 +23,17 @@ INNER JOIN bt_validacao validacao  ON usuario.idusuario = validacao.idusuario
 
 WHERE
 (
-exemplar.numerodotombo =  $P{NUMERODOTOMBO} AND
+exemplar.numerodotombo = $P{NUMERODOTOMBO} AND
 to_date(to_char(emprestimo.datahoradadevolucao, 'DD Mon YYYY'), 'DD Mon YYYY') = current_date AND
 emprestimo.datahoradadevolucao =
 (
 SELECT max(emprestimo_subquery1.datahoradadevolucao)
 FROM bt_emprestimo emprestimo_subquery1
+INNER JOIN bt_exemplar exemplar_subquery1 ON exemplar_subquery1.idexemplar = emprestimo_subquery1.idexemplar
 INNER JOIN cm_usuario usuario_subquery1 ON emprestimo_subquery1.idusuario = usuario_subquery1.idusuario
 INNER JOIN bt_validacao validacao_subquery1 ON usuario_subquery1.idusuario = validacao_subquery1.idusuario
 WHERE
-(validacao_subquery1.codigoacesso =  validacao.codigoacesso AND
+(exemplar_subquery1.numerodotombo =  exemplar.numerodotombo AND
 to_date(to_char(emprestimo_subquery1.datahoradadevolucao, 'DD Mon YYYY'), 'DD Mon YYYY') = current_date )))]]>
 	</queryString>
 	<field name="nome" class="java.lang.String"/>
@@ -164,14 +165,14 @@ to_date(to_char(emprestimo_subquery1.datahoradadevolucao, 'DD Mon YYYY'), 'DD Mo
 				</textElement>
 				<textFieldExpression><![CDATA[$F{titulo}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement uuid="fc254017-cee1-4a68-bf46-ab1b9d92c264" x="71" y="20" width="135" height="14"/>
 				<textElement textAlignment="Justified">
 					<font fontName="Monospaced" size="10" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{autor}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement uuid="301282a9-9700-4629-9337-0d66f1195107" x="71" y="36" width="135" height="14"/>
 				<textElement textAlignment="Justified">
 					<font fontName="Monospaced" size="10" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
