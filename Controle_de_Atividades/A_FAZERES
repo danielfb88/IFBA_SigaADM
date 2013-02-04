@@ -23,14 +23,16 @@ O problema se deu devido a alguns registros mal inseridos no banco.
 --------------------------------------------------------------------------
 
 PARA 04 de Fevereiro de 2013 [Segunda-Feira]
-[STATUS: INCOMPLETO]
+[STATUS: CONCLUÍDO]
 
 Gerar relatório para devolução de livro. Igual ao do emprestimo.
 
 --------------------------------------------------------------------
 
-PARA 11 DE Fevereiro DE 2013 [Segunda-Feira]
+PARA 04 DE Fevereiro DE 2013 [Quarta-Feira]
 [STATUS: ABERTO]
+
+Caminho: SIGA :: Biblioteca :: Renovação
 
 Verificar a renovação do emprestimo.
 
@@ -48,4 +50,11 @@ Verificar a tela:
 Catalogação :: Catalogação/Obra
 
 Segundo Sandala, o cutter e outros campos não estão sendo exibidos.
+
+----------------------------------------------------------------------
+
+Para ?
+[STATUS: ABERTO]
+
+Criar tela de Reserva.
 
