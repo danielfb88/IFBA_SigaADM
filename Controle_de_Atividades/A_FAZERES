@@ -35,9 +35,10 @@ PARA 04 DE Fevereiro DE 2013 [Quarta-Feira]
 Caminho: SIGA :: Biblioteca :: Renovação
 
 Verificar a renovação do emprestimo.
+Crie relatório.
 
 Para efetuar testes nesta tarefa, você precisará usar o recurso de alterar a data de renovação, a qual é de 24 horas antes do periodo expirar. Faça pelo sistema para ir se familiarizando com estas funcionalidades. 
-O caminho é: Circulação :: Empréstimos :: Histórico por Usuário
+O caminho é: Circulação :: Empréstimos :: Alterar Previsão de Devolução 
 
 Porém, esta funcionalidade está com defeito. A alteração não é refletida no banco. Corrija primeiro este bug antes de consertar a renovação.
 
@@ -56,5 +57,6 @@ Segundo Sandala, o cutter e outros campos não estão sendo exibidos.
 Para ?
 [STATUS: ABERTO]
 
-Criar tela de Reserva.
+Reservar livro. Faça a pesquisa por livros, depois selecione o livro, o grid que aparecer será relacionado a reservas. Analize-os.
+Crie relatório.
 
