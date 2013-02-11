@@ -1,5 +1,7 @@
+<?php
+
 /* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC * * Este arquivo
-é parte do programa SigaEPT * * O SigaEPT é um software livre; você pode
+ é parte do programa SigaEPT * * O SigaEPT é um software livre; você pode
 redistribuí-lo e/ou modificá-lo dentro dos * termos da Licença Pública
 Geral GNU como publicada pela fundação do software livre (FSF); * na
 versão 2 da Licença. * * Este programa é distribuído na esperança que
@@ -8,7 +10,7 @@ de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
 * Pública Geral GNU/GPL em português para maiores detalhes. * * Você
 deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título
 “LICENCA.txt”, * junto com este programa, se não, acesse o portal do
-Software Público Brasileiro no endereço * www.softwarepublico.gov.br ou
+	Software Público Brasileiro no endereço * www.softwarepublico.gov.br ou
 escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin * St,
 Fifth Floor, Boston, MA 02110-1301, USA */ ?>
 <?
@@ -291,32 +293,30 @@ class BusinessBibliotecaEmprestimo extends Business
 
 		return $query;
 	}
-	
+
 	/**
-	 * TODO: Testar
-	 * 
 	 * Verifica se existe algum emprestimo irregular para o usuário.
 	 * Emprestimos que ainda não foram devolvidos e que já passaram do prazo de devolução.
-	 * 
+	 *
 	 * @author Daniel Bonfim
 	 * @since 10-02-2013
-	 *  
+	 *
 	 * @param int $idUsuario
 	 */
 	function existeEmprestimoIrregular($idUsuario) {
-		$sql = "SELECT e.datahoraprevisaodevolucao, x.numerodotombo, o.titulo
-		
+		$sql = "e.datahoraprevisaodevolucao, x.numerodotombo, o.titulo
+
 		FROM bt_emprestimo e
-		
+
 		JOIN bt_exemplar x ON (e.idexemplar = x.idexemplar)
 		JOIN bt_obra o ON (x.idobra = o.idobra)
-		
+
 		WHERE(e.idusuario = $idUsuario)
 		AND (e.datahoraprevisaodevolucao < current_timestamp)
 		AND (e.datahoradadevolucao is null);";
-				
-		$query = $this->Query($sql);
-		
+
+		$query = $this->Query(new Sql($sql));
+
 		return !is_null($query->result);
 	}
 
@@ -791,6 +791,21 @@ class BusinessBibliotecaEmprestimo extends Business
 		return $this->Query($sql,array($idgrupo,$idregracirculacao));
 	}
 
+	/**
+	 * Retorna o número do limite de emprestimo pelo grupo
+	 *
+	 * @author Daniel Bonfim
+	 * @since 10-02-2013
+	 *
+	 * @param int $idgrupo
+	 * @param int $idregracirculacao
+	 * @return int
+	 */
+	function getLimiteMaximoEmprestimo($idgrupo, $idregracirculacao) {
+		$sql = new sql('limitedeemprestimo', 'bt_politica', 'idgrupo = ? AND idregracirculacao = ?');
+		return $this->Query($sql, array($idgrupo, $idregracirculacao))->result[0][0];
+	}
+
 
 	function GetQtdeEmprestimos($idusuario)
 	{
@@ -804,6 +819,24 @@ class BusinessBibliotecaEmprestimo extends Business
 	{
 		$sql = new sql('count(e.idemprestimo)','bt_emprestimo e,bt_exemplar x','e.idusuario = ? and e.datahoradadevolucao is null and e.idexemplar = x.idexemplar and x.idregracirculacao = ?');
 		return $this->Query($sql,array($idusuario,$idregracirculacao));
+	}
+
+	/**
+	 * Retorna o número da quantidade de emprestimos efetuados
+	 *
+	 * @author Daniel Bonfim
+	 * @since 10-02-2013
+	 *
+	 * @param int $idusuario
+	 * @param int $idregracirculacao
+	 */
+	function getQtdEmprestimoEfetuado($idusuario, $idregracirculacao) {
+		$sql = new sql(
+				'count(e.idemprestimo)',
+				'bt_emprestimo e, bt_exemplar x',
+				'e.idusuario = ? AND e.datahoradadevolucao is null AND e.idexemplar = x.idexemplar AND x.idregracirculacao = ?');
+
+		return $this->Query($sql, array($idusuario,$idregracirculacao))->result[0][0];
 	}
 
 
@@ -1060,7 +1093,7 @@ class BusinessBibliotecaEmprestimo extends Business
 		return array($idemprestimo,$this->InsereEspacoData($dataPrevDevOrg));
 	}
 
-
+	
 	function ConfirmarEmprestimoRecintoUfjf($Exemplar,$idusuario,$idoperador)
 	{
 		global $MIOLO,$mkrono,$module;
@@ -1496,97 +1529,69 @@ class BusinessBibliotecaEmprestimo extends Business
 					//verifica se o emprestimo está dentro das 24Hs disponíveis.
 					if ($tempoRestante['horas'] <= 24) {
 
-						// TODO: Reserva ainda não disponível. Libere o acesso
-						// verifica se há reservas
 						// $reserva = $MIOLO->GetBusiness($module,'reservar');
 						// $idreserva = $reserva->existeReserva($idexemplar)->result[0][0];
 
+						// TODO: Reserva ainda não disponível. Libere o acesso
 						if (true) {
 							// verifica se existem emprestimos irregulares para este usuário
-							if ($this->existeEmprestimoIrregular($idusuario)) {
-								// TODO: Continuar....
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								// verifica se há multas !!
-								$objMulta = $MIOLO->GetBusiness($module,'multa');
-								$totalMultas = $objMulta->GetTotalMultasNaoPagas($idusuario);
-								if ($totalMultas == NULL)
-								{
-									//verifica se o número de empréstimos para regra de circulação está esgotado
-									$usuario = $MIOLO->GetBusiness($module, 'usuario');
-									$idgrupo = $usuario->GetGrupoByIdusuario($idusuario);
-									$idregracirculacao = $exemplar->GetById($idexemplar)->idregracirculacao;
-									$query = $this->GetLimiteEmprestimos($idgrupo,$idregracirculacao);
-									$qtdeMaximaExemplaresRegra = $query->result[0][0];
-									$query = $this->GetQtdeEmprestimosRegra($idusuario,$idregracirculacao);
-									$numeroEmprestimosRegra = $query->result[0][0];
-									if ( ($numeroEmprestimosRegra) <= $qtdeMaximaExemplaresRegra)
-									{
-										$PodeRenovar = true;
-									}
-									else
-									{
-										$PodeRenovar = false;
-										$Mensagem = "Limite de empréstimos esgotado para este material.<BR>Quantidade possível: $qtdeMaximaExemplaresRegra";
-									}
-								}
-								else
-								{
-									$PodeRenovar = false;
+							$existeEmprestimoIrregular = $this->existeEmprestimoIrregular($idusuario);
 
-									$totalMultas = str_replace(',','.',$totalMultas);
-									$totalMultas = number_format($totalMultas,2,',','.');
-									$Mensagem = "Este exemplar está impossibilitado de ser renovado pois você possui multas pendentes. Total: R$ " . $totalMultas;
+							if (!$existeEmprestimoIrregular) {
+								// verificando se há multas
+								$bussMulta = $MIOLO->GetBusiness($module, 'multa');
+								$valorMulta = $bussMulta->getValorTotalMultasNaoPagas($idusuario);
+
+								if ($valorMulta == 0) {
+
+									//verifica se o número de empréstimos para regra de circulação está esgotado
+									$bussUsuario = $MIOLO->GetBusiness($module, 'usuario');
+
+									$idgrupo = $bussUsuario->GetGrupoByIdusuario($idusuario);
+									$idRegraCirculacao = $bussExemplar->GetById($idexemplar)->idregracirculacao;
+
+									$qtdLimiteMaximoEmprestimo = $this->getLimiteMaximoEmprestimo($idgrupo, $idRegraCirculacao);
+									$qtdEmprestimosEfetuados = $this->getQtdEmprestimoEfetuado($idusuario, $idRegraCirculacao);
+
+									if ($qtdEmprestimosEfetuados <= $qtdLimiteMaximoEmprestimo) {
+										$isRenovavel = true;
+
+									} else {
+										$info = "Limite de empréstimos esgotado para este material.<BR>Quantidade possível: $qtdLimiteMaximoEmprestimo";
+									}
+
+								} else {
+
+									$valorMulta = str_replace(',', '.', $valorMulta);
+									$valorMulta = number_format($valorMulta, 2, ',', '.');
+									$info = "Este exemplar está impossibilitado de ser renovado pois você possui multas pendentes. Total: R$ " . $valorMulta;
 								}
+
+							} else {
+								$info = "Este exemplar está impossibilitado de ser renovado pois você possui empréstimos pendentes.";
 							}
-							else
-							{
-								$PodeRenovar = false;
-								$Mensagem = "Este exemplar está impossibilitado de ser renovado pois você possui empréstimos pendentes.";
-							}
+
+						} else {
+							$info = "Este exemplar está impossibilitado de ser renovado pois está reservado para outro usuário.";
 						}
-						else
-						{
-							$PodeRenovar = false;
-							$Mensagem = "Este exemplar está impossibilitado de ser renovado pois está reservado para outro usuário.";
-						}
+
+					} else {
+						$info = "A Renovação on line deve ser feita com 24 horas de antecedência ao prazo de devolução";
 					}
-					else
-					{
-						$PodeRenovar = false;
-						$Mensagem = "A Renovação on line deve ser feita com 24 horas de antecedência ao prazo de devolução";
-					}
+
+				} else {
+					$info = "Empréstimo feito no recinto. Não é possível a renovação deste exemplar.";
 				}
-				else
-				{
-					$PodeRenovar = false;
-					$Mensagem = "Empréstimo feito no recinto. Não é possível a renovação deste exemplar.";
-				}
+
+			} else {
+				$info = "Exemplar de consulta. Não é possível a renovação deste exemplar.";
 			}
-			else
-			{
-				$PodeRenovar = false;
-				$Mensagem = "Exemplar de consulta. Não é possível a renovação deste exemplar.";
-			}
-		}
-		else
-		{
-			$PodeRenovar = false;
-			$Mensagem = "Empréstimo já foi renovado anteriormente. Você deve ter clicado mais de uma vez no link Renovar. Confira por favor.";
+
+		} else {
+			$info = "Empréstimo já foi renovado anteriormente. Você deve ter clicado mais de uma vez no link Renovar. Confira por favor.";
 		}
 			
-		return array($PodeRenovar,$Mensagem);
-
+		return $isRenovavel;
 	}
 
 
@@ -1606,6 +1611,9 @@ class BusinessBibliotecaEmprestimo extends Business
 	}
 
 
+	/**
+	 * @deprecated
+	 */
 	function RenovaEmprestimo($idemprestimo,$usuario)
 	{
 		global $MIOLO,$module,$item,$self, $theme, $action, $page;
@@ -1647,6 +1655,35 @@ class BusinessBibliotecaEmprestimo extends Business
 		{
 			return $renovacao; // data prev devolucao
 		}
+	}
+
+	/**
+	 * Renova o emprestimo.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 10-02-2012
+	 *
+	 * @param int $idemprestimo
+	 * @param int $usuario
+	 * @return boolean
+	 */
+	function renovarEmprestimo($idemprestimo, $idUsuario) {
+		global $MIOLO,$module;
+
+		$idExemplar = $this->GetIdExemplarFromIdEmprestimo($idemprestimo)->result[0][0];
+		$data->idemprestimo = $idemprestimo;
+		$data->hidexemplar = $idExemplar;
+
+		// Devolvendo
+		$objDevolucao = $MIOLO->GetBusiness($module, 'devolucao');
+		$objDevolucao->Devolucao($data);
+
+		$numeroTombo = $this->IDExemplarToNumeroTombo($idExemplar)->result[0][0];
+
+		//busca quantidade de renovacoes do emprestimo
+		$qtdRenovacoesEfetuadas = $this->GetById($idemprestimo)->quantidadederenovacoes;
+
+		return $this->ConfirmarEmprestimo($numeroTombo, $idUsuario, 0, $qtdRenovacoesEfetuadas);
 	}
 
 
