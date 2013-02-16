@@ -112,12 +112,6 @@ class BusinessCommonTipoOrganograma extends MBusiness
         $query = $criteria->retrieveAsQuery();
         return $query->result;
     }
-    
-     function findByNome($sigla)
-    {
-		$busca = "select count(*) as total from cm_tipoorganograma where sigla = '$sigla'";					
-		return pg_fetch_result( pg_query($busca) ,0, 'total' );
-    }
 
 }
 ?>

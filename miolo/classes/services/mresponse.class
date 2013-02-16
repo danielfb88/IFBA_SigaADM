@@ -139,6 +139,7 @@ class MResponse extends MService
         header ("Cache-Control: cache"); // HTTP/1.1 
         header ("Content-Transfer-Encoding: binary");
 
+	
         $fp = fopen($fileName, "r");
         fpassthru ($fp);
         fclose ($fp);

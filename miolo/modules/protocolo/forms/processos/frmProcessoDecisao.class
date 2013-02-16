@@ -70,8 +70,8 @@ class frmProcessoDecisao extends MFormAjax
 			$setorDestino->addAttribute('style','text-transform:uppercase');
 			$decisao = new MMultiLineField('decisao',$this->session->getValue('sDecisao'),'Decisão:',1000,8,78);
 			$decisao = new MMultiLineField('decisao',$andamento->decisao,'Decisão:',1000,8,78);
-			$autor = new MTextField('autor',$andamento->autor,'Autor:',40);
-			$autor->addAttribute('maxlength','40');
+			#$autor = new MTextField('autor',$andamento->autor,'Autor:',40);
+			#$autor->addAttribute('maxlength','40');
 			$clearSaida = ($this->session->IsRegistered('sSetorDestino') && $this->session->IsRegistered('sDecisao') && $this->session->IsRegistered('sAutor')) ? new MButton('limparSaida','Limpar',"javascript:doLimparSaida()") : null;
 			$groupDecisao = new MBaseGroup('groupDecisao', 'Decisão do processo',array($setorDestino,$destinoExterno,$decisao,$autor,$clearSaida),'horizontal','css');
 			$groupDecisao->addAttribute('style','padding:10px');
@@ -85,7 +85,7 @@ class frmProcessoDecisao extends MFormAjax
 			//      required fields
 			$validators = array(
 				new MRequiredValidator('decisao'),
-				new MRequiredValidator('autor'),
+				#new MRequiredValidator('autor'),
 			);
 			$this->SetValidators($validators);
 
@@ -116,12 +116,12 @@ class frmProcessoDecisao extends MFormAjax
 		{
 			//      data
 			$data = $this->getData();
-			if ((trim($data->autor) == null))  
+			/*if ((trim($data->autor) == null))  
 			{
 				$msg = 'Foram encontrados espaços em branco no campo AUTOR e a operação foi cancelada';          
 				$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));	
 			}
-			elseif ((trim($data->decisao) == null))
+			else*/if ((trim($data->decisao) == null))
 			{
 				$msg = 'Foram encontrados espaços em branco no campo DECISÃO e a operação foi cancelada';          
 				$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));	     
@@ -151,16 +151,10 @@ class frmProcessoDecisao extends MFormAjax
 				$emails[$emails->length][0] = $mailSender;
                 foreach($emails as $e)
                 {
-                    if($e[1])
-		            {
-		                    $instituicao = $this->processo->instituicaoUsuario($e[1]);
-		                    $pessoa = $e[2];
-		            }
-		            else
-		            {
-		                    $instituicao = $this->processo->instituicaoProcesso();
-		                    $pessoa = $this->processo->solicitante;
-		            }
+                    if($e[0] != $emails[$emails->length][0])
+						$instituicao = $this->processo->instituicaoUsuario($e[1]);
+					else 
+						$instituicao = $this->processo->instituicaoProcesso();
 					$mail = new PHPMailer();
 					$mail->IsSMTP(); // send via SMTP
 					$mail->Host = $MIOLO->getConf('mail.host');
@@ -177,7 +171,7 @@ class frmProcessoDecisao extends MFormAjax
 	                                $mail->ssl = $MIOLO->getConf('mail.ssl');
         	                        $mail->Body = "
                                                 <center><h1>TRAMITAÇÃO DO PROCESSO<br /> {$this->processo->numProcessoFormatado()}</h1></center>
-                                                <br /><br />Prezado(a) Sr(a) {$pessoa},
+                                                <br /><br />Prezado(a) Sr(a) {$e[2]},
 						<br /><br />A decisão do processo {$this->processo->numProcessoFormatado()} foi alterada
                                                 <br /><br /><b>Objeto: </b>{$objMail}
                                                 <br /><b>Setor Atual: </b>{$this->processo->retencao->setor}

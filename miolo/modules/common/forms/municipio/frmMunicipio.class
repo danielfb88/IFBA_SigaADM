@@ -32,7 +32,7 @@ class frmMunicipio extends MCompoundForm
         $this->module = 'common';
         parent::__construct();
         $this->setClose($this->manager->getActionURL($this->module,'main:municipio:find'));
-        $this->setTitle('Município');
+        $this->setTitle('Title');
         $this->setIcon($this->manager->getUi()->getImage($this->module,'mini.png'));
     }
 
@@ -44,13 +44,14 @@ class frmMunicipio extends MCompoundForm
         $municipio = $municipio->GetById($this->municipio->idMunicipio);
 		
         if ($this->oid == NULL) $this->oid = $municipio->idMunicipio;
-
+//var_dump($municipio);
+// form
         $ui = $this->manager->GetUI();
         $form = MForm::GetFormValue('form');
         switch ($form)
         {
             case 'dados' : 
-		$this->_form[0] = $ui->getForm($this->module,'frmMunicipioDados', $municipio, 'municipio'); 
+				$this->_form[0] = $ui->getForm($this->module,'frmMunicipioDados', $municipio, 'municipio'); 
                 break;
             case 'excluir' : 
                 $this->_form[0] = $ui->getForm($this->module,'frmMunicipioDel', $municipio, 'municipio'); 
@@ -60,13 +61,15 @@ class frmMunicipio extends MCompoundForm
         {
             $this->_form[0]->setClose($this->manager->getActionURL($this->module, 'main:municipio',$municipio->idMunicipio));
         }
-      
+		
+// panel        
         $action = $context->action;
         $this->_panel[0] = $panel = new MActionPanel('pnlCompound','Opções','',false);
         $panel->AddUserAction('municipio',A_EXECUTE,'Editar',$ui->getImage($this->module,'edit.png'),$this->module,$action, $this->oid, array("form"=>"dados"));
         $panel->AddUserAction('municipio',A_EXECUTE,'Excluir',$ui->getImage($this->module,'trash.png'),$this->module,$action, $this->oid, array("form"=>"excluir"));
 
-		$this->_info[0]	= new MTextLabel('txtMunicipio',$this->municipio->municipio,'Município');
+// info
+		$this->_info[0]	= new MTextLabel('txtMunicipio',$this->municipio->municipio,'Municipio');
        
 	}
 }

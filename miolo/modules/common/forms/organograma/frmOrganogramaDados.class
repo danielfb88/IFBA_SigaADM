@@ -35,13 +35,11 @@ class frmOrganogramaDados extends MForm
 	{
 		$fields = array(
 			new MHiddenField('idTipoOrganograma'),
-			new MTextField('sigla','','Sigla','20','Max. 20 caracteres'),
-			new MTextField('descricao','','Descrição','80'),
+			new MTextField('sigla','','Sigla','20'),
+			new MTextField('descricao','','Descrição','100'),
 		);
 		$this->SetFields($fields);
-		$this->sigla->addAttribute('maxlength',20);
-		$this->descricao->addAttribute('maxlength',80);
-		
+
 		$buttons = array(
 			new FormButton('btnPost', 'Gravar')
 		);
@@ -66,18 +64,15 @@ class frmOrganogramaDados extends MForm
 	function btnPost_click()
 	{
 		$this->objOrganograma->setData($this->getData());
+
 		if( strlen(trim(Form::GetFormValue('sigla'))) < 2 )
 		{
 			$this->AddError('A sigla do organograma deve ter pelo menos dois caracteres, sem espaços.');
 		}
-		else if( strlen(trim(Form::GetFormValue('descricao'))) < 5 )
+		elseif( strlen(trim(Form::GetFormValue('descricao'))) < 5 )
 		{
 			$this->AddError('Descreva melhor este organograma.');
 		}
-		else if( $this->objOrganograma->findByNome(strtoupper($this->objOrganograma->sigla)) )
- 		{
- 			$this->addError('Código de Organograma já existente.');
- 		}
 		else
 		{
 			try

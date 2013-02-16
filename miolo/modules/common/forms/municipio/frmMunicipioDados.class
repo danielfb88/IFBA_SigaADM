@@ -49,9 +49,8 @@ class frmMunicipioDados extends MFormAjax
 			new MTextField('categoriaDiaria','','Categoria Diária', 1),
 			new MTextField('populacao','','População', 10),
 		);
-		
+
 		$this->SetFields($fields);
-		$this->categoriaDiaria->addAttribute('maxlength',1);
 
 		$aguarde = $this->manager->getUI()->getImage('miolo','aguarde.gif');
 		$urlAjaxHandler = $this->manager->getActionURL('common','ajaxhandler');
@@ -94,24 +93,16 @@ class frmMunicipioDados extends MFormAjax
 	{
 		$data = $this->getData();
 		$this->obj->setData($data);
-
+		
 		if( strlen(trim(Form::GetFormValue('municipio'))) < 3)
 		{
 			$this->AddError('O nome do município precisa ser maior.');
 		}
-		else if($this->getFieldValue('idPais') == '')
+		elseif($this->getFieldValue('idPais') == '')
 		{
 			$this->addError('Por favor, selecione um país');
 		}
-		else if($this->getFieldValue('populacao') <= 0)
-		{
-			$this->addError('Por favor, forneça uma população válida.');
-		}
-		else if ( (strlen(trim(Form::GetFormValue('categoriaDiaria'))) > 1) )
-		{
-			$this->addError('Por favor, forneça uma categoria diária válida.');
-		}
-		else if($this->getFieldValue('idUF') == '')
+		elseif($this->getFieldValue('idUF') == '')
 		{
 			if(trim($this->getFieldValue('idPais')) == '024')
 			{

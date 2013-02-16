@@ -59,15 +59,10 @@ class frmGrupoNew extends MForm
 		$data = $this->GetData();
 		$grupo = $this->manager->GetBusiness('common','grupo');
 		$grupo->grupo = $data->grupo;
-
+		
 		if( strlen(trim(Form::GetFormValue('grupo'))) < 3)
 		{
 			$this->AddError('Detalhe melhor campo grupo.');
-		}
-		// Verificando se já existe grupo com o mesmo nome digitado.    
-		elseif($grupo->findByNome(strtoupper($grupo->grupo)))
-		{
-			$this->addError('Grupo já cadastrado.');
 		}
 		else
 		{

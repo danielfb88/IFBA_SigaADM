@@ -628,18 +628,6 @@ class frmExecutarServidor extends MForm
     				$pessoa->orgaorg = $obj1->rg_orgao;
 	    			$pessoa->ufrg = $obj1->rg_uf;
 	    			$pessoa->tituloeleitor = $obj1->tit_eleitor;
-	    			$nomeMunicipio = $obj1->end_municipio;
-	    			$municipio->GetIdByNomeEstado($nomeMunicipio,$pessoa->ufrg);
-	    			if ($municipio->idMunicipio == NULL)
-	    			{
-	       				$erro= "Erro: Municipio. Salvo: Campos dos Goytacazes";
-					$relatorio->save($erro,$obj1->siape,'1',$obj1->anomes);
-					$pessoa->idmunicipio = "5819"; 
-	    			}
-				else
-		    		{
-					$pessoa->idmunicipio 	= $municipio->idMunicipio; 
-	    			}	
 				$pessoa->save();
 				//Dados pessoais atualizados
 
@@ -758,7 +746,7 @@ class frmExecutarServidor extends MForm
 		    			$pessoa->ufrg = $obj1->rg_uf;
 		    			$pessoa->tituloeleitor = $obj1->tit_eleitor;
 		    			$nomeMunicipio = $obj1->end_municipio;
-		    			$municipio->GetIdByNomeEstado($nomeMunicipio,$pessoa->ufrg);var_dump($nomeMunicipio,$pessoa->ufrg);die();
+		    			$municipio->GetIdByNomeEstado($nomeMunicipio,$pessoa->ufrg);
 		    			if ($municipio->idMunicipio == NULL)
 		    			{
 		       				$erro= "Erro: Municipio. Salvo: Campos dos Goytacazes";

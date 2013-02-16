@@ -71,18 +71,9 @@ class frmAbastecimento extends Form
 		            new FormButton('btnPost','Enviar'),
 		            //new MButtonClose('btnFechar','Fechar')
 			    new FormButton('btnPost2','Finalizar'),
-			    new FormButton('btnEditar','Editar')
 		        );
     
 		        $this->SetButtons($buttons);
-			$this->setButtonAttr('btnEditar','visible',false);
-			if ($this->objRequisicao->abastecimento)
-			{
-				$this->setData();
-				$this->setButtonAttr('btnPost','visible',false);
-				$this->setButtonAttr('btnPost2','visible',false);
-
-			}
 		}
 		else
 		{
@@ -98,49 +89,6 @@ class frmAbastecimento extends Form
 			);
 		        $this->SetButtons($buttons);
 		}
-	}
-	function setData()
-	{
-		global $MIOLO;
-		$objAbastecimento = $MIOLO->GetBusiness('adm','abastecimento');
-		$objAb = $objAbastecimento->GetById($this->objRequisicao->abastecimento);
-		$this->setFieldValue('posto',$objAb->posto);
-		$this->setFieldValue('enderecoPosto',$objAb->enderecoPosto);
-		$this->setFieldValue('cidadePosto',$objAb->cidadePosto);
-		$hora = $objAb->dataHoraAbastecimento;
-		$datahora = explode(' ',$hora);
-		$hora = explode(':',$datahora[1]);
-		$this->setFieldValue('dataAbastecimento',$datahora[0]);
-		$this->setFieldValue('horaAbastecimento',$hora[0].':'.$hora[1]);
-		$this->setFieldValue('quantidade',$objAb->quantidade);
-		$this->setFieldValue('valorAbastecimento',$objAb->valorAbastecimento);
-		$this->setFieldValue('combustivel',$objAb->combustivel);
-		$this->setButtonAttr('btnEditar','visible',true);
-	}
-	function btnEditar_click()
-	{
-		global $MIOLO;
-		$objAbastecimento = $MIOLO->GetBusiness('adm','abastecimento');
-		$objAb = $objAbastecimento->GetById($this->objRequisicao->abastecimento);
-		$data = $this->getData();
-		$vAbastecimento = strlen(trim(Form::GetFormValue('valorAbastecido')));
-		$cf = new MCurrencyFormatter();
-        	$data->valorAbastecimento = $cf->toDecimal($data->valorAbastecimento);
-		$dAbastecimento = strlen(trim(Form::GetFormValue('dataAbastecimento')));
-		$hAbastecimento = strlen(trim(Form::GetFormValue('horaAbastecimento')));
-        	$data->dataHoraAbastecimento =  $data->dataAbastecimento." ".$data->horaAbastecimento.":00";
-		$objAb->setData($data);
-		try
-    		{
-    			$objAb->save();
-			$idRequisicao = ($this->objRequisicao->idRequisicao);
-    			$go = $this->manager->GetActionURL('adm','main:abastecimento',$this->objRequisicao->idRequisicao);
-                	$this->manager->Information('Abastecimento editado com sucesso.',$go);
-		}
-    		catch(Exception $e)
-    		{
-    			$this->addError($e->getMessage());
-    		}   		
 	}
 	function btnPost_click()
 	{

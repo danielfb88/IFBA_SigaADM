@@ -62,14 +62,14 @@ class frmPaisNew extends MForm
 		{
 			$this->addError('O nome do pais deve ser maior, não inclua espaços em branco.');
 		}
-		else if( strlen(trim(Form::GetFormValue('nacionalidade'))) < 3 )
+		elseif( strlen(trim(Form::GetFormValue('nacionalidade'))) < 3 )
 		{
 			$this->addError('O campo Nacionalidade deve ser maior, não inclua espaços em branco.');
 		}
- 		else if(($pais->findByNome($pais->pais)))
- 		{
- 			$this->addError('Código de país já existente.');
- 		}
+// 		elseif($pais->isPersistent)
+// 		{
+// 			$this->addError('Código de país já existente.');
+// 		}
 		else
 		{
 			try

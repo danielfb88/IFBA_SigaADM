@@ -53,6 +53,7 @@ class BusinessCommonSistema extends Business
         return $query;
     }
 
+
     function ListAll()
     {
         $criteria =  $this->getCriteria();
@@ -71,12 +72,6 @@ class BusinessCommonSistema extends Business
         $criteria =  $this->getCriteria();
 	$criteria->AddCriteria('idsistema','=',$Id);
         return $criteria->retrieveAsQuery();
-    }
-
-    function findByNome($nome)
-    {
-	$busca = "select count(*) as total from cm_sistema where sistema = '$nome'";					
-	return pg_fetch_result( pg_query($busca) ,0, 'total' );
     }
 }
 ?>

@@ -8,7 +8,8 @@
 	<parameter name="pNumProcesso" class="java.lang.String"/>
 	<parameter name="andamento" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[select a.* from ad_andamento a
+		<![CDATA[select a.*, ps.nome from ad_andamento a
+  left join (select idusuario, nome from cm_usuario inner join cm_pessoa ps using (idpessoa)) ps on ps.idusuario=a.idusuario
 where numpro =$P{pNumProcesso}
 order by numanda]]>
 	</queryString>
@@ -22,6 +23,7 @@ order by numanda]]>
 	<field name="setordest" class="java.lang.String"/>
 	<field name="despacho" class="java.lang.String"/>
 	<field name="autor" class="java.lang.String"/>
+	<field name="nome" class="java.lang.String"/>
 	<background>
 		<band/>
 	</background>
@@ -126,7 +128,7 @@ $F{stampsai}.substring( 10, 12 )]]></textFieldExpression>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-7" x="152" y="65" width="383" height="13"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{autor}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nome}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

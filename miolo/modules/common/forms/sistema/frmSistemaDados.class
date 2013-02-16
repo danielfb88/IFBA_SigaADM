@@ -35,11 +35,10 @@ class frmSistemaDados extends MForm
     {
 	$fields = array(
 		new MHiddenField('idSistema',''),
-		new MTextField('sistema','','Nome','30','Máx. 30 caracteres'),
+		new MTextField('sistema','','Nome','50','Máx. 50 caracteres'),
 	);
+		
         $this->SetFields($fields);
-
-	$this->sistema->addAttribute('maxlength',30);
 		
 		$buttons = array(
 			new MButton('btnSalvar', 'Salvar')
@@ -62,7 +61,7 @@ class frmSistemaDados extends MForm
         $this->setFieldValue('sistema',$data->sistema);
     }
     
-function btnSalvar_click()
+	function btnSalvar_click()
 	{
 		
 		if( strlen(trim(Form::GetFormValue('sistema'))) < 3 )
@@ -75,32 +74,19 @@ function btnSalvar_click()
 		}
 		else
 		{
-
-			$nomeSistema = $this->objSistema->sistema;
-			//$this->objSistema->setData($this->getData());
-			$nomeSistemaNovo = $this->getData()->sistema;
-			$nomeSistemaNovo = strtoupper($nomeSistemaNovo);
+			$this->objSistema->setData($this->getData());
 			$this->objSistema->sistema = trim($this->objSistema->sistema);
-			
-			if (($this->objSistema->findByNome($nomeSistemaNovo) > 0) 
-					&& (strcmp(strtoupper($nomeSistema), strtoupper($nomeSistemaNovo)) != 0))
+			try
 			{
-				$this->AddError('Sistema já cadastrado.');
+				$this->objSistema->save();
+				$this->manager->information('Sistema modificado com sucesso.',$this->manager->getActionUrl('common','main:sistema:find'));
 			}
-			else
+			catch ( Exception $e )
 			{
-				try
-				{
-					$this->objSistema->setData($this->getData());
-					$this->objSistema->save();
-					$this->manager->information('Sistema modificado com sucesso.',$this->manager->getActionUrl('common','main:sistema:find'));
-				}
-				catch ( Exception $e )
-				{
-					$this->AddError($e->getMessage());
-				}
+				$this->AddError($e->getMessage());
 			}
 		}
 	}
+
 }
 ?>

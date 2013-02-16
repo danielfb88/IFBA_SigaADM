@@ -51,7 +51,7 @@ class frmProcessoDecisaoVer extends Form
         // campos do formulário
         $decisao = new MMultiLineField('decisao',$andamento->decisao,'Decisão:',1000,8,78);
         $decisao->setReadOnly(true);
-        $autor = new MTextField('autor',$andamento->autor,'Autor:',40);
+        $autor = new MTextField('autor',$andamento->nomeUsuario,'Autor:',40);
         $autor->setReadOnly(true);
         $groupDecisao = new MBaseGroup('groupDecisao', 'Decisão do processo',array($decisao,$autor),'vertical','css');
         $groupDecisao->addAttribute('style','padding:10px');

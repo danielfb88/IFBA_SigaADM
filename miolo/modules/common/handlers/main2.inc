@@ -66,7 +66,6 @@ if ($MIOLO->GetAuth()->isLogged())
         $cmPanel->AddUserAction('adm',A_ACCESS,'Administração', $ui->GetImageTheme('','icons/administracao.png'), 'adm', 'main');
         $cmPanel->AddUserAction('prot',A_ACCESS, 'Protocolo', $ui->GetImageTheme('','icons/protocolo.png'), 'protocolo', 'main');
         $cmPanel->AddUserAction('rh',A_ACCESS, 'Gestão de Pessoas', $ui->GetImageTheme('','icons/pessoas2.png'), 'rh', 'main');
-        //$cmPanel->AddUserAction('rh',A_ACCESS, 'Biblioteca', $ui->GetImageTheme('','icons/biblioteca.png'), 'biblioteca', 'main');
         if ($MIOLO->getPerms()->isAdmin())
         {
             $cmPanel->AddAction( 'MAD', $ui->GetImageTheme('','icons/MAD.png'), $module, 'main:mad');

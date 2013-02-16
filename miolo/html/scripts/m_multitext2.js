@@ -103,33 +103,18 @@ Miolo.multiTextField2.prototype = {
            }
            else {
               var list = frmObj[mtfName + '_options' + i];
-              if (list != null ) {
+              if (list != null) {
                  fields[i - 1] = list.options[list.selectedIndex].text;
-                 //--patch001 sérgio villa
-                 //identifica quando nenhuma campo foi selecionado e retorna null na função
-                 if(list.options[list.selectedIndex].value == ""){
-                 	return null;
-                 }
-                 //--patch001 sérgio villa
               }
            }
        }
-       
        return this.join(fields);
     },
     add: function (frmObj, mtfName, numFields) {
        var list = miolo.getElementById(mtfName + this.emptyField);
-       //--patch001 sérgio villa
-       var teste =this.getInput(frmObj, mtfName, numFields);
-       //teste se nada foi selecionado antes de criar a new Option.
-       if(teste==null){
-       	alert("Selecione uma Opção");
-       }else{
        var i = list.length;
        list.options[i] = new Option(this.getInput(frmObj, mtfName, numFields));
        list.selectedIndex = i;
-	}
-	//--patch001 sérgio villa
     },
     remove: function (frmObj, mtfName, numFields) {
        var list = miolo.getElementById(mtfName + this.emptyField);

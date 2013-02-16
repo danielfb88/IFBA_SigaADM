@@ -19,6 +19,16 @@
  */
 
 /**
+ * TODO: Para Quarta Feira 24/10/2012:
+ * 
+ * 1 - tratar mensagem de chave duplicada	- ok
+ * 2 - combobox exibir valores corretos. analizar o combo de: 
+ * 			SIGA :: Biblioteca :: Administração :: Políticas
+ * 3 - lookup para municipio
+ *
+ */
+
+/**
 
  * 
  * @author Daniel Bonfim
@@ -116,7 +126,7 @@ class frmMunicipio extends MFormAjax {
 	// Carrega o form com as informações do item que chegar
 	function carregarInfo() {
 		global $item;
-		
+
 		if(!is_null($item)) {
 			$this->SetButtonAttr('btnIncluir','label','Salvar');	
 			$this->SetButtonAttr('btnExcluir','visible',true);	

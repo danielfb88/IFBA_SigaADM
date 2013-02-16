@@ -39,6 +39,7 @@ class frmInstituicaoNew extends MForm
 		$this->objInstituicao = $MIOLO->GetBusiness('common','instituicao');
 		$queryPais = $objPais->ListAll();
 
+
 		$fields = Array(
 			new HiddenField('key',''),
 			new TextField  ('instituicao','','Instituição',40),
@@ -57,7 +58,7 @@ class frmInstituicaoNew extends MForm
 			new TextField  ('caixapostal','','Caixa Postal',15),
 			new TextField  ('telefone','','Telefone',15),
 			new TextField  ('fax','','Fax',15),	
-			new TextField  ('email','','e-mail',50, 'Máx. 50 caracteres'), 
+			new TextField  ('email','','e-mail',40, 'Máx. 50 caracteres'), 
 			new TextField  ('uasg','','UP',8, 'Máx. 6 números'),
 			new TextField  ('ug','','UG (UASG)',6, 'Máx. 6 caracteres'),
 			new MSelection ('mesmoif','','Mesmo instituto?',array('S'=>'SIM', 'N'=>'NÃO'),$showValues=false,$hint='Selecione SIM se pertence à mesma instituição, caso contrário NÃO.',$size=''),
@@ -104,13 +105,13 @@ class frmInstituicaoNew extends MForm
 			new MRequiredValidator('rua'),
 			new MRequiredValidator('numero'),
 			new MRequiredValidator('bairro'),
-			new CEPValidator('cep'),
+			new MRequiredValidator('cep'),
 			new MRequiredValidator('lkpMunicipio'),
 			new MCNPJValidator('cgc','','required','Informe um CNPJ Válido'),
 			new MRequiredValidator('ug'),
-			new EmailValidator('email'),
 		);
 		$this->SetValidators($validators);
+
 	}
 
 	function btnNew_click()
@@ -124,29 +125,9 @@ class frmInstituicaoNew extends MForm
 		{
 			$this->AddError('Informe a sigla da Instituição, a mesma deve possuir pelo menos duas letras');
 		}
-		elseif( strlen(trim(Form::GetFormValue('campus'))) == 0)
-		{
-			$this->AddError('Informe o campo "Campus".');
-		}
 		elseif( strlen(trim(Form::GetFormValue('nome'))) < 3 )
 		{
 			$this->AddError('O nome da instituição parece estar incorreto.');
-		}
-		elseif( strlen(trim(Form::GetFormValue('rua'))) == 0)
-		{
-			$this->AddError('Informe o campo "Rua".');
-		}
-		elseif( strlen(trim(Form::GetFormValue('numero'))) == 0)
-		{
-			$this->AddError('Informe o campo "Número".');
-		}
-		elseif( (Form::GetFormValue('numero')!='') and preg_match("/\D/", Form::GetFormValue('numero')) )
-		{
-			$this->AddError('Informe um valor válido para o campo "Número".');
-		}
-		elseif( strlen(trim(Form::GetFormValue('bairro'))) == 0)
-		{
-			$this->AddError('Informe o campo "Bairro".');
 		}
 		elseif( (Form::GetFormValue('lkpMunicipio') == '') or (Form::GetFormValue('idmunicipio') == ''))
 		{
@@ -155,18 +136,6 @@ class frmInstituicaoNew extends MForm
 		elseif( Form::GetFormValue('idpais') == '' )
 		{
 			$this->AddError('Selecione o país.');
-		}
-		elseif( (Form::GetFormValue('caixapostal')!='') and preg_match("/\D/", Form::GetFormValue('caixapostal')) )
-		{
-			$this->AddError('Informe um valor válido para o campo "Caixa Postal".');
-		}
-		elseif( (Form::GetFormValue('telefone')!='') and preg_match("/\D/", Form::GetFormValue('telefone')) )
-		{
-			$this->AddError('Informe um valor válido para o campo "Telefone".');
-		}
-		elseif( (Form::GetFormValue('fax')!='') and preg_match("/\D/", Form::GetFormValue('fax')) )
-		{
-			$this->AddError('Informe um valor válido para o campo "Fax".');
 		}
 		elseif( (Form::GetFormValue('uasg')!='') and preg_match("/\D/", Form::GetFormValue('uasg')) )
 		{
@@ -179,7 +148,23 @@ class frmInstituicaoNew extends MForm
 		elseif( Form::GetFormValue('mesmoif') == '' )
 		{
 			$this->AddError('Informe o campo Mesmo instituto.');
-		}		
+		}
+		elseif( strlen(trim(Form::GetFormValue('campus'))) == 0)
+		{
+			$this->AddError('Informe o campo "Campus".');
+		}
+		elseif( strlen(trim(Form::GetFormValue('rua'))) == 0)
+		{
+			$this->AddError('Informe o campo "Rua".');
+		}
+		elseif( strlen(trim(Form::GetFormValue('numero'))) == 0)
+		{
+			$this->AddError('Informe o campo "Número".');
+		}
+		elseif( strlen(trim(Form::GetFormValue('bairro'))) == 0)
+		{
+			$this->AddError('Informe o campo "Bairro".');
+		}
 		else
 		{
 			global $MIOLO, $module, $self, $action;
@@ -194,27 +179,20 @@ class frmInstituicaoNew extends MForm
 				$objInstituicao->cgc = str_replace(".","", $objInstituicao->cgc);
 				$objInstituicao->cgc = str_replace("/","", $objInstituicao->cgc);
 				$objInstituicao->cgc = str_replace("-","", $objInstituicao->cgc);
-				
-				//Retorna quantidade de CNPJ iguais do banco de dados, se for maior do que zero já existe um CNPJ igual cadastrado.
-				if($objInstituicao->countByCNPJ($objInstituicao->cgc))
+
+				try
 				{
-					$this->addError('CNPJ já cadastrado.');				
+					$objInstituicao->Insert();
+					$objInstituicao->Log(OP_INS,"Instituição cadastrada com sucesso.");
+					$MIOLO->Information('Instituição adicionada com sucesso.', $MIOLO->GetActionURL('common', 'main:instituicao:find'));
 				}
-				else
+				catch (Exception $e)
 				{
-					try
-					{
-						$objInstituicao->Insert();
-						$objInstituicao->Log(OP_INS,"Instituição cadastrada com sucesso.");
-						$MIOLO->Information('Instituição adicionada com sucesso.', $MIOLO->GetActionURL('common', 'main:instituicao:find'));
-					}
-					catch (Exception $e)
-					{
-						$this->addError($e->getMessage());
-					}
+					$this->addError($e->getMessage());
 				}
 			}
 		}
+
 	}
 }
 ?>

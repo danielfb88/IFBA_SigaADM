@@ -1,8 +1,0 @@
-/*
- * Documentação básica de módulos do SIGA-ADM
- * Artefatos desenvolvidos para auxiliar nos trabalhos das equipes de banco de dados e codificação
- *
- * Responsáveis: Equipe de BD
- *
- */
-

@@ -53,9 +53,9 @@ class frmProcessoArquivar extends MForm
 			$andamento = $this->processo->getAndamento($this->processo->retencao->numAndamento);
 			//      decisao do processo	    
 			$decisao = new MMultiLineField('decisao',$andamento->decisao,'Decisão',950,8,78);
-			$autor = new MTextField('autor',$andamento->autor,'Autor',40);
-			$autor->addAttribute('maxlength','40');
-			$groupDecisao = new MBaseGroup('groupDecisao', 'Decisão do processo',array($decisao, $autor),'vertical','css');
+			#$autor = new MTextField('autor',$andamento->autor,'Autor',40);
+			#$autor->addAttribute('maxlength','40');
+			$groupDecisao = new MBaseGroup('groupDecisao', 'Decisão do processo',array($decisao),'vertical','css');
 			$groupDecisao->addAttribute('style','padding:10px');
 			//      arquivo
 			$arquivo = new MTextField('arquivo',$this->processo->arquivo,'Caixa Arquivo',15);
@@ -75,7 +75,7 @@ class frmProcessoArquivar extends MForm
 			//      required fields
 			$validators = array(
 				new MRequiredValidator('decisao'),
-				new MRequiredValidator('autor'),
+			#	new MRequiredValidator('autor'),
 				new MRequiredValidator('arquivo'),
 			);
 			$this->setValidators($validators);
@@ -132,17 +132,10 @@ class frmProcessoArquivar extends MForm
 			$emails[$emails->length][0] = $mailSender;
             foreach($emails as $e)
             {
-				if($e[1])
-                {
-                        $instituicao = $this->processo->instituicaoUsuario($e[1]);
-                        $pessoa = $e[2];
-                }
-                else
-                {
-                        $instituicao = $this->processo->instituicaoProcesso();
-                        $pessoa = $this->processo->solicitante;
-                }
-
+				if($e[0] != $emails[$emails->length][0])
+					$instituicao = $this->processo->instituicaoUsuario($e[1]);
+				else 
+					$instituicao = $this->processo->instituicaoProcesso();
 									
 				$mail = new PHPMailer();
 				$mail->IsSMTP(); // send via SMTP
@@ -160,7 +153,7 @@ class frmProcessoArquivar extends MForm
                                 $mail->ssl = $MIOLO->getConf('mail.ssl');
                                 $mail->Body = "
                                                 <center><h1>TRAMITAÇÃO DO PROCESSO<br /> {$this->processo->numProcessoFormatado()}</h1></center>
-                                                <br /><br />Prezado(a) Sr(a) {$pessoa},
+                                                <br /><br />Prezado(a) Sr(a) {$e[2]},
                                                 <br /><br />O processo {$this->processo->numProcessoFormatado()} foi arquivado.
                                                 <br /><br /><b>Objeto: </b>{$objMail}
                                                 <br /><b>Setor Atual: </b>{$this->processo->retencao->setor}

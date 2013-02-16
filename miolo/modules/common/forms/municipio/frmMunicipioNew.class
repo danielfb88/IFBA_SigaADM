@@ -43,9 +43,9 @@ class frmMunicipioNew extends MFormAjax
 			new MTextField('categoriaDiaria','','Categoria Diária', 1),
 			new MTextField('populacao','','População', 10),
 		);
-		
+
 		$this->SetFields($fields);
-		$this->categoriaDiaria->addAttribute('maxlength',1);
+
 		$aguarde = $this->manager->getUI()->getImage('miolo','aguarde.gif');
 		$urlAjaxHandler = $this->manager->getActionURL('common','ajaxhandler');
 		$this->idPais->addAttribute('onChange',"doSelUF('$urlAjaxHandler','$aguarde');");

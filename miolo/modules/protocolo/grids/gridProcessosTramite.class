@@ -41,7 +41,7 @@ class gridProcessosTramite extends MObjectGrid
             new MObjectGridColumn('setorData','Setor - Entrada','center', false,'23%',true),
             new MObjectGridColumn('setorDestinoData','Setor - Saída','center', false,'23%',true),            
 			new MObjectGridColumn('decisaoData','Despacho','center', false,'16%',true),
-			new MObjectGridColumn('autor','Autor','center', false,'20%',true)
+			new MObjectGridColumn('nomeUsuario','Autor','center', false,'20%',true)
            );         
              
             
@@ -52,7 +52,7 @@ class gridProcessosTramite extends MObjectGrid
 					$proc->nomeUsuario = $user->GetById($proc->idUsuario)->GetName();
 				}
 
-            	if ( !(trim($proc->decisao) == NULL ) || !(trim($proc->autor) == NULL) ) 
+            	if ( !(trim($proc->decisao) == NULL ) /*&&  !(trim($proc->autor) == NULL)*/ ) 
             	{   
             		$action = $MIOLO->GetActionURL($module,$self,$processo->numProcesso,array('form'=>'tramite','subform'=>'despacho','numAndamento'=>$proc->numAndamento));
             		$proc->decisaoData = "<a href='$action'>$proc->decisaoData</a>";       			

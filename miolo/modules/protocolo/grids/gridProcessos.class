@@ -83,10 +83,7 @@ class gridProcessos extends MDataGrid2
 			if(!Form::GetFormValue('listaPor') && (!$this->perms->checkAccess('PROT_ADMIN', A_ACCESS)))
 				$query = $this->processo->listProcessos(null, null, $this->processo->getSetorUsuario(), null, null);
 			else
-			//estava assim:	$query = $this->processo->listByNoSoundex($descricao);
-			$query = $this->processo->listProcessos(null, null, $this->processo->getSetorUsuario(), null, null);
-			
-			
+				$query = $this->processo->listByNoSoundex($descricao);
 
 		}
 		

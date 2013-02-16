@@ -25,6 +25,7 @@ class MStatusBar extends MControl
 
     function __construct($cols = null)
     {
+	    global $MIOLO;
         parent::__construct();
         $this->AddStyleFile('m_themeelement.css');
         $this->cols = $cols;
@@ -33,10 +34,20 @@ class MStatusBar extends MControl
 
         if ($login)
         {
+	        // Pega o setor que o usuário pertence
+        	$user = $MIOLO->getBusiness('common','usuario');		
+        	$user->getById($login->idkey);					
+			$setor = $MIOLO->getBusiness('common','setor');
+			$setor->getById($user->idSetor);
+		
+	    $versao = $MIOLO->GetConf('version.sequence');
             $online = (time() - $login->time) / 60;
             $this->AddInfo('Usuário:' . ' ' . $login->id);
+	    	$this->AddInfo('Setor:' . ' ' . $setor->sigla);
             $this->AddInfo('Entrada às:' . ' ' . Date('H:i', $login->time) . ' (' . sprintf('%02d:%02d', $online / 60, $online % 60) . ')');
             $this->AddInfo('Data:' . ' ' . Date('d/m/Y', $login->time));
+            $this->AddInfo('Versão:' . ' ' . $versao);
+
         }
         else
         {

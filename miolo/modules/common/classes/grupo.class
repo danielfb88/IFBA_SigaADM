@@ -24,7 +24,7 @@
 class BusinessCommonGrupo extends MBusiness  implements IGroup
 {
     var $idGrupo;
-    var $grupo;
+	var $grupo;
     var $acesso; // array
     var $usuarios;  // array
     var $dataAcesso; 
@@ -170,12 +170,6 @@ class BusinessCommonGrupo extends MBusiness  implements IGroup
         $criteria->addCriteria('grupo','LIKE', "'%$group%'");
         $criteria->addOrderAttribute('grupo');
         return $criteria->retrieveAsQuery();
-    }
-
-    function findByNome($nome)
-    {
-	$busca = "select count(*) as total from cm_grupoacesso where grupo = '$nome'";					
-	return pg_fetch_result( pg_query($busca) ,0, 'total' );
     }
 
 }

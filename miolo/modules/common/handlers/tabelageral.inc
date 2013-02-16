@@ -1,7 +1,7 @@
 <?
     $action = $context->ShiftAction();
     if ($action == NULL) $action = 'main'; 
-    $navbar->AddOption('Tabela Geral', 'common', "main:mad:tabelageral:$action");
+    $navbar->AddOption('Tabelageral', 'common', "main:mad:tabelageral:$action");
     $MIOLO->InvokeHandler($module, "tabelageral/$action");
 
 

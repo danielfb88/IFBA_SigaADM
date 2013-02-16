@@ -32,7 +32,7 @@ class frmTabelageral extends MCompoundForm
         $this->module = 'common';
         parent::__construct();
         $this->setClose($this->manager->getActionURL($this->module,'main:mad:tabelageral:find'));
-        $this->setTitle('Tabela Geral');
+        $this->setTitle('Title');
         $this->setIcon($this->manager->getUi()->getImage($this->module,'mini.png'));
     }
 
@@ -67,8 +67,7 @@ class frmTabelageral extends MCompoundForm
         $panel->AddUserAction('tabelageral',A_EXECUTE,'Excluir',$ui->getImage($this->module,'trash.png'),$this->module,$action, $this->oid, array("form"=>"excluir"));
 
 // info
-		$this->_info[0]	= new MTextLabel('txtTabelageral',$this->tabelageral->tabela,'Tabela Geral');
-		
+		$this->_info[0]	= new MTextLabel('txtTabelageral',$this->tabelageral->tabela,'Tabelageral');
        
 	}
 }

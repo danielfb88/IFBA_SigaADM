@@ -61,14 +61,10 @@ class frmOrganogramaNew extends MForm
 		{
 			$this->AddError('A sigla do organograma deve ter pelo menos dois caracteres, sem espaços.');
 		}
-		else if( strlen(trim($tipoOrganograma->descricao)) < 5 )
+		elseif( strlen(trim($tipoOrganograma->descricao)) < 5 )
 		{
 			$this->AddError('Descreva melhor este organograma.');
 		}
-		else if( $tipoOrganograma->findByNome(strtoupper($tipoOrganograma->sigla)) )
- 		{
- 			$this->addError('Código de Organograma já existente.');
- 		}
 		else
 		{
 			try 

@@ -7,7 +7,7 @@
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="pNumProcesso" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT DISTINCT
+		<![CDATA[SELECT
      p."stampaber" AS stampaber,
      p."numpro" AS numpro,
      p."instit" AS instit,
@@ -17,11 +17,14 @@
      p."interes" AS interes,
      p."titulo" AS titulo,
      p."assunto" AS assunto,
-     i."nome" AS nome
+     i."nome" AS nome,
+     ps."nome" AS resp
 FROM
      ad_processo p
-     inner join cm_setor s on p.setororig=s.siglasetor or setororig is null
+     inner join cm_setor s on p.setororig=s.siglasetor
      inner join cm_instituicao i on s.idinstituicao=i.idinstituicao
+     left join
+     (select idusuario,nome from cm_usuario inner join cm_pessoa using(idpessoa)) ps on  p.idusuario=ps.idusuario
 WHERE
      p.numpro = $P{pNumProcesso}]]>
 	</queryString>
@@ -53,6 +56,9 @@ WHERE
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="nome" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="resp" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<background>
@@ -88,42 +94,42 @@ $F{numpro}.substring( 10, 12 )]]></textFieldExpression>
 				<text><![CDATA[INTERESSADO:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-3" x="0" y="159" width="127" height="18"/>
+				<reportElement key="staticText-3" x="0" y="162" width="127" height="18"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<text><![CDATA[ENTRADA SISTEMA:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-4" x="0" y="184" width="104" height="21"/>
+				<reportElement key="staticText-4" x="0" y="193" width="104" height="21"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<text><![CDATA[SETOR ORIGEM:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-5" x="0" y="213" width="104" height="15"/>
+				<reportElement key="staticText-5" x="0" y="219" width="104" height="15"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<text><![CDATA[TÍTULO:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-6" x="0" y="264" width="104" height="24"/>
+				<reportElement key="staticText-6" x="0" y="270" width="104" height="24"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<text><![CDATA[ASSUNTO:]]></text>
 			</staticText>
-			<textField isBlankWhenNull="true">
+			<textField isBlankWhenNull="false">
 				<reportElement key="textField-2" x="124" y="133" width="314" height="20"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{interes}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-3" x="124" y="159" width="314" height="18"/>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-3" x="124" y="162" width="314" height="18"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
@@ -137,22 +143,22 @@ $F{stampaber}.substring( 8, 10 ) +
 ":"+
 $F{stampaber}.substring( 10, 12 )]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-4" x="124" y="183" width="314" height="21"/>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-4" x="124" y="193" width="314" height="21"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{setororig}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-5" x="124" y="213" width="314" height="43"/>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-5" x="124" y="219" width="314" height="43"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{titulo}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-6" x="124" y="264" width="314" height="261"/>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-6" x="124" y="270" width="314" height="261"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
@@ -165,6 +171,20 @@ $F{stampaber}.substring( 10, 12 )]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nome}]]></textFieldExpression>
 			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-2" x="124" y="105" width="314" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{resp}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-2" x="0" y="105" width="104" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[AUTOR:]]></text>
+			</staticText>
 		</band>
 	</title>
 	<pageHeader>

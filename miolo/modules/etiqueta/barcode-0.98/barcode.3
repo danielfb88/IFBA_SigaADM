@@ -1,0 +1,76 @@
+.TH BARCODE 3 "October 1999" "GNU" "GNU barcode"
+.UC 4
+.SH NAME
+barcode \- a library to create and print bar codes
+.SH SYNOPSIS
+.B #include <barcode.h>
+.sp
+.BI "struct Barcode_Item *Barcode_Create(char *" text ");"
+.br
+.BI "int Barcode_Delete(struct Barcode_Item *" bc ");"
+.br
+.BI "int Barcode_Encode(struct Barcode_Item *" bc ", int " flags ");"
+.br
+.BI "int Barcode_Print(struct Barcode_Item *" bc ", FILE *" f ", int " flags ");"
+.br
+.BI "int Barcode_Position(struct Barcode_Item *" bc ", int " wid ", int " hei ", int " xoff ", int " yoff " , double " scalef ");"
+.br
+.BI "int Barcode_Encode_and_Print(char *" text ", FILE *" f ", int " wid ", int " hei ", int " xoff ", int " yoff ", int " flags ");"
+.br
+.BI "int Barcode_Version(char *" versionname ");"
+.SH DESCRIPTION
+The barcode family of library functions is meant to ease
+creation of bar-code printouts.
+The information below is extracted from the texinfo file, which is the
+preferred source of information.
+
+.LP
+The functions included in the barcode library are declared in the
+header file barcode.h.  They perform the following tasks:
+.TP
+struct Barcode_Item *Barcode_Create(char *text);
+Thefunctioncreatesanewbarcodeobjecttodealwitha
+specifiedtextstring.ItreturnsNULLincaseoffailureand
+apointertoabarcodedatastructureincaseofsuccess.
+.TP
+int Barcode_Delete(struct Barcode_Item *bc);
+Destroyabarcodeobject.Alwaysreturns0(success)
+.TP
+int Barcode_Encode(struct Barcode_Item *bc, int flags);
+Encodethetextincludedinthebcobject.Validflagsare
+theencodingtype(otherflagsareignored)and
+BARCODE_NO_CHECKSUM(otherflagsaresilentlyignored);ifthe
+flagargumentiszero,bc->flagswillapply.Thefunction
+returns0onsuccessand-1incaseoferror.After
+successfulterminationthedatastructurewillhostthe
+descriptionofthebarcodeanditstextualrepresentation,
+afterafailuretheerrorfieldwillincludethereasonof
+thefailure.
+.TP
+int Barcode_Print(struct Barcode_Item *bc, FILE *f, int flags);
+Printthebarcodedescribedbybctothespecifiedfile.
+Validflagsaretheoutputtype,BARCODE_NO_ASCIIand
+BARCODE_OUT_NOHEADERS,otherflagsareignored.Ifanyof
+theseflagsiszero,itwillbeinheritedfrombc->flags
+whichthereforetakesprecedence.Thefunctionreturns0on
+successand-1incaseoferror(withbc->errorset
+accordingly).Incaseofsuccess,thebarcodeisprintedto
+thespecifiedfile,whichwon'tbeclosedafteruse.
+.TP
+int Barcode_Position(struct Barcode_Item *bc, int wid, int hei, int xoff, int yoff, double scalef);
+Thefunctionisashortcuttoassignvaluestothedata
+structure.
+.TP
+int Barcode_Encode_and_Print(char *text, FILE *f, int wid, int hei, int xoff, int yoff, int flags);
+Thefunctiondealswiththewholelifeofthebarcode
+objectbycallingtheotherfunctions;itusesallthespecified
+flags.
+.TP
+int Barcode_Version(char *versionname);
+Returnsthecurrentversionasanintegernumberoftheform
+major*10000+minor*100+release.Therefore,version
+1.03.5willbereturnedas10305andversion0.53as5300.If
+theargumentisnon-null,itwillbeusedtoreturntheversion
+numberasastring.Notethatthesameinformationisavailablefrom
+twopreprocessormacros:BARCODE_VERSION(thestring)and
+BARCODE_VERSION_INT(theintegernumber).

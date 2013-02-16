@@ -59,7 +59,7 @@ class frmInstituicaoDados extends MForm
 			new TextField  ('caixapostal','','Caixa Postal',15),
 			new TextField  ('telefone','','Telefone',15),
 			new TextField  ('fax','','Fax',15),	
-			new TextField  ('email','','e-mail',50, 'Máx. 50 caracteres'), 
+			new TextField  ('email','','e-mail',40, 'Máx. 50 caracteres'), 
 			new TextField  ('uasg','','UP',8, 'Máx. 6 números'),
 			new TextField  ('ug','','UG (UASG)',6, 'Máx. 6 caracteres'),
 			new MSelection ('mesmoif','','Mesmo instituto?',array('S'=>'SIM', 'N'=>'NÃO'),$showValues=false,$hint='Selecione SIM se pertence à mesma instituição, caso contrário NÃO.',$size=''),
@@ -85,7 +85,6 @@ class frmInstituicaoDados extends MForm
 			new MRequiredValidator('lkpMunicipio'),
 			new MCNPJValidator('cgc','','required','Informe um CNPJ Válido'),
 			new MRequiredValidator('ug'),
-			new EmailValidator('email'),
 		);
 		$this->SetValidators($validators);
 
@@ -117,7 +116,10 @@ class frmInstituicaoDados extends MForm
 		$this->SetFieldAttr('lkpMunicipio','item','municipio');
 		$this->SetFieldAttr('lkpMunicipio','event', 'filler');
 		$this->SetFieldAttr('lkpMunicipio','related', 'idmunicipio,lkpMunicipio');
+
+
 	}
+
 
 	function setData()
 	{
@@ -187,37 +189,17 @@ class frmInstituicaoDados extends MForm
 	function btnSave_click()
 	{
 
-		if( strlen(trim(Form::GetFormValue('instituicao'))) < 4)
+		if( strlen(trim(Form::GetFormValue('instituicao'))) < 3)
 		{
-			$this->AddError('Informe o campo instituição.');
+			$this->AddError('Informe o campo Instituição.');
 		}
 		elseif( strlen(trim(Form::GetFormValue('sigla'))) < 2 )
 		{
 			$this->AddError('Informe a sigla da Instituição, a mesma deve possuir pelo menos duas letras');
 		}
-		elseif( strlen(trim(Form::GetFormValue('campus'))) == 0)
-		{
-			$this->AddError('Informe o campo "Campus".');
-		}
 		elseif( strlen(trim(Form::GetFormValue('nome'))) < 3 )
 		{
 			$this->AddError('O nome da instituição parece estar incorreto.');
-		}
-		elseif( strlen(trim(Form::GetFormValue('rua'))) == 0)
-		{
-			$this->AddError('Informe o campo "Rua".');
-		}
-		elseif( strlen(trim(Form::GetFormValue('numero'))) == 0)
-		{
-			$this->AddError('Informe o campo "Número".');
-		}
-		elseif( (Form::GetFormValue('numero')!='') and preg_match("/\D/", Form::GetFormValue('numero')) )
-		{
-			$this->AddError('Informe um valor válido para o campo "Número".');
-		}
-		elseif( strlen(trim(Form::GetFormValue('bairro'))) == 0)
-		{
-			$this->AddError('Informe o campo "Bairro".');
 		}
 		elseif( (Form::GetFormValue('lkpMunicipio') == '') or (Form::GetFormValue('idmunicipio') == ''))
 		{
@@ -226,18 +208,6 @@ class frmInstituicaoDados extends MForm
 		elseif( Form::GetFormValue('idpais') == '' )
 		{
 			$this->AddError('Selecione o país.');
-		}
-		elseif( (Form::GetFormValue('caixapostal')!='') and preg_match("/\D/", Form::GetFormValue('caixapostal')) )
-		{
-			$this->AddError('Informe um valor válido para o campo "Caixa Postal".');
-		}
-		elseif( (Form::GetFormValue('telefone')!='') and preg_match("/\D/", Form::GetFormValue('telefone')) )
-		{
-			$this->AddError('Informe um valor válido para o campo "Telefone".');
-		}
-		elseif( (Form::GetFormValue('fax')!='') and preg_match("/\D/", Form::GetFormValue('fax')) )
-		{
-			$this->AddError('Informe um valor válido para o campo "Fax".');
 		}
 		elseif( (Form::GetFormValue('uasg')!='') and preg_match("/\D/", Form::GetFormValue('uasg')) )
 		{
@@ -250,14 +220,11 @@ class frmInstituicaoDados extends MForm
 		elseif( Form::GetFormValue('mesmoif') == '' )
 		{
 			$this->AddError('Informe o campo Mesmo instituto.');
-		}		
+		}
 		else
 		{
 			global $MIOLO, $module, $self, $action;
-			
-			$cgcInstituicaoAtual = $this->objInstituicao->cgc;
-			$cgcInstituicaoNovo = $this->GetData()->cgc;
-						
+		
 			$this->objInstituicao->SetData($this->GetData()); 
 
 			$this->objInstituicao->status = 'A';
@@ -268,74 +235,56 @@ class frmInstituicaoDados extends MForm
 
 			$value  = $this->objInstituicao->idinstituicao;
 
-			// Verifica duplicidade no CNPJ
+			if ($this->objInstituicao->instituicao != null)
+				$ok1 = $this->objInstituicao->UpdateInst($value);
+			if ($this->objInstituicao->nome != null)
+				$ok2 = $this->objInstituicao->UpdateNome($value);
+			if ($this->objInstituicao->rua != null)
+				$ok3 = $this->objInstituicao->UpdateRua($value);
+			if ($this->objInstituicao->bairro != null)
+				$ok4 = $this->objInstituicao->UpdateBairro($value);
+			if ($this->objInstituicao->cep != null)
+				$ok5 = $this->objInstituicao->UpdateCep($value);
+			if ($this->objInstituicao->telefone != null)
+				$ok6 = $this->objInstituicao->UpdateFone($value);
+			if ($this->objInstituicao->email != null)
+				$ok7 = $this->objInstituicao->UpdateEmail($value);
+			if ($this->objInstituicao->fax != null)
+				$ok8 = $this->objInstituicao->UpdateFax($value);
 			if ($this->objInstituicao->cgc != null)
-			{			
-				$cgcInstituicaoAtual = str_replace(".","",  $cgcInstituicaoAtual);
-				$cgcInstituicaoAtual = str_replace("/","",  $cgcInstituicaoAtual);
-				$cgcInstituicaoAtual = str_replace("-","",  $cgcInstituicaoAtual);
-				
-				if($this->objInstituicao->CountByCNPJ($this->objInstituicao->cgc) 
-					&& (strcmp($cgcInstituicaoAtual, $this->objInstituicao->cgc) != 0))
-				{
-					$this->addError('CNPJ já cadastrado.');		
-				}
-				else
-				{
-					$ok9 = $this->objInstituicao->UpdateCGC($value);
-				}
-			}
-			if($ok9) // Continuidade da verificação de duplicidade no CNPJ
-			{	
-				if ($this->objInstituicao->instituicao != null)
-					$ok1 = $this->objInstituicao->UpdateInst($value);
-				if ($this->objInstituicao->nome != null)
-					$ok2 = $this->objInstituicao->UpdateNome($value);
-				if ($this->objInstituicao->rua != null)
-					$ok3 = $this->objInstituicao->UpdateRua($value);
-				if ($this->objInstituicao->bairro != null)
-					$ok4 = $this->objInstituicao->UpdateBairro($value);
-				if ($this->objInstituicao->cep != null)
-					$ok5 = $this->objInstituicao->UpdateCep($value);
-				if ($this->objInstituicao->telefone != null)
-					$ok6 = $this->objInstituicao->UpdateFone($value);
-				if ($this->objInstituicao->email != null)
-					$ok7 = $this->objInstituicao->UpdateEmail($value);
-				if ($this->objInstituicao->fax != null)
-					$ok8 = $this->objInstituicao->UpdateFax($value);
-				if ($this->objInstituicao->caixapostal != null)
-					$ok10 = $this->objInstituicao->UpdateCaixaP($value);
-				if ($this->objInstituicao->idpais != null)
-					$ok11 = $this->objInstituicao->UpdateIdPais($value);
-				if ($this->objInstituicao->idmunicipio != null)
-					$ok12 = $this->objInstituicao->UpdateIdMun($value);
-				if ($this->objInstituicao->numero != null)
-					$ok13 = $this->objInstituicao->UpdateNum($value);
-				if ($this->objInstituicao->complemento != null)
-					$ok14 = $this->objInstituicao->UpdateCom($value);
-				if ($this->objInstituicao->mesmoif)
-	 				$ok15 = $this->objInstituicao->UpdateMsmIF($value);
-				if ($this->objInstituicao->sigla != null)
-					$ok16 = $this->objInstituicao->UpdateSigla($value);
-				if ($this->objInstituicao->uasg != null)
-					$ok17 = $this->objInstituicao->UpdateUasg($value);
-				if ($this->objInstituicao->ug != null)
-					$ok17 = $this->objInstituicao->UpdateUg($value);
-				if ($this->objInstituicao->campus != null)
-					$ok18 = $this->objInstituicao->UpdateCampus($value); 
-				if ($this->objInstituicao->idinstituicao != null)
-					$ok19 = $this->objInstituicao->UpdateIdInst($value);
-				if ($this->objInstituicao->bairro != null)
-					$ok4 = $this->objInstituicao->UpdateBairro($value);
+				$ok9 = $this->objInstituicao->UpdateCGC($value);
+			if ($this->objInstituicao->caixapostal != null)
+				$ok10 = $this->objInstituicao->UpdateCaixaP($value);
+			if ($this->objInstituicao->idpais != null)
+				$ok11 = $this->objInstituicao->UpdateIdPais($value);
+			if ($this->objInstituicao->idmunicipio != null)
+				$ok12 = $this->objInstituicao->UpdateIdMun($value);
+			if ($this->objInstituicao->numero != null)
+				$ok13 = $this->objInstituicao->UpdateNum($value);
+			if ($this->objInstituicao->complemento != null)
+				$ok14 = $this->objInstituicao->UpdateCom($value);
+			if ($this->objInstituicao->mesmoif)
+ 				$ok15 = $this->objInstituicao->UpdateMsmIF($value);
+			if ($this->objInstituicao->sigla != null)
+				$ok16 = $this->objInstituicao->UpdateSigla($value);
+			if ($this->objInstituicao->uasg != null)
+				$ok17 = $this->objInstituicao->UpdateUasg($value);
+			if ($this->objInstituicao->ug != null)
+				$ok17 = $this->objInstituicao->UpdateUg($value);
+			if ($this->objInstituicao->campus != null)
+				$ok18 = $this->objInstituicao->UpdateCampus($value); 
+			if ($this->objInstituicao->idinstituicao != null)
+				$ok19 = $this->objInstituicao->UpdateIdInst($value);
+			if ($this->objInstituicao->bairro != null)
+				$ok4 = $this->objInstituicao->UpdateBairro($value);
 			
-				$e = $this->objInstituicao->uasg; // ?
-		
-				if ( $ok1 or $ok2 or $ok3 or $ok4 or $ok5 or $ok6 or $ok7 or $ok8 /*or $ok9*/ or $ok10 or $ok11 or $ok12 or $ok13 or $ok14 or $ok15 or $ok16 or $ok17 or $ok18 or $ok19)
-				{
-					$this->manager->information('Instituição modificada com sucesso.',$this->manager->getActionUrl('common','main:instituicao:find'));
-					return true;
-				}
+			$e = $this->objInstituicao->uasg;
+			if ( $ok1 or $ok2 or $ok3 or $ok4 or $ok5 or $ok6 or $ok7 or $ok8 or $ok9 or $ok10 or $ok11 or $ok12 or $ok13 or $ok14 or $ok15 or $ok16 or $ok17 or $ok18 or $ok19)
+			{
+				$this->manager->information('Instituição modificada com sucesso.',$this->manager->getActionUrl('common','main:instituicao:find'));
+				return true;
 			}
+			
 		}
 
 	}

@@ -25,7 +25,7 @@ class frmTabelageralNew extends MForm
 
 	function __construct()
 	{
-		parent::__construct('Incluir Nova Tabela Geral');
+		parent::__construct('Incluir Novo Tabelageral');
 		$this->eventHandler();
 	}
 
@@ -36,14 +36,10 @@ class frmTabelageralNew extends MForm
 			new MTextField('tabela','','Tabela', 30, 'Máx. 30 caracteres.'),
 			new MTextField('item1','','Item 1', 30,'Máx. 30 caracteres.'),
 			new MTextField('item2','','Item 2', 50, 'Máx. 50 caracteres.'),
-			new MMultiLineField('item3','','Item 3', 200, 4, 50, 'Máx. 200 caracteres.'),
+			new MMultiLineField('item3','','Item 3', 200, 4, 50)
 		);
 
 		$this->SetFields($fields);
-		$this->tabela->addAttribute('maxlength',30);
-		$this->item1->addAttribute('maxlength',30);
-		$this->item2->addAttribute('maxlength',50);
-		$this->item3->addAttribute('maxlength',200);
 
 		$buttons = array(
 			new MButton('btnNew', 'Incluir')
@@ -76,7 +72,7 @@ class frmTabelageralNew extends MForm
 			try 
 			{
 				$tabelageral->save();
-				$this->manager->information('Tabela Geral cadastrada com sucesso.',$this->manager->getActionUrl('common','main:tabelageral', $tabelageral->idTabelaGeral));
+				$this->manager->information('Tabela Geral cadastrada com sucesso.',$this->manager->getActionUrl('common','main:tabelageral:find'));
 			}
 			catch ( Exception $e )
 			{

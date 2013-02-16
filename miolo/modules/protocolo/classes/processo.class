@@ -343,9 +343,6 @@ class BusinessProtocoloProcesso extends Business
     {
         global $MIOLO;        
         $string = strtoupper($string);
-         var_dump($string );
-   
-   
         $soundex = $MIOLO->getBusiness('protocolo','soundex');
         $criteria =  $this->getCriteria();
         $criteria->setAlias('S');
@@ -356,14 +353,11 @@ class BusinessProtocoloProcesso extends Business
         $criteria->addColumnAttribute("substr(stampaber, 7, 2)||'/'||substr(stampaber, 5, 2)||'/'||substr(stampaber, 1, 4) as stampaber");        
 		$numProcesso = $string; 
        // $numProcesso = (strlen($string) < 14) ? str_repeat('0',14-strlen($string)).$string : $string;
-	if(substr_count($numProcesso, "/") == 1 && substr_count($numProcesso, "-") == 1)
-	{
-	        $serie = substr($numProcesso,0,6);
-        	$ano = substr($numProcesso,7,4);
-	        $codigo = substr($numProcesso,12,2);
-        	if (!is_numeric($codigo)) unset($codigo);
-        		$numProcesso = $ano.$serie.$codigo;        
-	}
+        $serie = substr($numProcesso,0,6);
+        $ano = substr($numProcesso,7,4);
+        $codigo = substr($numProcesso,12,2);
+        if (!is_numeric($codigo)) unset($codigo);
+        	$numProcesso = $ano.$serie.$codigo;        
         if ( ($string[0] == "\"") && ($string[$string] == "\"") )
         {        	
         	$frase = substr($string, 1);
@@ -395,19 +389,13 @@ class BusinessProtocoloProcesso extends Business
         $criteria->addColumnAttribute('assunto');
         $criteria->addGroupAttribute('solicitante');
         $criteria->addGroupAttribute('assunto');
-	$criteria->addGroupAttribute('dataAbertura');
+		$criteria->addGroupAttribute('dataAbertura');
         $criteria->addOrderAttribute('dataAbertura',false);
         return $criteria->retrieveAsQuery();
      
     }
     function listBySoundex($string)
     {
-
-
-        var_dump('$string');
-        var_dump($string);
-
-
         global $MIOLO;
         $soundex = $MIOLO->getBusiness('protocolo','soundex');
         $criteria =  $this->getCriteria();
@@ -700,12 +688,9 @@ class BusinessProtocoloProcesso extends Business
 		$usuario = $MIOLO->GetLogin()->idkey;
                 $db   = $MIOLO->GetDatabase('sigaept');
                 $sql  = new sql(" * "," ad_processoemail ","numpro = '$numpro' and idusuario = '$usuario'");
-              
                 $query= $db->GetQuery($sql);
                 return $query->result[0][0];
         }
-	
-	//1462185287  id usuario   eprocesso:201200476118	
 	
 	function salvarEmail()
 	{
@@ -748,7 +733,7 @@ class BusinessProtocoloProcesso extends Business
         {
         	global $MIOLO;
             $db   = $MIOLO->GetDatabase('sigaept');
-            $sql  = new sql(" i.nome || ' - ' || i.instituicao as instituicao "," cm_instituicao i inner join cm_setor s on (i.idinstituicao=s.idinstituicao)","s.siglasetor = '".$this->setorOrigem."'");
+            $sql  = new sql(" nome || ' - ' || instituicao as instituicao "," cm_instituicao ","uasg = '".$this->instituicao."'");
             $query= $db->GetQuery($sql);
             return $query->result[0][0];
         }

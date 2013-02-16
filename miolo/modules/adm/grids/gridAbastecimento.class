@@ -45,11 +45,8 @@ class gridAbastecimento extends MDataGrid2
 		$perm = $MIOLO->getPerms()->isMemberOf($login,'ADM_EXECUTORUO');
 		if ($perm)
 		{
-			$actionEdit = $MIOLO->GetActionURL($module,'abastecimentoedit',$idRequisicao,array('id'=>'#0#'));
-			$this->AddActionUpdate($actionEdit);
 			$action = $MIOLO->GetActionURL($module,'abastecimentodelete',$idRequisicao,array('id'=>'#0#'));
 	            	$this->AddActionDelete($action);
-
 		}
 	}
 }
