@@ -13,6 +13,7 @@ modules/biblioteca/handlers/admin/municipioBiblioteca.inc
 modules/biblioteca/handlers/admin/municipioBibliotecaFind.inc
 modules/biblioteca/forms/municipioBiblioteca/frmMunicipio.class
 modules/biblioteca/forms/municipioBiblioteca/frmMunicipioFind.class:// Daniel Bonfim - 16-10-2012
+modules/biblioteca/forms/municipioBiblioteca/js/frmMunicipio.js
 modules/biblioteca/grids/gridMunicipio.class:// Daniel Bonfim - 18/10/2012
 
 

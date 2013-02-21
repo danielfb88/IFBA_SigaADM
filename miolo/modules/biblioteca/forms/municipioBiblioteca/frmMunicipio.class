@@ -31,8 +31,6 @@ class frmMunicipio extends MFormAjax {
 
 		parent::__construct('Incluir Novo Município');
 		$this->eventHandler();
-		
-		// Esqueci de mandar o js para o sigademo =/
 		$this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/js/frmMunicipio.js'));
 
 		$this->carregarInfo();
@@ -118,7 +116,7 @@ class frmMunicipio extends MFormAjax {
 	// Carrega o form com as informações do item que chegar
 	function carregarInfo() {
 		global $item;
-
+		
 		if(!is_null($item)) {
 			$this->SetButtonAttr('btnIncluir','label','Salvar');	
 			$this->SetButtonAttr('btnExcluir','visible',true);	
