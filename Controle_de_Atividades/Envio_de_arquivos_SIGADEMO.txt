@@ -71,4 +71,13 @@ miolo/classes/extensions/jasper/lib/jasperreports-4.8.0.jar
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
+[STATUS] = NÃO ENVIADO 
+
+Tarefa 6 - Renovação de empréstimo
+
+modules/biblioteca/classes/emprestimo.class
+modules/biblioteca/classes/exemplar.class
+modules/biblioteca/forms/frmRenovUsuario.class
+
+
 

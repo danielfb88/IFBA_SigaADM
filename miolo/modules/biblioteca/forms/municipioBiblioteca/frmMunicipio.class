@@ -19,16 +19,6 @@
  */
 
 /**
- * TODO: Para Quarta Feira 24/10/2012:
- * 
- * 1 - tratar mensagem de chave duplicada	- ok
- * 2 - combobox exibir valores corretos. analizar o combo de: 
- * 			SIGA :: Biblioteca :: Administração :: Políticas
- * 3 - lookup para municipio
- *
- */
-
-/**
 
  * 
  * @author Daniel Bonfim
@@ -41,6 +31,8 @@ class frmMunicipio extends MFormAjax {
 
 		parent::__construct('Incluir Novo Município');
 		$this->eventHandler();
+		
+		// Esqueci de mandar o js para o sigademo =/
 		$this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/js/frmMunicipio.js'));
 
 		$this->carregarInfo();
