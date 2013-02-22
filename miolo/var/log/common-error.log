@@ -1,2 +1,6 @@
       10.1.14.3 - sandala    - [09/10/2012 10:26:22] "; SQL:SELECT p.nome,u.login,u.idusuario,u.idpessoa,p.idpessoa FROM   cm_usuario u,cm_pessoa p WHERE (u.idpessoa = p.idpessoa) and (( upper(u.login) like
                             upper('sandala%') ) ORDER BY u.login"
+      127.0.0.1 - oxente     - [22/02/2013 17:07:08] "; SQL:SELECT cm_usuario.idusuario,cm_usuario.idpessoa,cm_usuario.idsetor,cm_usuario.login,cm_usuario.password,cm_usuario.nick,cm_usuario.passmd5,cm_usuario.ativo FROM   cm_usuario WHERE  cm_usuario.idusuario = '21'"
+      127.0.0.1 - oxente     - [22/02/2013 17:08:58] "; SQL:SELECT cm_usuario.idusuario,cm_usuario.idpessoa,cm_usuario.idsetor,cm_usuario.login,cm_usuario.password,cm_usuario.nick,cm_usuario.passmd5,cm_usuario.ativo FROM   cm_usuario WHERE  cm_usuario.idusuario = '21'"
+      127.0.0.1 - oxente     - [22/02/2013 17:12:20] "; SQL:SELECT cm_usuario.idusuario,cm_usuario.idpessoa,cm_usuario.idsetor,cm_usuario.login,cm_usuario.password,cm_usuario.nick,cm_usuario.passmd5,cm_usuario.ativo FROM   cm_usuario WHERE  cm_usuario.idusuario = '21'"
+      127.0.0.1 - oxente     - [22/02/2013 17:16:19] "; SQL:SELECT cm_usuario.idusuario,cm_usuario.idpessoa,cm_usuario.idsetor,cm_usuario.login,cm_usuario.password,cm_usuario.nick,cm_usuario.passmd5,cm_usuario.ativo FROM   cm_usuario WHERE  cm_usuario.idusuario = '21'"

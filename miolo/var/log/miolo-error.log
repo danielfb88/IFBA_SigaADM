@@ -408,3 +408,16 @@ LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
 HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."
    10.101.14.30 - daniel     - [06/02/2013 15:26:16] "Error in Database: sigaept; ERROR:  null value in column "campo" violates not-null constraint"
   201.4.128.218 -            - [14/02/2013 22:23:13] "Sessão encerrada por timeout."
+      127.0.0.1 - oxente     - [22/02/2013 17:07:08] "Error in Database: sigaept; ERROR:  null value in column "idobra" violates not-null constraint"
+      127.0.0.1 - oxente     - [22/02/2013 17:07:08] "Error in Database: common; ;ERROR:  current transaction is aborted, commands ignored until end of transaction block"
+      127.0.0.1 - oxente     - [22/02/2013 17:08:58] "Error in Database: sigaept; ERROR:  null value in column "idobra" violates not-null constraint"
+      127.0.0.1 - oxente     - [22/02/2013 17:08:58] "Error in Database: common; ;ERROR:  current transaction is aborted, commands ignored until end of transaction block"
+      127.0.0.1 - oxente     - [22/02/2013 17:09:19] "Error in Database: sigaept; ERROR:  null value in column "idobra" violates not-null constraint"
+      127.0.0.1 - oxente     - [22/02/2013 17:12:20] "Error in Database: sigaept; ERROR:  null value in column "idobra" violates not-null constraint"
+      127.0.0.1 - oxente     - [22/02/2013 17:12:20] "Error in Database: common; ;ERROR:  current transaction is aborted, commands ignored until end of transaction block"
+      127.0.0.1 - oxente     - [22/02/2013 17:16:19] "Error in Database: sigaept; ERROR:  null value in column "idobra" violates not-null constraint"
+      127.0.0.1 - oxente     - [22/02/2013 17:16:19] "Error in Database: common; ;ERROR:  current transaction is aborted, commands ignored until end of transaction block"
+      127.0.0.1 - oxente     - [22/02/2013 18:07:20] "Error in Database: sigaept; ;ERROR:  operator does not exist: character = integer
+LINE 1: ...s.mnemonico = 'SOLICITADA') and ((r.foiconfirmada = 0) or (r...
+                                                             ^
+HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts."

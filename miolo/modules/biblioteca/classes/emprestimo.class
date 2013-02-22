@@ -704,6 +704,20 @@ class BusinessBibliotecaEmprestimo extends Business
 		return $this->Query($sql,$NumeroTombo);
 	}
 
+	/**
+	 * Obtém o id da obra pelo id do exemplar.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 22-02-2013
+	 *
+	 * @param int $idExemplar
+	 * @return int
+	 */
+	function getIdObraByIdExemplar($idExemplar) {
+		$sql = new sql('idobra', 'bt_exemplar', 'idexemplar = ?');
+		return $this->Query($sql, $idExemplar)->result[0][0];
+	}
+
 
 	function IDExemplarToNumeroTombo($idExemplar)
 	{
@@ -1020,9 +1034,6 @@ class BusinessBibliotecaEmprestimo extends Business
 		}
 	}
 
-	/*
-	 * TODO: Arrumar este método
-	 */
 	function ConfirmarEmprestimo($Exemplar,$idusuario,$idoperador, $renovacoes=null)
 	{
 		global $MIOLO,$mkrono,$module;
@@ -1096,7 +1107,85 @@ class BusinessBibliotecaEmprestimo extends Business
 		return array($idemprestimo,$this->InsereEspacoData($dataPrevDevOrg));
 	}
 
-	
+	/**
+	 * Efetua um novo emprestimo.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 22-02-2013
+	 *
+	 * @param int $idExemplar
+	 * @param int $idUsuario
+	 * @param id $idOperador
+	 * @param string $qtdRenovacoesEfetuadas
+	 * @return date Data de previsão de devolução
+	 */
+	function efetuarEmprestimo($idExemplar, $idUsuario ,$idOperador, $qtdRenovacoesEfetuadas = null) {
+		global $MIOLO, $mkrono, $module;
+
+		$bussExemplar = $MIOLO->GetBusiness($module,'exemplar');
+
+		$idEmprestimo = $this->LastNumeroEmprestimo();
+		$idRegraCirculacao = $bussExemplar->getIdRegraCirculacaoByIdExemplar($idExemplar);
+		$idGrupo = $this->getGrupoUsuario($idUsuario)->result[0][0];
+		$idObra = $this->getIdObraByIdExemplar($idExemplar);
+
+		$prazoDevolucao = $this->getPrazoDevolucao($idRegraCirculacao, $idGrupo);
+		$qtdDiasPrazo = $prazoDevolucao[0];
+		$horaFinalPrazo = $prazoDevolucao[1];
+
+		// Adiciona sábados e domingos
+		$qtdDiasPrazo = $this->CalculaDias($qtdDiasPrazo);
+
+		$k = new MKrono();
+		$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
+		$dataPrevDevOrg = $k->Operation('+', $dataHoje, $qtdDiasPrazo . '%D') . " " . $horaFinalPrazo;
+
+		$dataHoje = ":to_timestamp('".$dataHoje."','DD/MM/YYYY HH24:MI:SS')";
+		$dataPrevDev = ":to_timestamp('". $dataPrevDevOrg . "','DD/MM/YYYY HH24:MI:SS')";
+
+		// determina a quantidade de renovacoes
+		if($qtdRenovacoesEfetuadas != null)	{
+			$qtdRenovacoesEfetuadas++;
+		} else {
+			$qtdRenovacoesEfetuadas = 0;
+		}
+
+		// inserindo em bt_emprestimo
+		$sql = new sql('
+				idemprestimo,
+				emprhoras,
+				idusuario,
+				idexemplar,
+				datahoradoemprestimo,
+				datahoraprevisaodevolucao,
+				quantidadederenovacoes,
+				idobra',
+
+				'bt_emprestimo'
+		);
+		
+		$values = array(
+				$idEmprestimo,
+				0,
+				$idUsuario,
+				$idExemplar,
+				$dataHoje,
+				$dataPrevDev,
+				$qtdRenovacoesEfetuadas,
+				$idObra
+		);
+		$this->Execute($sql->Insert($values));
+
+		// Altera a situação do exemplar (bt_exemplar)
+		$sql = new sql('idestado', 'bt_exemplar', 'idexemplar = ?');
+		$bussEstado = $MIOLO->GetBusiness($module, 'estado');
+		$idEstado = $bussEstado->GetIdByMnemonico("EMPRESTADO");
+		$this->Execute($sql->Update(array($idEstado, $idExemplar)));
+
+		return $dataPrevDevOrg;
+	}
+
+
 	function ConfirmarEmprestimoRecintoUfjf($Exemplar,$idusuario,$idoperador)
 	{
 		global $MIOLO,$mkrono,$module;
@@ -1247,6 +1336,23 @@ class BusinessBibliotecaEmprestimo extends Business
 		$sql = new sql('idgrupo','bt_vinculo','idusuario = ?');
 		$query = $this->Query($sql,$idusuario);
 		return $query;
+	}
+
+	/**
+	 * Retorna informações sobre o prazo para a devolução.
+	 * Quantidade de dias e Hora final.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 22-02-2013
+	 *
+	 * @param int $regracirculacao
+	 * @param int $idgrupo
+	 * @return array
+	 */
+	function getPrazoDevolucao($regracirculacao, $idgrupo) {
+		$sql = new sql('diasdeemprestimo, horadevolucao', 'bt_politica', 'idregracirculacao = ? AND idgrupo = ? ');
+		$query = $this->Query($sql, array($regracirculacao, $idgrupo));
+		return $query->result[0];
 	}
 
 
@@ -1670,23 +1776,40 @@ class BusinessBibliotecaEmprestimo extends Business
 	 * @param int $usuario
 	 * @return boolean
 	 */
-	function renovarEmprestimo($idemprestimo, $idUsuario) {
-		global $MIOLO,$module;
+	function renovarEmprestimo($idEmprestimo, $idUsuario) {
+		global $MIOLO, $module;
 
-		$idExemplar = $this->GetIdExemplarFromIdEmprestimo($idemprestimo)->result[0][0];
-		$data->idemprestimo = $idemprestimo;
-		$data->hidexemplar = $idExemplar;
+		$this->beginTransaction();
+
+		$idExemplar = $this->getIdExemplarByIdEmprestimo($idEmprestimo);
 
 		// Devolvendo
-		$objDevolucao = $MIOLO->GetBusiness($module, 'devolucao');
-		$objDevolucao->Devolucao($data);
+		$bussDevolucao = $MIOLO->GetBusiness($module, 'devolucao');
+		$bussDevolucao->setTransaction($this->getTransaction());
+		$bussDevolucao->devolverExemplar($idEmprestimo, $idExemplar);
 
-		$numeroTombo = $this->IDExemplarToNumeroTombo($idExemplar)->result[0][0];
+		// Efetuando novo emprestimo
+		$qtdRenovacoesEfetuadas = $this->GetById($idEmprestimo)->quantidadederenovacoes;
+		$dataPrevistaDevolucao = $this->efetuarEmprestimo($idExemplar, $idUsuario, 0, $qtdRenovacoesEfetuadas);
 
-		//busca quantidade de renovacoes do emprestimo
-		$qtdRenovacoesEfetuadas = $this->GetById($idemprestimo)->quantidadederenovacoes;
+		$this->endTransaction();
 
-		return $this->ConfirmarEmprestimo($numeroTombo, $idUsuario, 0, $qtdRenovacoesEfetuadas);
+		return $dataPrevistaDevolucao;
+	}
+
+	/**
+	 * Obtém o ID do Exemplar pelo ID do empréstimo.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 22-02-2013
+	 *
+	 * @param int $idEmprestimo
+	 * @return int
+	 */
+	function getIdExemplarByIdEmprestimo($idEmprestimo) {
+		$sql = new sql('idexemplar', 'bt_emprestimo', 'idemprestimo = ?');
+		$query = $this->Query($sql, $idEmprestimo);
+		return $query->result[0][0];
 	}
 
 

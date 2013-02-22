@@ -252,6 +252,19 @@ class BusinessBibliotecaExemplar extends Business
 		$query = $this->Query($sql,$tombo);
 		return $query->result[0][0];
 	}
+	
+	/**
+	 * Obtém o id da regra de circulação pelo ID do exemplar.
+	 * 
+	 * @author Daniel Bonfim
+	 * @since 22-02-2013
+	 * 
+	 * @param int $idExemplar
+	 */
+	function getIdRegraCirculacaoByIdExemplar($idExemplar) {
+		$sql = new sql('idregracirculacao','bt_exemplar','idexemplar = ?');
+		return $this->Query($sql, $idExemplar)->result[0][0];
+	}
 
 
 
