@@ -1,21 +1,21 @@
 <?PHP
 /* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
  *
- * Este arquivo é parte do programa SigaEPT
- *
- * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
- * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
- * na versão 2 da Licença.
- *
- * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
- * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
- * Pública Geral GNU/GPL em português para maiores detalhes.
- *
- * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
- * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
- * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
- * St, Fifth Floor, Boston, MA 02110-1301, USA
- */
+* Este arquivo é parte do programa SigaEPT
+*
+* O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+* termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+* na versão 2 da Licença.
+*
+* Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+* uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+* Pública Geral GNU/GPL em português para maiores detalhes.
+*
+* Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+* junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+* www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+* St, Fifth Floor, Boston, MA 02110-1301, USA
+*/
 ?>
 <?
 
@@ -28,7 +28,7 @@ class BusinessBibliotecaEstado extends Business
 
 	function BusinessBibliotecaEstado($data = null)
 	{
-       $this->Business('sigaept', $data);
+		$this->Business('sigaept', $data);
 	}
 
 	function GetData()
@@ -52,7 +52,7 @@ class BusinessBibliotecaEstado extends Business
 	{
 
 		$sql = new sql('idestado,descricao,mnemonico','bt_estado','idestado = ?');
-	
+
 		$query = $this->Query($sql,$idestado);
 
 		if ( !$query->eof() )
@@ -61,66 +61,97 @@ class BusinessBibliotecaEstado extends Business
 			$this->SetEstados(); //Usado no MultiText2
 		}
 
-	return $this;
+		return $this;
 	}
-   
-    function SetEstados()
+
+	function SetEstados()
 	{
-	$sql = new sql('a.idoperacao, a.idestadofuturo', 'bt_transicao a', 'idestadopresente = ?');
-        $query = $this->Query($sql,$this->idestado);
-        $this->estados = $query->result;
+		$sql = new sql('a.idoperacao, a.idestadofuturo', 'bt_transicao a', 'idestadopresente = ?');
+		$query = $this->Query($sql,$this->idestado);
+		$this->estados = $query->result;
 	}
 
 
 	function Update($data)
 	{
 		$sql = new sql('idestado,descricao,mnemonico','bt_estado','idestado = ?');
-		
-		// values é um array com cada campo do primeiro parametro do sql mais os 
-		// parâmetros do where 
+
+		// values é um array com cada campo do primeiro parametro do sql mais os
+		// parâmetros do where
 		$values = array($data->idestado,$data->descricao,$data->mnemonico,$data->idestado);
-		
+
 		$result = $this->Execute($sql->Update($values));
-//    var_dump($result);
-    if ($result)
+		//    var_dump($result);
+		if ($result)
 		{
 			// Agora precisamos atualizar (deletar + inserir) os dados da transação de estados
 			$sql->sql('','bt_transicao','idestadopresente=?');
 			$cmd[] = $sql->Delete($data->idestado);
 			$sql->sql('idestadopresente, idoperacao, idestadofuturo','bt_transicao');
-			if ($data->estados) 
+			if ($data->estados)
 			{
 				foreach($data->estados as $estado)
 				{
-           $cmd[] = $sql->Insert(array($data->idestado, $estado[0], $estado[1]));
+					$cmd[] = $sql->Insert(array($data->idestado, $estado[0], $estado[1]));
 				}
 			}
-//			$ok = $this->Execute($cmd);
-	//		var_dump($ok);
-		
+			//			$ok = $this->Execute($cmd);
+			//		var_dump($ok);
+
 			foreach($cmd as $comando)
 			{
-         $ok = $this->Execute($comando);
-//         var_dump($comando);
-      }
-    
+				$ok = $this->Execute($comando);
+				//         var_dump($comando);
+			}
+
 			//if ($ok) {$this->Log(OP_UPD,"idtrans = $this->idtrans; transacao = $this->transacao");}
 		}
 		else
 		{
-       return false;
+			return false;
 		}
-	return $ok;
+		return $ok;
+	}
+
+	/**
+	 * Retorna o id e a descrição do estado do exemplar, pelo ID do exemplar.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 27-02-2013
+	 * @param array
+	 */
+	function getEstadoByIdExemplar($idExemplar) {
+		$sql = new sql("
+				es.idestado,
+				es.descricao
+
+				FROM
+				bt_exemplar e,
+				bt_regracirculacao r,
+				bt_estado es,
+				bt_unidade u,
+				bt_obra o
+
+				WHERE
+				e.idexemplar = $idExemplar AND
+				e.idregracirculacao = r.idregracirculacao AND
+				e.idestado = es.idestado AND
+				e.idunidade = u.idunidade AND
+				e.idobra = o.idobra
+				");
+
+		$query = $this->Query($sql);
+		return $query->result[0];
 	}
 
 	function LastNumeroEstado()
-	{    
+	{
 		//$sql = new sql('seq_bt_estado.nextval','dual');
-	  	$sql = new sql("nextval('seq_bt_estado')");
+		$sql = new sql("nextval('seq_bt_estado')");
 		$query = $this->Query($sql);
-	  	return $query->result[0][0];
+		return $query->result[0][0];
 	}
-	
+
 	function Insert($data)
 	{
 
@@ -129,66 +160,68 @@ class BusinessBibliotecaEstado extends Business
 		$data->idestado = $this->LastNumeroEstado();
 
 		$values = array($data->idestado,$data->descricao,$data->mnemonico);
-		
+
 		$result = $this->Execute($sql->Insert($values));
 
-		 if ($result)
+		if ($result)
+		{
+			// Agora precisamos atualizar (deletar + inserir) os dados da transação de estados
+			$sql->sql('','bt_transicao','idestadopresente=?');
+			$cmd[] = $sql->Delete($data->idestado);
+			$sql->sql('idestadopresente, idoperacao, idestadofuturo','bt_transicao');
+			if ($data->estados)
 			{
-				// Agora precisamos atualizar (deletar + inserir) os dados da transação de estados
-				$sql->sql('','bt_transicao','idestadopresente=?');
-				$cmd[] = $sql->Delete($data->idestado);
-				$sql->sql('idestadopresente, idoperacao, idestadofuturo','bt_transicao');
-				if ($data->estados) 
+				foreach($data->estados as $estado)
 				{
-					foreach($data->estados as $estado)
-					{
-					   $cmd[] = $sql->Insert(array($data->idestado, $estado[0], $estado[1]));
-					}
+					$cmd[] = $sql->Insert(array($data->idestado, $estado[0], $estado[1]));
 				}
-       foreach($cmd as $comando)
-			 {
-         $ok = $this->Execute($comando);
-//       var_dump($comando);
-       }
-				//if ($ok) {$this->Log(OP_UPD,"idtrans = $this->idtrans; transacao = $this->transacao");} 
 			}
-			else
+			foreach($cmd as $comando)
 			{
-				return false;
+				$ok = $this->Execute($comando);
+				//       var_dump($comando);
 			}
-	if($ok){$ok = $data->idestado;}
-	return $ok;
+			//if ($ok) {$this->Log(OP_UPD,"idtrans = $this->idtrans; transacao = $this->transacao");}
+		}
+		else
+		{
+			return false;
+		}
+		if($ok){
+			$ok = $data->idestado;
+		}
+		return $ok;
 
 
-	return $ok;
+		return $ok;
 
 	}
 
-	
+
 	function Delete($data)
 	{
-		// primeiro deleta as informações 
+		// primeiro deleta as informações
 		// da bt_transicao.
 		$sql = new sql('','bt_transicao','idestadopresente=?');
 		$ok = $this->Execute($sql->Delete($data->idestado));
-		
+
 		// agora deleta as informações
 		// da bt_estado.
 		if ($ok)
 		{
-		$sql = new sql('','bt_estado','idestado = ?');
-		$ok = $this->Execute($sql->Delete($data->idestado));
+			$sql = new sql('','bt_estado','idestado = ?');
+			$ok = $this->Execute($sql->Delete($data->idestado));
 		}
 
-	return $ok;
+		return $ok;
 
 	}
 
 	function ListEstado()
 	{
 		$sql = new sql('idestado,mnemonico,descricao','bt_estado','','idestado');
-        $query = $this->Query($sql);
-        return $query;
+		$query = $this->Query($sql);
+		return $query;
 	}
 
 
@@ -198,13 +231,14 @@ class BusinessBibliotecaEstado extends Business
 		$query = $this->Query($sql,$mnemonico);
 		return $query->result[0][0];
 	}
-	
+
 	function GetMnemonicoById($idestado){
 		$sql = new sql('mnemonico','bt_estado','(idestado = ?)');
 		$query = $this->Query($sql,$idestado);
 		return $query->result[0][0];
 	}
-	
-	
+
+
+
 }
 ?>

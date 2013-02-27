@@ -82,5 +82,14 @@ modules/biblioteca/forms/frmRenovUsuario.class
 modules/biblioteca/classes/multa.class
 miolo/modules/biblioteca/classes/devolucao.class
 
+-----------------------------------------------------------------------------
+
+[STATUS] = NÃO ENVIADO
+
+Tarefa 7 - Reserva de exemplar
+
+miolo/modules/biblioteca/classes/estado.class
+miolo/modules/biblioteca/forms/frmPesquisaSimples.class
+
 
 
