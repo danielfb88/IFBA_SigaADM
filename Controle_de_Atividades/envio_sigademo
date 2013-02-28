@@ -1,9 +1,11 @@
 
+Envio de Arquivos para o SigaDemo
+http://sigademo.ifba.edu.br/
 
-Ultima alteração: 15/01/2013
+-----##-----##-----##-----##-----##-----##-----##-----##-----##-----##-----##-----##-----##-----##-----##-----##
 
 
-[STATUS = NÃO ENVIADO]
+[STATUS = ENVIADO] - 28/02/2013
 // Tarefa 1 - Crud de Município - enviado ok
 
 modules/biblioteca/handlers/admin.inc
@@ -19,7 +21,7 @@ modules/biblioteca/grids/gridMunicipio.class:// Daniel Bonfim - 18/10/2012
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
-[STATUS = NÃO ENVIADO]
+[STATUS = [ENVIADO] - 28/02/2013
 // Tarefa 2 - Tela para inserir usuário
 
 modules/biblioteca/forms/frmUsuario.class:// Daniel Bonfim - 24-10-2012
@@ -72,15 +74,15 @@ miolo/classes/extensions/jasper/lib/jasperreports-4.8.0.jar
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
-[STATUS] = NÃO ENVIADO 
+[STATUS] = [ENVIADO] - 28/02/2013
 
 Tarefa 6 - Renovação de empréstimo
 
 modules/biblioteca/classes/emprestimo.class
 modules/biblioteca/classes/exemplar.class
-modules/biblioteca/forms/frmRenovUsuario.class
 modules/biblioteca/classes/multa.class
 miolo/modules/biblioteca/classes/devolucao.class
+modules/biblioteca/forms/frmRenovUsuario.class
 
 -----------------------------------------------------------------------------
 
@@ -89,8 +91,8 @@ miolo/modules/biblioteca/classes/devolucao.class
 Tarefa 7 - Reserva de exemplar
 
 miolo/modules/biblioteca/classes/estado.class
-miolo/modules/biblioteca/forms/frmPesquisaSimples.class
 miolo/modules/biblioteca/classes/exemplar.class
 miolo/modules/biblioteca/classes/reserva.class
+miolo/modules/biblioteca/forms/frmPesquisaSimples.class
 
 
