@@ -30,7 +30,7 @@ Gerar relatório para devolução de livro. Igual ao do emprestimo.
 --------------------------------------------------------------------
 
 PARA 04 DE Fevereiro DE 2013 [Quarta-Feira]
-[STATUS: ABERTO]
+[STATUS: CONCLUÍDO]
 
 Caminho: SIGA :: Biblioteca :: Renovação
 
@@ -38,9 +38,7 @@ Verificar a renovação do emprestimo.
 Crie relatório.
 
 Para efetuar testes nesta tarefa, você precisará usar o recurso de alterar a data de renovação, a qual é de 24 horas antes do periodo expirar. Faça pelo sistema para ir se familiarizando com estas funcionalidades. 
-O caminho é: Circulação :: Empréstimos :: Alterar Previsão de Devolução 
-
-Porém, esta funcionalidade está com defeito. A alteração não é refletida no banco. Corrija primeiro este bug antes de consertar a renovação.
+O caminho é: Circulação :: Empréstimos :: Histórico por exemplar -> btnEditar
 
 --------------------------------------------------------------------------
 
@@ -52,17 +50,31 @@ Catalogação :: Catalogação/Obra
 
 Segundo Sandala, o cutter e outros campos não estão sendo exibidos.
 
-----------------------------------------------------------------------
-TO: 25 DE FEVEREIRO DE 2013
-[STATUS: ABERTO]
-
-Corrigir a tela de Pesquisa Simples.
 
 ----------------------------------------------------------------------------
+
+Para 04 de Março de 2013
+[STATUS: ABERTO]
+
+Relatório de empréstimo e devolução com campos em branco quando forem nulos.
+
+--------------------------------------------------------------
 
 Para ?
 [STATUS: ABERTO]
 
-Reservar livro. Faça a pesquisa por livros, depois selecione o livro, o grid que aparecer será relacionado a reservas. Analize-os.
-Crie relatório.
+Reservar livro. 
+Esqueça a regra de negócio já existente. Se possível faça uma modelagem da forma que achar melhor para satisfazer a operação.
+As tabelas envolvidas são: bt_reserva, bt_exemplar, bt_estado, bt_emprestimo, bt_situacao
+
+-------------------------------------------------------------------------
+
+Para 04 de Março de 2013
+[STATUS: ABERTO]
+
+Empréstimo de obra com um dos exemplares emprestados.
+
+Observar erro em empréstimo. Haviam 3 exemplares de uma obra e o exemplar 1 estava emprestada pelo usuário x.
+O usuário y tentou pegar o exemplar 2 e náo consegui. Nem o 3. 
+O erro informado foi de que o usuário já possuía o exemplar.
 
