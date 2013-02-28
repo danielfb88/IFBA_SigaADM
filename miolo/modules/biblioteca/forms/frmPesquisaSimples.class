@@ -538,11 +538,9 @@ class frmPesquisaSimples extends frmPesquisa
 		*
 		* Devido a falta de documentação, estou usando esta forma não muito elegante para passar argumentos para
 		* o método através da query_string http
-		*  ? = #
-		*  & = *
 		*/
-		$enderecoHttpComFiltros = str_replace('?', '-', str_replace('&', '*', $endereco));
-		$href_reserva = $MIOLO->GetActionURL($module, $self, '%0%', array('event'=>'reservarExemplar&endereco='.$enderecoHttpComFiltros));
+		$actionVoltarHttpComFiltros = base64_encode($endereco);
+		$href_reserva = $MIOLO->GetActionURL($module, $self, '%2%', array('event'=>'reservarExemplar&actionVoltar='.$actionVoltarHttpComFiltros));
 		$datagrid->AddActionText('Reservar', 'Reservar', $href_reserva);
 		// </>
 
@@ -828,24 +826,69 @@ class frmPesquisaSimples extends frmPesquisa
 
 	/**
 	 * Efetua a reserva do exemplar
-	 * 
+	 *
 	 * @author Daniel Bonfim
 	 * @since 27-02-2013
 	 */
 	function reservarExemplar() {
 		global $MIOLO, $module, $action, $item;
 
-		$enderecoHttpComFiltros = (str_replace('-', '?', str_replace('*', '&', $_GET[endereco])));
+		$numeroTombo = $item;
+		$actionVoltarHttpComFiltros = base64_decode($_GET['actionVoltar']);
 
 		$bussEstado = $MIOLO->GetBusiness($module, 'estado');
-		$estado = $bussEstado->getEstadoByIdExemplar($item);
+		$estado = $bussEstado->getEstadoByNumeroTombo($numeroTombo);
 
 		if($estado[0] != 1) {
-			$MIOLO->Error("O exemplar não pode ser reservado porque está $estado[1].", $enderecoHttpComFiltros);
-			
-		} else {
-			// TODO: Efetuar a reverva. Vou dormir....			
+			$MIOLO->Error("O exemplar não pode ser reservado porque está $estado[1].", $actionVoltarHttpComFiltros);
 
+		} else {
+			/*
+			 * TODO:
+			*
+			* tabelas participantes:	bt_reserva, bt_exemplar, bt_estado, bt_emprestimo, bt_situacao
+			*
+			* 1 - marcar exemplar como reservado em bt_exemplar - ok
+			* 2 - criar registro em bt_reserva - ok
+			*
+			* 3 - Perguntar a sandala sobre as regras de negócio sobre o reserva
+			* 			* Questionar sobre os campos da tabela bt_reserva
+			* 			* Questionar sobre a tabela bt_situacao
+			*
+			* 4 - Alterar a forma como o empréstimo é feito para participar também as regras da reserva
+			*/
+
+			$bussExemplar = $MIOLO->GetBusiness($module, 'exemplar');
+			$bussReserva = $MIOLO->GetBusiness($module, 'reserva');
+			$bussEstado  =$MIOLO->GetBusiness($module,'estado');
+
+			$k = new MKrono();
+			$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
+
+			$db = $MIOLO->GetDatabase('sigaept');
+			$transaction = $db->getTransaction();
+			$transaction->begin();
+
+			// Alterando o exemplar (bt_exemplar)
+			$idestado = $bussEstado->GetIdByMnemonico("RESERVADO");
+			$bussExemplar->AlteraEstado($numeroTombo, $idestado);
+
+
+			// Inserindo nova reserva (bt_reserva)
+			$idExemplar = $bussExemplar->GetIdByTombo($numeroTombo);
+			$idUsuario = $MIOLO->login->idkey;
+
+			/*
+			 * $dataHoraReserva, $dataHoraSituacao, $dataHoraEntrada,
+			* $dataHoraLimite, $foiAvisado, $foiConfirmada, $idSituacao, $idUsuario, $idExemplar
+			*/
+			$bussReserva->insertReserva($dataHoje, $dataHoje, $dataHoje,
+				null, null, null, 1, $idUsuario, $idExemplar);
+
+			$transaction->commit();
+
+			$msg = 'Exemplar reservado com sucesso.';
+			$this->manager->Information($msg, $actionVoltarHttpComFiltros);
 		}
 	}
 

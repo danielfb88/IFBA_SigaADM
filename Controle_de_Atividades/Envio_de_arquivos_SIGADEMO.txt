@@ -90,6 +90,7 @@ Tarefa 7 - Reserva de exemplar
 
 miolo/modules/biblioteca/classes/estado.class
 miolo/modules/biblioteca/forms/frmPesquisaSimples.class
-
+miolo/modules/biblioteca/classes/exemplar.class
+miolo/modules/biblioteca/classes/reserva.class
 
 

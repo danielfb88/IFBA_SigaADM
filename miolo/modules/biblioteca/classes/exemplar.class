@@ -554,7 +554,7 @@ class BusinessBibliotecaExemplar extends Business
 		$query = $this->Query($sql,$tombo);
 		return $query->result[0][0];
 	}
-
+	
 	function AlteraEstado($tombo, $estado){
 		$sql = new sql('idestado', 'bt_exemplar', 'numerodotombo = ?');
 

@@ -114,13 +114,13 @@ class BusinessBibliotecaEstado extends Business
 	}
 
 	/**
-	 * Retorna o id e a descrição do estado do exemplar, pelo ID do exemplar.
+	 * Retorna o id e a descrição do estado do exemplar, pelo número do tombo.
 	 *
 	 * @author Daniel Bonfim
 	 * @since 27-02-2013
 	 * @param array
 	 */
-	function getEstadoByIdExemplar($idExemplar) {
+	function getEstadoByNumeroTombo($numeroTombo) {
 		$sql = new sql("
 				es.idestado,
 				es.descricao
@@ -133,7 +133,7 @@ class BusinessBibliotecaEstado extends Business
 				bt_obra o
 
 				WHERE
-				e.idexemplar = $idExemplar AND
+				e.numerodotombo = '$numeroTombo' AND
 				e.idregracirculacao = r.idregracirculacao AND
 				e.idestado = es.idestado AND
 				e.idunidade = u.idunidade AND
