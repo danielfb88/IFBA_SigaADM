@@ -8,7 +8,6 @@
 miolo/var/log/*
 miolo/var/reports/*
 modules/biblioteca/.gitignore
-Controle_de_Atividades/Artefatos/dump_sigademo_20-02-2013
 miolo/var/log/common-sql.log
 miolo/var/log/miolo-error.log
 miolo/var/log/sigaept-error.log
