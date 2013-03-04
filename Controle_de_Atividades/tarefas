@@ -43,18 +43,20 @@ O caminho é: Circulação :: Empréstimos :: Histórico por exemplar -> btnEdit
 --------------------------------------------------------------------------
 
 PARA 25 de Fevereiro de 2013
-[STATUS: ABERTO]
+[STATUS: CONCLUIDO]
 
 Verificar a tela: 
 Catalogação :: Catalogação/Obra
 
 Segundo Sandala, o cutter e outros campos não estão sendo exibidos.
 
+CONCLUSÃO: Não há erros nesta tela. As informações que não sâo exibidas são porque realmente não existem.
+
 
 ----------------------------------------------------------------------------
 
 Para 04 de Março de 2013
-[STATUS: ABERTO]
+[STATUS: CONCLUIDO]
 
 Relatório de empréstimo e devolução com campos em branco quando forem nulos.
 

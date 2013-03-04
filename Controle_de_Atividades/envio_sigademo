@@ -52,8 +52,6 @@ modules/biblioteca/classes/obra.class
 
 // Tarefa 4 - Corrigir bug no relatório de empréstimo
 
-Implementar Correção [28-02-2013] = branco para campos nulos
-
 modules/biblioteca/reports/Ticket1_Emprestimo_UI.jrxml
 modules/biblioteca/reports/Ticket1_Emprestimo_UI.jasper
 
@@ -69,8 +67,6 @@ miolo/classes/extensions/jasper/lib/jasperreports-4.8.0.jar
 [STATUS] = ENVIADO. 04-02-2013
 
 Implementar Correção [28-02-2013] = branco para campos nulos
-
-// Tarefa 5 - Criar relatório de devolução  - null = branco
 
 /var/www/miolo/modules/biblioteca/forms/frmDevolucao.class
 /var/www/miolo/modules/biblioteca/reports/Ticket1_Devolucao_UI.jasper
