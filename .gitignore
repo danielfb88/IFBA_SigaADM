@@ -7,8 +7,9 @@
 *.swp
 miolo/var/log/*
 miolo/var/reports/*
-modules/biblioteca/.gitignore
 miolo/var/log/common-sql.log
 miolo/var/log/miolo-error.log
 miolo/var/log/sigaept-error.log
 miolo/var/log/sigaept-sql.log
+miolo/modules/biblioteca/.gitignore
+miolo/modules/biblioteca/.git/
