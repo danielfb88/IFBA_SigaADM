@@ -62,6 +62,18 @@ Relatório de empréstimo e devolução com campos em branco quando forem nulos.
 
 --------------------------------------------------------------
 
+
+Para 07 de Março de 2013
+[STATUS: ABERTO]
+
+Empréstimo de obra com um dos exemplares emprestados.
+
+Observar erro em empréstimo. Haviam 3 exemplares de uma obra e o exemplar 1 estava emprestada pelo usuário x.
+O usuário y tentou pegar o exemplar 2 e náo consegui. Nem o 3. 
+O erro informado foi de que o usuário já possuía o exemplar.
+
+--------------------------------------------------------------------
+
 Para ?
 [STATUS: ABERTO]
 
@@ -71,12 +83,4 @@ As tabelas envolvidas são: bt_reserva, bt_exemplar, bt_estado, bt_emprestimo, b
 
 -------------------------------------------------------------------------
 
-Para 04 de Março de 2013
-[STATUS: ABERTO]
-
-Empréstimo de obra com um dos exemplares emprestados.
-
-Observar erro em empréstimo. Haviam 3 exemplares de uma obra e o exemplar 1 estava emprestada pelo usuário x.
-O usuário y tentou pegar o exemplar 2 e náo consegui. Nem o 3. 
-O erro informado foi de que o usuário já possuía o exemplar.
 
