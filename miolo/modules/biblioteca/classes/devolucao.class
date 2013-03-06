@@ -77,45 +77,29 @@ class BusinessBibliotecaDevolucao extends Business
 		$this->idestado = $data->idestado;
 	}
 
-	function GetExemplar($numerodotombo)
-	{
-		global $item;
+	/**
+	 * Modificado por Daniel Bonfim em 06-03-2013
+	 */
+	function GetExemplar($numerodotombo) {
+		$sql = new sql("
+				exemp.numerodotombo,
+				obr.numerodaobra,
+				obr.titulo,
+				obr.edicao,
+				est.mnemonico as status,
+				mat.conteudo as autor
 
+				FROM bt_obra obr
+
+				JOIN bt_exemplar exemp ON (obr.idobra = exemp.idobra)
+				JOIN bt_material mat ON (obr.idobra = mat.idobra)
+				JOIN bt_estado est ON (exemp.idestado = est.idestado)
+
+				WHERE
+				(exemp.numerodotombo = ?) AND
+				(mat.idetiqueta in (SELECT DISTINCT idetiqueta FROM bt_autor))");
 			
-		$sql = new //sql('x.numerodotombo,o.numerodaobra,o.titulo,o.autor,o.edicao,e.mnemonico as status','bt_estado e,bt_exemplar x, bt_obra o','(x.numerodotombo =?) AND (o.idobra = x.idobra) AND (e.idestado=x.idestado)');
-
-		// PESQUISANDO COM JOIN NA TABELA AUTOR    25/04/2009
-		// COMENTADO DEVIDO A MUDANÇAS COM O AUTOr          sql("x.numerodotombo,o.numerodaobra,o.titulo,a.sobrenome || ',' || a.prenome as autor,o.edicao,e.mnemonico as status, a.prenome as autor",'bt_estado e,bt_exemplar x, bt_obra o , bt_autor a','(x.numerodotombo =?) AND (o.idobra = x.idobra)  AND (o.idautor = a.idautor) AND (e.idestado=x.idestado)');
-
-		//            sql("x.numerodotombo,o.numerodaobra,o.titulo, o.edicao,e.mnemonico as status",'bt_estado e,bt_exemplar x, bt_obra o , bt_autor a','(x.numerodotombo =?) AND (o.idobra = x.idobra)  AND (o.idautor = a.idautor) AND (e.idestado=x.idestado)');
-
-
-		// Agora pesquisando autor em bt_material:
-		/*
-		 //  sql("x.numerodotombo,o.numerodaobra,o.titulo, o.edicao,e.mnemonico as status ,m.conteudo as autor",'bt_estado e,bt_exemplar x, bt_obra o , bt_autor a , bt_material m','(x.numerodotombo =?) AND (o.idobra = x.idobra) and (o.idobra = m.idobra) AND (m.idetiqueta = 53)  AND (o.idautor = a.idautor) AND (e.idestado=x.idestado)');
-
-
-
-		select    x.numerodotombo,o.numerodaobra,o.titulo, o.edicao,e.mnemonico as status ,m.conteudo as autor
-
-		from bt_estado e,bt_exemplar x, bt_obra o ,  bt_material m
-
-		where
-		x.numerodotombo =42) AND (o.idobra = x.idobra) and (o.idobra = m.idobra) AND (m.idetiqueta = 53)  AND  (e.idestado=x.idestado)
-
-		*/
-
-
-
-
-		sql("x.numerodotombo,o.numerodaobra,o.titulo, o.edicao,e.mnemonico as status ,m.conteudo as autor",'bt_estado e,bt_exemplar x, bt_obra o ,  bt_material m','(x.numerodotombo =?) AND (o.idobra = x.idobra) and (o.idobra = m.idobra) AND (m.idetiqueta = 53)  AND  (e.idestado=x.idestado)');
-
-
-			
-		$query = $this->Query($sql,$numerodotombo);
-		//var_dump($sql->select($numerodotombo));
 		return $this->Query($sql,$numerodotombo);
-			
 	}
 
 	function GetIdByNumeroTombo( $numeroTombo )
