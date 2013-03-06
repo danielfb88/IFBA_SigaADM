@@ -33,7 +33,6 @@ JOIN bt_exemplar exemp ON (exemp.idexemplar = empr.idexemplar)
 WHERE
 v.codigoacesso = $P{CODIGOACESSO} AND
 empr.datahoradadevolucao IS NULL AND
-(a.idetiqueta = 53 OR a.idetiqueta = 154) AND
 a.subcampo = 'a']]>
 	</queryString>
 	<field name="nome" class="java.lang.String"/>
