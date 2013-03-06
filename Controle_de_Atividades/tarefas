@@ -83,4 +83,10 @@ As tabelas envolvidas são: bt_reserva, bt_exemplar, bt_estado, bt_emprestimo, b
 
 -------------------------------------------------------------------------
 
+* Descoberto por mim
 
+Para ?
+[STATUS: CONCLUÍDO]
+
+Erro ao devolver exemplar.
+Causa: Erro de SQL.
