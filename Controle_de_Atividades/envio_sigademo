@@ -95,4 +95,12 @@ miolo/modules/biblioteca/classes/exemplar.class
 miolo/modules/biblioteca/classes/reserva.class
 miolo/modules/biblioteca/forms/frmPesquisaSimples.class
 
+--------------------------------------------------------------------------------
+
+[06-03-2013 - USO DO CONTROLADOR DE VERSÃO GIT EM SIGADEMO]
+
+O REGISTRO DE ARQUIVOS ENVIADOS AO SIGADEMO VIA SSH SERÁ REGISTRADO AQUI APENAS PARA 
+OS QUE NÃO ESTIVEREM NO DIRETÓRIO 'BIBLIOTECA'
+
+------------------------------------------------------------------------------------------
 
