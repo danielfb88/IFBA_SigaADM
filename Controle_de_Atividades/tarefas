@@ -64,7 +64,7 @@ Relatório de empréstimo e devolução com campos em branco quando forem nulos.
 
 
 Para 07 de Março de 2013
-[STATUS: ABERTO]
+[STATUS: CONCLUÍDO]
 
 Empréstimo de obra com um dos exemplares emprestados.
 
@@ -74,6 +74,16 @@ O erro informado foi de que o usuário já possuía o exemplar.
 
 --------------------------------------------------------------------
 
+* Descoberto por mim
+
+Para ?
+[STATUS: CONCLUÍDO]
+
+Erro ao devolver exemplar.
+Causa: Erro de SQL.
+
+-----------------------------------------------------------------------------------------------
+
 Para ?
 [STATUS: ABERTO]
 
@@ -82,11 +92,3 @@ Esqueça a regra de negócio já existente. Se possível faça uma modelagem da 
 As tabelas envolvidas são: bt_reserva, bt_exemplar, bt_estado, bt_emprestimo, bt_situacao
 
 -------------------------------------------------------------------------
-
-* Descoberto por mim
-
-Para ?
-[STATUS: CONCLUÍDO]
-
-Erro ao devolver exemplar.
-Causa: Erro de SQL.

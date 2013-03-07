@@ -530,60 +530,45 @@ class frmEmprestimo extends Form
 			$report->Execute('biblioteca','Ticket3_Emprestimo_UI',$parameters);
 	}
 
-	/**
-	 * Modificado por Daniel Bonfim em 06-03-2013
-	 */
-	function btnRealizarEmprestimo_click() {
-		global $MIOLO, $module, $item, $self, $theme, $action, $page, $datagrid;
+	function btnRealizarEmprestimo_click()
+	{
+		global $MIOLO,$module,$item,$self, $theme, $action, $page,$datagrid;
 
+		//$this->page->onLoad('document.'.$this->name.'.edtExemplar.focus();');
 		$this->page->onLoad("MIOLO_GetElementById('edtExemplar').focus();");
 
-		$bussEmprestimo = $MIOLO->GetBusiness($module, 'emprestimo');
-
-		// Campos
-		// tornando invisivel
-		$this->SetFieldAttr('edtSenha','visible',false);
-		// tornando visivel
-		$this->SetFieldAttr('edtNome','visible',true);
-		$this->SetFieldAttr('edtNome','readonly',true);
-		$this->SetFieldAttr('edtExemplar','visible', true);
-		// tornando apenas leitura
-		$this->SetFieldAttr('edtSenha','readonly',true);
-		$this->SetFieldAttr('edtCartaoAcesso','readonly',true);
-
-		// Botoes
-		// tornando invisivel
+		// Atributo dos botões
 		$this->SetButtonAttr('btnVerificar','visible',false);
-		$this->SetButtonAttr('btnConsulta','visible',false);
-		$this->SetButtonAttr('btnConfirmar','visible',false);
-		// tornando visivel
 		$this->SetButtonAttr('btnRealizarEmprestimo','visible',true);
 		$this->SetButtonAttr('btnImprimirRecibo','visible', true );
+		//$this->SetButtonAttr('btnImprimirRecibo','visible', true );
+		$this->SetButtonAttr('btnConsulta','visible',false);
+		$this->SetButtonAttr('btnConfirmar','visible',false);
 
 		$data = $this->GetData();
+		//var_dump($data);
 			
-		if(!empty($data->exemplar)) {
-				
-			// Obtendo exemplares que este usuário já pegou
-			$exemplares = $bussEmprestimo->GetExemplares($data->exemplar, $data->idusuario)->result;
-				
-			echo '<pre>';
-			var_dump($exemplares);die;
-			echo '</pre>';
-				
-			// TODO: Continuar.... vou dormir....
-				
-		} else {
+		//Instancia a classe Emprestimo
+		$objEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
 
-		}
-
-
-
-
+		//Propriedades dos campos
+		$this->SetFieldAttr('edtNome','visible',true);
+		$this->SetFieldAttr('edtSenha','visible',false);
+		$this->SetFieldAttr('edtCartaoAcesso','readonly',true);
+		$this->SetFieldAttr('edtNome','readonly',true);
+		$this->SetFieldAttr('edtSenha','readonly',true);
+		$this->SetFieldAttr('edtExemplar','visible', true);
 
 		// Vamos Transformar a string em um Array de 1 elemento
 		$Exemplares =  array();
 		array_push($Exemplares,$data->exemplar);
+
+
+		// o Resultado final do sistema
+		// Retirado para entrada do GRID
+		//$Resultado = " <BR><BR> Resultado: <BR><BR> ";
+
+		//$objEmprestimo->BeginTransaction();
 
 		if ($Exemplares)
 		{
@@ -596,7 +581,6 @@ class frmEmprestimo extends Form
 
 			$Exemplares = $Exemplares->result;
 
-			//var_dump($Exemplares);
 			$Resultado = Array();
 			$i = 0;
 			//
@@ -604,8 +588,6 @@ class frmEmprestimo extends Form
 			//  $resultado[$i][1] = Mensagem
 			//  $resultado[$i][2] = Data Prev Devolucao
 
-			// TODO: Continuar a analizar daqui...
-				
 			foreach ($Exemplares as $Exemplar)
 			{
 				//$a = $data->exemplar;
@@ -639,13 +621,15 @@ class frmEmprestimo extends Form
 					$query = $objEmprestimo->EstaEmprestado($idExemplar);
 					$idEmprestimo = $query->result[0][0];
 
-					$query = $objEmprestimo->EstaEmprestadoIdObra($Exemplar[0]);
-					$idEmprestimoIdObra = $query->result[0][0];
+					/*
+					 * Substituido o método 'EstaEmprestadoIdObra' por 'isObraEmprestadaParaUsuario'
+					* @author Daniel Bonfim
+					* @since 06-03-2013
+					*/
+					$tombo = $Exemplar[0];
+					$isObraEmprestadaParaUsuario = $objEmprestimo->isObraEmprestadaParaUsuario($tombo, $idusuario);
 
-					//var_dump($idReserva,$usuarioReserva);
-
-
-					if(!$idEmprestimoIdObra){
+					if(!$isObraEmprestadaParaUsuario){
 
 						if (!($idEmprestimo )) // exemplar já está emprestado (f5 na pagina)
 						{
@@ -788,14 +772,14 @@ class frmEmprestimo extends Form
 		$datagrid = new Grid($this->getListaExemplares(), $columns, $href_datagrid,50);
 		$datagrid->SetTitle('Resultado');
 		$datagrid->SetWidth('99%');
-			
+
 
 		//Esconde os campos
 		$this->SetFieldAttr('edtNome','visible', true);
 		$this->SetFieldAttr('edtSenha','visible', false);
 		$this->SetFieldAttr('edtExemplar','visible',  true);
 		$this->SetFieldAttr('edtCartaoAcesso','visible', true);
-			
+
 		// Atributo dos botões
 		$this->SetButtonAttr('btnConsulta','visible',false);
 		$this->SetButtonAttr('btnVerificar','visible',false);
@@ -803,17 +787,13 @@ class frmEmprestimo extends Form
 		$this->SetButtonAttr('btnConfirmar','visible',false);
 		$this->SetButtonAttr('btnVoltar','visible',true);
 
-			
-			
+
+
 		$theme->AppendContent($datagrid);
 
 		$this->SetFieldValue('edtExemplar','');
 
 	}
-
-
-
-
 
 	function getDataLog($Emprestimo)
 	{

@@ -652,7 +652,7 @@ class BusinessBibliotecaEmprestimo extends Business
 					$queryTemp->result[0][6] = $EmprestimoImpedido;
 
 					//$queryDataGrid->result=new array();
-					var_dump($queryDataGrid->result);
+// 					var_dump($queryDataGrid->result);
 					array_push($queryDataGrid->result,$queryTemp->result[0]);
 
 
@@ -775,6 +775,11 @@ class BusinessBibliotecaEmprestimo extends Business
 		return $this->Query($sql,$Exemplar);
 	}
 
+	/**
+	 * @deprecated
+	 * Veja 'isObraEmprestadaParaUsuario'
+	 * @param unknown $Exemplar
+	 */
 	function EstaEmprestadoIdObra($Exemplar)
 	{
 		$sql = new sql('idemprestimo','bt_emprestimo','( datahoradadevolucao is null ) and ( idobra = ? )');
@@ -783,6 +788,24 @@ class BusinessBibliotecaEmprestimo extends Business
 		return $this->Query($sql,$idobra);
 	}
 
+	/**
+	 * @author Daniel Bonfim
+	 * @since 06-03-2013
+	 *
+	 * Verifica se a obra já está emprestada para este usuário
+	 *
+	 * @param int $tombo
+	 * @param int $idusuario
+	 * @return boolean
+	 */
+	function isObraEmprestadaParaUsuario($tombo, $idusuario) {
+		$sql = new sql('idemprestimo', 'bt_emprestimo', '( datahoradadevolucao is null ) AND ( idobra = ? ) AND (idusuario = ?)');
+		$idobra = $this->NumeroTomboToIdObra($tombo)->result[0][0];
+		
+		$query = $this->Query($sql, array($idobra, $idusuario));
+
+		return is_null($query->result[0][0]) ? false : true;
+	}
 
 	function GetSituacao($string)
 	{
@@ -1163,7 +1186,7 @@ class BusinessBibliotecaEmprestimo extends Business
 
 				'bt_emprestimo'
 		);
-		
+
 		$values = array(
 				$idEmprestimo,
 				0,
