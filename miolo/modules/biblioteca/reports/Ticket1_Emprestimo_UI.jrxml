@@ -10,8 +10,8 @@
 		<filterExpression><![CDATA[Boolean.TRUE]]></filterExpression>
 	</subDataset>
 	<parameter name="CODIGOACESSO" class="java.lang.String"/>
-	<queryString language="SQL">
-		<![CDATA[SELECT
+	<queryString>
+		<![CDATA[SELECT DISTINCT
 p.nome,
 v.codigoacesso,
 obr.titulo,
