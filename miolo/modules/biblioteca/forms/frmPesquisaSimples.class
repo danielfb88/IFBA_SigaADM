@@ -839,7 +839,10 @@ class frmPesquisaSimples extends frmPesquisa
 		$bussEstado = $MIOLO->GetBusiness($module, 'estado');
 		$estado = $bussEstado->getEstadoByNumeroTombo($numeroTombo);
 
-		if($estado[0] != 1) {
+		/*
+		 * Só é possível reservar um exemplar que estiver emprestado.
+		 */
+		if($estado[0] != 5) {
 			$MIOLO->Error("O exemplar não pode ser reservado porque está $estado[1].", $actionVoltarHttpComFiltros);
 
 		} else {
@@ -847,15 +850,11 @@ class frmPesquisaSimples extends frmPesquisa
 			 * TODO:
 			*
 			* tabelas participantes:	bt_reserva, bt_exemplar, bt_estado, bt_emprestimo, bt_situacao
+			* tabelas do novo funcionamento: bt_reserva, bt_exemplar, bt_emprestimo
 			*
 			* 1 - marcar exemplar como reservado em bt_exemplar - ok
 			* 2 - criar registro em bt_reserva - ok
-			*
-			* 3 - Perguntar a sandala sobre as regras de negócio sobre o reserva
-			* 			* Questionar sobre os campos da tabela bt_reserva
-			* 			* Questionar sobre a tabela bt_situacao
-			*
-			* 4 - Alterar a forma como o empréstimo é feito para participar também as regras da reserva
+			* 3 - Alterar a forma como o empréstimo é feito para participar também as regras da reserva
 			*/
 
 			$bussExemplar = $MIOLO->GetBusiness($module, 'exemplar');
@@ -882,8 +881,8 @@ class frmPesquisaSimples extends frmPesquisa
 			 * $dataHoraReserva, $dataHoraSituacao, $dataHoraEntrada,
 			* $dataHoraLimite, $foiAvisado, $foiConfirmada, $idSituacao, $idUsuario, $idExemplar
 			*/
-			$bussReserva->insertReserva($dataHoje, $dataHoje, $dataHoje,
-				null, null, null, 1, $idUsuario, $idExemplar);
+			$bussReserva->insertReserva($dataHoje, null, null,
+				null, null, null, 2, $idUsuario, $idExemplar);
 
 			$transaction->commit();
 

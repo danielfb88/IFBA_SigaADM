@@ -530,39 +530,48 @@ class frmEmprestimo extends Form
 			$report->Execute('biblioteca','Ticket3_Emprestimo_UI',$parameters);
 	}
 
+
+
+	/*
+	 * TODO: REIMPLEMENTAR EMPRÉSTIMO.
+	*/
 	function btnRealizarEmprestimo_click()
 	{
 		global $MIOLO,$module,$item,$self, $theme, $action, $page,$datagrid;
 
-		//$this->page->onLoad('document.'.$this->name.'.edtExemplar.focus();');
 		$this->page->onLoad("MIOLO_GetElementById('edtExemplar').focus();");
 
-		// Atributo dos botões
-		$this->SetButtonAttr('btnVerificar','visible',false);
-		$this->SetButtonAttr('btnRealizarEmprestimo','visible',true);
+		// Botões visíveis
 		$this->SetButtonAttr('btnImprimirRecibo','visible', true );
-		//$this->SetButtonAttr('btnImprimirRecibo','visible', true );
+		$this->SetButtonAttr('btnRealizarEmprestimo','visible',true);
+
+		// Botões invisíveis
+		$this->SetButtonAttr('btnVerificar','visible',false);
 		$this->SetButtonAttr('btnConsulta','visible',false);
 		$this->SetButtonAttr('btnConfirmar','visible',false);
 
-		$data = $this->GetData();
-		//var_dump($data);
-			
-		//Instancia a classe Emprestimo
-		$objEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
-
-		//Propriedades dos campos
+		// Campos visíveis
 		$this->SetFieldAttr('edtNome','visible',true);
-		$this->SetFieldAttr('edtSenha','visible',false);
-		$this->SetFieldAttr('edtCartaoAcesso','readonly',true);
 		$this->SetFieldAttr('edtNome','readonly',true);
 		$this->SetFieldAttr('edtSenha','readonly',true);
 		$this->SetFieldAttr('edtExemplar','visible', true);
 
+		// Campos invisíveis
+		$this->SetFieldAttr('edtSenha','visible',false);
+
+		// Campos somente leitura
+		$this->SetFieldAttr('edtCartaoAcesso','readonly',true);
+
+		$data = $this->GetData();
+			
+		//Instancia a classe Emprestimo
+		$objEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
+
+
+
 		// Vamos Transformar a string em um Array de 1 elemento
 		$Exemplares =  array();
 		array_push($Exemplares,$data->exemplar);
-
 
 		// o Resultado final do sistema
 		// Retirado para entrada do GRID
@@ -723,6 +732,13 @@ class frmEmprestimo extends Form
 			$goto = $MIOLO->GetActionURL($module,$self);
 			$MIOLO->Error('<font color=red>Nenhum exemplar selecionado. Por favor, volte e selecione os exemplares.</font>', $goto,500);
 		}
+
+
+
+
+
+
+
 
 		//$objEmprestimo->EndTransaction();
 

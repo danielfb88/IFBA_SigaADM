@@ -208,11 +208,11 @@ class BusinessBibliotecaExemplar extends Business
 		' e.idexemplar = ? and e.idobra=o.idobra and es.idestado=e.idestado and a.idautor=o.idautor and a.idetiqueta = 53 ');
 
 		"e.idexemplar = ? and e.idobra=o.idobra and es.idestado=e.idestado and a.idautor=o.idautor and a.idetiqueta = 53 and a.subcampo ='a'    ");
-		 
+			
 
 
 
-		 
+			
 
 
 
@@ -252,18 +252,39 @@ class BusinessBibliotecaExemplar extends Business
 		$query = $this->Query($sql,$tombo);
 		return $query->result[0][0];
 	}
-	
+
 	/**
 	 * Obtém o id da regra de circulação pelo ID do exemplar.
-	 * 
+	 *
 	 * @author Daniel Bonfim
 	 * @since 22-02-2013
-	 * 
+	 *
 	 * @param int $idExemplar
 	 */
 	function getIdRegraCirculacaoByIdExemplar($idExemplar) {
 		$sql = new sql('idregracirculacao','bt_exemplar','idexemplar = ?');
 		return $this->Query($sql, $idExemplar)->result[0][0];
+	}
+
+	/**
+	 * Verifica se o exemplar está reservado pelo número do tombo
+	 *
+	 * @author Daniel Bonfim
+	 * @since 12-03-2013
+	 *
+	 * @param unknown $tombo
+	 * @return boolean
+	 */
+	function estaReservado($tombo) {
+		global $MIOLO, $module;
+
+		$bussEstado = $MIOLO->GetBusiness($module, 'estado');
+		$idEstadoReservado = $bussEstado->GetIdByMnemonico('RESERVADO');
+
+		$sql = new sql('idexemplar','bt_exemplar',"numerodotombo = ? AND idestado = $idEstadoReservado");
+		$query = $this->Query($sql, array($tombo));
+
+		$estaReservado = is_null($query->result[0][0]) ? false : true;
 	}
 
 
@@ -371,7 +392,7 @@ class BusinessBibliotecaExemplar extends Business
 
 		$this->execute($commands);
 	}
-	 
+
 	function InsertMany($data)
 	{
 		$quantidade = 1;
@@ -554,7 +575,7 @@ class BusinessBibliotecaExemplar extends Business
 		$query = $this->Query($sql,$tombo);
 		return $query->result[0][0];
 	}
-	
+
 	function AlteraEstado($tombo, $estado){
 		$sql = new sql('idestado', 'bt_exemplar', 'numerodotombo = ?');
 
@@ -709,7 +730,7 @@ class BusinessBibliotecaExemplar extends Business
 				'bt_exemplar e, bt_regracirculacao r',
 				"(e.idregracirculacao = r.idregracirculacao) AND (upper(r.descricao) like '%CONSULTA%') AND (e.idexemplar = ?)"
 		);
-		
+
 		$query = $this->Query($sql, $idexemplar);
 		return !is_null($query->result[0][0]);
 	}

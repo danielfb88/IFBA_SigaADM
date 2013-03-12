@@ -403,6 +403,9 @@ class BusinessBibliotecaEmprestimo extends Business
 	}
 
 
+	/*
+	 * TODO: REIMPLEMENTAR EMPRÉSTIMO.
+	 */
 	function GetExemplares($numerodotombo,$idusuario)
 	{
 

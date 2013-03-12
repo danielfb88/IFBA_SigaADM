@@ -358,6 +358,21 @@ class BusinessBibliotecaReserva extends Business
 	}
 
 	/**
+	 * Obtém as informações relevantes sobre a reserva pelo número do tombo.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 12-03-2013
+	 *
+	 * @param int $tombo
+	 * @return array
+	 */
+	function getReservaByIdExemplar($idExemplar) {
+		$sql = new sql('idreserva, datahoradareserva, idsituacao, idusuario, idexemplar', 'bt_reserva', "idexemplar = $idExemplar");
+		$query = $this->Query($sql);
+		return $query->result[0];
+	}
+
+	/**
 	 * Inserir nova reserva
 	 *
 	 * @author Daniel Bonfim
