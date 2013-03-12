@@ -74,8 +74,6 @@ O erro informado foi de que o usuário já possuía o exemplar.
 
 --------------------------------------------------------------------
 
-* Descoberto por mim
-
 Para ?
 [STATUS: CONCLUÍDO]
 
@@ -84,7 +82,7 @@ Causa: Erro de SQL.
 
 -----------------------------------------------------------------------------------------------
 
-Para ?
+Para 15 de Março de 2013
 [STATUS: ABERTO]
 
 Reservar livro. 
@@ -92,3 +90,10 @@ Esqueça a regra de negócio já existente. Se possível faça uma modelagem da 
 As tabelas envolvidas são: bt_reserva, bt_exemplar, bt_estado, bt_emprestimo, bt_situacao
 
 -------------------------------------------------------------------------
+
+Para 15 de Março de 2013
+[STATUS: ABERTO]
+
+Criar DER (Diagrama Entidade-Relacionamento) da operação de Reserva.
+
+----------------------------------------------------------------------------------------------------------------
