@@ -368,6 +368,25 @@ class BusinessBibliotecaEmprestimo extends Business
 			return false;
 	}
 
+	/**
+	 * Recupera o registro do empréstimo caso ele esteja aberto.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 13-03-2013
+	 *
+	 * @param int $idExemplar
+	 * @param int $idObra
+	 */
+	function getInfoEmprestimoAberto($idExemplar, $idObra) {
+		$sql = new sql(
+				'idemprestimo, datahoradoemprestimo, datahoraprevisaodevolucao, datahoradevolucao, quantidadederenovacoes, idusuario',
+				'bt_emprestimo',
+				'idexemplar = ? AND idobra = ? AND datahoradadevolucao IS null'
+		);
+		$query = $this->Query($sql, array($idExemplar, $idObra));
+		return $query->result[0];
+	}
+
 
 	function SelectIdUsuariobyId($idemprestimo)
 	{
@@ -402,41 +421,6 @@ class BusinessBibliotecaEmprestimo extends Business
 		return $this->idusuario;
 	}
 
-	/**
-	 * Obtém informações sobre as condições impostas para o empréstimo do exemplar
-	 * baseado no grupo do usuário informado pelo 'idusuario'.
-	 *
-	 * @author Daniel Bonfim
-	 * @since 12-03-2013
-	 *
-	 * @param int $tombo
-	 * @param int $idusuario
-	 */
-	function getCondicoesDoExemplarPorUsuario($tombo, $idusuario) {
-		$sql = new sql("
-				grupo.idgrupo,
-				exemplar.idexemplar,
-				exemplar.idestado,
-				exemplar.idregracirculacao,
-				exemplar.idobra,
-				politica.diasdeemprestimo,
-				politica.diasdereserva,
-				politica.limitedeemprestimo,
-				politica.limitederenovacao,
-				politica.limitedereserva
-
-				FROM
-				bt_exemplar exemplar JOIN
-				bt_politica politica ON (exemplar.idregracirculacao = politica.idregracirculacao) JOIN
-				bt_grupo grupo ON (grupo.idgrupo = politica.idgrupo) JOIN
-				bt_vinculo vinculo ON (grupo.idgrupo = vinculo.idgrupo) JOIN
-				cm_usuario usuario ON (usuario.idusuario = vinculo.idusuario)
-
-				WHERE exemplar.numerodotombo = ? AND usuario.idusuario = $idusuario");
-
-		$query = $this->Query($sql, $tombo);
-		return $query->result[0];
-	}
 
 	/**
 	 * @deprecated

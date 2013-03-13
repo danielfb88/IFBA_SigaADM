@@ -287,6 +287,42 @@ class BusinessBibliotecaExemplar extends Business
 		$estaReservado = is_null($query->result[0][0]) ? false : true;
 	}
 
+	/**
+	 * Obtém informações sobre as condições impostas para o empréstimo do exemplar
+	 * baseado no grupo do usuário informado pelo 'idusuario'.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 12-03-2013
+	 *
+	 * @param int $tombo
+	 * @param int $idusuario
+	 */
+	function getCondicoesDoExemplarPorUsuario($tombo, $idusuario) {
+		$sql = new sql("
+				grupo.idgrupo,
+				exemplar.idexemplar,
+				exemplar.idestado,
+				exemplar.idregracirculacao,
+				exemplar.idobra,
+				politica.diasdeemprestimo,
+				politica.diasdereserva,
+				politica.limitedeemprestimo,
+				politica.limitederenovacao,
+				politica.limitedereserva
+
+				FROM
+				bt_exemplar exemplar JOIN
+				bt_politica politica ON (exemplar.idregracirculacao = politica.idregracirculacao) JOIN
+				bt_grupo grupo ON (grupo.idgrupo = politica.idgrupo) JOIN
+				bt_vinculo vinculo ON (grupo.idgrupo = vinculo.idgrupo) JOIN
+				cm_usuario usuario ON (usuario.idusuario = vinculo.idusuario)
+
+				WHERE exemplar.numerodotombo = ? AND usuario.idusuario = $idusuario");
+
+		$query = $this->Query($sql, $tombo);
+		return $query->result[0];
+	}
+
 
 
 	function GetObraIdExemplarByTombo($tombo)
@@ -732,6 +768,35 @@ class BusinessBibliotecaExemplar extends Business
 		);
 
 		$query = $this->Query($sql, $idexemplar);
+		return !is_null($query->result[0][0]);
+	}
+
+	/**
+	 * Verifica se o exemplar existe pelo id ou pelo número do tombo
+	 *
+	 * @author Daniel Bonfim
+	 * @since 13-03-2013
+	 *
+	 * @param int $idExemplar
+	 * @param int $tombo
+	 * @return boolean
+	 */
+	function isExemplarExiste($idExemplar = null, $tombo = null) {
+		$where = '1=1';
+
+		if(!is_null($idExemplar)) {
+			$where .= ' AND idexemplar = ? ';
+			$values[] = $idExemplar;
+		}
+
+		if(!is_null($tombo)) {
+			$where .= "AND numerodotombo = ? ";
+			$values[] = $tombo;
+		}
+
+		$sql = new sql('e.idexemplar', 'bt_exemplar e', $where);
+		$query = $this->Query($sql, $values);
+
 		return !is_null($query->result[0][0]);
 	}
 
