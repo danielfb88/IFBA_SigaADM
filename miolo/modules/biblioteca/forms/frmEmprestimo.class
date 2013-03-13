@@ -575,122 +575,136 @@ class frmEmprestimo extends Form
 			if($bussExemplar->isExemplarExiste($data->exemplar)) {
 
 				$condicoesDoExemplarPorUsuario = $bussExemplar->getCondicoesDoExemplarPorUsuario($data->exemplar, $data->idusuario);
+				if(!is_null($condicoesDoExemplarPorUsuario)) {
 
-				$condicoesDoExemplar = array(
-						'idGrupo' => $condicoesDoExemplarPorUsuario[0],
-						'idExemplar' => $condicoesDoExemplarPorUsuario[1],
-						'idEstado' => $condicoesDoExemplarPorUsuario[2],
-						'idRegraCirculacao' => $condicoesDoExemplarPorUsuario[3],
-						'idObra' => $condicoesDoExemplarPorUsuario[4],
-						'diasEmprestimo' => $condicoesDoExemplarPorUsuario[5],
-						'diasReserva' => $condicoesDoExemplarPorUsuario[6],
-						'limiteDeEmprestimo' => $condicoesDoExemplarPorUsuario[7],
-						'limiteDeRenovacao' => $condicoesDoExemplarPorUsuario[8],
-						'limiteDeReserva' => $condicoesDoExemplarPorUsuario[9],
-				);
+					$condicoesDoExemplar = array(
+							'idGrupo' => $condicoesDoExemplarPorUsuario[0],
+							'idExemplar' => $condicoesDoExemplarPorUsuario[1],
+							'idEstado' => $condicoesDoExemplarPorUsuario[2],
+							'idRegraCirculacao' => $condicoesDoExemplarPorUsuario[3],
+							'idObra' => $condicoesDoExemplarPorUsuario[4],
+							'diasEmprestimo' => $condicoesDoExemplarPorUsuario[5],
+							'diasReserva' => $condicoesDoExemplarPorUsuario[6],
+							'limiteDeEmprestimo' => $condicoesDoExemplarPorUsuario[7],
+							'limiteDeRenovacao' => $condicoesDoExemplarPorUsuario[8],
+							'limiteDeReserva' => $condicoesDoExemplarPorUsuario[9],
+					);
 
-				var_dump($condicoesDoExemplar);die;
+					// Será exibido no grid
+					$MensagemRetorno = null;
 
-				$MensagemRetorno = null;
+					switch ($condicoesDoExemplar['idEstado']) {
+							
+						case $bussEstado->GetIdByMnemonico("DISPONIVEL"):
 
-				switch ($condicoesDoExemplar['idEstado']) {
+							// Obtendo o Id da Operação de Empréstimo
+							$idOperacaoEmprestimo = $bussEmprestimo->getIdOperacaoByMnemonico("EMPRESTIMO");
 
-					case $bussEstado->GetIdByMnemonico("DISPONIVEL"):
+							// Verificando se o grupo do usuário possui direitos para realizar a operação de empréstimo
+							$possuiDireitoDeEmprestimo = $bussDireito->isGrupoComDireitoDeRealizarOperacao(
+									$condicoesDoExemplar['idRegraCirculacao'],
+									$idOperacaoEmprestimo,
+									$condicoesDoExemplar['idGrupo']
+							);
 
-						// Obtendo o Id da Operação de Empréstimo
-						$idOperacaoEmprestimo = $bussEmprestimo->getIdOperacaoByMnemonico("EMPRESTIMO");
+							if($possuiDireitoDeEmprestimo) {
+								
+								// TODO: Continue...
+								die('vai lá...');
+								
+								// 1 - Verificar limite de empréstimo
+								
+								// 2 - Verificar se usuário está com a obra
 
-						// Verificando se o grupo do usuário possui direitos para realizar a operação de empréstimo
-						$possuiDireitoDeEmprestimo = $bussDireito->isGrupoComDireitoDeRealizarOperacao(
-								$condicoesDoExemplar['idRegraCirculacao'],
-								$idOperacaoEmprestimo,
-								$condicoesDoExemplar['idGrupo']
-						);
 
-						if($possuiDireitoDeEmprestimo) {
-							// TODO: Continue...
-						}
-						break;
 
-					case $bussEstado->GetIdByMnemonico("EMPRESTADO"):
-						$arrEmprestimo = $bussEmprestimo->getInfoEmprestimoAberto($condicoesDoExemplar['idExemplar'], $condicoesDoExemplar['idObra']);
 
-						$infoEmprestimo = array(
-								'idemprestimo' => $arrEmprestimo[0],
-								'datahoradoemprestimo' => $arrEmprestimo[1],
-								'datahoraprevisaodevolucao' => $arrEmprestimo[2],
-								'datahoradevolucao' => $arrEmprestimo[3],
-								'quantidadederenovacoes' => $arrEmprestimo[4],
-								'idusuario' => $arrEmprestimo[5]
-						);
 
-						// Se o usuário responsável pelo empréstimo for o mesmo que estiver solicitando
-						if($infoEmprestimo['idusuario'] == $data->idusuario) {
-							$MensagemRetorno = "Exemplar emprestado para o próprio usuário";
-						} else {
-							$MensagemRetorno = "Este exemplar está emprestado!";
-						}
+							}
+							break;
 
-						break;
+						case $bussEstado->GetIdByMnemonico("EMPRESTADO"):
 
-					case $bussEstado->GetIdByMnemonico("RESERVADO"):
-						$MensagemRetorno = "Este exemplar está reservado para outro usuário.";
+							$arrEmprestimo = $bussEmprestimo->getInfoEmprestimoAberto($condicoesDoExemplar['idExemplar'], $condicoesDoExemplar['idObra']);
+							$infoEmprestimo = array(
+									'idemprestimo' => $arrEmprestimo[0],
+									'datahoradoemprestimo' => $arrEmprestimo[1],
+									'datahoraprevisaodevolucao' => $arrEmprestimo[2],
+									'datahoradevolucao' => $arrEmprestimo[3],
+									'quantidadederenovacoes' => $arrEmprestimo[4],
+									'idusuario' => $arrEmprestimo[5]
+							);
 
-						break;
+							// Se o usuário responsável pelo empréstimo for o mesmo que estiver solicitando
+							if($infoEmprestimo['idusuario'] == $data->idusuario) {
+								$MensagemRetorno = "Exemplar emprestado para o próprio usuário";
+							} else {
+								$MensagemRetorno = "Este exemplar está emprestado!";
+							}
 
-					default:
+							break;
 
+						case $bussEstado->GetIdByMnemonico("RESERVADO"):
+							$MensagemRetorno = "Este exemplar está reservado.";
+
+							break;
+
+						default:
+
+					}
+
+				} else {
+					die('sem política de circulação');
+					// ERRO: NÃO TEM POLÍTICA DE CIRCULAÇÃO
 				}
 
-
-				/*
-				 * TODO: Responder a estas Perguntas:
-				*
-				* $Mensagem = "<br>Estado do exemplar não permite empréstimo.";	ok
-				$Mensagem = "Usuário sem direitos de empréstimo sobre $descRegraCirculacao";	ok
-				$Mensagem = "Este exemplar está emprestado!"; ok
-				$Mensagem = "Exemplar emprestado para o próprio usuário"; ok
-				$Mensagem = "Este exemplar está reservado para outro usuário."; ok
-				$Mensagem = "Falta política de circulação.";
-				$Mensagem = "Limite de empréstimos esgotado para este material.<BR>Quantidade possível: $qtdeMaximaExemplaresRegra";
-				$Mensagem = "Você já possui empréstimo dessa obra.<BR>Código do empréstimo: ". $emprestimo->result[0][0];
-				Exemplar não encontrado
-				Nenhum exemplar selecionado. Por favor, volte e selecione os exemplares.
-
-
-				TABELAS ENVOLVIDAS:
-
-				EXEMPLAR:
-				idexemplar
-				numerodotombo
-				idestado
-				idregracirculacao
-				idobra
-
-				RESERVA:
-				idusuario
-				idexemplar
-
-				EMPRESTIMO:
-				idusuario
-				idexemplar
-				idobra
-
-
-				*/
-
-
-
-
 			} else {
-				die('nao existe');
+				die('exemplar nao existe');
 				// ERRO: O EXEMPLAR NÃO EXISTE
 			}
 
 		} else {
-			die('sem numero');
+			die('sem tombo');
 			// ERRO: INSIRA O NUMERO DO EXEMPLAR
 		}
+
+
+
+		/*
+		 * TODO: Responder a estas Perguntas:
+		*
+		Nenhum exemplar selecionado. 	ok
+		Exemplar não encontrado 	ok
+		* $Mensagem = "<br>Estado do exemplar não permite empréstimo.";	ok
+		$Mensagem = "Usuário sem direitos de empréstimo sobre $descRegraCirculacao";	ok
+		$Mensagem = "Este exemplar está emprestado!"; ok
+		$Mensagem = "Exemplar emprestado para o próprio usuário"; ok
+		$Mensagem = "Este exemplar está reservado para outro usuário."; ok
+		$Mensagem = "Falta política de circulação."; 	OK
+		$Mensagem = "Limite de empréstimos esgotado para este material.<BR>Quantidade possível: $qtdeMaximaExemplaresRegra";
+		$Mensagem = "Você já possui empréstimo dessa obra.<BR>Código do empréstimo: ". $emprestimo->result[0][0];
+
+
+		TABELAS ENVOLVIDAS:
+
+		EXEMPLAR:
+		idexemplar
+		numerodotombo
+		idestado
+		idregracirculacao
+		idobra
+
+		RESERVA:
+		idusuario
+		idexemplar
+
+		EMPRESTIMO:
+		idusuario
+		idexemplar
+		idobra
+
+
+		*/
 
 		die('ok');
 

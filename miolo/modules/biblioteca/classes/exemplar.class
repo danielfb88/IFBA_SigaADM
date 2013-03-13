@@ -319,8 +319,7 @@ class BusinessBibliotecaExemplar extends Business
 
 				WHERE exemplar.numerodotombo = ? AND usuario.idusuario = $idusuario");
 
-		$query = $this->Query($sql, $tombo);
-		return $query->result[0];
+		return $this->Query($sql, $tombo)->result[0];
 	}
 
 
