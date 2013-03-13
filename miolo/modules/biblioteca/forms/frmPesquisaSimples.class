@@ -841,16 +841,13 @@ class frmPesquisaSimples extends frmPesquisa
 
 		/*
 		 * Só é possível reservar um exemplar que estiver emprestado.
-		 */
+		*/
 		if($estado[0] != 5) {
 			$MIOLO->Error("O exemplar não pode ser reservado porque está $estado[1].", $actionVoltarHttpComFiltros);
 
 		} else {
 			/*
-			 * TODO:
-			*
-			* tabelas participantes:	bt_reserva, bt_exemplar, bt_estado, bt_emprestimo, bt_situacao
-			* tabelas do novo funcionamento: bt_reserva, bt_exemplar, bt_emprestimo
+			 * TODO: tabelas do novo funcionamento: bt_reserva, bt_exemplar, bt_emprestimo
 			*
 			* 1 - marcar exemplar como reservado em bt_exemplar - ok
 			* 2 - criar registro em bt_reserva - ok

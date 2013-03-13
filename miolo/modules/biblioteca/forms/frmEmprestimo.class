@@ -532,12 +532,12 @@ class frmEmprestimo extends Form
 
 
 
-	/*
-	 * TODO: REIMPLEMENTAR EMPRÉSTIMO.
-	*/
-	function btnRealizarEmprestimo_click()
-	{
-		global $MIOLO,$module,$item,$self, $theme, $action, $page,$datagrid;
+	/**
+	 * @author Daniel Bonfim
+	 * @since 12-03-2013
+	 */
+	function btnRealizarEmprestimo_click() {
+		global $MIOLO, $module, $item, $self, $theme, $action, $page, $datagrid;
 
 		$this->page->onLoad("MIOLO_GetElementById('edtExemplar').focus();");
 
@@ -564,20 +564,71 @@ class frmEmprestimo extends Form
 
 		$data = $this->GetData();
 			
-		//Instancia a classe Emprestimo
-		$objEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
+		$bussEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
+		$bussExemplar = $MIOLO->GetBusiness($module,'exemplar');
+		$bussReserva = $MIOLO->GetBusiness($module,'reserva');
+
+		$condicoesDoExemplar = $bussEmprestimo->getInfoExemplar($data->exemplar, $data->idusuario);
+
+		var_dump($condicoesDoExemplar);die;
+
+
+		/*
+		 * TODO: Responder a estas Perguntas:
+	 *
+	 * $Mensagem = "<br>Estado do exemplar não permite empréstimo.";
+		$Mensagem = "Usuário sem direitos de empréstimo sobre $descRegraCirculacao";
+		Este exemplar está emprestado
+		$Mensagem = "Exemplar emprestado para o próprio usuário";
+		$Mensagem = "Este exemplar está emprestado!";
+		$Mensagem = "Este exemplar está reservado para outro usuário.";
+		$Mensagem = "Falta política de circulação.";
+		$Mensagem = "Limite de empréstimos esgotado para este material.<BR>Quantidade possível: $qtdeMaximaExemplaresRegra";
+		$Mensagem = "Você já possui empréstimo dessa obra.<BR>Código do empréstimo: ". $emprestimo->result[0][0];
+		Exemplar não encontrado
+		Nenhum exemplar selecionado. Por favor, volte e selecione os exemplares.
+
+
+		TABELAS ENVOLVIDAS:
+
+		EXEMPLAR:
+		idexemplar
+		numerodotombo
+		idestado
+		idregracirculacao
+		idobra
+
+		RESERVA:
+		idusuario
+		idexemplar
+
+		EMPRESTIMO:
+		idusuario
+		idexemplar
+		idobra
+
+
+		Vou descansar....
+	 */
 
 
 
-		// Vamos Transformar a string em um Array de 1 elemento
-		$Exemplares =  array();
-		array_push($Exemplares,$data->exemplar);
 
-		// o Resultado final do sistema
-		// Retirado para entrada do GRID
-		//$Resultado = " <BR><BR> Resultado: <BR><BR> ";
 
-		//$objEmprestimo->BeginTransaction();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 		if ($Exemplares)
 		{
@@ -739,6 +790,17 @@ class frmEmprestimo extends Form
 
 
 
+
+
+
+
+
+
+
+
+		/*
+		 * Gerando o Grid
+		*/
 
 		//$objEmprestimo->EndTransaction();
 

@@ -402,9 +402,44 @@ class BusinessBibliotecaEmprestimo extends Business
 		return $this->idusuario;
 	}
 
+	/**
+	 * Obtém informações sobre as condições impostas para o empréstimo do exemplar
+	 * baseado no grupo do usuário informado pelo 'idusuario'.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 12-03-2013
+	 *
+	 * @param int $tombo
+	 * @param int $idusuario
+	 */
+	function getInfoExemplar($tombo, $idusuario) {
+		$sql = new sql("
+				exemplar.idexemplar,
+				exemplar.numerodotombo,
+				exemplar.idestado,
+				exemplar.idregracirculacao,
+				exemplar.idobra,
+				politica.diasdeemprestimo,
+				politica.diasdereserva,
+				politica.limitedeemprestimo,
+				politica.limitederenovacao,
+				politica.limitedereserva
 
-	/*
-	 * TODO: REIMPLEMENTAR EMPRÉSTIMO.
+				FROM
+				bt_exemplar exemplar JOIN
+				bt_politica politica ON (exemplar.idregracirculacao = politica.idregracirculacao) JOIN
+				bt_grupo grupo ON (grupo.idgrupo = politica.idgrupo) JOIN
+				bt_vinculo vinculo ON (grupo.idgrupo = vinculo.idgrupo) JOIN
+				cm_usuario usuario ON (usuario.idusuario = vinculo.idusuario)
+
+				WHERE numerodotombo = ? AND usuario.idusuario = $idusuario");
+
+		$query = $this->Query($sql, $tombo);
+		return $query->result[0];
+	}
+
+	/**
+	 * @deprecated
 	 */
 	function GetExemplares($numerodotombo,$idusuario)
 	{
@@ -537,7 +572,7 @@ class BusinessBibliotecaEmprestimo extends Business
 								$usuarioReserva = $query->result[0][1];
 
 								//var_dump($usuarioReserva);
-									
+
 								if ($usuarioReserva)
 								{
 
@@ -582,7 +617,7 @@ class BusinessBibliotecaEmprestimo extends Business
 										$numeroEmprestimos = $query->result[0][0];
 										$query = $this->GetQtdeEmprestimosRegra($idusuario,$idregracirculacao);
 										$numeroEmprestimosRegra = $query->result[0][0];
-											
+
 										//var_dump($numeroEmprestimos);
 
 										//    									if ( ($numeroEmprestimos+$exemplarOK) >= $qtdeMaximaExemplares)
@@ -634,17 +669,17 @@ class BusinessBibliotecaEmprestimo extends Business
 
 				} // fim do !idobra - exemplar não encontrado
 
-					
+
 				// Temos duas opções. Se idobra nao foi encontrado, tenho que preencher apenas
 				// com "Nao encontrado". Se foi encontrado faz um sql pegando os dados e inserindo
 				// forçadamente na query.
-					
-					
+
+
 				if ($EmprestimoImpedido)
 					$Mensagem = "<font color=red>" . $Mensagem . "</font>";
-					
-					
-					
+
+
+
 				if ($idobra)
 				{
 					$sqlTemp = new sql("x.numerodotombo,o.numerodaobra,o.titulo,o.edicao,e.mnemonico as status",'bt_estado e,bt_exemplar x, bt_obra o,bt_autor a','(x.numerodotombo=\''. $n .'\') AND (o.idobra = x.idobra) AND (e.idestado=x.idestado) AND (a.idautor = o.idautor)','numerodotombo');
@@ -655,7 +690,7 @@ class BusinessBibliotecaEmprestimo extends Business
 					$queryTemp->result[0][6] = $EmprestimoImpedido;
 
 					//$queryDataGrid->result=new array();
-// 					var_dump($queryDataGrid->result);
+					// 					var_dump($queryDataGrid->result);
 					array_push($queryDataGrid->result,$queryTemp->result[0]);
 
 
@@ -670,9 +705,9 @@ class BusinessBibliotecaEmprestimo extends Business
 
 				}
 
-					
-					
-					
+
+
+
 			} // fim do foreach
 
 			return $queryDataGrid;
@@ -804,7 +839,7 @@ class BusinessBibliotecaEmprestimo extends Business
 	function isObraEmprestadaParaUsuario($tombo, $idusuario) {
 		$sql = new sql('idemprestimo', 'bt_emprestimo', '( datahoradadevolucao is null ) AND ( idobra = ? ) AND (idusuario = ?)');
 		$idobra = $this->NumeroTomboToIdObra($tombo)->result[0][0];
-		
+
 		$query = $this->Query($sql, array($idobra, $idusuario));
 
 		return is_null($query->result[0][0]) ? false : true;
@@ -1021,7 +1056,7 @@ class BusinessBibliotecaEmprestimo extends Business
 
 	function ConfirmarReserva($idReserva,$idSituacaoConfirmada)
 	{
-			
+
 		// Item 4.11 OBS 1
 
 		$k = new MKrono();
@@ -1086,7 +1121,7 @@ class BusinessBibliotecaEmprestimo extends Business
 		$qtsDias = $this->CalculaDias($qtsDias);
 
 		//var_dump($qtsDias);
-			
+
 		$dataPrevDevOrg = $k->Operation('+',$dataHoje,$qtsDias . '%D') . " " . $horaFinal;
 
 
@@ -1114,7 +1149,7 @@ class BusinessBibliotecaEmprestimo extends Business
 		$values = array($idemprestimo,0,$idusuario,$idexemplar,$dataHoje,$dataPrevDev, $renovacoes,$idobra);
 		$ok = $this->Execute($sql->Insert($values));
 
-			
+
 		// Altera o idsituacao do exemplar!
 		$sql = new sql('idestado','bt_exemplar','idexemplar=?');
 		$objEstado=$MIOLO->GetBusiness($module,'estado');
@@ -1127,7 +1162,7 @@ class BusinessBibliotecaEmprestimo extends Business
 		$log = $MIOLO->GetBusiness($module,'log');
 		$sqlog = $log->Gravar("EMPRESTIMO",$idemprestimo);
 		$this->Execute($sqlog->Insert());
-			
+
 		$this->EndTransaction();
 
 		return array($idemprestimo,$this->InsereEspacoData($dataPrevDevOrg));
@@ -1235,19 +1270,19 @@ class BusinessBibliotecaEmprestimo extends Business
 		$idexemplar = $this->NumeroTomboToIDExemplar($Exemplar)->result[0][0];
 
 		$this->BeginTransaction();
-			
+
 		$sql = new sql('idemprestimo,emprhoras,idusuario,idexemplar,datahoradoemprestimo,datahoraprevisaodevolucao','bt_emprestimo');
 		$values = array($idemprestimorecinto,1,$idusuario,$idexemplar,$dataHojeOracle,$dataPrevDevOracle);
-			
+
 		$ok = $this->Execute($sql->Insert($values));
 
 		$objEstado=$MIOLO->GetBusiness($module,'estado');
 		$idestado = $objEstado->GetIdByMnemonico("EMPRESTADO");
-			
+
 		$sql = new sql('idestado','bt_exemplar','idexemplar=?');
 		$ok = $this->Execute($sql->Update(array($idestado,$idexemplar)));
 
-			
+
 		//
 		// LOG ;)
 		//
@@ -1256,7 +1291,7 @@ class BusinessBibliotecaEmprestimo extends Business
 		$this->Execute($sqlog->Insert());
 
 		$this->EndTransaction();
-			
+
 		return array($idemprestimorecinto,$this->InsereEspacoData($dataPrevDev));
 
 	}
@@ -1286,12 +1321,12 @@ class BusinessBibliotecaEmprestimo extends Business
 		$idexemplar = $this->NumeroTomboToIDExemplar($Exemplar)->result[0][0];
 
 		$this->BeginTransaction();
-			
+
 		$sql = new sql('idemprestimo,idusuario,idexemplar,datahoradoemprestimo,datahoraprevisaodevolucao,emprhoras','bt_emprestimo');
 		$values = array($idemprestimorecinto,$data->idusuario,$idexemplar,$dataHojeOracle,$dataPrevDevOracle,1);
 
 		//var_dump($sql->insert($values));
-			
+
 		$ok = $this->Execute($sql->Insert($values));
 
 		$objEstado=$MIOLO->GetBusiness($module,'estado');
@@ -1306,7 +1341,7 @@ class BusinessBibliotecaEmprestimo extends Business
 		$log = $MIOLO->GetBusiness($module,'log');
 		$sqlog = $log->Gravar("EMPRHORAS",$idemprestimorecinto);
 		$this->Execute($sqlog->Insert());
-			
+
 		$this->EndTransaction();
 
 		return array($idemprestimorecinto,$this->InsereEspacoData($dataPrevDev));
@@ -1419,7 +1454,7 @@ class BusinessBibliotecaEmprestimo extends Business
 		//Alterado:20/04/2012 $sql = new sql("to_number(extract (day from(datahoraprevisaodevolucao - to_timestamp('".$datar."','dd/mm///yy'))),'99999D9')",'bt_emprestimo','idemprestimo=?');
 
 		$sql = new sql('age(datahoraprevisaodevolucao,timestamp \''.$datar.'\')','bt_emprestimo','idemprestimo=?');
-			
+
 
 		$query = $this->Query($sql,$idemprestimo);
 		return $query;
@@ -1516,15 +1551,15 @@ class BusinessBibliotecaEmprestimo extends Business
 		$PodeRenovar = false;
 		$Mensagem = "";
 
-			
+
 		$exemplar = $MIOLO->GetBusiness($module,'exemplar');
 		$emprestimo = $this->GetById($idemprestimo);
 		$idexemplar = $emprestimo->idexemplar;
 		$qtdrenovacoes = $emprestimo->quantidadederenovacoes;
 
-			
+
 		$jaExisteEmpr = $this->GetEmprUsuarioExemplar($idusuario,$idexemplar,$qtdrenovacoes)->result[0][0];
-			
+
 		//verifica se já existe empréstimo aberto do exemplar para esse usuário
 		if (!$jaExisteEmpr)
 		{
@@ -1620,7 +1655,7 @@ class BusinessBibliotecaEmprestimo extends Business
 			$PodeRenovar = false;
 			$Mensagem = "Empréstimo já foi renovado anteriormente. Você deve ter clicado mais de uma vez no link Renovar. Confira por favor.";
 		}
-			
+
 		return array($PodeRenovar,$Mensagem);
 
 	}
@@ -1649,7 +1684,7 @@ class BusinessBibliotecaEmprestimo extends Business
 
 		// Verifica se o registro do emprestimo a ser criado já existe para evitar erros futuros
 		$isEmprestimoExiste = $this->isEmprestimoJaExiste($idusuario, $idexemplar, $qtdrenovacoes + 1);
-			
+
 		if (!$isEmprestimoExiste)	{
 			// Verifica se é um exemplar de consulta. Exemplares de consulta não podem ser renovados.
 			$isExemplarDeConsulta = $bussExemplar->isExemplarDeConsulta($idexemplar);
@@ -1725,7 +1760,7 @@ class BusinessBibliotecaEmprestimo extends Business
 		} else {
 			$info = "Empréstimo já foi renovado anteriormente. Você deve ter clicado mais de uma vez no link Renovar. Confira por favor.";
 		}
-			
+
 		return $isRenovavel;
 	}
 
@@ -1846,16 +1881,16 @@ class BusinessBibliotecaEmprestimo extends Business
 		// 12/09/200523:30:00
 
 		/**
-			$data{18}=$data{17};
-			$data{17}=$data{16};
-			$data{16}=$data{15};
-			$data{15}=$data{14};
-			$data{14}=$data{13};
-			$data{13}=$data{12};
-			$data{12}=$data{11};
-			$data{11}=$data{10};
-			$data{10}=' ';
-			**/
+		 $data{18}=$data{17};
+		 $data{17}=$data{16};
+		 $data{16}=$data{15};
+		 $data{15}=$data{14};
+		 $data{14}=$data{13};
+		 $data{13}=$data{12};
+		 $data{12}=$data{11};
+		 $data{11}=$data{10};
+		 $data{10}=' ';
+		 **/
 
 		return $data;
 	}
@@ -2220,7 +2255,7 @@ class BusinessBibliotecaEmprestimo extends Business
 
 
 
-	 	//var_dump($idemprestimorecinto);
+			//var_dump($idemprestimorecinto);
 			//	var_dump($idusuario_temp);
 			//	var_dump($idexemplar_temp);
 			//	var_dump($dataHojeOracle);
@@ -2250,8 +2285,8 @@ class BusinessBibliotecaEmprestimo extends Business
 			return array($idemprestimorecinto,$this->InsereEspacoData($dataPrevDev));
 
 		}else{
-		//echo "<script>alert('Você já está com um exemplar em mãos.');</script>";
-		return null;
+	//echo "<script>alert('Você já está com um exemplar em mãos.');</script>";
+	return null;
 	}
 
 	return array($idemprestimorecinto,$this->InsereEspacoData($dataPrevDev));
