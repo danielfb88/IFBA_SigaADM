@@ -567,20 +567,57 @@ class frmEmprestimo extends Form
 		$bussEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
 		$bussExemplar = $MIOLO->GetBusiness($module,'exemplar');
 		$bussReserva = $MIOLO->GetBusiness($module,'reserva');
+		$bussDireito = $MIOLO->GetBusiness($module,'direito');
 
-		$condicoesDoExemplar = $bussEmprestimo->getInfoExemplar($data->exemplar, $data->idusuario);
+		// TODO: Tratar exessão caso o exemplar não seja informado
+		$condicoesDoExemplarPorUsuario = $bussEmprestimo->getCondicoesDoExemplarPorUsuario($data->exemplar, $data->idusuario);
+
+		$condicoesDoExemplar = array(
+				'idGrupo' => $condicoesDoExemplarPorUsuario[0],
+				'idExemplar' => $condicoesDoExemplarPorUsuario[1],
+				'idEstado' => $condicoesDoExemplarPorUsuario[2],
+				'idRegraCirculacao' => $condicoesDoExemplarPorUsuario[3],
+				'idObra' => $condicoesDoExemplarPorUsuario[4],
+				'diasEmprestimo' => $condicoesDoExemplarPorUsuario[5],
+				'diasReserva' => $condicoesDoExemplarPorUsuario[6],
+				'limiteDeEmprestimo' => $condicoesDoExemplarPorUsuario[7],
+				'limiteDeRenovacao' => $condicoesDoExemplarPorUsuario[8],
+				'limiteDeReserva' => $condicoesDoExemplarPorUsuario[9],
+		);
 
 		var_dump($condicoesDoExemplar);die;
+
+		// Se estiver disponível
+		if($condicoesDoExemplar['idEstado'] == 1) {
+
+			// Obtendo o Id da Operação de Empréstimo
+			$idOperacaoEmprestimo = $bussEmprestimo->getIdOperacaoByMnemonico("EMPRESTIMO");
+
+			// Verificando se o grupo do usuário possui direitos para realizar o empréstimo
+			$possuiDireitoDeEmprestimo = $bussDireito->isGrupoComDireitoDeRealizarOperacao(
+					$condicoesDoExemplar['idRegraCirculacao'],
+					$idOperacaoEmprestimo,
+					$condicoesDoExemplar['idGrupo']
+			);
+
+			if($possuiDireitoDeEmprestimo) {
+				// Continue... Vou almoçar
+
+			}
+
+
+
+		}
 
 
 		/*
 		 * TODO: Responder a estas Perguntas:
 	 *
-	 * $Mensagem = "<br>Estado do exemplar não permite empréstimo.";
-		$Mensagem = "Usuário sem direitos de empréstimo sobre $descRegraCirculacao";
+	 * $Mensagem = "<br>Estado do exemplar não permite empréstimo.";	ok
+		$Mensagem = "Usuário sem direitos de empréstimo sobre $descRegraCirculacao";	ok
 		Este exemplar está emprestado
-		$Mensagem = "Exemplar emprestado para o próprio usuário";
 		$Mensagem = "Este exemplar está emprestado!";
+		$Mensagem = "Exemplar emprestado para o próprio usuário";
 		$Mensagem = "Este exemplar está reservado para outro usuário.";
 		$Mensagem = "Falta política de circulação.";
 		$Mensagem = "Limite de empréstimos esgotado para este material.<BR>Quantidade possível: $qtdeMaximaExemplaresRegra";
@@ -608,7 +645,6 @@ class frmEmprestimo extends Form
 		idobra
 
 
-		Vou descansar....
 	 */
 
 

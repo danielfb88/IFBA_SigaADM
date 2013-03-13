@@ -412,10 +412,10 @@ class BusinessBibliotecaEmprestimo extends Business
 	 * @param int $tombo
 	 * @param int $idusuario
 	 */
-	function getInfoExemplar($tombo, $idusuario) {
+	function getCondicoesDoExemplarPorUsuario($tombo, $idusuario) {
 		$sql = new sql("
+				grupo.idgrupo,
 				exemplar.idexemplar,
-				exemplar.numerodotombo,
 				exemplar.idestado,
 				exemplar.idregracirculacao,
 				exemplar.idobra,
@@ -432,7 +432,7 @@ class BusinessBibliotecaEmprestimo extends Business
 				bt_vinculo vinculo ON (grupo.idgrupo = vinculo.idgrupo) JOIN
 				cm_usuario usuario ON (usuario.idusuario = vinculo.idusuario)
 
-				WHERE numerodotombo = ? AND usuario.idusuario = $idusuario");
+				WHERE exemplar.numerodotombo = ? AND usuario.idusuario = $idusuario");
 
 		$query = $this->Query($sql, $tombo);
 		return $query->result[0];
@@ -763,6 +763,19 @@ class BusinessBibliotecaEmprestimo extends Business
 		return $this->Query($sql,$idExemplar);
 	}
 
+	/**
+	 * Obtém o ID da operação pelo mnemonico.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 13-03-2013
+	 *
+	 * @param string $mnemonico
+	 */
+	function getIdOperacaoByMnemonico($mnemonico) {
+		$sql = new sql('idoperacao', 'bt_operacao', 'mnemonico = ?');
+		return $this->Query($sql, $mnemonico)->result[0][0];
+	}
+
 
 	function GetIdEmprestimo()
 	{
@@ -805,7 +818,6 @@ class BusinessBibliotecaEmprestimo extends Business
 		$sql = new sql('idregracirculacao','bt_direito','idregracirculacao=? and idoperacao=? and idgrupo=?');
 		return $this->Query($sql,array($idregracirculacao,$idoperacao,$idgrupo));
 	}
-
 
 	function EstaEmprestado($Exemplar)
 	{
