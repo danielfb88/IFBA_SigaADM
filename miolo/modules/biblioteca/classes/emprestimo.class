@@ -885,6 +885,30 @@ class BusinessBibliotecaEmprestimo extends Business
 		return $this->Query($sql,$idusuario);
 	}
 
+	/**
+	 * Obtém a quantidade de empréstimos abertos pelo usuário para a regra de circulação informada
+	 *
+	 * @author Daniel Bonfim
+	 * @since 15-03-2013
+	 *
+	 * @param int $idUsuario
+	 * @param int $idRegraCirculacao
+	 * @return int
+	 */
+	function getQtdDeEmprestimoPorUsuarioAndRegraDeCirculacao($idUsuario, $idRegraCirculacao) {
+		$sql = new sql("
+				count(emprestimo.idemprestimo)
+
+				FROM bt_emprestimo emprestimo
+				JOIN bt_exemplar exemplar ON (emprestimo.idexemplar = exemplar.idexemplar)
+
+				WHERE
+				emprestimo.idusuario = $idUsuario AND
+				emprestimo.datahoradadevolucao IS NULL AND
+				exemplar.idregracirculacao = $idRegraCirculacao");
+		return $this->Query($sql)->result[0][0];
+	}
+
 
 	function GetQtdeEmprestimosRegra($idusuario,$idregracirculacao)
 	{

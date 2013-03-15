@@ -589,6 +589,10 @@ class frmEmprestimo extends Form
 							'limiteDeRenovacao' => $condicoesDoExemplarPorUsuario[8],
 							'limiteDeReserva' => $condicoesDoExemplarPorUsuario[9],
 					);
+					echo '<pre>';
+					var_dump($condicoesDoExemplar);
+					echo '</pre>';
+					die;
 
 					// Será exibido no grid
 					$MensagemRetorno = null;
@@ -608,18 +612,29 @@ class frmEmprestimo extends Form
 							);
 
 							if($possuiDireitoDeEmprestimo) {
-								
-								// TODO: Continue...
-								die('vai lá...');
-								
-								// 1 - Verificar limite de empréstimo
-								
-								// 2 - Verificar se usuário está com a obra
+
+								// Verificando a quantidade de empréstimo em aberto realizada para este tipo de material (regra de circulação)
+								$qtdEmprestimoRealizado = $bussEmprestimo->getQtdDeEmprestimoPorUsuarioAndRegraDeCirculacao(
+										$data->idusuario,
+										$condicoesDoExemplar['idRegraCirculacao']
+								);
+
+								if($qtdEmprestimoRealizado <= $condicoesDoExemplar['limiteDeEmprestimo']) {
+
+
+
+									// TODO: Continue...
+									die('vai lá...');
+
+									// 1 - Verificar se usuário está com a obra
 
 
 
 
 
+								} else {
+									$MensagemRetorno = "Limite de empréstimos esgotado para este material.<BR>Quantidade possível: ".$condicoesDoExemplar['limiteDeEmprestimo'];
+								}
 							}
 							break;
 
@@ -681,7 +696,7 @@ class frmEmprestimo extends Form
 		$Mensagem = "Exemplar emprestado para o próprio usuário"; ok
 		$Mensagem = "Este exemplar está reservado para outro usuário."; ok
 		$Mensagem = "Falta política de circulação."; 	OK
-		$Mensagem = "Limite de empréstimos esgotado para este material.<BR>Quantidade possível: $qtdeMaximaExemplaresRegra";
+		$Mensagem = "Limite de empréstimos esgotado para este material.<BR>Quantidade possível: $qtdeMaximaExemplaresRegra"; 	ok
 		$Mensagem = "Você já possui empréstimo dessa obra.<BR>Código do empréstimo: ". $emprestimo->result[0][0];
 
 
