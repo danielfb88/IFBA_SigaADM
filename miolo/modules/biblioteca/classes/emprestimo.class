@@ -379,7 +379,7 @@ class BusinessBibliotecaEmprestimo extends Business
 	 */
 	function getInfoEmprestimoAberto($idExemplar, $idObra) {
 		$sql = new sql(
-				'idemprestimo, datahoradoemprestimo, datahoraprevisaodevolucao, datahoradevolucao, quantidadederenovacoes, idusuario',
+				'idemprestimo, datahoradoemprestimo, datahoraprevisaodevolucao, datahoradadevolucao, quantidadederenovacoes, idusuario',
 				'bt_emprestimo',
 				'idexemplar = ? AND idobra = ? AND datahoradadevolucao IS null'
 		);

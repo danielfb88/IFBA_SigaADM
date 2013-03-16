@@ -589,6 +589,24 @@ class BusinessBibliotecaExemplar extends Business
 	 return $criteria->retrieveAsCursor();
 	}
 
+	/**
+	 * Obtém o título da obra do exemplar
+	 *
+	 * @author Daniel Bonfim
+	 * @since 16-03-2013
+	 *
+	 * @param string $tombo
+	 * @return string
+	 */
+	function getTituloByTombo($tombo) {
+		$sql = new sql('o.titulo', 'bt_obra o, bt_exemplar e', '(e.numerodotombo = ?) AND (e.idobra = o.idobra)');
+		$query = $this->Query($sql,$tombo);
+		return $query->result[0][0];
+	}
+
+	/**
+	 * @deprecated
+	 */
 	function GetTituloByExemplar($tombo)
 	{
 		//$sql = new sql('o.titulo','bt_estado e,bt_exemplar x,bt_obra o','(numerodotombo=?) AND (o.idobra = x.idobra) AND (e.idestado=x.idestado)');
@@ -601,6 +619,21 @@ class BusinessBibliotecaExemplar extends Business
 		// parou de funcionar
 		$sql = new sql('o.titulo','bt_obra o, bt_exemplar e','(e.numerodotombo = ?) and (e.idobra = o.idobra)');
 		$query = $this->Query($sql,$tombo);
+		return $query->result[0][0];
+	}
+
+	/**
+	 * Obtém o estado pelo id
+	 *
+	 * @author Daniel Bonfim
+	 * @since 16-03-2013
+	 *
+	 * @param int $idExemplar
+	 * @return int
+	 */
+	function getIdEstadoByIdExemplar($idExemplar) {
+		$sql = new sql('idestado', 'bt_exemplar', 'idexemplar = ?');
+		$query = $this->Query($sql, $idExemplar);
 		return $query->result[0][0];
 	}
 

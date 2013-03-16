@@ -328,7 +328,11 @@ class frmDevolucao extends Form
 		if (!$data->hidmulta)
 		{
 
-			if ( $dev == $this->objDevolucao->Devolucao($data))
+			/*
+			 * Modificação em 13-03-2013
+			* Substituído o método 'Devolucao' por 'devolverExemplar'
+			*/
+			if ( $dev == $this->objDevolucao->devolverExemplar($data->idemprestimo, $data->hidexemplar))
 			{
 				// LOG
 				$log = $MIOLO->GetBusiness($module,'log');

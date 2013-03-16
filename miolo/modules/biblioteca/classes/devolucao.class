@@ -242,15 +242,26 @@ class BusinessBibliotecaDevolucao extends Business
 
 		// Alterando a situação do exemplar
 		$bussEstado = $MIOLO->GetBusiness($module, 'estado');
+		$bussExemplar = $MIOLO->GetBusiness($module, 'exemplar');
 
-		$sql = new sql('idestado', 'bt_exemplar', 'idexemplar = ?');
-		$idEstado = $bussEstado->GetIdByMnemonico("DISPONIVEL");
+		/*
+		 * Modificação em 16-03-2013
+		* Modificando o estado para DISPONÍVEL apenas se o estado atual for EMPRESTADO
+		*/
+		$idEstadoAtual = $bussExemplar->getIdEstadoByIdExemplar($idExemplar);
 
-		$this->Execute(
-				$sql->Update(
-						array($idEstado, $idExemplar)
-				)
-		);
+		if($idEstadoAtual == $bussEstado->GetIdByMnemonico("EMPRESTADO")) {
+				
+			$sql = new sql('idestado', 'bt_exemplar', 'idexemplar = ?');
+			$idEstado = $bussEstado->GetIdByMnemonico("DISPONIVEL");
+
+			$this->Execute(
+					$sql->Update(
+							array($idEstado, $idExemplar)
+					)
+			);
+				
+		}
 	}
 
 	function DevolucaoComMulta($data)

@@ -592,9 +592,13 @@ class frmEmprestimo extends Form
 
 					// Será exibido no grid
 					$MensagemRetorno = null;
+					$dataPrevDevolucao = null;
 
 					switch ($condicoesDoExemplar['idEstado']) {
 							
+						/*
+						 * DISPONÍVEL
+						*/
 						case $bussEstado->GetIdByMnemonico("DISPONIVEL"):
 
 							// Obtendo o Id da Operação de Empréstimo
@@ -624,11 +628,7 @@ class frmEmprestimo extends Form
 
 										// Efetuando Empréstimo
 										$dataPrevDevolucao = $bussEmprestimo->efetuarEmprestimo($condicoesDoExemplar['idExemplar'], $data->idusuario);
-										$MensagemRetorno = "<font color='blue'> Empréstimo efetuado com sucesso.</br> Data prevista para devolução: $dataPrevDevolucao </font>";
-
-										// Liberando o botão de impressão de recibo
-										$this->SetButtonAttr('btnImprimirRecibo','visible', true);
-
+										$MensagemRetorno = "<font color='blue'>Empréstimo efetuado com sucesso!</font>";
 
 									} else {
 										$MensagemRetorno = "<font color='red'> Você já possui empréstimo desta obra. </font>";
@@ -643,7 +643,13 @@ class frmEmprestimo extends Form
 							}
 							break;
 
+							/*
+							 * EMPRESTADO
+						 */
 						case $bussEstado->GetIdByMnemonico("EMPRESTADO"):
+
+							// botões
+							$this->SetButtonAttr('btnRealizarEmprestimo', 'visible', false);
 
 							$arrEmprestimo = $bussEmprestimo->getInfoEmprestimoAberto($condicoesDoExemplar['idExemplar'], $condicoesDoExemplar['idObra']);
 							$infoEmprestimo = array(
@@ -657,46 +663,48 @@ class frmEmprestimo extends Form
 
 							// Se o usuário responsável pelo empréstimo for o mesmo que estiver solicitando
 							if($infoEmprestimo['idusuario'] == $data->idusuario) {
-								$MensagemRetorno = "<font color='red'> Exemplar emprestado para o próprio usuário </font>";
+								$MensagemRetorno = "<font color='red'> Exemplar emprestado para o próprio usuário. </font>";
 							} else {
 								$MensagemRetorno = "<font color='red'> Este exemplar está emprestado! </font>";
 							}
 
 							break;
 
+							/*
+							 * RESERVADO
+						 */
 						case $bussEstado->GetIdByMnemonico("RESERVADO"):
 							$MensagemRetorno = "<font color='red'> Este exemplar está reservado. </font>";
+
+							// Continue....
+								
+							/*
+							 * TODO: verificar datas da reserva. Se ela ainda é válida. Se não for, libere o empréstimo para qualquer um.
+							* Caso seja válida, libere apenas para o usuário que a reservou.
+							*/
+
+
+
+
+
+
 
 							break;
 
 						default:
+							$go = $MIOLO->GetActionURL($module, $self);
+							$MIOLO->Error("Exemplar indisponível para empréstimo.", $go);
 
 					}
 
-
-					// Exibir o Grid
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-					// Continuar...
-
-
-
-
-					/*
+					/**
 					 * Grid
-					*/
+					 */
+					$dataGrid_values[0][0] = $data->exemplar;
+					$dataGrid_values[0][1] = $bussExemplar->getTituloByTombo($data->exemplar);
+					$dataGrid_values[0][2] = $MensagemRetorno;
+					$dataGrid_values[0][3] = $dataPrevDevolucao;
+
 					$columns = array(
 							new GridColumn('Exemplar', 'right', true, '10%',true,null,false,true),
 							new GridColumn('Título', 'left',  false, '30%',true,null,false,true),
@@ -704,18 +712,10 @@ class frmEmprestimo extends Form
 							new GridColumn('Prev Dev', 'left', true, '16%',true,null,false,true)
 					);
 
-					//Não adiciona registro no grid, caso o exemplar não exista ou seja inválido.
-					if($Exemplares !=  null)
-					{
-						$this->addListaExemplares($Resultado[0]);
-					}
-
-
 					$href_datagrid = $MIOLO->GetActionURL($module,$self);
-					$datagrid = new Grid($this->getListaExemplares(), $columns, $href_datagrid,50);
+					$datagrid = new Grid($dataGrid_values, $columns, $href_datagrid, 50);
 					$datagrid->SetTitle('Resultado');
 					$datagrid->SetWidth('99%');
-
 
 					//Esconde os campos
 					$this->SetFieldAttr('edtNome','visible', true);
@@ -730,42 +730,18 @@ class frmEmprestimo extends Form
 					$this->SetButtonAttr('btnConfirmar','visible',false);
 					$this->SetButtonAttr('btnVoltar','visible',true);
 
-
-
 					$theme->AppendContent($datagrid);
 
+
+					// Limpando campo do exemplar
 					$this->SetFieldValue('edtExemplar','');
 
-					/*
-					 * Grid
-					*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+					// Liberando o botão de impressão de recibo
+					$this->SetButtonAttr('btnImprimirRecibo','visible', true);
 
 				} else {
 					$go = $MIOLO->GetActionURL($module, $self);
-					$MIOLO->Error("<font color='red'> Exemplar sem política de circulação. </font>", $go);
+					$MIOLO->Error("Exemplar sem política de circulação.", $go);
 				}
 
 			} else {
