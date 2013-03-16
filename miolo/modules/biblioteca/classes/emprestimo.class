@@ -1115,6 +1115,9 @@ class BusinessBibliotecaEmprestimo extends Business
 		}
 	}
 
+	/**
+	 * @deprecated
+	 */
 	function ConfirmarEmprestimo($Exemplar,$idusuario,$idoperador, $renovacoes=null)
 	{
 		global $MIOLO,$mkrono,$module;
@@ -1200,10 +1203,20 @@ class BusinessBibliotecaEmprestimo extends Business
 	 * @param string $qtdRenovacoesEfetuadas
 	 * @return date Data de previsão de devolução
 	 */
-	function efetuarEmprestimo($idExemplar, $idUsuario ,$idOperador, $qtdRenovacoesEfetuadas = null) {
+	function efetuarEmprestimo($idExemplar, $idUsuario, $qtdRenovacoesEfetuadas = null) {
 		global $MIOLO, $mkrono, $module;
 
 		$bussExemplar = $MIOLO->GetBusiness($module,'exemplar');
+
+		// TODO: Caso dê erro na renovação, analizar a permanência de uma transação neste método.
+
+		/*
+		 * Daniel Bonfim - 16-03-2013
+		* Iniciando Transação
+		*/
+		if(is_null($this->getTransaction()))
+			$this->beginTransaction();
+		 
 
 		$idEmprestimo = $this->LastNumeroEmprestimo();
 		$idRegraCirculacao = $bussExemplar->getIdRegraCirculacaoByIdExemplar($idExemplar);
@@ -1262,6 +1275,9 @@ class BusinessBibliotecaEmprestimo extends Business
 		$bussEstado = $MIOLO->GetBusiness($module, 'estado');
 		$idEstado = $bussEstado->GetIdByMnemonico("EMPRESTADO");
 		$this->Execute($sql->Update(array($idEstado, $idExemplar)));
+
+		// Finalizando tranzação
+		$this->endTransaction();
 
 		return $dataPrevDevOrg;
 	}
@@ -1871,7 +1887,7 @@ class BusinessBibliotecaEmprestimo extends Business
 
 		// Efetuando novo emprestimo
 		$qtdRenovacoesEfetuadas = $this->GetById($idEmprestimo)->quantidadederenovacoes;
-		$dataPrevistaDevolucao = $this->efetuarEmprestimo($idExemplar, $idUsuario, 0, $qtdRenovacoesEfetuadas);
+		$dataPrevistaDevolucao = $this->efetuarEmprestimo($idExemplar, $idUsuario, $qtdRenovacoesEfetuadas);
 
 		$this->endTransaction();
 
