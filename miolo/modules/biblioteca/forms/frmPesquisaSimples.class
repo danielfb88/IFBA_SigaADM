@@ -856,35 +856,57 @@ class frmPesquisaSimples extends frmPesquisa
 
 			$bussExemplar = $MIOLO->GetBusiness($module, 'exemplar');
 			$bussReserva = $MIOLO->GetBusiness($module, 'reserva');
-			$bussEstado  =$MIOLO->GetBusiness($module,'estado');
-
-			$k = new MKrono();
-			$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
-
-			$db = $MIOLO->GetDatabase('sigaept');
-			$transaction = $db->getTransaction();
-			$transaction->begin();
-
-			// Alterando o exemplar (bt_exemplar)
-			$idestado = $bussEstado->GetIdByMnemonico("RESERVADO");
-			$bussExemplar->AlteraEstado($numeroTombo, $idestado);
-
-
-			// Inserindo nova reserva (bt_reserva)
-			$idExemplar = $bussExemplar->GetIdByTombo($numeroTombo);
-			$idUsuario = $MIOLO->login->idkey;
+			$bussEstado  = $MIOLO->GetBusiness($module,'estado');
+			$bussOperacao = $MIOLO->GetBusiness($module,'operacao');
+			$bussDireito = $MIOLO->GetBusiness($module,'direito');
 
 			/*
-			 * $dataHoraReserva, $dataHoraSituacao, $dataHoraEntrada,
-			* $dataHoraLimite, $foiAvisado, $foiConfirmada, $idSituacao, $idUsuario, $idExemplar
+			 * Verificando se o grupo do usuário possui direito de Reserva
 			*/
-			$bussReserva->insertReserva($dataHoje, null, null,
-				null, null, null, 2, $idUsuario, $idExemplar);
+			$idOperacaoReserva = $bussOperacao->getIdOperacaoByMnemonico2("RESERVA");
 
-			$transaction->commit();
+			// Verificando se o grupo do usuário possui direitos para realizar a operação de reserva
+			$possuiDireitoDeReserva = $bussDireito->isGrupoComDireitoDeRealizarOperacao(
+					$condicoesDoExemplar['idRegraCirculacao'],
+					$idOperacaoReserva,
+					$condicoesDoExemplar['idGrupo']
+			);
 
-			$msg = 'Exemplar reservado com sucesso.';
-			$this->manager->Information($msg, $actionVoltarHttpComFiltros);
+			if($possuiDireitoDeReserva) {
+
+				$k = new MKrono();
+				$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
+
+				$db = $MIOLO->GetDatabase('sigaept');
+				$transaction = $db->getTransaction();
+				$transaction->begin();
+
+				// Alterando o exemplar (bt_exemplar)
+				$idestado = $bussEstado->GetIdByMnemonico("RESERVADO");
+				$bussExemplar->AlteraEstado($numeroTombo, $idestado);
+
+
+				// Inserindo nova reserva (bt_reserva)
+				$idExemplar = $bussExemplar->GetIdByTombo($numeroTombo);
+				$idUsuario = $MIOLO->login->idkey;
+
+				/*
+				 * $dataHoraReserva, $dataHoraSituacao, $dataHoraEntrada,
+				* $dataHoraLimite, $foiAvisado, $foiConfirmada, $idSituacao, $idUsuario, $idExemplar
+				*/
+				$bussReserva->insertReserva($dataHoje, null, null, null, null, null, 2, $idUsuario, $idExemplar);
+
+				$transaction->commit();
+
+				$msg = 'Exemplar reservado com sucesso.';
+				$this->manager->Information($msg, $actionVoltarHttpComFiltros);
+
+			} else {
+
+				$msg = 'O usuário não possui direitos para efetuar a reserva.';
+				$this->manager->Information($msg, $actionVoltarHttpComFiltros);
+			}
+
 		}
 	}
 

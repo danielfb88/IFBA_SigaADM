@@ -566,6 +566,7 @@ class frmEmprestimo extends Form
 			
 		// Business
 		$bussEmprestimo = $MIOLO->GetBusiness($module, 'emprestimo');
+		$bussOperacao = $MIOLO->GetBusiness($module, 'operacao');
 		$bussExemplar = $MIOLO->GetBusiness($module, 'exemplar');
 		$bussReserva = $MIOLO->GetBusiness($module, 'reserva');
 		$bussDireito = $MIOLO->GetBusiness($module, 'direito');
@@ -603,7 +604,7 @@ class frmEmprestimo extends Form
 						case $bussEstado->GetIdByMnemonico("DISPONIVEL"):
 
 							// Obtendo o Id da Operação de Empréstimo
-							$idOperacaoEmprestimo = $bussEmprestimo->getIdOperacaoByMnemonico("EMPRESTIMO");
+							$idOperacaoEmprestimo = $bussOperacao->getIdOperacaoByMnemonico2("EMPRESTIMO");
 
 							// Verificando se o grupo do usuário possui direitos para realizar a operação de empréstimo
 							$possuiDireitoDeEmprestimo = $bussDireito->isGrupoComDireitoDeRealizarOperacao(
@@ -690,19 +691,14 @@ class frmEmprestimo extends Form
 							// Adiciona sábados e domingos
 							$qtdDiasValidadeDaReserva = $this->CalculaDias($condicoesDoExemplar['diasReserva']);
 
-							$k = new MKrono();
-							$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
-							$dataValidade = $k->Operation('+', $infoReserva['datahoradareserva'], 5 . '%D');
 
-							var_dump('data da reserva: '. $infoReserva['datahoradareserva']);
-							echo '</br>';
-							var_dump('qtd dias validade: ' . $qtdDiasValidadeDaReserva);
-							echo '</br>';
-							var_dump('data da validade: '. $dataValidade); 	// TODO: ano de 1970? DORGAS MANOLO!!!
-							die;
+							/*
+							 * TODO:  Transformar data atual e data de validade da reserva em timestamp e verificar quem é maior
+							*  use o mktime
+							*
+							*  Descobrir data de validade: $infoReserva['datahoradareserva'] + $qtdDiasValidadeDaReserva
+							*/
 
-							// Continue....
-							
 							/*
 							 * TODO: verificar datas da reserva. Se ela ainda é válida. Se não for, libere o empréstimo para qualquer um.
 							* Caso seja válida, libere apenas para o usuário que a reservou.
@@ -771,7 +767,6 @@ class frmEmprestimo extends Form
 				$go = $MIOLO->GetActionURL($module, $self);
 				$MIOLO->Error("O exemplar informado não existe.", $go);
 			}
-
 		}
 	}
 
