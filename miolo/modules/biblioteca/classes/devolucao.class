@@ -220,6 +220,11 @@ class BusinessBibliotecaDevolucao extends Business
 	function devolverExemplar($idEmprestimo, $idExemplar) {
 		global $MIOLO, $module;
 
+		// Adicionado em 16-03-2013 / Daniel Bonfim
+		if(is_null($this->getTransaction())) {
+			$this->beginTransaction();
+		}
+
 		$k = new MKrono();
 		$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
 		$dataHoje = ":TO_timestamp('". $dataHoje . "','DD/MM/YYYY HH24:MI:SS')";
@@ -251,7 +256,7 @@ class BusinessBibliotecaDevolucao extends Business
 		$idEstadoAtual = $bussExemplar->getIdEstadoByIdExemplar($idExemplar);
 
 		if($idEstadoAtual == $bussEstado->GetIdByMnemonico("EMPRESTADO")) {
-				
+
 			$sql = new sql('idestado', 'bt_exemplar', 'idexemplar = ?');
 			$idEstado = $bussEstado->GetIdByMnemonico("DISPONIVEL");
 
@@ -260,8 +265,10 @@ class BusinessBibliotecaDevolucao extends Business
 							array($idEstado, $idExemplar)
 					)
 			);
-				
+
 		}
+
+		$this->endTransaction();
 	}
 
 	function DevolucaoComMulta($data)

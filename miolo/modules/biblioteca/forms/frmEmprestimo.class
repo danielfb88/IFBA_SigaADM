@@ -564,6 +564,7 @@ class frmEmprestimo extends Form
 
 		$data = $this->GetData();
 			
+		// Business
 		$bussEmprestimo = $MIOLO->GetBusiness($module, 'emprestimo');
 		$bussExemplar = $MIOLO->GetBusiness($module, 'exemplar');
 		$bussReserva = $MIOLO->GetBusiness($module, 'reserva');
@@ -674,10 +675,34 @@ class frmEmprestimo extends Form
 							 * RESERVADO
 						 */
 						case $bussEstado->GetIdByMnemonico("RESERVADO"):
-							$MensagemRetorno = "<font color='red'> Este exemplar está reservado. </font>";
+
+							// Obtendo informações da reserva
+							$arrReserva = $bussReserva->getReservaByIdExemplar($bussExemplar->GetIdByTombo($data->exemplar));
+
+							$infoReserva = array(
+									'idreserva' => $arrReserva[0],
+									'datahoradareserva' => $arrReserva[1],
+									'idsituacao' => $arrReserva[2],
+									'idusuario' => $arrReserva[3],
+									'idexemplar' => $arrReserva[4]
+							);
+
+							// Adiciona sábados e domingos
+							$qtdDiasValidadeDaReserva = $this->CalculaDias($condicoesDoExemplar['diasReserva']);
+
+							$k = new MKrono();
+							$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
+							$dataValidade = $k->Operation('+', $infoReserva['datahoradareserva'], 5 . '%D');
+
+							var_dump('data da reserva: '. $infoReserva['datahoradareserva']);
+							echo '</br>';
+							var_dump('qtd dias validade: ' . $qtdDiasValidadeDaReserva);
+							echo '</br>';
+							var_dump('data da validade: '. $dataValidade); 	// TODO: ano de 1970? DORGAS MANOLO!!!
+							die;
 
 							// Continue....
-								
+							
 							/*
 							 * TODO: verificar datas da reserva. Se ela ainda é válida. Se não for, libere o empréstimo para qualquer um.
 							* Caso seja válida, libere apenas para o usuário que a reservou.
@@ -685,9 +710,7 @@ class frmEmprestimo extends Form
 
 
 
-
-
-
+							$MensagemRetorno = "<font color='red'> Este exemplar está reservado. </font>";
 
 							break;
 
@@ -750,6 +773,49 @@ class frmEmprestimo extends Form
 			}
 
 		}
+	}
+
+	function CalculaDias($dias)
+	{
+		global $MIOLO;
+		$objFeriado = $MIOLO->GetBusiness('common','feriado');
+
+		$DiaUtil = false;
+		$i = 0;
+
+		while (! $DiaUtil)
+		{
+			$DiaUtil = true;
+
+			$dia = date('d');
+			$mes = date('m');
+			$ano = date('Y');
+			$hora = date('H');
+			$min = date('i');
+			$seg = date('s');
+
+			$data = mktime($hora,$min,$seg,$mes,$dia+$dias+$i,$ano);
+			$DataLimite = date('D Y-m-d 23:30:00',$data);
+			$DiaSemana = substr($DataLimite,0,-20);
+
+			$fdia = date('d',$data);
+			$fmes = date('m',$data);
+			$fano = date('Y',$data);
+			$fhora = date('H',$data);
+			$fmin = date('i',$data);
+			$fseg = date('s',$data);
+
+			//Verifica se a reserva vai cair em um sabado, domingo ou feriado
+			if (($DiaSemana == 'Sat') or ($DiaSemana == 'Sáb') or ($DiaSemana == 'Sun') or ($DiaSemana == 'Dom') or ($objFeriado->feriado($fdia.'/'.$fmes.'/'.$fano)))
+			{
+				$DiaUtil = false;
+				$i++;
+			}
+		}
+
+		//var_dump($i+$dias);
+
+		return $i+$dias;
 	}
 
 	function getDataLog($Emprestimo)
