@@ -691,22 +691,37 @@ class frmEmprestimo extends Form
 							// Adiciona sábados e domingos
 							$qtdDiasValidadeDaReserva = $this->CalculaDias($condicoesDoExemplar['diasReserva']);
 
+							$arrDataHoraReserva = explode('-', $infoReserva['datahoradareserva']);
+							$ano = $arrDataHoraReserva[0];
+							$mes = $arrDataHoraReserva[1];
+							$dia = $arrDataHoraReserva[2];
 
-							/*
-							 * TODO:  Transformar data atual e data de validade da reserva em timestamp e verificar quem é maior
-							*  use o mktime
-							*
-							*  Descobrir data de validade: $infoReserva['datahoradareserva'] + $qtdDiasValidadeDaReserva
-							*/
+							// TimeStamp da Validade da reserva
+							$timestampValidadeReserva = mktime(0, 0, 0, $mes, $dia + $qtdDiasValidadeDaReserva, $ano);
 
-							/*
-							 * TODO: verificar datas da reserva. Se ela ainda é válida. Se não for, libere o empréstimo para qualquer um.
-							* Caso seja válida, libere apenas para o usuário que a reservou.
-							*/
+							// TimeStamp atual
+							$timestampAtual = time();
 
 
+							// Verificando se a reserva ainda tem validade
+							if($timestampAtual <= $timestampValidadeReserva) {
 
-							$MensagemRetorno = "<font color='red'> Este exemplar está reservado. </font>";
+								// Verificando se o usuário que está solicitando o emprestimo é o mesmo que efetuou a reserva
+								if($data->idusuario == $infoReserva['idusuario']) {
+
+									// Efetuando Empréstimo
+									$this->efetuarEmprestimo($data->idusuario, $data->exemplar, $condicoesDoExemplar, $MensagemRetorno, $dataPrevDevolucao);
+
+								} else {
+									$MensagemRetorno = "<font color='red'> Este exemplar está reservado. </font>";
+								}
+
+							} else {	// Reserva vencida
+
+								// Efetuando Empréstimo
+								$this->efetuarEmprestimo($data->idusuario, $data->exemplar, $condicoesDoExemplar, $MensagemRetorno, $dataPrevDevolucao);
+
+							}
 
 							break;
 
@@ -767,6 +782,79 @@ class frmEmprestimo extends Form
 				$go = $MIOLO->GetActionURL($module, $self);
 				$MIOLO->Error("O exemplar informado não existe.", $go);
 			}
+		}
+	}
+
+	/**
+	 * Efetua as verificações necessárias para o empréstimo do exemplar.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 17-03-2013
+	 *
+	 * @param int $idUsuario - Usuário que esta solicitando o empréstimo
+	 * @param int $idExemplar - Exemplar a ser emprestado
+	 * @param array $condicoesDoExemplar - Informações sobre as condições de empréstimo do exemplar. Verifique o método 'btnRealizarEmprestimo_click'
+	 * @param string $MensagemRetorno - A mensagem que será exibida no grid sobre o status da operação. Passagem por referência.
+	 * @param string $dataPrevDevolucao - Data da previsão de devolução caso o empréstimo seja bem sucedido. Passagem por referência.
+	 */
+	function efetuarEmprestimo($idUsuario, $tombo, $condicoesDoExemplar, &$MensagemRetorno, &$dataPrevDevolucao) {
+		global $MIOLO, $module;
+
+		$bussEmprestimo = $MIOLO->GetBusiness($module, 'emprestimo');
+		$bussOperacao = $MIOLO->GetBusiness($module, 'operacao');
+		$bussExemplar = $MIOLO->GetBusiness($module, 'exemplar');
+
+		/*
+		 * Verificando se o exemplar está Disponível para empréstimo.
+		* Será verificado se todos os empréstimo deste exemplar estão fechados.
+		*/
+		
+		// TODO: ERRO AQUI NA PERGUNTA. VOU TREINAR.
+		if($bussEmprestimo->isEmprestadoByIdExemplar($bussExemplar->GetIdByTombo($tombo))) {
+
+			// Obtendo o Id da Operação de Empréstimo
+			$idOperacaoEmprestimo = $bussOperacao->getIdOperacaoByMnemonico2("EMPRESTIMO");
+
+			// Verificando se o grupo do usuário possui direitos para realizar a operação de empréstimo
+			$possuiDireitoDeEmprestimo = $bussDireito->isGrupoComDireitoDeRealizarOperacao(
+					$condicoesDoExemplar['idRegraCirculacao'],
+					$idOperacaoEmprestimo,
+					$condicoesDoExemplar['idGrupo']
+			);
+
+			if($possuiDireitoDeEmprestimo) {
+					
+				// Verificando a quantidade de empréstimo em aberto realizada para este tipo de material (regra de circulação)
+				$qtdEmprestimoRealizado = $bussEmprestimo->getQtdDeEmprestimoPorUsuarioAndRegraDeCirculacao(
+						$idUsuario,
+						$condicoesDoExemplar['idRegraCirculacao']
+				);
+					
+				if($qtdEmprestimoRealizado <= $condicoesDoExemplar['limiteDeEmprestimo']) {
+
+					// Verificando se o usuário já possui empréstimo aberto para algum exemplar desta obra
+					$isObraEmprestadaParaUsuario = $bussEmprestimo->isObraEmprestadaParaUsuario($tombo, $idUsuario);
+
+					if(!$isObraEmprestadaParaUsuario) {
+							
+						// Efetuando Empréstimo
+						$dataPrevDevolucao = $bussEmprestimo->efetuarEmprestimo($condicoesDoExemplar['idExemplar'], $idUsuario);
+						$MensagemRetorno = "<font color='blue'>Empréstimo efetuado com sucesso!</font>";
+							
+					} else {
+						$MensagemRetorno = "<font color='red'> Você já possui empréstimo desta obra. </font>";
+					}
+
+				} else {
+					$MensagemRetorno = "<font color='red'> Limite de empréstimos esgotado para este material. </br>Quantidade possível: ".$condicoesDoExemplar['limiteDeEmprestimo'] ."</font>";
+				}
+					
+			} else {
+				$MensagemRetorno = "<font color='red'> Você não possui direitos para o empréstimo deste material.</font>";
+			}
+
+		} else {
+			$MensagemRetorno = "<font color='red'> Este exemplar ainda não foi devolvido. </font>";
 		}
 	}
 

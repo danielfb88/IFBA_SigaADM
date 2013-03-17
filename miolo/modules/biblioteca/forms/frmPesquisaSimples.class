@@ -863,48 +863,68 @@ class frmPesquisaSimples extends frmPesquisa
 			/*
 			 * Verificando se o grupo do usuário possui direito de Reserva
 			*/
-			$idOperacaoReserva = $bussOperacao->getIdOperacaoByMnemonico2("RESERVA");
+			$condicoesDoExemplarPorUsuario = $bussExemplar->getCondicoesDoExemplarPorUsuario($numeroTombo, $MIOLO->login->idkey);
 
-			// Verificando se o grupo do usuário possui direitos para realizar a operação de reserva
-			$possuiDireitoDeReserva = $bussDireito->isGrupoComDireitoDeRealizarOperacao(
-					$condicoesDoExemplar['idRegraCirculacao'],
-					$idOperacaoReserva,
-					$condicoesDoExemplar['idGrupo']
-			);
+			if(!is_null($condicoesDoExemplarPorUsuario)) {
+					
+				$condicoesDoExemplar = array(
+						'idGrupo' => $condicoesDoExemplarPorUsuario[0],
+						'idExemplar' => $condicoesDoExemplarPorUsuario[1],
+						'idEstado' => $condicoesDoExemplarPorUsuario[2],
+						'idRegraCirculacao' => $condicoesDoExemplarPorUsuario[3],
+						'idObra' => $condicoesDoExemplarPorUsuario[4],
+						'diasEmprestimo' => $condicoesDoExemplarPorUsuario[5],
+						'diasReserva' => $condicoesDoExemplarPorUsuario[6],
+						'limiteDeEmprestimo' => $condicoesDoExemplarPorUsuario[7],
+						'limiteDeRenovacao' => $condicoesDoExemplarPorUsuario[8],
+						'limiteDeReserva' => $condicoesDoExemplarPorUsuario[9],
+				);
 
-			if($possuiDireitoDeReserva) {
+				// Verificando se o grupo do usuário possui direitos para realizar a operação de reserva
+				$possuiDireitoDeReserva = $bussDireito->isGrupoComDireitoDeRealizarOperacao(
+						$condicoesDoExemplar['idRegraCirculacao'],
+						$bussOperacao->getIdOperacaoByMnemonico2("RESERVA"),
+						$condicoesDoExemplar['idGrupo']
+				);
 
-				$k = new MKrono();
-				$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
+				if($possuiDireitoDeReserva) {
 
-				$db = $MIOLO->GetDatabase('sigaept');
-				$transaction = $db->getTransaction();
-				$transaction->begin();
+					$k = new MKrono();
+					$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
 
-				// Alterando o exemplar (bt_exemplar)
-				$idestado = $bussEstado->GetIdByMnemonico("RESERVADO");
-				$bussExemplar->AlteraEstado($numeroTombo, $idestado);
+					$db = $MIOLO->GetDatabase('sigaept');
+					$transaction = $db->getTransaction();
+					$transaction->begin();
+
+					// Alterando o exemplar (bt_exemplar)
+					$idestado = $bussEstado->GetIdByMnemonico("RESERVADO");
+					$bussExemplar->AlteraEstado($numeroTombo, $idestado);
 
 
-				// Inserindo nova reserva (bt_reserva)
-				$idExemplar = $bussExemplar->GetIdByTombo($numeroTombo);
-				$idUsuario = $MIOLO->login->idkey;
+					// Inserindo nova reserva (bt_reserva)
+					$idExemplar = $bussExemplar->GetIdByTombo($numeroTombo);
+					$idUsuario = $MIOLO->login->idkey;
 
-				/*
-				 * $dataHoraReserva, $dataHoraSituacao, $dataHoraEntrada,
-				* $dataHoraLimite, $foiAvisado, $foiConfirmada, $idSituacao, $idUsuario, $idExemplar
-				*/
-				$bussReserva->insertReserva($dataHoje, null, null, null, null, null, 2, $idUsuario, $idExemplar);
+					/*
+					 * $dataHoraReserva, $dataHoraSituacao, $dataHoraEntrada,
+					* $dataHoraLimite, $foiAvisado, $foiConfirmada, $idSituacao, $idUsuario, $idExemplar
+					*/
+					$bussReserva->insertReserva($dataHoje, null, null, null, null, null, 2, $idUsuario, $idExemplar);
 
-				$transaction->commit();
+					$transaction->commit();
 
-				$msg = 'Exemplar reservado com sucesso.';
-				$this->manager->Information($msg, $actionVoltarHttpComFiltros);
+					$msg = 'Exemplar reservado com sucesso.';
+					$this->manager->Information($msg, $actionVoltarHttpComFiltros);
+
+				} else {
+
+					$msg = 'O usuário não possui direitos para efetuar a reserva.';
+					$this->manager->Information($msg, $actionVoltarHttpComFiltros);
+				}
 
 			} else {
-
-				$msg = 'O usuário não possui direitos para efetuar a reserva.';
-				$this->manager->Information($msg, $actionVoltarHttpComFiltros);
+				$msg = 'Exemplar sem política de circulação.';
+				$MIOLO->Error($msg, $actionVoltarHttpComFiltros);
 			}
 
 		}

@@ -789,6 +789,20 @@ class BusinessBibliotecaEmprestimo extends Business
 		return $this->Query($sql,array($idregracirculacao,$idoperacao,$idgrupo));
 	}
 
+	/**
+	 * Verifica se o exemplar está emprestado pelo número do tombo.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 17-03-2013
+	 *
+	 * @param string $tombo
+	 */
+	function isEmprestadoByIdExemplar($idExemplar) {
+		$sql = new sql('idexemplar', 'bt_emprestimo ', 'datahoradadevolucao is null AND idexemplar = ?');
+		die($this->Query($sql, $idExemplar)->sql);
+		return !is_null($this->Query($sql, $idExemplar)->result[0][0]);
+	}
+
 	function EstaEmprestado($Exemplar)
 	{
 		$sql = new sql('idexemplar,idusuario','bt_emprestimo ','datahoradadevolucao is null and idexemplar=?');
@@ -1202,7 +1216,7 @@ class BusinessBibliotecaEmprestimo extends Business
 		*/
 		if(is_null($this->getTransaction()))
 			$this->beginTransaction();
-		 
+			
 
 		$idEmprestimo = $this->LastNumeroEmprestimo();
 		$idRegraCirculacao = $bussExemplar->getIdRegraCirculacaoByIdExemplar($idExemplar);
