@@ -603,46 +603,9 @@ class frmEmprestimo extends Form
 						*/
 						case $bussEstado->GetIdByMnemonico("DISPONIVEL"):
 
-							// Obtendo o Id da Operação de Empréstimo
-							$idOperacaoEmprestimo = $bussOperacao->getIdOperacaoByMnemonico2("EMPRESTIMO");
-
-							// Verificando se o grupo do usuário possui direitos para realizar a operação de empréstimo
-							$possuiDireitoDeEmprestimo = $bussDireito->isGrupoComDireitoDeRealizarOperacao(
-									$condicoesDoExemplar['idRegraCirculacao'],
-									$idOperacaoEmprestimo,
-									$condicoesDoExemplar['idGrupo']
-							);
-
-							if($possuiDireitoDeEmprestimo) {
-
-								// Verificando a quantidade de empréstimo em aberto realizada para este tipo de material (regra de circulação)
-								$qtdEmprestimoRealizado = $bussEmprestimo->getQtdDeEmprestimoPorUsuarioAndRegraDeCirculacao(
-										$data->idusuario,
-										$condicoesDoExemplar['idRegraCirculacao']
-								);
-
-								if($qtdEmprestimoRealizado <= $condicoesDoExemplar['limiteDeEmprestimo']) {
-
-									// Verificando se o usuário já possui empréstimo aberto para algum exemplar desta obra
-									$isObraEmprestadaParaUsuario = $bussEmprestimo->isObraEmprestadaParaUsuario($data->exemplar, $data->idusuario);
-
-									if(!$isObraEmprestadaParaUsuario) {
-
-										// Efetuando Empréstimo
-										$dataPrevDevolucao = $bussEmprestimo->efetuarEmprestimo($condicoesDoExemplar['idExemplar'], $data->idusuario);
-										$MensagemRetorno = "<font color='blue'>Empréstimo efetuado com sucesso!</font>";
-
-									} else {
-										$MensagemRetorno = "<font color='red'> Você já possui empréstimo desta obra. </font>";
-									}
-
-								} else {
-									$MensagemRetorno = "<font color='red'> Limite de empréstimos esgotado para este material. </br>Quantidade possível: ".$condicoesDoExemplar['limiteDeEmprestimo'] ."</font>";
-								}
-
-							} else {
-								$MensagemRetorno = "<font color='red'> Você não possui direitos para o empréstimo deste material.</font>";
-							}
+							// Efetuando Empréstimo
+							$this->efetuarEmprestimo($data->idusuario, $data->exemplar, $condicoesDoExemplar, $MensagemRetorno, $dataPrevDevolucao);
+								
 							break;
 
 							/*
@@ -803,14 +766,14 @@ class frmEmprestimo extends Form
 		$bussEmprestimo = $MIOLO->GetBusiness($module, 'emprestimo');
 		$bussOperacao = $MIOLO->GetBusiness($module, 'operacao');
 		$bussExemplar = $MIOLO->GetBusiness($module, 'exemplar');
+		$bussDireito = $MIOLO->GetBusiness($module, 'direito');
 
 		/*
 		 * Verificando se o exemplar está Disponível para empréstimo.
 		* Será verificado se todos os empréstimo deste exemplar estão fechados.
 		*/
-		
-		// TODO: ERRO AQUI NA PERGUNTA. VOU TREINAR.
-		if($bussEmprestimo->isEmprestadoByIdExemplar($bussExemplar->GetIdByTombo($tombo))) {
+
+		if(!$bussEmprestimo->isEmprestadoByIdExemplar($bussExemplar->GetIdByTombo($tombo))) {
 
 			// Obtendo o Id da Operação de Empréstimo
 			$idOperacaoEmprestimo = $bussOperacao->getIdOperacaoByMnemonico2("EMPRESTIMO");

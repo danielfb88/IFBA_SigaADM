@@ -217,7 +217,7 @@ class BusinessBibliotecaDevolucao extends Business
 	 * @param int $idEmprestimo
 	 * @return int $idExemplar
 	 */
-	function devolverExemplar($idEmprestimo, $idExemplar) {
+	function devolverExemplar($idEmprestimo, $tombo) {
 		global $MIOLO, $module;
 
 		// Adicionado em 16-03-2013 / Daniel Bonfim
@@ -251,18 +251,18 @@ class BusinessBibliotecaDevolucao extends Business
 
 		/*
 		 * Modificação em 16-03-2013
-		* Modificando o estado para DISPONÍVEL apenas se o estado atual for EMPRESTADO
+		* Modificando o estado para DISPONÍVEL apenas se o estado atual for diferente de RESERVADO
 		*/
-		$idEstadoAtual = $bussExemplar->getIdEstadoByIdExemplar($idExemplar);
+		$idEstadoAtual = $bussExemplar->GetEstadoByExemplar($tombo);
 
-		if($idEstadoAtual == $bussEstado->GetIdByMnemonico("EMPRESTADO")) {
+		if($idEstadoAtual != $bussEstado->GetIdByMnemonico("RESERVADO")) {
 
-			$sql = new sql('idestado', 'bt_exemplar', 'idexemplar = ?');
+			$sql = new sql('idestado', 'bt_exemplar', 'numerodotombo = ?');
 			$idEstado = $bussEstado->GetIdByMnemonico("DISPONIVEL");
 
 			$this->Execute(
 					$sql->Update(
-							array($idEstado, $idExemplar)
+							array($idEstado, $tombo)
 					)
 			);
 
