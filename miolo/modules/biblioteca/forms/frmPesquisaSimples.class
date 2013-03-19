@@ -519,7 +519,7 @@ class frmPesquisaSimples extends frmPesquisa
 			$mostra_reserva = $this->objSimples->GetEstadoExemplarById($item);
 			$datagrid->SetTitle('Exemplares de: ' . $tituloObra->result[0][0]);
 			if($mostra_reserva == 5){
-				$datagrid->AddActionText('alt','Reservar',$href_reserva);
+				// 				$datagrid->AddActionText('alt','Reservar',$href_reserva);
 			}
 		}else{
 			$tituloPeriodico = $this->objSimples->GetTituloPeriodicoByIdArtigo($item);

@@ -599,7 +599,11 @@ class BusinessBibliotecaExemplar extends Business
 	 * @return string
 	 */
 	function getTituloByTombo($tombo) {
-		$sql = new sql('o.titulo', 'bt_obra o, bt_exemplar e', '(e.numerodotombo = ?) AND (e.idobra = o.idobra)');
+		$sql = new sql(
+				'o.titulo',
+				'bt_obra o JOIN bt_exemplar e ON (e.idobra = o.idobra)',
+				'(e.numerodotombo = ?)'
+		);
 		$query = $this->Query($sql,$tombo);
 		return $query->result[0][0];
 	}

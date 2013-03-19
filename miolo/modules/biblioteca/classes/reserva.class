@@ -358,6 +358,20 @@ class BusinessBibliotecaReserva extends Business
 	}
 
 	/**
+	 * Remove o registro da reserva
+	 *
+	 * @author Daniel Bonfim
+	 * @since 18-03-2013
+	 *
+	 * @param int $idUsuario
+	 * @param int $idExemplar
+	 */
+	function removerReserva($idUsuario, $idExemplar) {
+		$sql = "DELETE FROM bt_reserva WHERE idusuario = $idUsuario AND idexemplar = $idExemplar";
+		$query = $this->Execute($sql);
+	}
+
+	/**
 	 * Obtém as informações relevantes sobre a reserva pelo número do tombo.
 	 *
 	 * @author Daniel Bonfim

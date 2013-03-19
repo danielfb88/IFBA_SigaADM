@@ -605,7 +605,7 @@ class frmEmprestimo extends Form
 
 							// Efetuando Empréstimo
 							$this->efetuarEmprestimo($data->idusuario, $data->exemplar, $condicoesDoExemplar, $MensagemRetorno, $dataPrevDevolucao);
-								
+
 							break;
 
 							/*
@@ -640,50 +640,64 @@ class frmEmprestimo extends Form
 						 */
 						case $bussEstado->GetIdByMnemonico("RESERVADO"):
 
-							// Obtendo informações da reserva
-							$arrReserva = $bussReserva->getReservaByIdExemplar($bussExemplar->GetIdByTombo($data->exemplar));
+							// Verificando se o exemplar já foi devolvido
+							if(!$bussEmprestimo->isEmprestadoByIdExemplar($bussExemplar->GetIdByTombo($data->exemplar))) {
 
-							$infoReserva = array(
-									'idreserva' => $arrReserva[0],
-									'datahoradareserva' => $arrReserva[1],
-									'idsituacao' => $arrReserva[2],
-									'idusuario' => $arrReserva[3],
-									'idexemplar' => $arrReserva[4]
-							);
+								// Obtendo informações da reserva
+								$arrReserva = $bussReserva->getReservaByIdExemplar($bussExemplar->GetIdByTombo($data->exemplar));
 
-							// Adiciona sábados e domingos
-							$qtdDiasValidadeDaReserva = $this->CalculaDias($condicoesDoExemplar['diasReserva']);
+								$infoReserva = array(
+										'idreserva' => $arrReserva[0],
+										'datahoradareserva' => $arrReserva[1],
+										'idsituacao' => $arrReserva[2],
+										'idusuario' => $arrReserva[3],
+										'idexemplar' => $arrReserva[4]
+								);
 
-							$arrDataHoraReserva = explode('-', $infoReserva['datahoradareserva']);
-							$ano = $arrDataHoraReserva[0];
-							$mes = $arrDataHoraReserva[1];
-							$dia = $arrDataHoraReserva[2];
+								/*
+								 * A validade das reservas é de 24h, contadas a partir do ato da devolução do item.
+								*/
+								$dataHoraDaDevolucao = $bussEmprestimo->getUltimaDataHoraDaDevolucaoByIdExemplar($bussExemplar->GetIdByTombo($data->exemplar));
 
-							// TimeStamp da Validade da reserva
-							$timestampValidadeReserva = mktime(0, 0, 0, $mes, $dia + $qtdDiasValidadeDaReserva, $ano);
+								list($data_, $hora) = explode(" ", $dataHoraDaDevolucao);
 
-							// TimeStamp atual
-							$timestampAtual = time();
+								list($ano, $mes, $dia) = explode("-", $data_);
+								list($hora, $minuto, $segundo) = explode(":", $hora);
 
+								// Adiciona sábados e domingos
+								$qtdDiasValidadeDaReserva = $this->CalculaDias($condicoesDoExemplar['diasReserva']);
 
-							// Verificando se a reserva ainda tem validade
-							if($timestampAtual <= $timestampValidadeReserva) {
+								// TimeStamp da Validade da reserva
+								$timestampValidadeReserva = mktime($hora, $minuto, 00, $mes, $dia + $qtdDiasValidadeDaReserva, $ano);
+								$dataValidadeReserva = date('d-m-Y', $timestampValidadeReserva);
 
-								// Verificando se o usuário que está solicitando o emprestimo é o mesmo que efetuou a reserva
-								if($data->idusuario == $infoReserva['idusuario']) {
+								// TimeStamp atual
+								$timestampAtual = time();
+
+								// Verificando se a reserva ainda tem validade
+								if($timestampAtual <= $timestampValidadeReserva) {
+
+									// Verificando se o usuário que está solicitando o emprestimo é o mesmo que efetuou a reserva
+									if($data->idusuario == $infoReserva['idusuario']) {
+
+										// Efetuando Empréstimo
+										$this->efetuarEmprestimo($data->idusuario, $data->exemplar, $condicoesDoExemplar, $MensagemRetorno, $dataPrevDevolucao);
+										$bussReserva->removerReserva($data->idusuario, $bussExemplar->GetIdByTombo($data->exemplar));
+
+									} else {
+										$MensagemRetorno = "<font color='red'> Este exemplar está reservado. </font>";
+									}
+
+								} else {	// Reserva vencida
 
 									// Efetuando Empréstimo
 									$this->efetuarEmprestimo($data->idusuario, $data->exemplar, $condicoesDoExemplar, $MensagemRetorno, $dataPrevDevolucao);
+									$bussReserva->removerReserva($data->idusuario, $bussExemplar->GetIdByTombo($data->exemplar));
 
-								} else {
-									$MensagemRetorno = "<font color='red'> Este exemplar está reservado. </font>";
 								}
 
-							} else {	// Reserva vencida
-
-								// Efetuando Empréstimo
-								$this->efetuarEmprestimo($data->idusuario, $data->exemplar, $condicoesDoExemplar, $MensagemRetorno, $dataPrevDevolucao);
-
+							} else {
+								$MensagemRetorno = "<font color='red'> Este exemplar ainda não foi devolvido. </font>";
 							}
 
 							break;

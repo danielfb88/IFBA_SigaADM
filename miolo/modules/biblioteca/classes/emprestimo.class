@@ -802,6 +802,19 @@ class BusinessBibliotecaEmprestimo extends Business
 		return !is_null($this->Query($sql, $idExemplar)->result[0][0]);
 	}
 
+	/**
+	 * Obtém a data/hora da ultima devolução do exemplar informado.
+	 *
+	 *  @author Daniel Bonfim
+	 *  @since 18-03-2013
+	 * @param int $idExemplar
+	 */
+	function getUltimaDataHoraDaDevolucaoByIdExemplar($idExemplar) {
+		$sql = new sql('max(datahoradadevolucao)', 'bt_emprestimo', "idexemplar = $idExemplar");
+		$query = $this->Query($sql);
+		return $query->result[0][0];
+	}
+
 	function EstaEmprestado($Exemplar)
 	{
 		$sql = new sql('idexemplar,idusuario','bt_emprestimo ','datahoradadevolucao is null and idexemplar=?');
