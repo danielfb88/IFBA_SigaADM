@@ -655,7 +655,7 @@ class frmEmprestimo extends Form
 								);
 
 								/*
-								 * A validade das reservas é de 24h, contadas a partir do ato da devolução do item.
+								 * A validade da reserva é contada a partir do ato da devolução do item.
 								*/
 								$dataHoraDaDevolucao = $bussEmprestimo->getUltimaDataHoraDaDevolucaoByIdExemplar($bussExemplar->GetIdByTombo($data->exemplar));
 

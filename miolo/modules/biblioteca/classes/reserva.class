@@ -31,7 +31,43 @@ class BusinessBibliotecaReserva extends Business
 		$this->Business('sigaept', $data);
 	}
 
+	/**
+	 * Obtém as reservas efetuadas pelo usuário informado.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 20-03-2013
+	 *
+	 * @param int $idUsuario
+	 * @return array
+	 */
+	function getReservasByIdUsuario($idUsuario) {
+		$sql = new sql("
+				DISTINCT
+				r.idreserva,
+				e.numerodotombo,
+				o.titulo,
+				(SELECT array_to_string(array_agg(conteudo),' / ') FROM bt_material WHERE idobra = e.idobra AND idetiqueta = 53) as autor,
+				TO_CHAR(r.datahoradareserva, 'DD/MM/YYYY') as datahoradareserva
 
+				FROM
+				bt_reserva r JOIN
+				bt_exemplar e ON (r.idexemplar = e.idexemplar) JOIN
+				bt_obra o ON (e.idobra = o.idobra) JOIN
+				bt_material m ON (o.idobra = m.idobra)
+
+				WHERE
+				r.idusuario = $idUsuario
+				AND m.idetiqueta = 53"
+		);
+
+		return $this->Query($sql);
+	}
+
+	/**
+	 *@deprecated
+	 * @param unknown $idusuario
+	 * @return unknown
+	 */
 	function ListReservasAtendidas($idusuario)
 	{
 

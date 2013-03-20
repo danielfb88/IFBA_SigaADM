@@ -846,13 +846,6 @@ class frmPesquisaSimples extends frmPesquisa
 			$MIOLO->Error("O exemplar não pode ser reservado porque está $estado[1].", $actionVoltarHttpComFiltros);
 
 		} else {
-			/*
-			 * TODO: tabelas do novo funcionamento: bt_reserva, bt_exemplar, bt_emprestimo
-			*
-			* 1 - marcar exemplar como reservado em bt_exemplar - ok
-			* 2 - criar registro em bt_reserva - ok
-			* 3 - Alterar a forma como o empréstimo é feito para participar também as regras da reserva
-			*/
 
 			$bussExemplar = $MIOLO->GetBusiness($module, 'exemplar');
 			$bussReserva = $MIOLO->GetBusiness($module, 'reserva');
