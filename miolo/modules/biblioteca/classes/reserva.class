@@ -394,16 +394,28 @@ class BusinessBibliotecaReserva extends Business
 	}
 
 	/**
-	 * Remove o registro da reserva
+	 * Remove o registro da reserva pelo id
+	 *
+	 * @author Daniel Bonfim
+	 * @since 23-03-2013
+	 *
+	 * @param int $idReserva
+	 */
+	function removerReservaById($idReserva) {
+		$sql = "DELETE FROM bt_reserva WHERE idreserva = $idReserva";
+		$query = $this->Execute($sql);
+	}
+
+	/**
+	 * Remove o registro da reserva pelo id do exemplar
 	 *
 	 * @author Daniel Bonfim
 	 * @since 18-03-2013
 	 *
-	 * @param int $idUsuario
 	 * @param int $idExemplar
 	 */
-	function removerReserva($idUsuario, $idExemplar) {
-		$sql = "DELETE FROM bt_reserva WHERE idusuario = $idUsuario AND idexemplar = $idExemplar";
+	function removerReservaByIdExemplar($idExemplar) {
+		$sql = "DELETE FROM bt_reserva WHERE idexemplar = $idExemplar";
 		$query = $this->Execute($sql);
 	}
 
@@ -418,6 +430,21 @@ class BusinessBibliotecaReserva extends Business
 	 */
 	function getReservaByIdExemplar($idExemplar) {
 		$sql = new sql('idreserva, datahoradareserva, idsituacao, idusuario, idexemplar', 'bt_reserva', "idexemplar = $idExemplar");
+		$query = $this->Query($sql);
+		return $query->result[0];
+	}
+
+	/**
+	 * Obtém as informações relevantes sobre a reserva pelo id.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 23-03-2013
+	 *
+	 * @param int $idReserva
+	 * @return array
+	 */
+	function getReservaById($idReserva) {
+		$sql = new sql('idreserva, datahoradareserva, idsituacao, idusuario, idexemplar', 'bt_reserva', "idreserva = $idReserva");
 		$query = $this->Query($sql);
 		return $query->result[0];
 	}

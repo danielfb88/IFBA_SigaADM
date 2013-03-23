@@ -627,7 +627,7 @@ class BusinessBibliotecaExemplar extends Business
 	}
 
 	/**
-	 * Obtém o estado pelo id
+	 * Obtém o id do estado pelo id
 	 *
 	 * @author Daniel Bonfim
 	 * @since 16-03-2013
@@ -646,6 +646,21 @@ class BusinessBibliotecaExemplar extends Business
 		$sql = new sql('idestado','bt_exemplar','numerodotombo = ?');
 		$query = $this->Query($sql,$tombo);
 		return $query->result[0][0];
+	}
+
+	/**
+	 * Altera o estado do exemplar pelo id
+	 *
+	 * @author Daniel Bonfim
+	 * @since 23-03-2013
+	 *
+	 * @param int $idExemplar
+	 * @param int $idEstado
+	 */
+	function alterarEstadoById($idExemplar, $idEstado) {
+		$sql = new sql('idestado', 'bt_exemplar', 'idexemplar = ?');
+		$values = array($idEstado, $idExemplar);
+		$this->Execute($sql->Update($values));
 	}
 
 	function AlteraEstado($tombo, $estado){

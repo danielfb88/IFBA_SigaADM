@@ -173,11 +173,22 @@ class frmResUsuario extends Form
 				// Adiciona sábados e domingos
 				$qtdDiasValidadeDaReserva = $this->CalculaDias($qtdDiasReserva);
 
+				// TimeStamp atual
+				$timestampAtual = time();
+
 				// TimeStamp da Validade da reserva
 				$timestampValidadeReserva = mktime($hora, $minuto, 00, $mes, $dia + $qtdDiasValidadeDaReserva, $ano);
-				$dataValidadeReserva = date('d-m-Y', $timestampValidadeReserva);
+				$dataValidadeReserva = date('d/m/Y', $timestampValidadeReserva);
 
-				$result[$i][] = $dataValidadeReserva;
+
+				// Verificando se a reserva ainda é válida
+				if($timestampAtual <= $timestampValidadeReserva) {
+					$result[$i][] = $dataValidadeReserva;
+
+				} else {
+					$result[$i][] = "<font color='red'>EXPIRADO</br>$dataValidadeReserva</font>";
+				}
+
 			} else {
 				$result[$i][] = "<font color='red'>Exemplar ainda não devolvido.</font>";
 			}
@@ -253,69 +264,52 @@ class frmResUsuario extends Form
 		return $i+$dias;
 	}
 
-	function btnCancelar_click()
-	{
-		global $MIOLO,$module,$item,$action;
+	/**
+	 * Cancelar a Reserva
+	 *
+	 * @author Daniel Bonfim
+	 * @since 23-03-2013
+	 */
+	function btnCancelar_click() {
+		global $MIOLO, $module, $action, $item;
 
-		$this->objReserva = $MIOLO->GetBusiness($module,'reserva');
+		$bussExemplar = $MIOLO->GetBusiness($module, 'exemplar');
+		$bussReserva = $MIOLO->GetBusiness($module, 'reserva');
+		$bussEstado = $MIOLO->GetBusiness($module, 'estado');
+		$bussEmprestimo = $MIOLO->GetBusiness($module, 'emprestimo');
 
-		$Situacao = $this->objReserva->GetSituacaoById($item);
+		$bussReserva->beginTransaction();
+		$arrReserva = $bussReserva->getReservaById($item);
 
-		//monta array de comandos. os metodos de gravação a seguir apenas retornam as sqls. o array é executado ao final, em estado de transação
-		$commands = array();
+		$infoReserva = array(
+				'idreserva' => $arrReserva[0],
+				'datahoradareserva' => $arrReserva[1],
+				'idsituacao' => $arrReserva[2],
+				'idusuario' => $arrReserva[3],
+				'idexemplar' => $arrReserva[4]
+		);
 
-		$commands[] = $this->objReserva->SQLCancela($item);
+		// Removendo a reserva
+		$bussReserva->removerReservaById($infoReserva['idreserva']);
 
-		$this->objSitReserva = $MIOLO->GetBusiness($module,'situacaoreserva');
-		$Atendida = $this->objSitReserva->GetIdByMnemonico('ATENDIDA');
+		$bussExemplar->setTransaction($bussReserva->getTransaction());
 
-		if($Situacao == $Atendida)
-		{
+		// Verificando o estado do exemplar
+		if($bussExemplar->getIdEstadoByIdExemplar($infoReserva['idexemplar']) == $bussEstado->GetIdByMnemonico("RESERVADO")) {
 
-			$Tombo = $this->objReserva->GetTomboByIdConfirmada($item);
-			$ProximaReserva = $this->objReserva->GetProximaReserva($item,$Tombo);
-
-			if ($ProximaReserva[0]){ //Existe uma reserva na fila
-
-				$this->objEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
-				$Emprestimo = $this->objEmprestimo->GetIdemprestimoByTombo($Tombo);
-
-				if ($Emprestimo == null){ //Exemplar não está emprestado
-
-					$this->objUsuario = $MIOLO->GetBusiness($module,'usuario');
-					$this->objPolitica = $MIOLO->GetBusiness($module,'politica');
-
-					$codProxReserva = $ProximaReserva[0];
-					$codProxUsuario = $ProximaReserva[1];
-
-					//Calcula datalimite
-					$grupo = $this->objUsuario->GetGrupoByIdusuario($codProxUsuario);
-					$dias = $this->objPolitica->GetDiasReserva($grupo);
-					$DataHoraLimite = $this->objReserva->CalculaData($dias);
-
-					$commands[] = $this->objReserva->SQLConfirmarReserva($codProxReserva, $Atendida, $DataHoraLimite);
-				}
+			// Verificando na tabela bt_emprestimo se o exemplar está está emprestado (datadedevolucao nula)
+			if($bussEmprestimo->isExemplarEmprestado($infoReserva['idexemplar'])) {
+				$bussExemplar->alterarEstadoById($infoReserva['idexemplar'], $bussEstado->GetIdByMnemonico("EMPRESTADO"));
+			} else {
+				$bussExemplar->alterarEstadoById($infoReserva['idexemplar'], $bussEstado->GetIdByMnemonico("DISPONIVEL"));
 			}
-			else{
-				// Se não tem nenhuma reserva o exemplar estará disponivel.
-				$this->objExemplar = $MIOLO->GetBusiness($module,'exemplar');
-				$this->objEstado = $MIOLO->GetBusiness($module,'estado');
-				$Disponivel = $this->objEstado->GetIdByMnemonico('DISPONIVEL');
 
-				$commands[] = $this->objExemplar->SQLAlteraEstado($Tombo, $Disponivel);
-			}
 		}
 
-		try
-		{
-			$this->objReserva->Execute($commands);
-			$this->objReserva->Log(OP_UPD,"reserva $item cancelada pelo usuario");
-			$MIOLO->Prompt(Prompt::Information("Reserva cancelada com sucesso.", $MIOLO->GetActionURL($module = $module, $action = $action)));
-		}
-		catch (Exception $e)
-		{
-			$this->addError($e->getMessage());
-		}
+		$bussExemplar->endTransaction();
+
+		$MIOLO->Prompt(Prompt::Information("Reserva cancelada com sucesso.", $MIOLO->GetActionURL($module, $action)));
 	}
+
 }
 ?>

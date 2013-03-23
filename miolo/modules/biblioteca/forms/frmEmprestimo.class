@@ -682,7 +682,7 @@ class frmEmprestimo extends Form
 
 										// Efetuando Empréstimo
 										$this->efetuarEmprestimo($data->idusuario, $data->exemplar, $condicoesDoExemplar, $MensagemRetorno, $dataPrevDevolucao);
-										$bussReserva->removerReserva($data->idusuario, $bussExemplar->GetIdByTombo($data->exemplar));
+										$bussReserva->removerReservaById($infoReserva['idreserva']);
 
 									} else {
 										$MensagemRetorno = "<font color='red'> Este exemplar está reservado. </font>";
@@ -692,7 +692,7 @@ class frmEmprestimo extends Form
 
 									// Efetuando Empréstimo
 									$this->efetuarEmprestimo($data->idusuario, $data->exemplar, $condicoesDoExemplar, $MensagemRetorno, $dataPrevDevolucao);
-									$bussReserva->removerReserva($data->idusuario, $bussExemplar->GetIdByTombo($data->exemplar));
+									$bussReserva->removerReservaById($infoReserva['idreserva']);
 
 								}
 
