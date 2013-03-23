@@ -302,8 +302,6 @@ class BusinessBibliotecaEmprestimo extends Business
 
 	/**
 	 * @deprecated Veja o método 'getEmprestimosRegularesPorUsuario'
-	 * @param unknown $idusuario
-	 * @return unknown
 	 */
 	function ListEmprestimosRegularesPorUsuario($idusuario)
 	{
