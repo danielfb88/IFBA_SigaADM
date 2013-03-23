@@ -265,7 +265,46 @@ class BusinessBibliotecaEmprestimo extends Business
 		return $this;
 	}
 
+	/**
+	 * Obtém empréstimos Regulares por usuários
+	 *
+	 * @author Daniel Bonfim
+	 * @since 23-03-2013
+	 *
+	 * @param int $idUsuario
+	 */
+	function getEmprestimosRegularesPorUsuario($idUsuario) {
+		$datar = date("d/m/y");
+		$sql = new Sql("
+				DISTINCT
+				x.numerodotombo,
+				o.titulo,
+				(SELECT array_to_string(array_agg(conteudo),' / ') FROM bt_material WHERE idobra = e.idobra AND idetiqueta = 53) as autor,
+				{$this->_db->TimestampToChar('e.datahoraprevisaodevolucao')} as datahoraprevisaodevolucao,
+				e.idemprestimo
 
+				FROM
+				bt_emprestimo e JOIN
+				bt_exemplar x ON (e.idexemplar = x.idexemplar) JOIN
+				bt_obra o ON (x.idobra = o.idobra) JOIN
+				bt_material m ON (o.idobra = m.idobra)
+
+				WHERE
+				e.idusuario = $idUsuario AND
+				e.datahoraprevisaodevolucao >= now() AND
+				m.idetiqueta = 53 AND
+				e.datahoradadevolucao is null AND
+				e.quantidadederenovacoes < 2
+				");
+
+		return  $this->Query($sql);
+	}
+
+	/**
+	 * @deprecated Veja o método 'getEmprestimosRegularesPorUsuario'
+	 * @param unknown $idusuario
+	 * @return unknown
+	 */
 	function ListEmprestimosRegularesPorUsuario($idusuario)
 	{
 		$datar = date("d/m/y");
@@ -814,7 +853,7 @@ class BusinessBibliotecaEmprestimo extends Business
 		$query = $this->Query($sql);
 		return $query->result[0][0];
 	}
-	
+
 	/**
 	 * Verifica se o exemplar está emprestado pelo número do id
 	 * @param int $idExemplar

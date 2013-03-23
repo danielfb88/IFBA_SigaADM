@@ -49,7 +49,11 @@ class frmRenovUsuario extends Form
 		//Instancia o objeto emprestimo
 		$this->objEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
 
-		$query = $this->objEmprestimo->ListEmprestimosRegularesPorUsuario($idusuario);
+		/*
+		 * Daniel Bonfim / 23-03-2013
+		* Modificado o método 'ListEmprestimosRegularesPorUsuario' por 'getEmprestimosRegularesPorUsuario'
+		*/
+		$query = $this->objEmprestimo->getEmprestimosRegularesPorUsuario($idusuario);
 
 		//var_dump($query->result);
 
@@ -110,8 +114,6 @@ class frmRenovUsuario extends Form
 	}
 
 	/**
-	 * TODO: TESTAR
-	 *
 	 * @author Daniel Bonfim
 	 * @since 10-02-2013
 	 */
