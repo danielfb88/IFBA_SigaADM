@@ -75,7 +75,7 @@ class frmEmprUsuario extends Form
 		//nome do usuario
 		//$this->objUsuario = $MIOLO->GetBusiness($module,'usuario');
 		//$usuario = $this->objUsuario->GetById($this->manager->GetLogin()->idkey);
-	  
+			
 		//$datagrid->SetTitle('Livros em Situação Regular - ' . $usuario[0][1]);
 		$datagrid->SetTitle('Livros em Situação Regular - ' . $usuario->nome);
 		$datagrid->SetLinkType('linkbutton');
@@ -125,53 +125,91 @@ class frmEmprUsuario extends Form
 		$this->SetFields($fields);
 	}
 
+	/**
+	 * Replicação do método originalmente criado em no arquivo frmRenovUsuario.class
+	 *
+	 * @author Daniel Bonfim
+	 * @since 23-03-2013
+	 */
+	function btnRenovar_click()	{
+		global $MIOLO, $module, $self, $theme, $action, $page, $item;
 
-	function btnRenovar_click()
+		$bussEmprestimo = $MIOLO->GetBusiness($module, 'emprestimo');
+		$idusuario = $this->manager->GetLogin()->idkey;
+		$idEmprestimo = $item;
+		$info = '';
+
+		if($bussEmprestimo->isRenovavel($idEmprestimo, $idusuario, $info)) {
+
+			$dataPrevistaDevolucao = $bussEmprestimo->renovarEmprestimo($item, $idusuario);
+
+			if(!is_null($idEmprestimo) && !is_null($dataPrevistaDevolucao)) {
+				$qtdRenovacoesEfetuadas = $bussEmprestimo->GetById($idEmprestimo)->quantidadederenovacoes;
+				if($qtdRenovacoesEfetuadas >= 5) {
+					$MIOLO->Prompt(Prompt::Information("Empréstimo renovado até ". $dataPrevistaDevolucao . "<BR><BR>ATENÇÃO:<BR>Sua possibilidade de renovação desta obra está se esgotando!<BR>Devolva-a assim que for possível!", $MIOLO->GetActionURL ($module, $action)));
+
+				} else {
+					$MIOLO->Prompt(Prompt::Information("Empréstimo renovado até ". $dataPrevistaDevolucao, $MIOLO->GetActionURL ($module, $action)));
+				}
+
+			} else {
+				$MIOLO->Error("Ocorreu um erro ao renovar o empréstimo.", $MIOLO->GetActionURL($module, $action));
+			}
+
+		} else {
+			$MIOLO->Error($info, $MIOLO->GetActionURL($module, $action));
+		}
+	}
+
+
+	/*
+	 function btnRenovar_click()
+	 {
+	global $MIOLO, $module, $self, $theme, $action, $page,$item;
+
+	//Instancia o objeto emprestimo
+	$this->objEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
+
+	//$idusuario = $this->manager->GetLogin()->idkey;
+	$usuario = $this->manager->getBusiness('common','usuario');
+	$usuario->getByLogin($this->manager->GetLogin()->id);
+	$idusuario = $usuario->idUsuario;
+	//var_dump($idusuario);
+
+	$ok = $this->objEmprestimo->PodeRenovar($item,$idusuario);
+
+	if ( $ok[0] )
 	{
-		global $MIOLO, $module, $self, $theme, $action, $page,$item;
+	//Abre novo empréstimo
+	//RenovaEmprestimo retorna array(idemprestimo, dataprevisaodevolucao)
+	//$oknovo = $this->objEmprestimo->RenovaEmprestimo($item,$this->manager->GetLogin()->idkey);
+	$oknovo = $this->objEmprestimo->RenovaEmprestimo($item,$idusuario);
 
-		//Instancia o objeto emprestimo
-		$this->objEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
-
-		//$idusuario = $this->manager->GetLogin()->idkey;
-		$usuario = $this->manager->getBusiness('common','usuario');
-		$usuario->getByLogin($this->manager->GetLogin()->id);
-		$idusuario = $usuario->idUsuario;
-		//var_dump($idusuario);
-
-		$ok = $this->objEmprestimo->PodeRenovar($item,$idusuario);
-		 
-		if ( $ok[0] )
-		{
-			//Abre novo empréstimo
-			//RenovaEmprestimo retorna array(idemprestimo, dataprevisaodevolucao)
-			//$oknovo = $this->objEmprestimo->RenovaEmprestimo($item,$this->manager->GetLogin()->idkey);
-			$oknovo = $this->objEmprestimo->RenovaEmprestimo($item,$idusuario);
-
-			if ( $oknovo )
-			{
-				$id = $oknovo[0];
-				$renovacoes = $this->objEmprestimo->GetById($id)->quantidadederenovacoes;
-				if($renovacoes >= 5)
-				{
-					$MIOLO->Prompt(Prompt::Information("Empréstimo renovado até ". $oknovo[1] . "<BR><BR>ATENÇÃO:<BR>Sua possibilidade de renovação desta obra está se esgotando!<BR>Devolva-a assim que for possível!", $MIOLO->GetActionURL ($module = $module, $action = $action)));
-				}
-				else
-				{
-					$MIOLO->Prompt(Prompt::Information("Empréstimo renovado até ". $oknovo[1], $MIOLO->GetActionURL ($module = $module, $action = $action)));
-				}
-			}
-			else
-			{
-				$MIOLO->Error("Empréstimo não foi renovado.", $MIOLO->GetActionURL($module = $module, $action = $action));
-			}
-		}
-		else
-		{
-			$MIOLO->Error($ok[1], $MIOLO->GetActionURL($module = $module, $action = $action));
-		}
+	if ( $oknovo )
+	{
+	$id = $oknovo[0];
+	$renovacoes = $this->objEmprestimo->GetById($id)->quantidadederenovacoes;
+	if($renovacoes >= 5)
+	{
+	$MIOLO->Prompt(Prompt::Information("Empréstimo renovado até ". $oknovo[1] . "<BR><BR>ATENÇÃO:<BR>Sua possibilidade de renovação desta obra está se esgotando!<BR>Devolva-a assim que for possível!", $MIOLO->GetActionURL ($module = $module, $action = $action)));
+	}
+	else
+	{
+	$MIOLO->Prompt(Prompt::Information("Empréstimo renovado até ". $oknovo[1], $MIOLO->GetActionURL ($module = $module, $action = $action)));
+	}
+	}
+	else
+	{
+	$MIOLO->Error("Empréstimo não foi renovado.", $MIOLO->GetActionURL($module = $module, $action = $action));
+	}
+	}
+	else
+	{
+	$MIOLO->Error($ok[1], $MIOLO->GetActionURL($module = $module, $action = $action));
+	}
 
 	}
+	*/
 
 }
 ?>

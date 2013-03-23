@@ -1266,15 +1266,6 @@ class BusinessBibliotecaEmprestimo extends Business
 
 		$bussExemplar = $MIOLO->GetBusiness($module,'exemplar');
 
-		// TODO: Caso dê erro na renovação, analizar a permanência de uma transação neste método.
-
-		/*
-		 * Daniel Bonfim - 16-03-2013
-		* Iniciando Transação
-		*/
-		if(is_null($this->getTransaction()))
-			$this->beginTransaction();
-			
 
 		$idEmprestimo = $this->LastNumeroEmprestimo();
 		$idRegraCirculacao = $bussExemplar->getIdRegraCirculacaoByIdExemplar($idExemplar);
@@ -1333,9 +1324,6 @@ class BusinessBibliotecaEmprestimo extends Business
 		$bussEstado = $MIOLO->GetBusiness($module, 'estado');
 		$idEstado = $bussEstado->GetIdByMnemonico("EMPRESTADO");
 		$this->Execute($sql->Update(array($idEstado, $idExemplar)));
-
-		// Finalizando tranzação
-		$this->endTransaction();
 
 		return $dataPrevDevOrg;
 	}
@@ -1776,6 +1764,8 @@ class BusinessBibliotecaEmprestimo extends Business
 		$idexemplar = $emprestimo->idexemplar;
 		$qtdrenovacoes = $emprestimo->quantidadederenovacoes;
 
+		$tombo = $bussExemplar->getNumeroTomboById($idexemplar);
+
 		// Verifica se o registro do emprestimo a ser criado já existe para evitar erros futuros
 		$isEmprestimoExiste = $this->isEmprestimoJaExiste($idusuario, $idexemplar, $qtdrenovacoes + 1);
 
@@ -1793,11 +1783,8 @@ class BusinessBibliotecaEmprestimo extends Business
 					//verifica se o emprestimo está dentro das 24Hs disponíveis.
 					if ($tempoRestante['horas'] <= 24) {
 
-						// $reserva = $MIOLO->GetBusiness($module,'reservar');
-						// $idreserva = $reserva->existeReserva($idexemplar)->result[0][0];
-
-						// TODO: Reserva ainda não disponível. Libere o acesso
-						if (true) {
+						// Verificando se o exemplar já foi reservado
+						if (!$bussExemplar->estaReservado($tombo)) {
 							// verifica se existem emprestimos irregulares para este usuário
 							$existeEmprestimoIrregular = $this->existeEmprestimoIrregular($idusuario);
 
