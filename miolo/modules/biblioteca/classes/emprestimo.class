@@ -458,6 +458,47 @@ class BusinessBibliotecaEmprestimo extends Business
 		return $this->idusuario;
 	}
 
+	/**
+	 * Obtém informações de cada exemplar cujo o número do tombo foi passado no array
+	 *
+	 * @author Daniel Bonfim
+	 * @since 29-03-2013
+	 *
+	 * @param array $arrTombo - Array com número do tombo de cada exemplar
+	 */
+	function getExemplaresEmprestadosByTombo(array $arrTombo) {
+
+		$in = "(";
+		for($i=0; $i<count($arrTombo); $i++) {
+			$arrTombo[$i] = trim($arrTombo[$i]);
+			$in .= "?";
+			if($i != count($arrTombo) - 1) {
+				$in .= ",";
+			}
+		}
+		$in .= ")";
+
+		$sql = new sql('
+				ex.numerodotombo,
+				o.numerodaobra,
+				o.titulo,
+				o.autor,
+				o.edicao
+
+				FROM
+				bt_emprestimo emp JOIN
+				bt_exemplar ex ON (emp.idexemplar = ex.idexemplar) JOIN
+				bt_obra o ON (ex.idobra = o.idobra)
+
+				WHERE
+				emp.datahoradadevolucao IS NULL AND
+				ex.numerodotombo IN '.$in.';'
+		);
+		$query = $this->Query($sql, $arrTombo);
+
+		return $query->result;
+	}
+
 
 	/**
 	 * @deprecated

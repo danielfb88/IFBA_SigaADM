@@ -24,6 +24,11 @@
  * @author SETEC/MEC
  */
 
+/*
+ * @author Daniel bonfim
+* Modificação em 29/03/2013
+* Adicionado funcionalidade para devolução de multiplos exemplares.
+*/
 class frmDevolucao extends Form
 {
 
@@ -49,8 +54,8 @@ class frmDevolucao extends Form
 	}
 
 
-	function CreateFields()
-	{
+	function CreateFields() {
+
 
 		// Campos que aparecem no formulário
 		$fields = Array (
@@ -58,7 +63,8 @@ class frmDevolucao extends Form
 					
 				new HiddenField('hidID'),
 				new HiddenField('hidKey'), // controla Incluir/Editar
-				new TextField('edtExemplar','','Exemplar',25,'Passe o leitor de código de barras no exemplar'),
+				new TextField('edtExemplar','','Exemplar(es)',25),
+				new Text('observacao','<font size=2 ><font color=red>Para devolver mais de um exemplar, separe-os com uma vírgula. Ex: 71, 23, 44</font>'),
 				new HiddenField('hidIdEmprestimo'),
 				new HiddenField('hidExemplar'),
 				new HiddenField('hidIdusuarioopdevolucao'),
@@ -125,28 +131,52 @@ class frmDevolucao extends Form
 	}
 
 
-	function btnConsulta_click()
-	{
+	/**
+	 * Data da Modificação: 29-03-2013
+	 * @author Daniel Bonfim
+	 */
+	function btnConsulta_click() {
 		global $MIOLO,$module,$item,$self, $theme, $page;
 
 		$data = $this->GetData();
 
-		// Atributo dos botões
-		$this->SetButtonAttr('btnDevolver','visible',true);
-		$this->SetButtonAttr('btnVoltar','visible',true);
+		$bussDevolucao = $MIOLO->GetBusiness($module,'devolucao');
+		$bussEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
+		$bussExemplar = $MIOLO->GetBusiness($module,'exemplar');
 
-		//Esconde os campos
-		$this->SetFieldAttr('edtExemplar','visible', false);
+		$arrExemplares = explode(',', $data->exemplar);
+
+		if(count($arrExemplares) > 0) {
+			$infoExemplares = $bussEmprestimo->getExemplaresEmprestadosByTombo($arrExemplares);
+
+			if(!is_null($infoExemplares)) {
+
+				// Atributo dos botões
+				$this->SetButtonAttr('btnDevolver','visible',true);
+				$this->SetButtonAttr('btnVoltar','visible',true);
+
+				//Esconde os campos
+				$this->SetFieldAttr('edtExemplar','visible', false);
+				$this->SetFieldAttr('observacao','visible', false);
 
 
 
-		//Instancia os objetos exemplar,emprestimo e devolução
-		$this->objDevolucao = $MIOLO->GetBusiness($module,'devolucao');
-		$this->objEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
-		$this->objExemplar = $MIOLO->GetBusiness($module,'exemplar');
+			} else {
+				$go = $MIOLO->GetActionURL($module, $self);
+				$MIOLO->Error("Exemplar(es) não emprestado(s) ou não existente(s).", $go);
+			}
+		}
+
+
+		/*
+		 	
+
+
+
 		// ok retorna os dados de login
 
-		$query = $this->objDevolucao->GetExemplar($data->exemplar);
+
+		$query = $bussDevolucao->GetExemplar($data->exemplar);
 		$numerodaobra = $query->result[0][1];
 		$titulo = $query->result[0][2];
 		$autor = $query->result[0][5];
@@ -154,149 +184,142 @@ class frmDevolucao extends Form
 		//var_dump($query->result);
 		if (!$query->result)
 		{
-			$MIOLO->Prompt(Prompt::Error("Exemplar nao encontrado",$MIOLO->GetActionURL($module,$self)));
+		$MIOLO->Prompt(Prompt::Error("Exemplar nao encontrado",$MIOLO->GetActionURL($module,$self)));
 		}
 		else
 		{
 
-			$query = $this->objEmprestimo->NumeroTomboToIDExemplar($data->exemplar);
-			$idexemplar = $query->result[0][0];
+		$query = $this->objEmprestimo->NumeroTomboToIDExemplar($data->exemplar);
+		$idexemplar = $query->result[0][0];
 
 
-			$query = $this->objExemplar->GetAllByCodigo($idexemplar);
-			$idregracirculacao = $query->idregracirculacao;
-			//var_dump($idregracirculacao);
+		$query = $this->objExemplar->GetAllByCodigo($idexemplar);
+		$idregracirculacao = $query->idregracirculacao;
+		//var_dump($idregracirculacao);
 
 
-			//var_dump($idexemplar);
+		//var_dump($idexemplar);
 
-			$query = $this->objDevolucao->GetIdEmprestimo($idexemplar);
-			$idemprestimo = $query->result[0][0];
-			$this->setFieldValue('hidIdEmprestimo',$idemprestimo);
-			$this->setFieldValue('hidID',$idexemplar);
-			$this->setFieldValue('hidExemplar',$data->exemplar);
-			//$data = $this->GetData();
-			//var_dump($data->idemprestimo);
-			//var_dump($idemprestimo);
+		$query = $this->objDevolucao->GetIdEmprestimo($idexemplar);
+		$idemprestimo = $query->result[0][0];
+		$this->setFieldValue('hidIdEmprestimo',$idemprestimo);
+		$this->setFieldValue('hidID',$idexemplar);
+		$this->setFieldValue('hidExemplar',$data->exemplar);
+		//$data = $this->GetData();
+		//var_dump($data->idemprestimo);
+		//var_dump($idemprestimo);
 
-			if (!$idemprestimo)
-			{
-				$Mensagem = 'O exemplar nao esta emprestado';
-				$this->SetButtonAttr('btnDevolver','visible',false);
+		if (!$idemprestimo)
+		{
+		$Mensagem = 'O exemplar nao esta emprestado';
+		$this->SetButtonAttr('btnDevolver','visible',false);
 
-			}
-			else
-			{
-					
-				$this->SetButtonAttr('btnDevolver','visible',true);
-					
-				//Pesquisa se o usuario pertence a instituição
-				$query = $this->objEmprestimo->SelectIdUsuariobyId($idemprestimo);
-				$idusuario = $query[0][0];
+		}
+		else
+		{
+			
+		$this->SetButtonAttr('btnDevolver','visible',true);
+			
+		//Pesquisa se o usuario pertence a instituição
+		$query = $this->objEmprestimo->SelectIdUsuariobyId($idemprestimo);
+		$idusuario = $query[0][0];
 
-				if ($idusuario == 0) // or (!$idusuario )   --> Quando o usuario não pertence a instituição
-				{
-					//var_dump($idusuario);
-					$query = $this->objEmprestimo->SelectIdUsuarioExternobyId($idemprestimo);
-					$idusuario = $query[0][0];
+		if ($idusuario == 0) // or (!$idusuario )   --> Quando o usuario não pertence a instituição
+		{
+		//var_dump($idusuario);
+		$query = $this->objEmprestimo->SelectIdUsuarioExternobyId($idemprestimo);
+		$idusuario = $query[0][0];
 
-				}
-
-
-
-				//var_dump($idemprestimo);
-					
-				$query = $this->objEmprestimo->GetGrupo($idusuario);
-				$idgrupousuario = $query->result[0][0];
-				//	var_dump($idgrupousuario);
-				//	var_dump($idregracirculacao);
-
-				$query = $this->objDevolucao->GetValorMulta($idgrupousuario,$idregracirculacao);
-				$valordamulta = $query->result[0][0];
-				$valordamulta = str_replace(',','.',$valordamulta);
-				settype($valordamulta,"float");
-
-				$query = $this->objDevolucao->GetPrevDevolucao($idemprestimo);
-				$dataPrevDevolucao = $query->result[0][0];
-
-				$k = new MKrono();
-				$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
-
-
-				$diasATRASADO = $k->daysDiff($dataPrevDevolucao,$dataHoje);
-
-				//var_dump($diasATRASADO);
-
-				//var_dump('dataPrevDevolucao:');
-				//var_dump($dataPrevDevolucao);
-				//var_dump($dataHoje);
-					
-				if (($diasATRASADO > 0) and ($dataPrevDevolucao == $dataHoje))
-				{
-
-					$multa = $diasATRASADO * $valordamulta;
-					//var_dump($multa);
-					$this->setFieldValue('hidMulta',$multa);
-					$Mensagem = 'ATENÇÃO, devolução com MULTA: R$'.number_format($multa,2,',','');
-					$Mensagem = '<font color=red><u>' . $Mensagem . '</u></font>';
-
-				}
-				else
-				{
-					if ($diasATRASADO == 0)
-					{
-						$horaPrevDevolucao = substr($dataPrevDevolucao,11);
-						$horaHoje = substr($dataHoje,11);
-
-						$horasATRASADO = $k->timesDiff($horaPrevDevolucao,$horaHoje,"m");
-						$multa = $valordamulta;
-						$this->setFieldValue('hidMulta',$multa);
-						$Mensagem = 'ATENÇÃO, devolução com MULTA: R$'.number_format($multa,2,',','');
-
-						$Mensagem = '<font color=red><u>' . $Mensagem . '</u></font>';
-						//var_dump($horasATRASADO);
-					}
-					else
-					{
-						//var_dump($diasdeatraso);
-						$Mensagem = 'OK Emprestado';
-					}
-				}
-					
-			}
+		}
 
 
 
-			$this->SetTitle('Detalhes do Exemplar');
+		//var_dump($idemprestimo);
+			
+		$query = $this->objEmprestimo->GetGrupo($idusuario);
+		$idgrupousuario = $query->result[0][0];
+		//	var_dump($idgrupousuario);
+		//	var_dump($idregracirculacao);
 
-			//$this->defaultButton = false;
+		$query = $this->objDevolucao->GetValorMulta($idgrupousuario,$idregracirculacao);
+		$valordamulta = $query->result[0][0];
+		$valordamulta = str_replace(',','.',$valordamulta);
+		settype($valordamulta,"float");
 
-			$this->AddField(new TextLabel('Exemplar',$data->exemplar,'Exemplar'));
-			$this->AddField(new TextLabel('Obra',$numerodaobra,'Obra'));
-			$this->AddField(new TextLabel('Titulo',$titulo,'Titulo'));
-			$this->AddField(new TextLabel('Autor',$autor,'Autor'));
-			$this->AddField(new TextLabel('Edicao',$edicao,'Edicao'));
-			$this->AddField(new TextLabel('Status',$Mensagem,'Status'));
+		$query = $this->objDevolucao->GetPrevDevolucao($idemprestimo);
+		$dataPrevDevolucao = $query->result[0][0];
 
-			//Operador de devolução
-			$this->SetFieldValue('hidIdusuarioopdevolucao',$this->manager->GetLogin()->idkey);
-			$op = 'DEVOLUCAO';
-			$query =$this->objDevolucao->GetIdOperacao($op);
-			$op2 = $query->result[0][0];
+		$k = new MKrono();
+		$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
 
-			$this->setFieldValue('hidIdOperacao',$op2);
+
+		$diasATRASADO = $k->daysDiff($dataPrevDevolucao,$dataHoje);
+
+		//var_dump($diasATRASADO);
+
+		//var_dump('dataPrevDevolucao:');
+		//var_dump($dataPrevDevolucao);
+		//var_dump($dataHoje);
+			
+		if (($diasATRASADO > 0) and ($dataPrevDevolucao == $dataHoje))
+		{
+
+		$multa = $diasATRASADO * $valordamulta;
+		//var_dump($multa);
+		$this->setFieldValue('hidMulta',$multa);
+		$Mensagem = 'ATENÇÃO, devolução com MULTA: R$'.number_format($multa,2,',','');
+		$Mensagem = '<font color=red><u>' . $Mensagem . '</u></font>';
+
+		}
+		else
+		{
+		if ($diasATRASADO == 0)
+		{
+		$horaPrevDevolucao = substr($dataPrevDevolucao,11);
+		$horaHoje = substr($dataHoje,11);
+
+		$horasATRASADO = $k->timesDiff($horaPrevDevolucao,$horaHoje,"m");
+		$multa = $valordamulta;
+		$this->setFieldValue('hidMulta',$multa);
+		$Mensagem = 'ATENÇÃO, devolução com MULTA: R$'.number_format($multa,2,',','');
+
+		$Mensagem = '<font color=red><u>' . $Mensagem . '</u></font>';
+		//var_dump($horasATRASADO);
+		}
+		else
+		{
+		//var_dump($diasdeatraso);
+		$Mensagem = 'OK Emprestado';
+		}
+		}
+			
+		}
+
+
+
+		$this->SetTitle('Detalhes do Exemplar');
+
+		//$this->defaultButton = false;
+
+		$this->AddField(new TextLabel('Exemplar',$data->exemplar,'Exemplar'));
+		$this->AddField(new TextLabel('Obra',$numerodaobra,'Obra'));
+		$this->AddField(new TextLabel('Titulo',$titulo,'Titulo'));
+		$this->AddField(new TextLabel('Autor',$autor,'Autor'));
+		$this->AddField(new TextLabel('Edicao',$edicao,'Edicao'));
+		$this->AddField(new TextLabel('Status',$Mensagem,'Status'));
+
+		//Operador de devolução
+		$this->SetFieldValue('hidIdusuarioopdevolucao',$this->manager->GetLogin()->idkey);
+		$op = 'DEVOLUCAO';
+		$query =$this->objDevolucao->GetIdOperacao($op);
+		$op2 = $query->result[0][0];
+
+		$this->setFieldValue('hidIdOperacao',$op2);
 
 		}
 
 		$this->SetButtonAttr('btnConsulta','visible',false);
 
-
-		/*
-		 if ($Mensagem == 'O exemplar não está emprestado')
-		 {
-		$this->SetButtonAttr('btnDevolver','visible',false);
-
-		}
 		*/
 
 
