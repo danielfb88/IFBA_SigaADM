@@ -150,6 +150,7 @@ class frmDevolucao extends Form
 			$infoExemplares = $bussEmprestimo->getExemplaresEmprestadosByTombo($arrExemplares);
 
 			if(!is_null($infoExemplares)) {
+				// Recuperar estas informações no método Devolver
 				$_SESSION['infoExemplares'] = $infoExemplares;
 
 				$k = new MKrono();
@@ -157,8 +158,10 @@ class frmDevolucao extends Form
 
 				for($i=0; $i<count($infoExemplares); $i++) {
 					$dataPrevDevolucao = $infoExemplares[$i][1];
-					$diasAtrasado = $k->daysDiff(date("d/m/Y H:i:s", $dataPrevDevolucao), $dataHoje);
-					die($diasAtrasado);
+
+					// TODO: Calcular dias de atraso com timestamp
+					// 					$diasAtrasado = $k->daysDiff($dataPrevDevolucao, $dataHoje);
+					$diasAtrasado = 0;
 
 					$valorDaMulta = $infoExemplares[$i][5];
 					$msg = null;
@@ -190,6 +193,7 @@ class frmDevolucao extends Form
 					$this->AddField(new TextLabel('Autor', $infoExemplares[$i][10], 'Autor'));
 					$this->AddField(new TextLabel('Edicao', $infoExemplares[$i][11], 'Edicao'));
 					$this->AddField(new TextLabel('Status', $msg, 'Status'));
+					$this->AddField(new MSeparator());
 				}
 
 
@@ -210,6 +214,9 @@ class frmDevolucao extends Form
 	}
 
 
+	/**
+	 * TODO: Modificar para se enquadrar com a devolução multipla. Vou dormir.
+	 */
 	function btnDevolver_click()
 	{
 		global $MIOLO,$module,$item,$self, $theme, $action, $page;
