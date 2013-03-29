@@ -479,7 +479,14 @@ class BusinessBibliotecaEmprestimo extends Business
 		$in .= ")";
 
 		$sql = new sql('
+				emp.idemprestimo,
+				emp.datahoraprevisaodevolucao,
+				ex.idexemplar,
 				ex.numerodotombo,
+				ex.idregracirculacao,
+				polit.valordamulta,
+				us.idusuario,
+				gr.idgrupo,
 				o.numerodaobra,
 				o.titulo,
 				o.autor,
@@ -488,7 +495,11 @@ class BusinessBibliotecaEmprestimo extends Business
 				FROM
 				bt_emprestimo emp JOIN
 				bt_exemplar ex ON (emp.idexemplar = ex.idexemplar) JOIN
-				bt_obra o ON (ex.idobra = o.idobra)
+				bt_obra o ON (ex.idobra = o.idobra) JOIN
+				cm_usuario us ON (emp.idusuario = us.idusuario) JOIN
+				bt_vinculo v ON (us.idusuario = v.idusuario) JOIN
+				bt_grupo gr ON (v.idgrupo = gr.idgrupo) JOIN
+				bt_politica polit ON (polit.idgrupo = gr.idgrupo AND polit.idregracirculacao = ex.idregracirculacao)
 
 				WHERE
 				emp.datahoradadevolucao IS NULL AND
