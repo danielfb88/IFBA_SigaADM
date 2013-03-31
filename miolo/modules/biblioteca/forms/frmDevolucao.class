@@ -147,58 +147,71 @@ class frmDevolucao extends Form
 		$arrExemplares = explode(',', $data->exemplar);
 		$arrExemplares = array_filter(array_unique($arrExemplares));
 		sort($arrExemplares);
-		// 		print_r($arrExemplares);die;
 
 		if(count($arrExemplares) > 0) {
-			$infoExemplares = $bussEmprestimo->getExemplaresEmprestadosByTombo($arrExemplares);
+			$arrInfoExemplares = $bussEmprestimo->getExemplaresEmprestadosByTombo($arrExemplares);
 			$arrExemplaresNaoEncontrados = $arrExemplares;
 
-			if(!is_null($infoExemplares)) {
-				// Recuperar estas informações no método Devolver
-				$_SESSION['infoExemplares'] = $infoExemplares;
+			if(!is_null($arrInfoExemplares)) {
 
 				// Para cada exemplar encontrado
-				for($i=0; $i<count($infoExemplares); $i++) {
+				for($i=0; $i<count($arrInfoExemplares); $i++) {
 
-					$numeroTombo = $infoExemplares[$i][3];
-					$valorDaMulta = $infoExemplares[$i][5];
-					$diasAtraso = $infoExemplares[$i][6];
-					$obra = $infoExemplares[$i][9];
-					$titulo  = $infoExemplares[$i][10];;
-					$autor = $infoExemplares[$i][11];
-					$edicao  = $infoExemplares[$i][12];
-					$status = null;
+					$infoExemplares = array(
+							'idEmprestimo' => $arrInfoExemplares[$i][0],
+							'dataHoraPrevisaoDevolucao' => $arrInfoExemplares[$i][1],
+							'idExemplar' => $arrInfoExemplares[$i][2],
+							'numeroDoTombo' => $arrInfoExemplares[$i][3],
+							'idRegraCirculacao' => $arrInfoExemplares[$i][4],
+							'valorDaMulta' => $arrInfoExemplares[$i][5],
+							'diasAtraso' => $arrInfoExemplares[$i][6],
+							'idUsuario' => $arrInfoExemplares[$i][7],
+							'idGrupo' => $arrInfoExemplares[$i][8],
+							'numeroDaObra' => $arrInfoExemplares[$i][9],
+							'titulo' => $arrInfoExemplares[$i][10],
+							'autor' => $arrInfoExemplares[$i][11],
+							'edicao' => $arrInfoExemplares[$i][12],
+							'status' => null
+					);
 
 					// guardando quais foram os exemplares não encontrados
 					for($k=0; $k<count($arrExemplaresNaoEncontrados); $k++) {
-						if($numeroTombo == $arrExemplaresNaoEncontrados[$k]) {
+						if($infoExemplares['numeroDoTombo'] == $arrExemplaresNaoEncontrados[$k]) {
 							unset($arrExemplaresNaoEncontrados[$k]);
 						}
 					}
-					sort($arrExemplaresNaoEncontrados);
 
 
-					if($diasAtraso > 0) {
-						$valorDaMultaTotal = $diasAtraso * $valorDaMulta;
-						$status = "<font color='red'><u> ATENÇÃO, devolução com MULTA: R$ $valorDaMultaTotal </u></font>";
+					if($infoExemplares['diasAtraso'] > 0) {
+						$valorDaMultaTotal = $infoExemplares['diasAtraso'] * $infoExemplares['valorDaMulta'];
+						$infoExemplares['status'] = "<font color='red'><u> ATENÇÃO, devolução com MULTA: R$ $valorDaMultaTotal </u></font>";
 
 					} else {
-						$status = "<font color='blue'>OK Emprestado</font>";
+						$infoExemplares['status'] = "<font color='blue'>OK Emprestado</font>";
 
 					}
 
 					$this->SetTitle('Detalhes do Exemplar');
 
-					$this->AddField(new TextLabel('Exemplar', $numeroTombo, 'Exemplar'));
-					$this->AddField(new TextLabel('Obra', $obra, 'Obra'));
-					$this->AddField(new TextLabel('Titulo', $titulo, 'Titulo'));
-					$this->AddField(new TextLabel('Autor', $autor, 'Autor'));
-					$this->AddField(new TextLabel('Edicao', $edicao, 'Edicao'));
-					$this->AddField(new TextLabel('Status', $status, 'Status'));
+					/*
+					 * Exibindo exemplares encontrados
+					*/
+					$this->AddField(new TextLabel('Exemplar', $infoExemplares['numeroDoTombo'], 'Exemplar'));
+					$this->AddField(new TextLabel('Obra', $infoExemplares['numeroDaObra'], 'Obra'));
+					$this->AddField(new TextLabel('Titulo', $infoExemplares['titulo'], 'Titulo'));
+					$this->AddField(new TextLabel('Autor', $infoExemplares['autor'], 'Autor'));
+					$this->AddField(new TextLabel('Edicao', $infoExemplares['edicao'], 'Edicao'));
+					$this->AddField(new TextLabel('Status', $infoExemplares['status'], 'Status'));
 					$this->AddField(new MSeparator());
+
+					// Recuperar estas informações no método Devolver
+					$_SESSION['infoExemplares'][] = $infoExemplares;
 				}
 
-				// Verificando se os exemplares não encontrados existem ou não estão emprestados
+				/*
+				 * Exibindo exemplares não emprestados ou não existentes
+				*/
+				sort($arrExemplaresNaoEncontrados);
 				for($k=0; $k<count($arrExemplaresNaoEncontrados); $k++) {
 					if($bussExemplar->isExemplarExisteByTombo($arrExemplaresNaoEncontrados[$k])) {
 						$status = "<font color='red'>O exemplar não está emprestado</font>";
@@ -230,26 +243,29 @@ class frmDevolucao extends Form
 
 
 	/**
-	 * TODO: Modificar para se enquadrar com a devolução multipla. Vou dormir.
+	 * @author Daniel Bonfim
+	 * @since 31-03-2013
 	 */
-	function btnDevolver_click()
-	{
+	function btnDevolver_click() {
 		global $MIOLO,$module,$item,$self, $theme, $action, $page;
 
-		// Atributo dos botões
-		$this->SetButtonAttr('btnDevolver','visible',false);
+		print_r($_SESSION['infoExemplares']);die;
+
+		$bussDevolucao = $MIOLO->GetBusiness($module,'devolucao');
+		$bussEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
+		$bussExemplar = $MIOLO->GetBusiness($module,'exemplar');
+
+		// Campos visíveis
 		$this->SetButtonAttr('btnvoltar','visible',true);
+
+		// Campos invisíveis
+		$this->SetButtonAttr('btnDevolver','visible',false);
 		$this->SetButtonAttr('btnConfirmar','visible',false);
-		//Esconde os campos
 		$this->SetFieldAttr('edtExemplar','visible', false);
 
-		$this->objDevolucao = $MIOLO->GetBusiness($module,'devolucao');
-		$this->objReserva = $MIOLO->GetBusiness($module,'reserva');
-		$this->objReservar = $MIOLO->GetBusiness($module,'reservar');
-		$this->objEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
 
+		// Continuar... Vou dar uma volta...
 
-		$data = $this->GetData();
 
 
 		$this->objDevolucao->BeginTransaction();
