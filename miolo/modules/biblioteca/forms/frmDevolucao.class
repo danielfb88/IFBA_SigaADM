@@ -145,7 +145,9 @@ class frmDevolucao extends Form
 		$bussExemplar = $MIOLO->GetBusiness($module,'exemplar');
 
 		$arrExemplares = explode(',', $data->exemplar);
-		$arrExemplares = array_unique($arrExemplares);
+		$arrExemplares = array_filter(array_unique($arrExemplares));
+		sort($arrExemplares);
+		// 		print_r($arrExemplares);die;
 
 		if(count($arrExemplares) > 0) {
 			$infoExemplares = $bussEmprestimo->getExemplaresEmprestadosByTombo($arrExemplares);
@@ -169,10 +171,11 @@ class frmDevolucao extends Form
 
 					// guardando quais foram os exemplares não encontrados
 					for($k=0; $k<count($arrExemplaresNaoEncontrados); $k++) {
-						if(($numeroTombo == $arrExemplaresNaoEncontrados[$k]) || empty($arrExemplaresNaoEncontrados[$k]) || (is_null($arrExemplaresNaoEncontrados[$k]))) {
+						if($numeroTombo == $arrExemplaresNaoEncontrados[$k]) {
 							unset($arrExemplaresNaoEncontrados[$k]);
 						}
 					}
+					sort($arrExemplaresNaoEncontrados);
 
 
 					if($diasAtraso > 0) {
@@ -196,9 +199,8 @@ class frmDevolucao extends Form
 				}
 
 				// Verificando se os exemplares não encontrados existem ou não estão emprestados
-				sort($arrExemplaresNaoEncontrados);
 				for($k=0; $k<count($arrExemplaresNaoEncontrados); $k++) {
-					if($bussExemplar->isExemplarExiste(null, $arrExemplaresNaoEncontrados[$k])) {
+					if($bussExemplar->isExemplarExisteByTombo($arrExemplaresNaoEncontrados[$k])) {
 						$status = "<font color='red'>O exemplar não está emprestado</font>";
 					} else {
 						$status = "<font color='red'>O exemplar não existe</font>";

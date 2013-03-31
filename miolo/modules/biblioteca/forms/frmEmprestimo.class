@@ -574,7 +574,7 @@ class frmEmprestimo extends Form
 
 		if(!empty($data->exemplar)) {
 
-			if($bussExemplar->isExemplarExiste($data->exemplar)) {
+			if($bussExemplar->isExemplarExisteByTombo($data->exemplar)) {
 
 				$condicoesDoExemplarPorUsuario = $bussExemplar->getCondicoesDoExemplarPorUsuario($data->exemplar, $data->idusuario);
 				if(!is_null($condicoesDoExemplarPorUsuario)) {
