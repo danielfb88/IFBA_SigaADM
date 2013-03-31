@@ -844,7 +844,7 @@ class BusinessBibliotecaExemplar extends Business
 	 * @param int $tombo
 	 * @return boolean
 	 */
-	function isExemplarExiste($idExemplar = null, $tombo = null) {
+	function isExemplarExiste($idExemplar, $tombo) {
 		$where = '1=1';
 
 		if(!is_null($idExemplar)) {

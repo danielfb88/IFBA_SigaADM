@@ -468,15 +468,22 @@ class BusinessBibliotecaEmprestimo extends Business
 	 */
 	function getExemplaresEmprestadosByTombo(array $arrTombo) {
 
-		$in = "(";
+		// Limpando o array de valores nulos e vazios
+		$arrTomboLimpo = null;
 		for($i=0; $i<count($arrTombo); $i++) {
-			$arrTombo[$i] = trim($arrTombo[$i]);
+			if(!is_null($arrTombo[$i]) && !empty($arrTombo[$i])) {
+				$arrTomboLimpo[] = $arrTombo[$i];
+			}
+		}
+
+		// Cláusula Where In
+		for($i=0; $i<count($arrTomboLimpo); $i++) {
+			$arrTomboLimpo[$i] = trim($arrTomboLimpo[$i]);
 			$in .= "?";
-			if($i != count($arrTombo) - 1) {
+			if($i != count($arrTomboLimpo) - 1) {
 				$in .= ",";
 			}
 		}
-		$in .= ")";
 
 		$sql = new sql('
 				emp.idemprestimo,
@@ -485,6 +492,7 @@ class BusinessBibliotecaEmprestimo extends Business
 				ex.numerodotombo,
 				ex.idregracirculacao,
 				polit.valordamulta,
+				(SELECT extract(day from (SELECT current_timestamp - emp.datahoraprevisaodevolucao))) AS diasatraso,
 				us.idusuario,
 				gr.idgrupo,
 				o.numerodaobra,
@@ -503,11 +511,10 @@ class BusinessBibliotecaEmprestimo extends Business
 
 				WHERE
 				emp.datahoradadevolucao IS NULL AND
-				ex.numerodotombo IN '.$in.';'
+				ex.numerodotombo IN ('.$in.');'
 		);
-		$query = $this->Query($sql, $arrTombo);
 
-		return $query->result;
+		return  $this->Query($sql, $arrTomboLimpo)->result;
 	}
 
 
