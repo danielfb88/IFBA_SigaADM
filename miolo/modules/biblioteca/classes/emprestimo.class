@@ -468,19 +468,11 @@ class BusinessBibliotecaEmprestimo extends Business
 	 */
 	function getExemplaresEmprestadosByTombo(array $arrTombo) {
 
-		// Limpando o array de valores nulos e vazios
-		$arrTomboLimpo = null;
-		for($i=0; $i<count($arrTombo); $i++) {
-			if(!is_null($arrTombo[$i]) && !empty($arrTombo[$i])) {
-				$arrTomboLimpo[] = $arrTombo[$i];
-			}
-		}
-
 		// Cláusula Where In
-		for($i=0; $i<count($arrTomboLimpo); $i++) {
-			$arrTomboLimpo[$i] = trim($arrTomboLimpo[$i]);
+		for($i=0; $i<count($arrTombo); $i++) {
+			$arrTombo[$i] = trim($arrTombo[$i]);
 			$in .= "?";
-			if($i != count($arrTomboLimpo) - 1) {
+			if($i != count($arrTombo) - 1) {
 				$in .= ",";
 			}
 		}
@@ -514,7 +506,7 @@ class BusinessBibliotecaEmprestimo extends Business
 				ex.numerodotombo IN ('.$in.');'
 		);
 
-		return  $this->Query($sql, $arrTomboLimpo)->result;
+		return  $this->Query($sql, $arrTombo)->result;
 	}
 
 

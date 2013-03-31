@@ -835,31 +835,32 @@ class BusinessBibliotecaExemplar extends Business
 	}
 
 	/**
-	 * Verifica se o exemplar existe pelo id ou pelo número do tombo
+	 * Verifica se o exemplar existe pelo id
 	 *
 	 * @author Daniel Bonfim
-	 * @since 13-03-2013
+	 * @since 03-03-2013
 	 *
 	 * @param int $idExemplar
+	 * @return boolean
+	 */
+	function isExemplarExisteById($idExemplar) {
+		$sql = new sql('e.idexemplar', 'bt_exemplar e', 'idexemplar = ?');
+		$query = $this->Query($sql, trim($idExemplar));
+		return !is_null($query->result[0][0]);
+	}
+
+	/**
+	 * Verifica se o exemplar existe pelo número do tombo
+	 *
+	 * @author Daniel Bonfim
+	 * @since 03-03-2013
+	 *
 	 * @param int $tombo
 	 * @return boolean
 	 */
-	function isExemplarExiste($idExemplar, $tombo) {
-		$where = '1=1';
-
-		if(!is_null($idExemplar)) {
-			$where .= ' AND idexemplar = ? ';
-			$values[] = $idExemplar;
-		}
-
-		if(!is_null($tombo)) {
-			$where .= "AND numerodotombo = ? ";
-			$values[] = $tombo;
-		}
-
-		$sql = new sql('e.idexemplar', 'bt_exemplar e', $where);
-		$query = $this->Query($sql, $values);
-
+	function isExemplarExisteByTombo($numeroDoTombo) {
+		$sql = new sql('e.idexemplar', 'bt_exemplar e', 'numerodotombo = ?');
+		$query = $this->Query($sql, trim($numeroDoTombo));
 		return !is_null($query->result[0][0]);
 	}
 
