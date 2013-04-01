@@ -675,6 +675,27 @@ class BusinessBibliotecaExemplar extends Business
 		$this->Execute($sql->Update($values));
 	}
 
+	/**
+	 * Altera o estado do exemplar pelo tombo
+	 *
+	 * @author Daniel Bonfim
+	 * @since 01-04-2013
+	 *
+	 * @param int $idExemplar
+	 * @param int $tombo
+	 */
+	function alterarEstadoByTombo($tombo, $idEstado) {
+		$sql = new sql('idestado', 'bt_exemplar', 'numerodotombo = ?');
+		$values = array($idEstado, $tombo);
+		$this->Execute($sql->Update($values));
+	}
+
+	/**
+	 * @deprecated
+	 * @param unknown $tombo
+	 * @param unknown $estado
+	 * @return unknown
+	 */
 	function AlteraEstado($tombo, $estado){
 		$sql = new sql('idestado', 'bt_exemplar', 'numerodotombo = ?');
 

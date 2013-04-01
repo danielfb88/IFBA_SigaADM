@@ -63,7 +63,7 @@ class frmDevolucao extends Form
 					
 				new HiddenField('hidID'),
 				new HiddenField('hidKey'), // controla Incluir/Editar
-				new TextField('edtExemplar','','Exemplar(es)',25),
+				new TextField('edtExemplar','','Exemplar(es)',50),
 				new Text('observacao','<font size=2 ><font color=red>Para devolver mais de um exemplar, separe-os com uma vírgula. Ex: 71, 23, 44</font>'),
 				new HiddenField('hidIdEmprestimo'),
 				new HiddenField('hidExemplar'),
@@ -157,7 +157,7 @@ class frmDevolucao extends Form
 				// Para cada exemplar encontrado
 				for($i=0; $i<count($arrInfoExemplares); $i++) {
 
-					$infoExemplares = array(
+					$infoExemplares[$i] = array(
 							'idEmprestimo' => $arrInfoExemplares[$i][0],
 							'dataHoraPrevisaoDevolucao' => $arrInfoExemplares[$i][1],
 							'idExemplar' => $arrInfoExemplares[$i][2],
@@ -175,19 +175,19 @@ class frmDevolucao extends Form
 					);
 
 					// guardando quais foram os exemplares não encontrados
-					for($k=0; $k<count($arrExemplaresNaoEncontrados); $k++) {
-						if($infoExemplares['numeroDoTombo'] == $arrExemplaresNaoEncontrados[$k]) {
+					for($k=0; $k<count($arrExemplares); $k++) {
+						if($infoExemplares[$i]['numeroDoTombo'] == $arrExemplaresNaoEncontrados[$k]) {
 							unset($arrExemplaresNaoEncontrados[$k]);
 						}
 					}
 
 
-					if($infoExemplares['diasAtraso'] > 0) {
-						$valorDaMultaTotal = $infoExemplares['diasAtraso'] * $infoExemplares['valorDaMulta'];
-						$infoExemplares['status'] = "<font color='red'><u> ATENÇÃO, devolução com MULTA: R$ $valorDaMultaTotal </u></font>";
+					if($infoExemplares[$i]['diasAtraso'] > 0) {
+						$valorDaMultaTotal = $infoExemplares[$i]['diasAtraso'] * $infoExemplares[$i]['valorDaMulta'];
+						$infoExemplares[$i]['status'] = "<font color='red'><u> ATENÇÃO, devolução com MULTA: R$ $valorDaMultaTotal </u></font>";
 
 					} else {
-						$infoExemplares['status'] = "<font color='blue'>OK Emprestado</font>";
+						$infoExemplares[$i]['status'] = "<font color='blue'>OK Emprestado</font>";
 
 					}
 
@@ -196,17 +196,16 @@ class frmDevolucao extends Form
 					/*
 					 * Exibindo exemplares encontrados
 					*/
-					$this->AddField(new TextLabel('Exemplar', $infoExemplares['numeroDoTombo'], 'Exemplar'));
-					$this->AddField(new TextLabel('Obra', $infoExemplares['numeroDaObra'], 'Obra'));
-					$this->AddField(new TextLabel('Titulo', $infoExemplares['titulo'], 'Titulo'));
-					$this->AddField(new TextLabel('Autor', $infoExemplares['autor'], 'Autor'));
-					$this->AddField(new TextLabel('Edicao', $infoExemplares['edicao'], 'Edicao'));
-					$this->AddField(new TextLabel('Status', $infoExemplares['status'], 'Status'));
+					$this->AddField(new TextLabel('Exemplar', $infoExemplares[$i]['numeroDoTombo'], 'Exemplar'));
+					$this->AddField(new TextLabel('Obra', $infoExemplares[$i]['numeroDaObra'], 'Obra'));
+					$this->AddField(new TextLabel('Titulo', $infoExemplares[$i]['titulo'], 'Titulo'));
+					$this->AddField(new TextLabel('Autor', $infoExemplares[$i]['autor'], 'Autor'));
+					$this->AddField(new TextLabel('Edicao', $infoExemplares[$i]['edicao'], 'Edicao'));
+					$this->AddField(new TextLabel('Status', $infoExemplares[$i]['status'], 'Status'));
 					$this->AddField(new MSeparator());
-
-					// Recuperar estas informações no método Devolver
-					$_SESSION['infoExemplares'][] = $infoExemplares;
 				}
+				// Colocando as informações na Sessão para serem recuperadas no método btnDevolver
+				$_SESSION['infoExemplares'] = $infoExemplares;
 
 				/*
 				 * Exibindo exemplares não emprestados ou não existentes
@@ -249,11 +248,13 @@ class frmDevolucao extends Form
 	function btnDevolver_click() {
 		global $MIOLO,$module,$item,$self, $theme, $action, $page;
 
-		print_r($_SESSION['infoExemplares']);die;
+		$infoExemplares = $_SESSION['infoExemplares'];
 
 		$bussDevolucao = $MIOLO->GetBusiness($module,'devolucao');
 		$bussEmprestimo = $MIOLO->GetBusiness($module,'emprestimo');
 		$bussExemplar = $MIOLO->GetBusiness($module,'exemplar');
+		$bussEstado = $MIOLO->GetBusiness($module,'estado');
+		$bussLog = $MIOLO->GetBusiness($module,'log');
 
 		// Campos visíveis
 		$this->SetButtonAttr('btnvoltar','visible',true);
@@ -263,91 +264,34 @@ class frmDevolucao extends Form
 		$this->SetButtonAttr('btnConfirmar','visible',false);
 		$this->SetFieldAttr('edtExemplar','visible', false);
 
+		$bussDevolucao->beginTransaction();
 
-		// Continuar... Vou dar uma volta...
+		for($i=0; $i<count($infoExemplares); $i++) {
 
+			// Devolvendo Exemplar
+			$bussDevolucao->devolverExemplar($infoExemplares[$i]['idEmprestimo'], $infoExemplares[$i]['numeroDoTombo']);
 
-
-		$this->objDevolucao->BeginTransaction();
-
-		if (!$data->hidmulta)
-		{
-
-			/*
-			 * Modificação em 13-03-2013
-			* Substituído o método 'Devolucao' por 'devolverExemplar'
-			*/
-			if ( $dev == $this->objDevolucao->devolverExemplar($data->idemprestimo, $data->hidexemplar))
-			{
-				// LOG
-				$log = $MIOLO->GetBusiness($module,'log');
-				$log->SetData($this->getDataLog($data->idemprestimo));
-				$log->save();
-
-				$theme->ClearContent();
-				// 				$MIOLO->Prompt(Prompt::Information("Devolução efetuada com SUCESSO",$MIOLO->GetActionURL($module,$self)));
-
-				// Daniel Bonfim / 31-01-2013
-				$msg = "Devolução efetuada com SUCESSO.</br> Deseja gerar o comprovante?";
-
-				$gotoYes = $MIOLO->GetActionURL($module, $self, null, array('exemplar'=>$data->hidexemplar));
-				$eventYes = 'imprimirRecibo';	// nome do método a ser executado
-
-				$gotoNo = $MIOLO->GetActionURL($module, $self);
-				$eventNo = '';
-
-				$MIOLO->Question($msg, $gotoYes, $gotoNo, $eventYes, $eventNo);
-			}
-			else
-			{
-				$theme->ClearContent();
-				$MIOLO->Prompt(Prompt::Error("Não foi possível concluir o processo de devolução",$MIOLO->GetActionURL($module,$self)));
-			}
-
-
-		}
-		else
-		{
-			$devolucao = $this->objDevolucao->Devolucao($data);
-			//  voltar  rever$multa = $this->objDevolucao->SetMulta($data);
-			$logoperacao = $this->objDevolucao->SetLogOperacao($data);
-			$theme->ClearContent();
-			$multa = $data->hidmulta;
-			$multa = str_replace(',','.',$multa);
-			settype($multa,"float");
-			//var_dump($multa);
-			$MIOLO->Prompt(Prompt::Information("ATENÇÃO, a devolução gerou multa de R$" .number_format($multa,2,',',''),$MIOLO->GetActionURL($module,$self)));
-
+			// Log
+			$bussLog->SetData($this->getDataLog($infoExemplares[$i]['idEmprestimo']));
+			$bussLog->save();
 		}
 
-		$reserva = $this->objReserva->GetProximaReserva(0,$data->hidexemplar);
-		//var_dump($reserva);
-		//var_dump($data->hidexemplar);
-			
-		if ( $reserva )
-		{
-			$datalimite = $this->objReserva->CalculaData(1);
-			$idsituacao = $this->objEmprestimo->GetSituacao('ATENDIDA')->result;
-			//var_dump($idsituacao);
-			$this->objReserva->ConfirmaReserva($reserva[0],$idsituacao[0][0],$datalimite);
-			$mnemonico = 'RESERVADO';
-			$query =$this->objReservar->GetEstado($mnemonico);
-			$idestado = $query->result[0][0];
-			$estado = $this->objDevolucao->SetEstado($idestado,$data->ID);
-		}
-		else
-		{
-			$mnemonico = 'DISPONIVEL';
-			$query =$this->objReservar->GetEstado($mnemonico);
-			$idestado = $query->result[0][0];
-			$estado = $this->objDevolucao->SetEstado($idestado,$data->ID);
+		$bussDevolucao->endTransaction();
 
+		$theme->ClearContent();
 
-		}
+		// Daniel Bonfim / 31-01-2013
+		$msg = "Devolução efetuada com SUCESSO.</br> Deseja gerar o comprovante?";
 
-		$this->objDevolucao->EndTransaction();
+		$gotoYes = $MIOLO->GetActionURL($module, $self, null, array('exemplar'=>$data->hidexemplar));
+		$eventYes = 'imprimirRecibo';	// nome do método a ser executado
 
+		$gotoNo = $MIOLO->GetActionURL($module, $self);
+		$eventNo = '';
+
+		$MIOLO->Question($msg, $gotoYes, $gotoNo, $eventYes, $eventNo);
 	}
+
 
 	function getDataLog($Devolucao)
 	{
@@ -362,6 +306,7 @@ class frmDevolucao extends Form
 		return $data;
 	}
 
+	// TODO: Adaptar relatório para devolução multipla.
 	// Daniel Bonfim - 31-01-2013
 	// Veja: http://trialforce.nostaljia.eng.br/?tag=thread-php
 	function imprimirRecibo() {
