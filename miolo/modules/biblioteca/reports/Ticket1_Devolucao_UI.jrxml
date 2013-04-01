@@ -23,18 +23,15 @@ INNER JOIN bt_validacao validacao  ON usuario.idusuario = validacao.idusuario
 
 WHERE
 (
-exemplar.numerodotombo = $P{NUMERODOTOMBO} AND
-to_date(to_char(emprestimo.datahoradadevolucao, 'DD Mon YYYY'), 'DD Mon YYYY') = current_date AND
+$X{IN,exemplar.numerodotombo, NUMERODOTOMBO} AND
 emprestimo.datahoradadevolucao =
-(
-SELECT max(emprestimo_subquery1.datahoradadevolucao)
-FROM bt_emprestimo emprestimo_subquery1
-INNER JOIN bt_exemplar exemplar_subquery1 ON exemplar_subquery1.idexemplar = emprestimo_subquery1.idexemplar
-INNER JOIN cm_usuario usuario_subquery1 ON emprestimo_subquery1.idusuario = usuario_subquery1.idusuario
-INNER JOIN bt_validacao validacao_subquery1 ON usuario_subquery1.idusuario = validacao_subquery1.idusuario
+(SELECT max(emprestimo2.datahoradadevolucao)
+FROM
+bt_emprestimo emprestimo2 INNER JOIN
+bt_exemplar exemplar2 ON (exemplar2.idexemplar = emprestimo2.idexemplar)
 WHERE
-(exemplar_subquery1.numerodotombo =  exemplar.numerodotombo AND
-to_date(to_char(emprestimo_subquery1.datahoradadevolucao, 'DD Mon YYYY'), 'DD Mon YYYY') = current_date )))]]>
+(exemplar2.numerodotombo =  exemplar.numerodotombo))
+)]]>
 	</queryString>
 	<field name="nome" class="java.lang.String"/>
 	<field name="codigoacesso" class="java.lang.String"/>

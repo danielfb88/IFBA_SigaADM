@@ -310,7 +310,17 @@ class frmDevolucao extends Form
 	// Daniel Bonfim - 31-01-2013
 	// Veja: http://trialforce.nostaljia.eng.br/?tag=thread-php
 	function imprimirRecibo() {
-		$parameters[ 'str_NUMERODOTOMBO' ] = Form::GetFormValue('exemplar');
+		$infoExemplares = $_SESSION['infoExemplares'];
+
+		$exemplares = '';
+		for($i=0; $i<count($infoExemplares); $i++) {
+			$exemplares .= $infoExemplares[$i]['numeroDoTombo'];
+			if($i != count($infoExemplares) - 1)
+				$exemplares .= ',';
+		}
+
+		// TODO: Testendo com envio de array
+		$parameters[ 'str_NUMERODOTOMBO' ] = explode(',', $exemplares);
 		$report = new MJasperReport('sigaept');
 		$report->Execute('biblioteca','Ticket1_Devolucao_UI', $parameters);
 	}

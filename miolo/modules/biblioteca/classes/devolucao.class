@@ -227,10 +227,9 @@ class BusinessBibliotecaDevolucao extends Business
 		if(is_null($this->getTransaction()))
 			$this->beginTransaction();
 
-
-		$k = new MKrono();
-		$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
-		$dataHoje = ":TO_timestamp('". $dataHoje . "','DD/MM/YYYY HH24:MI:SS')";
+		// TimeStamp atual
+		$timestampAtual = time();
+		$dataHoje = date('d/m/Y H:i:s', $timestampAtual);
 
 		// bt_devolucao
 		$sql = new sql('datahoradadevolucao', 'bt_emprestimo', 'idemprestimo = ?');

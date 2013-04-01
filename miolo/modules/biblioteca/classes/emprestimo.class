@@ -1331,10 +1331,13 @@ class BusinessBibliotecaEmprestimo extends Business
 		$qtdDiasPrazo = $this->CalculaDias($qtdDiasPrazo);
 
 		$k = new MKrono();
-		$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
+
+		// TimeStamp atual
+		$timestampAtual = time();
+		$dataHoje = date('d/m/Y H:i:s', $timestampAtual);
+
 		$dataPrevDevOrg = $k->Operation('+', $dataHoje, $qtdDiasPrazo . '%D') . " " . $horaFinalPrazo;
 
-		$dataHoje = ":to_timestamp('".$dataHoje."','DD/MM/YYYY HH24:MI:SS')";
 		$dataPrevDev = ":to_timestamp('". $dataPrevDevOrg . "','DD/MM/YYYY HH24:MI:SS')";
 
 		// determina a quantidade de renovacoes
