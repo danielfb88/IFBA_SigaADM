@@ -306,21 +306,22 @@ class frmDevolucao extends Form
 		return $data;
 	}
 
-	// TODO: Adaptar relatório para devolução multipla.
-	// Daniel Bonfim - 31-01-2013
-	// Veja: http://trialforce.nostaljia.eng.br/?tag=thread-php
+	/**
+	 * @author Daniel Bonfim
+	 * @since 31-01-2013
+	 */
 	function imprimirRecibo() {
 		$infoExemplares = $_SESSION['infoExemplares'];
+		unset($_SESSION['infoExemplares']);
 
 		$exemplares = '';
 		for($i=0; $i<count($infoExemplares); $i++) {
-			$exemplares .= $infoExemplares[$i]['numeroDoTombo'];
+			$exemplares .= "'{$infoExemplares[$i]['numeroDoTombo']}'";
 			if($i != count($infoExemplares) - 1)
 				$exemplares .= ',';
 		}
 
-		// TODO: Testendo com envio de array
-		$parameters[ 'str_NUMERODOTOMBO' ] = explode(',', $exemplares);
+		$parameters[ 'str_NUMERODOTOMBO' ] = $exemplares;
 		$report = new MJasperReport('sigaept');
 		$report->Execute('biblioteca','Ticket1_Devolucao_UI', $parameters);
 	}
