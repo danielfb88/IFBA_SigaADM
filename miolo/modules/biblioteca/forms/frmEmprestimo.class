@@ -752,7 +752,7 @@ class frmEmprestimo extends Form
 
 				} else {
 					$go = $MIOLO->GetActionURL($module, $self);
-					$MIOLO->Error("Exemplar sem política de circulação.", $go);
+					$MIOLO->Error("Não há uma política de circulação do grupo do usuário equivalente à política de circulação deste exemplar.", $go);
 				}
 
 			} else {
