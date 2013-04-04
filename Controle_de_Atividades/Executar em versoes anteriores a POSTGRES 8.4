@@ -1,0 +1,6 @@
+CREATE AGGREGATE array_agg(anyelement)
+(
+    sfunc = array_append,
+    stype = anyarray,
+    initcond = '{}'
+);
