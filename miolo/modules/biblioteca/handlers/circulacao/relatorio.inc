@@ -31,6 +31,11 @@ $theme->ClearContent();
 //$theme->InsertContent(new ContentHeader('Módulo','Biblioteca: Circulação'));
 $close = $MIOLO->GetActionURL('biblioteca','main:circulacao');
 $Panel = new ActionPanel('pnl','Relatórios','',$close);
+
+// Daniel Bonfim - 09/04/2013
+$Panel->AddAction('Empréstimos Reguláres',$ui->GetImage($module,'classe_mini.png'),$module,'main:circulacao:relatorio:emprestimosRegulares');
+$Panel->AddAction('Empréstimos Irregulares',$ui->GetImage($module,'classe_mini.png'),$module,'main:circulacao:relatorio:emprestimosIrregulares');
+
 $Panel->AddAction('Relatório de Obras por Classe',$ui->GetImage($module,'classe_mini.png'),$module,'main:circulacao:relatorio:obrasporclasse');
 $Panel->AddAction('Relatório de Obras por Unidade e Gênero',$ui->GetImage($module,'ocupacaovaga_mini.png'),$module,'main:circulacao:relatorio:obrasporunidade');
 $Panel->AddAction('Empréstimos por Período',$ui->GetImage($module,'emprestimo_mini.png'),$module,'main:circulacao:relatorio:emprestimosporperiodo');
