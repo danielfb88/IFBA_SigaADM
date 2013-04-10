@@ -33,6 +33,5 @@ $theme->ClearContent();
 $report = new MJasperReport( 'sigaept' );
 $report->Execute('biblioteca','emprestimosRegulares');
 
-// TODO: O problema está nos relatórios recém criados no Jasper. Algo no processo de COMPILAÇÃO. vou dormir.
 
 ?>
