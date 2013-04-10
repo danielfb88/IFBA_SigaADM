@@ -26,11 +26,13 @@
 
 $perms->CheckAccess('BIB_CIRCULACAO_TOT',A_ACCESS,true);
 
-$navbar->AddOption('Relatório de Empréstimos Reguláres', $module, 'main:circulacao:relatorio:emprestimosRegulares');
+$navbar->AddOption('Relatório de Empréstimos Regulares', $module, 'main:circulacao:relatorio:emprestimosRegulares');
 
 $theme->ClearContent();
 
 $report = new MJasperReport( 'sigaept' );
 $report->Execute('biblioteca','emprestimosRegulares');
+
+// TODO: O problema está nos relatórios recém criados no Jasper. Algo no processo de COMPILAÇÃO. vou dormir.
 
 ?>
