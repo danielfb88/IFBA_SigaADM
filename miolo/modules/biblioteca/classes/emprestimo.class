@@ -292,7 +292,6 @@ class BusinessBibliotecaEmprestimo extends Business
 				WHERE
 				e.idusuario = $idUsuario AND
 				e.datahoraprevisaodevolucao >= now() AND
-				m.idetiqueta = 53 AND
 				e.datahoradadevolucao is null AND
 				e.quantidadederenovacoes < 2
 				");
