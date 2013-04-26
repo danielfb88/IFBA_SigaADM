@@ -1,19 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="emprestimosRegulares" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="8a3afaeb-359e-43c0-9621-a1f3d2e6d7d0">
-	<property name="ireport.zoom" value="1.0"/>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="emprestimos" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="8a3afaeb-359e-43c0-9621-a1f3d2e6d7d0">
+	<property name="ireport.zoom" value="0.75"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<parameter name="ORDERBY" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[1]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT DISTINCT
 	usuario.login,
-	validacao.codigoacesso,
 	exemplar.numerodotombo,
-	estado.descricao as estado,
-	(SELECT array_to_string(array_agg(conteudo),' / ') FROM bt_material WHERE idobra = obra.idobra AND idetiqueta = 53) as autor,
 	obra.titulo,
+	(SELECT array_to_string(array_agg(conteudo),' / ') FROM bt_material WHERE idobra = obra.idobra AND idetiqueta = 53) as autor,
 	obra.edicao,
 	emprestimo.datahoradoemprestimo,
-	emprestimo.datahoraprevisaodevolucao
+	emprestimo.datahoraprevisaodevolucao,
+	(SELECT
+		CASE
+			WHEN datahoraprevisaodevolucao >= now() THEN 'OK'
+			ELSE 'EXPIRADO'
+		END
+	FROM bt_emprestimo
+	WHERE bt_emprestimo.idemprestimo = emprestimo.idemprestimo) as status
 
 FROM 	cm_usuario usuario
 JOIN	bt_validacao validacao ON (usuario.idusuario = validacao.idusuario)
@@ -25,19 +33,17 @@ JOIN	bt_autor autor ON (obra.idautor = autor.idautor)
 
 WHERE
 	emprestimo.datahoradadevolucao is null
-	AND emprestimo.datahoraprevisaodevolucao < now()
 
-ORDER BY usuario.login;]]>
+ORDER BY $P!{ORDERBY};]]>
 	</queryString>
 	<field name="login" class="java.lang.String"/>
-	<field name="codigoacesso" class="java.lang.String"/>
 	<field name="numerodotombo" class="java.lang.String"/>
-	<field name="estado" class="java.lang.String"/>
-	<field name="autor" class="java.lang.String"/>
 	<field name="titulo" class="java.lang.String"/>
+	<field name="autor" class="java.lang.String"/>
 	<field name="edicao" class="java.lang.String"/>
 	<field name="datahoradoemprestimo" class="java.sql.Timestamp"/>
 	<field name="datahoraprevisaodevolucao" class="java.sql.Timestamp"/>
+	<field name="status" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -51,7 +57,7 @@ ORDER BY usuario.login;]]>
 				<textElement textAlignment="Center">
 					<font fontName="Monospaced" size="18" isBold="true" pdfFontName="Times-Roman" isPdfEmbedded="true"/>
 				</textElement>
-				<text><![CDATA[Relatório de Empréstimos Irregulares]]></text>
+				<text><![CDATA[Relatório de Empréstimos]]></text>
 			</staticText>
 		</band>
 	</title>
@@ -59,7 +65,7 @@ ORDER BY usuario.login;]]>
 		<band height="3" splitType="Stretch"/>
 	</pageHeader>
 	<columnHeader>
-		<band height="25" splitType="Stretch">
+		<band height="21" splitType="Stretch">
 			<rectangle>
 				<reportElement uuid="2bb38489-34bf-4746-bd90-1d1a1d7d7113" x="0" y="-4" width="802" height="20"/>
 			</rectangle>
@@ -71,67 +77,60 @@ ORDER BY usuario.login;]]>
 				<text><![CDATA[Login]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="744fd2d7-707c-45c7-8696-b7e17428d4c0" x="283" y="0" width="63" height="20"/>
+				<reportElement uuid="744fd2d7-707c-45c7-8696-b7e17428d4c0" x="247" y="1" width="63" height="20"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
 				<text><![CDATA[Autor(es)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="8fd8c750-fcdc-4981-afe4-435925ac32e4" x="535" y="0" width="50" height="20"/>
+				<reportElement uuid="8fd8c750-fcdc-4981-afe4-435925ac32e4" x="393" y="0" width="50" height="20"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
 				<text><![CDATA[Edição]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="2de9a5cc-6f06-48c2-96ff-2eff4bd5a0be" x="589" y="0" width="77" height="20"/>
+				<reportElement uuid="2de9a5cc-6f06-48c2-96ff-2eff4bd5a0be" x="448" y="0" width="78" height="20"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
 				<text><![CDATA[Empréstimo]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="6e7b17e6-1d8b-4fee-92ab-01088ae323e2" x="673" y="0" width="129" height="20"/>
+				<reportElement uuid="6e7b17e6-1d8b-4fee-92ab-01088ae323e2" x="562" y="0" width="129" height="20"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
 				<text><![CDATA[Previsão de Devolução]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="f5eb0238-0d0c-407f-84b7-6ce231f2b02a" x="129" y="0" width="47" height="20"/>
+				<reportElement uuid="f5eb0238-0d0c-407f-84b7-6ce231f2b02a" x="59" y="0" width="41" height="20"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
 				<text><![CDATA[Tombo]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="7a85ce1f-3224-4b3d-a27d-fb9557a596ae" x="190" y="0" width="43" height="20"/>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<text><![CDATA[Estado]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="2b687a94-a278-4714-be89-1b6f93320afb" x="51" y="0" width="70" height="20"/>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<text><![CDATA[Cod. Acesso]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="24ffc353-3190-4802-bc4c-755c81dda9d5" x="418" y="0" width="39" height="20"/>
+				<reportElement uuid="24ffc353-3190-4802-bc4c-755c81dda9d5" x="106" y="1" width="39" height="20"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
 				<text><![CDATA[Título]]></text>
 			</staticText>
+			<staticText>
+				<reportElement uuid="6e7b17e6-1d8b-4fee-92ab-01088ae323e2" x="702" y="0" width="45" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Status]]></text>
+			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="36" splitType="Stretch">
+		<band height="47" splitType="Stretch">
 			<rectangle>
-				<reportElement uuid="970cc206-00c2-4ed6-9367-6a69c1079c74" x="0" y="0" width="802" height="33" backcolor="#F0F0FA">
+				<reportElement uuid="970cc206-00c2-4ed6-9367-6a69c1079c74" x="1" y="5" width="801" height="42" backcolor="#F0F0FA">
 					<printWhenExpression><![CDATA[new Boolean(($V{COLUMN_COUNT}.intValue() % 2) == 0)]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
@@ -139,49 +138,44 @@ ORDER BY usuario.login;]]>
 				</graphicElement>
 			</rectangle>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="59411b45-e41f-4228-bbea-4c1205062c37" x="3" y="4" width="51" height="20"/>
+				<reportElement uuid="59411b45-e41f-4228-bbea-4c1205062c37" x="3" y="10" width="51" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{login}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="535689cf-9210-4474-8760-e59751ab2420" x="68" y="4" width="31" height="20"/>
-				<textElement/>
-				<textFieldExpression><![CDATA[$F{codigoacesso}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement uuid="fc096ab5-0d9a-4efe-b090-6c5aefedb964" x="130" y="4" width="40" height="20"/>
+				<reportElement uuid="fc096ab5-0d9a-4efe-b090-6c5aefedb964" x="60" y="10" width="40" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{numerodotombo}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="ae896501-2ec7-4c02-bd61-c8217c04418b" x="258" y="2" width="140" height="33"/>
+				<reportElement uuid="ae896501-2ec7-4c02-bd61-c8217c04418b" x="247" y="6" width="140" height="33"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{autor}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="7405fc5c-ec91-4cf5-864f-d74cb77e5551" x="398" y="2" width="137" height="33"/>
+				<reportElement uuid="7405fc5c-ec91-4cf5-864f-d74cb77e5551" x="106" y="7" width="137" height="33"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{titulo}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="020472ae-1319-433e-a810-e93ad7349679" x="541" y="4" width="30" height="20"/>
+				<reportElement uuid="020472ae-1319-433e-a810-e93ad7349679" x="393" y="9" width="30" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{edicao}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement uuid="d4f6ad97-8f44-44c0-b0c1-886fc69a6dd4" x="593" y="4" width="80" height="20"/>
+			<textField pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="true">
+				<reportElement uuid="d4f6ad97-8f44-44c0-b0c1-886fc69a6dd4" x="448" y="9" width="108" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{datahoradoemprestimo}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement uuid="777c4bcb-eb58-47fa-8bf9-cd7f0281f4c7" x="689" y="4" width="93" height="20"/>
+			<textField pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="true">
+				<reportElement uuid="777c4bcb-eb58-47fa-8bf9-cd7f0281f4c7" x="562" y="10" width="108" height="20"/>
 				<textElement/>
 				<textFieldExpression><![CDATA[$F{datahoraprevisaodevolucao}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="9040f1b8-cbfa-4522-b1f1-d69eb3ffcd9e" x="184" y="4" width="63" height="20"/>
+				<reportElement uuid="0f5a382a-7f72-439e-8de6-aeaed2268fc9" x="702" y="9" width="100" height="20"/>
 				<textElement/>
-				<textFieldExpression><![CDATA[$F{estado}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{status}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
