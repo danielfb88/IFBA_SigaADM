@@ -20,13 +20,13 @@
 <?
 class frmRelatorioObraporClasse extends Form
 {
-   	function frmRelatorioObraporClasse()
-    {
-	    global $MIOLO, $action, $module, $item;
+	function frmRelatorioObraporClasse()
+	{
+		global $MIOLO, $action, $module, $item;
 
 		$this->Form("Relatório de obras por classe");
 		$this->EventHandler();
-  		$this->defaultButton = false;
+		$this->defaultButton = false;
 		// Botão 'fechar', direcionando para o handler biblioteca/main/circulacao/relatorio
 		$this->SetClose($this->manager->GetActionURL($module, 'main:circulacao:relatorio'));
 	}
@@ -35,41 +35,48 @@ class frmRelatorioObraporClasse extends Form
 	{
 		global $MIOLO, $action, $module, $item, $page;
 
-		    $fields = Array (
-			new TextField('edtClasseInicio','','De',5),
-			new TextField('edtClasseFim','','Até',5,'Exclusive'),	
-			);
-		
-			$this->SetFields($fields);
+		$fields = Array (
+				new MCalendarField('edtClasseInicio','','Data Inicial',10,
+					'informe a data inicial do relatório.'
+					),
+				new MCalendarField('edtClasseFim','','Data Final',10,
+					'informe a data final do relatório. (Exclusive)'
+					),
+				);
 
-			$buttons = Array(			
-			  new FormButton('btnRelatorio', 'Gerar Relatório', 'PDF'),
-   		    );
-			$this->SetButtons($buttons);
-			
+		$this->SetFields($fields);
 
-			// validators
-			$this->AddValidator(new RequiredValidator('edtClasseInicio'));
-			$this->AddValidator(new RequiredValidator('edtClasseFim'));
-			
-			$this->page->onLoad("MIOLO_GetElementById('edtClasseInicio').focus();");                        
-			
-		
+		$buttons = Array(			
+				new FormButton('btnRelatorio', 'Gerar Relatório', 'PDF'),
+				);
+		$this->SetButtons($buttons);
+
+
+		// validators
+		$this->AddValidator(new RequiredValidator('edtClasseInicio'));
+		$this->AddValidator(new RequiredValidator('edtClasseFim'));
+
+		$this->page->onLoad("MIOLO_GetElementById('edtClasseInicio').focus();");                        
+
+
 	}	
 
 	function btnRelatorio_click()
 	{	
-          
-        global $MIOLO,$module;
+		global $MIOLO,$module;
+
+		// TODO: Criar relatório com IREport com query que traga
+		// todos as obras criadas no tempo especificado
 		
-				
+
+
 		$data = $this->getData();
-         
+
 		$ui = $MIOLO->GetUI();
-        $report = $ui->GetReport($module,'repObraPorClasse',$data);
-        $report->Generate();	
-       
+		$report = $ui->GetReport($module,'repObraPorClasse',$data);
+		$report->Generate();	
+
 	}
-	
+
 }
 ?>
