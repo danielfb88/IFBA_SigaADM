@@ -1,21 +1,21 @@
 <?php
 /* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
  *
-* Este arquivo é parte do programa SigaEPT
-*
-* O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
-* termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
-* na versão 2 da Licença.
-*
-* Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
-* uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
-* Pública Geral GNU/GPL em português para maiores detalhes.
-*
-* Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
-* junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
-* www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
-* St, Fifth Floor, Boston, MA 02110-1301, USA
-*/
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
 ?>
 <?php
 /**
@@ -124,13 +124,13 @@ class BusinessBibliotecaUsuario extends Business
 		$args = array(
 				$idUsuario,
 				$idGrupo
-		);
+				);
 
 		$ok = $this->execute(
 				$sql->insert(
-						$args
-				)
-		);
+					$args
+					)
+				);
 
 		return $ok;
 	}
@@ -211,38 +211,38 @@ class BusinessBibliotecaUsuario extends Business
 					idpais,
 					idpaisnascimento',
 					'cm_pessoa'
-			);
+						);
 
 			$okInsertPessoa = $this->Execute(
 					$sql->Insert(
-							array(
-									$idPessoa,
-									$data->nome,
-									$data->bairro,
-									$data->cep,
-									$data->dataNascimento,
-									$data->nomePai,
-									$data->nomeMae,
-									$data->sexo,
-									$data->anoChegada,
-									$data->telefone,
-									$data->celular,
-									$data->email,
-									$data->grupoSanguineo,
-									$data->cpf,
-									$data->numRg,
-									$data->tipoRg,
-									$data->orgaoRg,
-									$data->ufRg,
-									$data->numCartPro,
-									$data->serieCartPro,
-									$data->UfCartPro,
-									$data->idMunicipio,
-									$data->idPais,
-									$data->idPaisNascimento
-							)
-					)
-			);
+						array(
+							$idPessoa,
+							$data->nome,
+							$data->bairro,
+							$data->cep,
+							$data->dataNascimento,
+							$data->nomePai,
+							$data->nomeMae,
+							$data->sexo,
+							$data->anoChegada,
+							$data->telefone,
+							$data->celular,
+							$data->email,
+							$data->grupoSanguineo,
+							$data->cpf,
+							$data->numRg,
+							$data->tipoRg,
+							$data->orgaoRg,
+							$data->ufRg,
+							$data->numCartPro,
+							$data->serieCartPro,
+							$data->UfCartPro,
+							$data->idMunicipio,
+							$data->idPais,
+							$data->idPaisNascimento
+								)
+								)
+								);
 
 			// Criando Usuario
 			$sql2 = new sql('
@@ -254,22 +254,22 @@ class BusinessBibliotecaUsuario extends Business
 					nick,
 					passmd5',
 					'cm_usuario'
-			);
+					);
 
 			$okInsertUsuario = $this->Execute(
 					$sql2->Insert(
-							array(
-									$idUsuario,
-									$idPessoa,
-									$data->idSetor,
-									$data->login,
-									//$data->senha,
-									'-',
-									$data->apelido,
-									$data->passmd5
+						array(
+							$idUsuario,
+							$idPessoa,
+							$data->idSetor,
+							$data->login,
+							//$data->senha,
+							'-',
+							$data->apelido,
+							$data->passmd5
 							)
-					)
-			);
+						)
+					);
 
 			// Criando Aluno
 			$sql3 = new sql('
@@ -282,22 +282,22 @@ class BusinessBibliotecaUsuario extends Business
 					idinstituicao,
 					idpessoa',
 					'ga_aluno'
-			);
+					);
 
 			$okInsertAluno = $this->Execute(
 					$sql3->Insert(
-							array(
-									$data->login,
-									$data->anoChegada,
-									$data->semestreIngresso,
-									'1',
-									'1',
-									'1',
-									$data->idInstituicao,
-									$idPessoa
+						array(
+							$data->login,
+							$data->anoChegada,
+							$data->semestreIngresso,
+							'1',
+							'1',
+							'1',
+							$data->idInstituicao,
+							$idPessoa
 							)
-					)
-			);
+						)
+					);
 
 			// Insere o usuário num Grupo
 			$data->idUsuario = $idUsuario;
@@ -350,37 +350,37 @@ class BusinessBibliotecaUsuario extends Business
 					idpaisnascimento',
 					'cm_pessoa',
 					"idpessoa = $data->idPessoa"
-			);
+						);
 
 			$okUpdatePessoa = $this->Execute(
 					$sql->Update(
-							array(
-									$data->nome,
-									$data->bairro,
-									$data->cep,
-									$data->dataNascimento,
-									$data->nomePai,
-									$data->nomeMae,
-									$data->sexo,
-									$data->anoChegada,
-									$data->telefone,
-									$data->celular,
-									$data->email,
-									$data->grupoSanguineo,
-									$data->cpf,
-									$data->numRg,
-									$data->tipoRg,
-									$data->orgaoRg,
-									$data->ufRg,
-									$data->numCartPro,
-									$data->serieCartPro,
-									$data->UfCartPro,
-									$data->idMunicipio,
-									$data->idPais,
-									$data->idPaisNascimento
-							)
-					)
-			);
+						array(
+							$data->nome,
+							$data->bairro,
+							$data->cep,
+							$data->dataNascimento,
+							$data->nomePai,
+							$data->nomeMae,
+							$data->sexo,
+							$data->anoChegada,
+							$data->telefone,
+							$data->celular,
+							$data->email,
+							$data->grupoSanguineo,
+							$data->cpf,
+							$data->numRg,
+							$data->tipoRg,
+							$data->orgaoRg,
+							$data->ufRg,
+							$data->numCartPro,
+							$data->serieCartPro,
+							$data->UfCartPro,
+							$data->idMunicipio,
+							$data->idPais,
+							$data->idPaisNascimento
+								)
+								)
+								);
 
 			// Alterando Usuario
 			$sql2 = new sql(
@@ -392,20 +392,20 @@ class BusinessBibliotecaUsuario extends Business
 					passmd5',
 					'cm_usuario',
 					"idusuario = $data->idUsuario"
-			);
+					);
 
 			$okUpdateUsuario = $this->Execute(
 					$sql2->Update(
-							array(
-									$data->idPessoa,
-									$data->idSetor,
-									$data->login,
-									$data->senha,
-									$data->apelido,
-									$data->passmd5
+						array(
+							$data->idPessoa,
+							$data->idSetor,
+							$data->login,
+							$data->senha,
+							$data->apelido,
+							$data->passmd5
 							)
-					)
-			);
+						)
+					);
 
 			// Alterando Aluno
 			$sql3 = new sql(
@@ -419,22 +419,22 @@ class BusinessBibliotecaUsuario extends Business
 					idpessoa',
 					'ga_aluno',
 					"idpessoa = $data->idPessoa"
-			);
+					);
 
 			$okUpdateAluno = $this->Execute(
 					$sql3->Update(
-							array(
-									$data->login,
-									$data->anoChegada,
-									$data->semestreIngresso,
-									'1',
-									'1',
-									'1',
-									$data->idInstituicao,
-									$data->idPessoa
+						array(
+							$data->login,
+							$data->anoChegada,
+							$data->semestreIngresso,
+							'1',
+							'1',
+							'1',
+							$data->idInstituicao,
+							$data->idPessoa
 							)
-					)
-			);
+						)
+					);
 
 			// Altera o usuário num Grupo
 			$okUpdateVinculo = $this->AlteraGrupoUsuario($data);
@@ -547,23 +547,23 @@ class BusinessBibliotecaUsuario extends Business
 				ga.semingresso,
 				v.idgrupo
 
-				FROM
-				cm_usuario u
-				LEFT JOIN cm_pessoa p ON (u.idpessoa = p.idpessoa)
-				LEFT JOIN cm_pais pa ON (pa.idpais = p.idpaisnascimento)
-				LEFT JOIN cm_municipio m ON (m.idmunicipio = p.idmunicipio)
-				LEFT JOIN cm_setor s ON (u.idsetor = s.idsetor)
-				LEFT JOIN ga_aluno ga ON (ga.idpessoa = p.idpessoa)
-				LEFT JOIN cm_instituicao i ON (i.idinstituicao = ga.idinstituicao)
-				LEFT JOIN bt_vinculo v ON (u.idusuario = v.idusuario)
+					FROM
+					cm_usuario u
+					LEFT JOIN cm_pessoa p ON (u.idpessoa = p.idpessoa)
+					LEFT JOIN cm_pais pa ON (pa.idpais = p.idpaisnascimento)
+					LEFT JOIN cm_municipio m ON (m.idmunicipio = p.idmunicipio)
+					LEFT JOIN cm_setor s ON (u.idsetor = s.idsetor)
+					LEFT JOIN ga_aluno ga ON (ga.idpessoa = p.idpessoa)
+					LEFT JOIN cm_instituicao i ON (i.idinstituicao = ga.idinstituicao)
+					LEFT JOIN bt_vinculo v ON (u.idusuario = v.idusuario)
 
-				WHERE
-				u.idusuario = ?;");
+					WHERE
+					u.idusuario = ?;");
 
 		$query = $this->Query(
 				$sql,
 				Array($idusuario)
-		);
+				);
 
 		if (!$query->eof()) {
 			$data = $this->toFormData($query->GetRowObject());
@@ -658,7 +658,7 @@ class BusinessBibliotecaUsuario extends Business
 		$values = array(
 				$data->idGrupo,
 				$data->idUsuario
-		);
+				);
 
 		$ok = $this->Execute($sql->Update($values));
 		return $ok;

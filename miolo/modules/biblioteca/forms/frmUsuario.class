@@ -1,21 +1,21 @@
 <?PHP
 /* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
  *
-* Este arquivo é parte do programa SigaEPT
-*
-* O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
-* termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
-* na versão 2 da Licença.
-*
-* Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
-* uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
-* Pública Geral GNU/GPL em português para maiores detalhes.
-*
-* Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
-* junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
-* www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
-* St, Fifth Floor, Boston, MA 02110-1301, USA
-*/
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
 ?>
 <?
 // Daniel Bonfim - 24-10-2012
@@ -56,12 +56,12 @@ class frmUsuario extends Form {
 				"AB-"=>"AB-","O+"=>"O+","O-"=>"O-");
 
 		/*
-		 // Campos que aparecem no formulário
+		// Campos que aparecem no formulário
 		$estados = Array("AC"=>"Acre","AL"=>"Alagoas","AM"=>"Amazonas","AP"=>"Amapá","BA"=>"Bahia","CE"=>"Ceará","DF"=>"Distrito Federal",
-				"ES"=>"Espírito Santo","GO"=>"Goiás","MA"=>"Maranhão","MG"=>"Minas Gerais","MS"=>"Mato Grosso do Sul","MT"=>"Mato Grosso",
-				"PA"=>"Pará","PB"=>"Paraíba","PE"=>"Pernambuco","PI"=>"Piauí","PR"=>"Paraná","RJ"=>"Rio de Janeiro","RN"=>"Rio Grande do Norte",
-				"RO"=>"Rondônia","RS"=>"Rio Grande do Sul","SC"=>"Santa Catarina","SE"=>"Sergipe","SP"=>"São Paulo","TO"=>"Tocantins");
-		*/
+		"ES"=>"Espírito Santo","GO"=>"Goiás","MA"=>"Maranhão","MG"=>"Minas Gerais","MS"=>"Mato Grosso do Sul","MT"=>"Mato Grosso",
+		"PA"=>"Pará","PB"=>"Paraíba","PE"=>"Pernambuco","PI"=>"Piauí","PR"=>"Paraná","RJ"=>"Rio de Janeiro","RN"=>"Rio Grande do Norte",
+		"RO"=>"Rondônia","RS"=>"Rio Grande do Sul","SC"=>"Santa Catarina","SE"=>"Sergipe","SP"=>"São Paulo","TO"=>"Tocantins");
+		 */
 
 		$fields = Array (
 				// 7 Ids
@@ -106,7 +106,7 @@ class frmUsuario extends Form {
 				new MTextField('txNick', '', 'Apelido', 50),
 				new MPasswordField('passSenha', '', 'Senha', 20, "Obrigatório"),
 				new MLookupTextField('lkpSetor', '', 'Setor', 30, 'Use a lupa ,não Obrigatório para alunos')
-		);
+					);
 
 		// Insere os campos
 		$this->SetFields($fields);
@@ -143,7 +143,7 @@ class frmUsuario extends Form {
 
 		// Validação do campo txLogin
 		$this->txLogin->AddAttribute('maxlength','20');
-		
+
 		// Validação do campo txTipoRg
 		$this->txTipoRg->AddAttribute('maxlength','20');
 
@@ -164,32 +164,34 @@ class frmUsuario extends Form {
 				new RequiredValidator('lkpMunicipio'),
 				new RequiredValidator('lkpInstituicao'),
 				new RequiredValidator('lkpPaisNascimento'),
+				new RequiredValidator('txCPF'),
+				new RequiredValidator('txLogin'),
 				new MDATEDMYValidator('txDataNascimento'),
 				new EMAILValidator('txEmail','','','e-mail inválido'),
 				new MIntegerValidator('txAnoChegada'),
 				new MCPFValidator('txCPF'),
-		);
-			
+				);
+
 		$this->SetValidators($validators);
 
 		// Botões que aparecem no formulário
 		$buttons = Array(
 				new FormButton('btnEnviar', 'Salvar'),
 				new MLink('btnLinkRelacao','Relação de Usuários',
-						$this->manager->getActionURL($module, $self, '', array('event'=>'btnList:click'))),
-		);
+					$this->manager->getActionURL($module, $self, '', array('event'=>'btnList:click'))),
+				);
 
 		//Insere os Botões
 		$this->SetButtons($buttons);
 		//$this->SetbuttonAttr('btnVoltar','visible',false);
 
 		/*
-		 As 4 propriedades de um lookup:
-		module = módulo usado
-		item = A funcao que chama no arquivo classes/lookup.class
-		event = O evento relacionado quando o usuário clica em 'acao'
-		related = Os campos retornados após a ação
-		*/
+		   As 4 propriedades de um lookup:
+		   module = módulo usado
+		   item = A funcao que chama no arquivo classes/lookup.class
+		   event = O evento relacionado quando o usuário clica em 'acao'
+		   related = Os campos retornados após a ação
+		 */
 		//Utilizamos o lookup do modulo common para o campo municipio
 		$this->SetFieldAttr('lkpMunicipio','module','common');
 		$this->SetFieldAttr('lkpMunicipio','item','municipioBiblioteca');
@@ -209,7 +211,7 @@ class frmUsuario extends Form {
 		$this->SetFieldAttr('lkpSetor','item','setor');
 		$this->SetFieldAttr('lkpSetor','event','filler');
 		$this->SetFieldAttr('lkpSetor','related', 'idSetor,lkpSetor');
-			
+
 		//Utilizamos o lookup do módulo Common para o campo Instituição
 		$this->SetFieldAttr('lkpInstituicao','module','common');
 		$this->SetFieldAttr('lkpInstituicao','item','instituicao');
@@ -356,7 +358,7 @@ class frmUsuario extends Form {
 				new DataGridColumn('login','Login','left',true, '25%',true, null, true,true),
 				new DataGridColumn('nick','Apelido','center',true, '25%',true, null, true,true),
 				new DataGridColumn('cpf','CPF','center',true, '25%',true, null, true,true),
-		);
+				);
 
 		$href_datagrid = $MIOLO->GetActionURL($module,$self,'', Array('event'=>'btnList_click'));
 		$page->SetAction($href_datagrid);
@@ -391,7 +393,7 @@ class frmUsuario extends Form {
 
 		//Instanciando o objeto usuário
 		$objUsuario = $MIOLO->GetBusiness($module, 'usuario');
-			
+
 		if (trim($data->idSetor) == '') {
 			$data->idSetor = 1;
 		}
@@ -404,7 +406,7 @@ class frmUsuario extends Form {
 					//$MIOLO->Prompt(Prompt::Information("Usuário salvo com sucesso.",$MIOLO->GetActionURL($module,'main:controleacesso',$data->idUsuario,array('event'=>'btnEdit:click') )));
 					$MIOLO->Information("Usuário ".$data->nome . " salvo com sucesso.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')));
 					$objUsuario->Log(OP_UPD,'Alterado o usuário '.$data->login.' com o id = '. $data->idUsuario);
-						
+
 				} else {
 					$MIOLO->Information("Não foi possível salvar o usuário.", $MIOLO->GetActionURL($module,$action,'',array('event'=>'btnList_click()')));
 				}
