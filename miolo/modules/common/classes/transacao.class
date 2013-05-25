@@ -171,5 +171,18 @@ class BusinessCommonTransacao extends Business implements ITransaction
         return $acesso;
         
     }
+    
+    /*Função para pesquisar pela transação, retorna numero de ocorrências do mesmo*/
+    function findByNome($nome)
+    {
+		$busca = "select count(*) as total from cm_transacao where transacao = '$nome'";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
+    /*Função para pesquisar pela transação e o idsistema, retorna numero de ocorrências do mesmo*/
+    function findById($nome, $id)
+    {
+		$busca = "select count(*) as total from cm_transacao where idsistema = '$id' and transacao = '$nome'";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
 }
 ?>

@@ -68,17 +68,29 @@ class frmDependenciaEditar extends Form
     public function btnSalvar_click()
     {
         $this->objDependencia->SetData($this->GetData());
-        try
-        {
-            $this->objDependencia->save();
-            $this->objDependencia->Log(OP_UPD,"Dados de Dependencia modificados");
-            $go = $this->manager->GetActionURL('adm','main:dependencia',$this->objDependencia->idDependencia);
-            $this->manager->Information('Dependência alterada com sucesso',$go);
-        }
-	catch (Exception $e)
-	{
-            $this->addError($e->getMessage());
-        }
+        $this->objDependencia->dependencia = strtoupper($this->objDependencia->dependencia);
+        if( strlen(trim($this->objDependencia->dependencia)) < 3)
+		{
+			$this->AddError('Descreva melhor a dependência.');
+		}
+		elseif($this->objDependencia->findById($this->objDependencia->dependencia, $this->objDependencia->idSetor))
+		{
+			$this->addError('Dependência já cadastrada neste Setor.');
+		}
+		else
+		{
+		    try
+		    {
+		        $this->objDependencia->save();
+		        $this->objDependencia->Log(OP_UPD,"Dados de Dependencia modificados");
+		        $go = $this->manager->GetActionURL('adm','main:dependencia',$this->objDependencia->idDependencia);
+		        $this->manager->Information('Dependência alterada com sucesso',$go);
+		    }
+			catch (Exception $e)
+			{
+				$this->addError($e->getMessage());
+			}
+		}
     }
 }
 ?>

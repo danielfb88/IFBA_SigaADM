@@ -57,7 +57,7 @@ class frmSituacaoFuncionalDados extends Form
 
         $this->SetFields($fields);
 
-        $fldidsituacao->AddAttribute('maxlength','2');
+        $fldidsituacao->AddAttribute('maxlength','5');
         $flddescricao->AddAttribute('maxlength','20');
 
         $tabelaGeral = $MIOLO->GetBusiness('common','tabelageral');
@@ -69,6 +69,8 @@ class frmSituacaoFuncionalDados extends Form
         $validators = array(
             new RequiredValidator('idSituacao'),
             new RequiredValidator('descricao'),
+              
+            new IntegerValidator('idSituacao'),
         );
         
         $this->SetValidators($validators);
@@ -99,19 +101,24 @@ class frmSituacaoFuncionalDados extends Form
 
 	public function btnSalvar_click()
 	{
-            global $MIOLO;
+       global $MIOLO;
  
 		$data = $this->GetData();
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
 		if(strlen(trim($data->descricao)) < '5')
 		{
 			$this->addError('Informe a Descrição da Situação Funcional');
 		}
 		else	
 		{
-			$this->objSituacaoFuncional->SetData($this->GetData());
+			$this->objSituacaoFuncional->SetData($data);
 			$this->objSituacaoFuncional->save();
-	                $go = $MIOLO->GetActionURL('rh','main:situacaofuncional',$this->objSituacaoFuncional->idSituacao);
-		        $MIOLO->Information('Dados da Situação Funcional atualizados com sucesso.', $go );
+	      $go = $MIOLO->GetActionURL('rh','main:situacaofuncional',$this->objSituacaoFuncional->idSituacao);
+		   $MIOLO->Information('Dados da Situação Funcional atualizados com sucesso.', $go );
 		}
 	}
 

@@ -19,15 +19,15 @@
         <columnName>idformacao</columnName>
     </attribute>
     <attribute>
-        <attributeName>dataFim</attributeName>
+        <attributeName>anoEncerramento</attributeName>
         <columnName>datafim</columnName>
-		<converter>
+<!--		<converter>
             <converterName>DateConverter</converterName>
 			<parameter>
 				<parameterName>database</parameterName>
 				<parameterValue>sigaept</parameterValue>
 			</parameter>
-		</converter>
+		</converter> -->
     </attribute>
     <attribute>
         <attributeName>entidade</attributeName>

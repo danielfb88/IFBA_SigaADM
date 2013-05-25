@@ -30,6 +30,7 @@ class frmTerceirizadoNew extends Form
     	{
         	$this->Form('Incluir Novo Terceirizado');
         	$this->EventHandler();
+        	$this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
     	}
 
     	function CreateFields()
@@ -44,6 +45,10 @@ class frmTerceirizadoNew extends Form
         	$nome->addAttribute('maxlength',55);
         	$dataNascimento->addAttribute('maxlength',10);
         	$cpf->addAttribute('maxlength',14);
+        	
+        	$this->cpf->addAttribute('maxlength',14);
+			$this->cpf->addAttribute('onKeyUp','makeMask(this, \'###.###.###-##\');');
+			$this->cpf->addAttribute('onBlur','makeMask(this, \'###.###.###-##\');');
         
         	$validators = array(
             		new MCpfValidator('cpf','','required'),
@@ -64,9 +69,35 @@ class frmTerceirizadoNew extends Form
     function btnPost1_click()
     {
 		$nome = strlen(trim($this->getFormValue('nome')));
+		
+		$data = $this->getData();
+        $cpf = str_replace('-','',str_replace('.','',$data->cpf));
+		$pessoa = $this->manager->GetBusiness('common','pessoa');
+        $pessoa = $pessoa->getByCpf($cpf);
+        
+        $datanasc = $data->datanasc;
+        $ano=substr("$datanasc",6, 4);
+		$mes=substr("$datanasc",3, 2);
+		$dia=substr("$datanasc",0, 2);
+		$datanasc=$ano.$mes.$dia;
+        
+        $dataAtual = date("d/m/Y") ; // captura data atual do sistema
+        $ano=substr("$dataAtual",6, 4);
+		$mes=substr("$dataAtual",3, 2);
+		$dia=substr("$dataAtual",0, 2);
+		$dataAtual=$ano.$mes.$dia;
+		
 		if($nome < '5')
 		{
 			$this->addError('Informe corretamente o Nome do terceirizado');
+		}
+		elseif ( $datanasc > $dataAtual )
+		{
+			$this->addError('Data de nascimento não pode ser maior do que a data atual');
+		}
+		elseif ( $pessoa != null && $pessoa->isTerceirizado() )
+		{
+			$this->addError('CPF já cadastrado');
 		}
 		else
 		{
@@ -95,7 +126,7 @@ class frmTerceirizadoNew extends Form
 				new SelectionSexo('sexo','','Sexo'),
 				new MHiddenField('idmunicipionascimento',''),
 				new LookupTextField('lkpNaturalidade','','Naturalidade',40),
-				$cep = new TextField('cep','','CEP',8),
+				$cep = new TextField('cep','','CEP',9),
 				new SelectionPais('idpaisnascimento','','País de nascimento'),
 				new SelectionNacionalidade('idpaisnacionalidade','','Nacionalidade'),
 				new MSelection('escolaridade','','Escolaridade',$arrEscolaridades),
@@ -113,64 +144,64 @@ class frmTerceirizadoNew extends Form
         		$this->addFields($newFields);
         		$this->setFieldAttr('sexo','visible',FALSE);
 
-			$this->setFieldAttr('idpaisnascimento','visible',false);
+				$this->setFieldAttr('idpaisnascimento','visible',false);
         		$this->SetFieldAttr('instituicao','module','common');
         		$this->SetFieldAttr('instituicao','item','instituicao');
         		$this->SetFieldAttr('instituicao','event','filler');
        			$this->SetFieldAttr('instituicao','related','idInstituicao,null,instituicao');         
 		
         		$this->SetFieldAttr('lkpLocal','module','rh');
-   	 		$this->SetFieldAttr('lkpLocal','item','local');
-  	 		$this->SetFieldAttr('lkpLocal','event','filler');
+   	 			$this->SetFieldAttr('lkpLocal','item','local');
+  	 			$this->SetFieldAttr('lkpLocal','event','filler');
     			$this->SetFieldAttr('lkpLocal','related','idLocalTerceirizado,lkpLocal,null,null');
 		
-			$this->SetFieldAttr('lkpNaturalidade','module','rh');
-			$this->SetFieldAttr('lkpNaturalidade','item','municipio');
-			$this->SetFieldAttr('lkpNaturalidade','event', 'filler');
-			$this->SetFieldAttr('lkpNaturalidade','related', 'idmunicipionascimento,lkpNaturalidade');
+				$this->SetFieldAttr('lkpNaturalidade','module','rh');
+				$this->SetFieldAttr('lkpNaturalidade','item','municipio');
+				$this->SetFieldAttr('lkpNaturalidade','event', 'filler');
+				$this->SetFieldAttr('lkpNaturalidade','related', 'idmunicipionascimento,lkpNaturalidade');
 
-			$this->SetFieldAttr('lkpContrato','module','rh');
+				$this->SetFieldAttr('lkpContrato','module','rh');
 		        $this->SetFieldAttr('lkpContrato','item','contrato');
 		        $this->SetFieldAttr('lkpContrato','event','filler');
 		        $this->SetFieldAttr('lkpContrato','related','idContrato,lkpContrato,null,null'); 
-    	        
-       			$data = $this->getData();
-        		$cpf = str_replace('-','',str_replace('.','',$data->cpf));
-        		$pessoa = $this->manager->GetBusiness('common','pessoa');
-        		$pessoa = $pessoa->getByCpf($cpf);
+		        
+		        $this->cep->addAttribute('maxlength',9);
+				$this->cep->addAttribute('onKeyUp','makeMask(this, \'#####-###\');');
+				$this->cep->addAttribute('onBlur','makeMask(this, \'#####-###\');');
+    	     		
         
-			//verifica se cpf existe e se pessoa está cadastrada em terceirizados
+				//verifica se cpf existe e se pessoa está cadastrada em terceirizados
         		if ( $pessoa->idpessoa )
         		{
-				if ( $pessoa->isTerceirizado())
-				{
-					
-					$this->addInfo("Pessoa já está cadastrada em nosso banco de dados de Terceirizados.");
-					$this->setFieldValue('nome',trim($pessoa->nome));
-				    $this->setFieldValue('datanasc',$pessoa->datanasc);
-				    $this->setFieldValue('idpessoa',$pessoa->idpessoa);
-					$this->setFieldAttr('instituicao','visible',FALSE);
-					$this->setFieldAttr('escolaridade','visible',FALSE);
-					$this->setFieldAttr('idJornada','visible',FALSE);
-					$this->setFieldAttr('idFuncao','visible',FALSE);
-					$this->setFieldAttr('lkpLocal','visible',FALSE);
-					$this->setFieldAttr('lkpNaturalidade','visible',FALSE);
-					$this->setFieldAttr('cep','visible',FALSE);
-					$this->setFieldAttr('idpaisnascimento','visible',FALSE);
-					$this->setFieldAttr('idpaisnacionalidade','visible',FALSE);
-					$this->setButtonAttr('btnPost2','visible',FALSE);
-					$this->setButtonAttr('btnVoltar','visible',TRUE);
-				}
-				else
-				{
-		            		$this->addInfo("Uma pessoa com esse CPF foi encontrada em nosso banco de dados. Confira se as informações estão corretas.<br>Ao final, clique no botão Incluir Terceirizado.");
-					$this->setFieldValue('nome',trim($pessoa->nome));
-		            		$this->setFieldValue('datanasc',$pessoa->datanasc);
-		            		$this->setFieldValue('idpessoa',$pessoa->idpessoa);
-		            		$this->setFieldAttr('nome','readonly',TRUE);
-		            		$this->setFieldAttr('datanasc','readonly',FALSE);
-					$this->setButtonAttr('btnPost2','visible',TRUE);
-				}
+					if ( $pessoa->isTerceirizado())
+					{
+						$this->addInfo("Pessoa já está cadastrada em nosso banco de dados de Terceirizados.");
+						$this->setFieldValue('nome',trim($pessoa->nome));
+						$this->setFieldValue('datanasc',$pessoa->datanasc);
+						$this->setFieldValue('idpessoa',$pessoa->idpessoa);
+						$this->setFieldAttr('instituicao','visible',FALSE);
+						$this->setFieldAttr('escolaridade','visible',FALSE);
+						$this->setFieldAttr('idJornada','visible',FALSE);
+						$this->setFieldAttr('idFuncao','visible',FALSE);
+						$this->setFieldAttr('lkpLocal','visible',FALSE);
+						$this->setFieldAttr('lkpNaturalidade','visible',FALSE);
+						$this->setFieldAttr('cep','visible',FALSE);
+						$this->setFieldAttr('idpaisnascimento','visible',FALSE);
+						$this->setFieldAttr('idpaisnacionalidade','visible',FALSE);
+						$this->setFieldAttr('lkpContrato','visible',FALSE);
+						$this->setButtonAttr('btnPost2','visible',FALSE);
+						$this->setButtonAttr('btnVoltar','visible',TRUE);
+					}
+					else
+					{
+				        		$this->addInfo("Uma pessoa com esse CPF foi encontrada em nosso banco de dados. Confira se as informações estão corretas.<br>Ao final, clique no botão Incluir Terceirizado.");
+						$this->setFieldValue('nome',trim($pessoa->nome));
+				        		$this->setFieldValue('datanasc',$pessoa->datanasc);
+				        		$this->setFieldValue('idpessoa',$pessoa->idpessoa);
+				        		$this->setFieldAttr('nome','readonly',TRUE);
+				        		$this->setFieldAttr('datanasc','readonly',FALSE);
+						$this->setButtonAttr('btnPost2','visible',TRUE);
+					}
         		}
 			//verifica se nome e data de nascimento existem
         		else
@@ -209,7 +240,7 @@ class frmTerceirizadoNew extends Form
 					$this->setButtonAttr('btnPost2','visible',TRUE);
             			}
         		}
-			$cep->AddAttribute('maxlength','8');
+        		
         		$this->setFieldAttr('cpf','readonly',TRUE);
         		$this->SetValidators($validators);
         		$this->setButtonAttr('btnPost1','visible',FALSE);        

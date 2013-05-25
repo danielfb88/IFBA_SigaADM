@@ -22,7 +22,6 @@ class frmFuncaoTerceirizadoDados extends MForm
 	
 	protected $obj;
 	
-
     function __construct($obj)
     {
         global $module, $item;
@@ -37,12 +36,12 @@ class frmFuncaoTerceirizadoDados extends MForm
     {
 		$fields = array(
             $idFuncao  = new MTextField('idFuncaoTerceirizado','','Código','4'),
-            $descricao = new MTextField('descricao','','Descrição','40','Máximo 20 caracteres'),
+            $descricao = new MTextField('descricao','','Descrição','40'),
         );
         $this->SetFields($fields);
 
 		$this->SetFieldAttr('idFuncaoTerceirizado','readonly',true);
-		$descricao->addAttribute('maxlength',20);
+		$this->descricao->AddAttribute('maxlength','40');
 		
 		$buttons = array(
 			new MButton('btnSalvar','Enviar')
@@ -50,9 +49,12 @@ class frmFuncaoTerceirizadoDados extends MForm
 		$this->SetButtons($buttons);
 
 		$validators = array(
-			new MRequiredValidator('descricao'),
+           new MRequiredValidator('idFuncaoTerceirizado'),
+           new MRequiredValidator('descricao'),
+           
+           new IntegerValidator('idFuncaoTerceirizado')
 		);
-		$this->SetValidators($validators);
+       $this->SetValidators($validators);
 		
 		$this->SetData();
     }
@@ -71,14 +73,18 @@ class frmFuncaoTerceirizadoDados extends MForm
            global $MIOLO;
 		
 		$data = $this->GetData();
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
 		if(strlen(trim($data->descricao)) < '5')
 		{
 			$this->addError('Informe a Descrição');
 		}
 		else
 		{
-
-			$this->obj->SetData($this->GetData());
+			$this->obj->SetData($data);
 			$this->obj->descricao = strtoupper($this->obj->descricao);
 			$this->obj->save();
            		$go = $MIOLO->GetActionURL('rh','main:funcaoterceirizado',$this->obj->idFuncaoTerceirizado);

@@ -124,5 +124,17 @@ class BusinessAdmRubrica extends Business
         $criteria->setDistinct(true);
         return $criteria->retrieveAsQuery();
     }
+
+    function findByCodigo($codigo)
+    {
+	$busca = "select count(*) as total from ad_rubrica where idrubrica = '$codigo'";					
+	return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
+
+    function findByTipoReq($idRubrica,$idTipoReq)
+    {
+	$busca = "select count(*) as total from ad_reqrubrica where idrubrica = '$idRubrica' and idtiporeq = '$idTipoReq'";
+	return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
 }
 ?>

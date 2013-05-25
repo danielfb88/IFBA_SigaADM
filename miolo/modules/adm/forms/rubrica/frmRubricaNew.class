@@ -31,11 +31,13 @@ class frmRubricaNew extends Form
 	function CreateFields()
 	{
 		$fields = array (
-			new TextField('idRubrica','','Código','20', 'Min. 8 números.'),
-			new TextField('descricao','','Descricao','70', 'Máx. 100 caracteres.'),
+			new TextField('idRubrica','','Código','20', 'Min. 8 números'),
+			new TextField('descricao','','Descricao','60', 'Máx. 60 caracteres.'),
 		);
-
 		$this->SetFields($fields);
+
+		$this->idRubrica->addAttribute('maxlength',20);
+		$this->descricao->addAttribute('maxlength',60);
 
 		$buttons = array (
 			new FormButton('btnNew', 'Cadastrar Rubrica')
@@ -43,8 +45,8 @@ class frmRubricaNew extends Form
 		$this->SetButtons($buttons);
 
 		$validators = array (
-			new RequiredValidator('idRubrica'),
-			new RequiredValidator('descricao'),
+			new MRequiredValidator('idRubrica'),
+			new MRequiredValidator('descricao'),
 		);
 		$this->SetValidators($validators);
 	}
@@ -64,17 +66,25 @@ class frmRubricaNew extends Form
 			$data = $this->GetData();
 			$rubrica = $this->manager->GetBusiness('adm','rubrica');
 			$rubrica->SetData($data);
-			try
+
+			if($rubrica->findByCodigo($rubrica->idRubrica))
 			{
-				$rubrica->descricao = strtoupper($rubrica->descricao);
-				$rubrica->save();
-				$rubrica->Log(OP_INS,"Nova rubrica criada");
-				$go = $this->manager->GetActionURL('adm','main:rubrica',$rubrica->idRubrica);
-				$this->manager->Information('Rubrica criada com sucesso.',$go);
+				$this->AddError('Código já cadastrado.');	
 			}
-			catch (Exception $e)
+			else
 			{
-				$this->addError($e->getMessage());
+				try
+				{
+					$rubrica->descricao = strtoupper($rubrica->descricao);
+					$rubrica->save();
+					$rubrica->Log(OP_INS,"Nova rubrica criada");
+					$go = $this->manager->GetActionURL('adm','main:rubrica',$rubrica->idRubrica);
+					$this->manager->Information('Rubrica criada com sucesso.',$go);
+				}
+				catch (Exception $e)
+				{
+					$this->addError($e->getMessage());
+				}
 			}
 		}
 	}

@@ -70,6 +70,9 @@ class frmVagaNew extends Form
 
         	$this->SetFieldAttr('comentario1','color','red');
         	$this->SetFieldAttr('comentario2','color','blue');
+        	$this->descSetor->addAttribute('readonly', true);
+        	$this->descGrupoCargo->addAttribute('readonly', true);
+        	$this->descCargo->addAttribute('readonly', true);
 	
         	$fldnumerovaga->AddAttribute('maxlength','7');
 	
@@ -155,9 +158,13 @@ class frmVagaNew extends Form
 		{
 			$this->addError('Informe o número da Vaga');
 		}
+		elseif(is_numeric(trim($this->GetFormValue('numeroVaga'))) && trim($this->GetFormValue('numeroVaga')) <= 0)
+		{
+			$this->addError('O número da vaga deve ser maior que 0');
+		}
 		elseif ($result->result)
 		{
-			$this->addError("Não é possivel duplicar esse registro pois já existe uma vaga no sistema com este mesmo número");
+			$this->addError("Não é possivel duplicar esse registro, pois já existe uma vaga no sistema com este mesmo número");
 		}
 		elseif(! $check)
 		{

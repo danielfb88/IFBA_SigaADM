@@ -53,11 +53,15 @@ class frmRestauranteNew extends Form
 
 	function btnNew_click()
 	{
-		$nome =  Form::GetFormValue("nome");
-
-		if(strlen(trim($nome))<5)
+		$nome  =  Form::GetFormValue("nome");
+		$ativo =  Form::GetFormValue("ativo");
+		if ( strlen(trim($nome)) < 5 )
 		{
 			$this->AddError("O nome do restaurante deve possuir mais que quatro caracteres");
+		}
+		else if (!strcmp($ativo,''))
+		{
+			$this->AddError("Especifique se o restaurante está ativo.");
 		}
 		else
 		{

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="repTermoPorSetor_Assinaturas"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="802"
+		 pageHeight="535"
+		 columnWidth="802"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<queryString><![CDATA[select 1 as ok]]></queryString>
+
+	<field name="ok" class="java.lang.Integer"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="70"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="7"
+						y="29"
+						width="383"
+						height="1"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="417"
+						y="29"
+						width="380"
+						height="1"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="6"
+						y="33"
+						width="383"
+						height="30"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="1_1_2">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="9" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Data Conferência: ____/____/________    RESPONSÁVEL PELO SETOR
+SIAPE:                                     Nome:  ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="416"
+						y="33"
+						width="380"
+						height="30"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="1_1_2">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="9" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Data Ciência: ____/____/________             RESPONSÁVEL PELO PATRIMÔNIO
+SIAPE:                                              Nome:  ]]></text>
+				</staticText>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="4"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

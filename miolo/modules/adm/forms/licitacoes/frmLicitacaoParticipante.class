@@ -43,13 +43,13 @@ class frmLicitacaoParticipante extends Form
 		array_unshift($objQuery->result,Array('0'=>'','1'=>''));
 
 		$fields = array(
-            new LookupTextField('lkpFornecedor','','Fornecedor',40),
-            //new Separator('CASO NÃO TENHA ENCONTRADO O FORNCEDOR, FAÇA O CADASTRO AQUI:'),
+            		new LookupTextField('lkpFornecedor','','Fornecedor',40),
+            		//new Separator('CASO NÃO TENHA ENCONTRADO O FORNCEDOR, FAÇA O CADASTRO AQUI:'),
 			new Separator('CASO NÃO TENHA ENCONTRADO O FORNECEDOR, REALIZE A BUSCA NO COMPRASNET:'),
 			array(
-                    new MTextField('cnpj', '', 'CNPJ (Somente números):', 20),
-                    new MButton('btnPesquisar', 'Pesquisar'),
-                    new MButton('btnIncluirManualmente', 'Incluir manualmente')
+                    	new MTextField('cnpj', '', 'CNPJ (Somente números):', 20),
+                    	new MButton('btnPesquisar', 'Pesquisar'),
+                    	new MButton('btnIncluirManualmente', 'Incluir manualmente')
             ),
 
             array(
@@ -89,9 +89,19 @@ class frmLicitacaoParticipante extends Form
 		
         $this->SetFields($fields);
 
-		$this->cnpj->addAttribute('onKeyUp','makeMask(this, \'##.###.###/####-##\');');
+	$this->cnpj->addAttribute('onKeyUp','makeMask(this, \'##.###.###/####-##\');');
         $this->cnpj->addAttribute('onBlur','makeMask(this, \'##.###.###/####-##\');');
         $this->cnpj->AddAttribute('maxlength','18');
+	$this->cep->addAttribute('onKeyUp','makeMask(this, \'#####-###\');');
+        $this->cep->addAttribute('onBlur','makeMask(this, \'#####-###\');');
+        $this->cep->AddAttribute('maxlength','9');
+	$this->fax->addAttribute('onKeyUp','makeMask(this, \'(##)####-####\');');
+        $this->fax->addAttribute('onBlur','makeMask(this, \'(##)####-####\');');
+        $this->fax->AddAttribute('maxlength','13');
+	$this->telefone->addAttribute('onKeyUp','makeMask(this, \'(##)####-####\');');
+        $this->telefone->addAttribute('onBlur','makeMask(this, \'(##)####-####\');');
+        $this->telefone->AddAttribute('maxlength','13');
+	
 
         $this->SetFieldAttr('lkpFornecedor','module','adm');
 		$this->SetFieldAttr('lkpFornecedor','item','FornecedorParticipante');
@@ -134,9 +144,10 @@ class frmLicitacaoParticipante extends Form
 		 
 		// new MASKValidator('cnpj','','99999999999999','optional'),
 		// new MASKValidator('contaCorrente','','999999','optional'),
-		 new MASKValidator('cep','','99999999','optional'),
+		 new CEPValidator('cep','','99999999','optional'),
 		 new PHONEValidator('telefone','','optional'),
 		 new PHONEValidator('fax','','optional'),
+		 new EmailValidator('email', '', 'optional'),
 		 
 		 
 		 );
@@ -434,6 +445,7 @@ class frmLicitacaoParticipante extends Form
 		//aplicando a máscara no cnpj
 		$mascara = array(".","/","-");
 		$cnpj = str_replace($mascara, "", $data->cnpj);
+		$data->cep = str_replace("-", "", $data->cep);
 		$data->cnpj =  $cnpj;
 
 		/**

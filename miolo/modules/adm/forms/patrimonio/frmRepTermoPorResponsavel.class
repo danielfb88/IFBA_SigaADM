@@ -67,6 +67,12 @@ function btnPost_click()
         $parameters['int_pIdUsuario']	= $MIOLO->login->idkey;
         $parameters['int_pIdResponsavel']	= $this->getFieldValue('idPessoa');               
         $parameters['pURL']		= $MIOLO->GetConf('home.url');
+		
+		/*echo '<pre>';
+			var_dump ($parameters);
+			echo '</pre>';
+			exit();*/
+		
         $report->Execute('adm', 'repTermoPorResponsavel', $parameters);
        }
     }

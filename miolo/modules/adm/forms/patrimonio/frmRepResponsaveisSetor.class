@@ -81,14 +81,14 @@ class frmRepResponsaveisSetor extends MForm
 			$parameters['int_pIdUsuario']   = $MIOLO->login->idkey;
 			$parameters['int_instituicao'] = $instituicao;
 			$parameters['pURL']             = $MIOLO->GetConf('home.url');
-			if( $parameters['int_instituicao'] == 0 )
+			/*if( $parameters['int_instituicao'] == 0 )
 			{
 				$report->Execute($module, 'repResponsavelSetorTodas', $parameters);
 			}
 			else
-			{
+			{*/
 				$report->Execute($module, 'repResponsavelSetor', $parameters);
-			}
+			//}
 			
 		}
 		

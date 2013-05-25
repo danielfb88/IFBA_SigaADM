@@ -36,6 +36,8 @@ class frmDependenciaNew extends Form
 			new MHiddenField('idSetor'),
 		);
 		$this->SetFields($fields);
+		
+		$this->dependencia->addAttribute('maxlength', 50);
 
 		$this->SetFieldAttr('setor','module','common');
 		$this->SetFieldAttr('setor','item','setor');
@@ -60,6 +62,8 @@ class frmDependenciaNew extends Form
 		$dependencia = $this->manager->GetBusiness('adm','dependencia');
 
 		$dependencia->SetData($data);
+		$dependencia->dependencia = strtoupper($dependencia->dependencia);
+
 		if( strlen(trim($dependencia->dependencia)) < 3)
 		{
 			$this->AddError('Descreva melhor a dependência.');
@@ -68,11 +72,14 @@ class frmDependenciaNew extends Form
 		{
 			$this->AddError('Selecione um setor.');
 		}
+		elseif($dependencia->findById($dependencia->dependencia, $dependencia->idSetor))
+		{
+			$this->addError('Dependência já cadastrada neste Setor.');
+		}
 		else
 		{
 			try
 			{
-				$dependencia->dependencia = strtoupper($dependencia->dependencia);
 				$dependencia->setor = strtoupper($dependencia->dependencia);
 				$dependencia->save();
 				$dependencia->Log(OP_INS,"Nova Dependencia criada");

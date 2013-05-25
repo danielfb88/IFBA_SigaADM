@@ -30,6 +30,8 @@ class frmAbastecimento extends Form
         $this->objRequisicao = $objRequisicao;
         $this->Form("Cadastro de Abastecimento de veículo");
         $this->EventHandler();
+        // Adiciona script para criação de máscaras.
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../ui/js/mask.js'));
     }
    
 	function CreateFields()
@@ -48,7 +50,7 @@ class frmAbastecimento extends Form
 								"3"=>"GNV");
 			$this->grid = $this->manager->GetUI()->GetGrid('adm','gridAbastecimento',$this->objRequisicao->idRequisicao);
 	       		$this->grid->SetTitle('Abastecimentos');
-			$fields = Array(
+			$fields = Array (
 				new TextField('idRequisicao',$this->objRequisicao->idRequisicao,'Requisicao',4),
 				new MTextField('posto','','Posto',30),
 				new MTextField('enderecoPosto','','Endereço',50),
@@ -59,21 +61,52 @@ class frmAbastecimento extends Form
 				new MCurrencyField('valorAbastecimento','','Valor'),
 				new MSelection('combustivel','','Combustível',$combustivel),
 				new MSeparator(''),
-				$this->grid
-				
-				
-			
-			       );    
-	        		$this->SetFields($fields);
-		        	$this->SetFieldAttr('idRequisicao','readonly',true);
+				$this->grid );
+		
+	    		$this->SetFields($fields);
+	    
+	         $this->dataAbastecimento->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+	         $this->horaAbastecimento->addAttribute('onKeyUp','makeMask(this, \'##:##\');');
+	         //$this->quantidade->addAttribute('onKeyUp','makeMask(this, \'###,##\');');
+	   	   $this->posto->addAttribute('maxlength',50);
+				$this->enderecoPosto->addAttribute('maxlength',50);
+				$this->cidadePosto->addAttribute('maxlength',50);
+				$this->valorAbastecimento->addAttribute('maxlength',10);
+				$this->quantidade->addAttribute('maxlength',6);
+				$this->horaAbastecimento->addAttribute('maxlength',5);
+					    
+				$validators = array(
+				new RequiredValidator('posto'),
+				new RequiredValidator('enderecoPosto'),
+			  	new RequiredValidator('cidadePosto'),
+			  	new RequiredValidator('dataAbastecimento'),
+			  	new RequiredValidator('horaAbastecimento'),
+			  	new RequiredValidator('quantidade'),
+			  	new RequiredValidator('valorAbastecimento'),
+	
+			  	new MDATEDMYValidator('dataAbastecimento'),
+			);	
+		
+		$this->SetValidators($validators);
+	    
+		 $this->SetFieldAttr('idRequisicao','readonly',true);
 
 			$buttons = Array(
 		            new FormButton('btnPost','Enviar'),
 		            //new MButtonClose('btnFechar','Fechar')
 			    new FormButton('btnPost2','Finalizar'),
+			    new FormButton('btnEditar','Editar')
 		        );
     
 		        $this->SetButtons($buttons);
+			$this->setButtonAttr('btnEditar','visible',false);
+			if ($this->objRequisicao->abastecimento)
+			{
+				$this->setData();
+				$this->setButtonAttr('btnPost','visible',false);
+				$this->setButtonAttr('btnPost2','visible',false);
+
+			}
 		}
 		else
 		{
@@ -90,12 +123,60 @@ class frmAbastecimento extends Form
 		        $this->SetButtons($buttons);
 		}
 	}
+	function setData()
+	{
+		global $MIOLO;
+		$objAbastecimento = $MIOLO->GetBusiness('adm','abastecimento');
+		$objAb = $objAbastecimento->GetById($this->objRequisicao->abastecimento);
+		$this->setFieldValue('posto',$objAb->posto);
+		$this->setFieldValue('enderecoPosto',$objAb->enderecoPosto);
+		$this->setFieldValue('cidadePosto',$objAb->cidadePosto);
+		$hora = $objAb->dataHoraAbastecimento;
+		$datahora = explode(' ',$hora);
+		$hora = explode(':',$datahora[1]);
+		$this->setFieldValue('dataAbastecimento',$datahora[0]);
+		$this->setFieldValue('horaAbastecimento',$hora[0].':'.$hora[1]);
+		$this->setFieldValue('quantidade',$objAb->quantidade);
+		$this->setFieldValue('valorAbastecimento',$objAb->valorAbastecimento);
+		$this->setFieldValue('combustivel',$objAb->combustivel);
+		$this->setButtonAttr('btnEditar','visible',true);
+		
+	}
+	function btnEditar_click()
+	{
+		global $MIOLO;
+		$objAbastecimento = $MIOLO->GetBusiness('adm','abastecimento');
+		$objAb = $objAbastecimento->GetById($this->objRequisicao->abastecimento);
+		$data = $this->getData();
+		$vAbastecimento = strlen(trim(Form::GetFormValue('valorAbastecido')));
+		$cf = new MCurrencyFormatter();
+        	$data->valorAbastecimento = $cf->toDecimal($data->valorAbastecimento);
+		$dAbastecimento = strlen(trim(Form::GetFormValue('dataAbastecimento')));
+		$hAbastecimento = strlen(trim(Form::GetFormValue('horaAbastecimento')));
+        	$data->dataHoraAbastecimento =  $data->dataAbastecimento." ".$data->horaAbastecimento.":00";
+		$objAb->setData($data);
+		try
+    		{
+    			$objAb->save();
+			$idRequisicao = ($this->objRequisicao->idRequisicao);
+    			$go = $this->manager->GetActionURL('adm','main:abastecimento',$this->objRequisicao->idRequisicao);
+                	$this->manager->Information('Abastecimento editado com sucesso.',$go);
+		}
+    		catch(Exception $e)
+    		{
+    			$this->addError($e->getMessage());
+    		}   		
+	}
 	function btnPost_click()
 	{
     		global $MIOLO, $module, $ui, $action;
 	
 		$data = $this->GetData();
 
+		$data->posto = trim(Form::GetFormValue('posto'));
+		$data->enderecoPosto = trim(Form::GetFormValue('enderecoPosto'));
+		$data->cidadePosto = trim(Form::GetFormValue('cidadePosto'));
+		$data->quantidade = trim(Form::GetFormValue('quantidade'));
 		$posto = strlen(trim(Form::GetFormValue('posto')));
 		$ePosto = strlen(trim(Form::GetFormValue('enderecoPosto')));
 		$cPosto = strlen(trim(Form::GetFormValue('cidadePosto')));
@@ -104,9 +185,18 @@ class frmAbastecimento extends Form
 		$quant = strlen(trim(Form::GetFormValue('quantidade')));
 		$vAbastecimento = strlen(trim(Form::GetFormValue('valorAbastecido')));
 		$cf = new MCurrencyFormatter();
-        	$vAbastecimento = $cf->toDecimal($data->valorAbastecimento);
+      $vAbastecimento = $cf->toDecimal($data->valorAbastecimento);
 		$combustivel = strlen(trim(Form::GetFormValue('combustivel')));	
 		$hora = $data->horaAbastecimento;
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->posto = str_replace($caracteres,"", $data->posto);
+		$data->enderecoPosto = str_replace($caracteres,"", $data->enderecoPosto);
+		$data->cidadePosto = str_replace($caracteres,"", $data->cidadePosto);
+		
+		//$is_decimal = preg_match('/^\d+(\,\.\d+)?$/', $data->quantidade);
+		
 		if($posto == '0')		
 		{
 			$this->addError("Você precisa informar corretamente o campo Posto.",'');
@@ -135,25 +225,26 @@ class frmAbastecimento extends Form
 		{
 			$this->addError("Você precisa informar corretamente o campo Litros.",'');			
 		}
-		elseif($vAbastecimento <= '0')
+		else if ( strpos($data->quantidade,".") == false || strpos($data->quantidade,",") != false){
+			$this->addError("Você precisa informar o campo Litros no formato: 000.00.",'');
+		}
+		/*else if ($is_decimal == 0) {
+			$this->addError("Você precisa informar corretamente o campo Litros.",'');
+		}*/
+		else if($vAbastecimento <= '0')
 		{
 			$this->addError("Você precisa informar corretamente o campo Valor.",'');			
 		}
-		elseif($combustivel == '0')
+		else if($combustivel == '0')
 		{
 			$this->addError("Você precisa selecionar o tipo de combustível.",'');			
 		}
-		elseif ( ($hora == '') || (substr($hora,0,2) < 0) || (substr($hora,0,2) > 23) || (substr($hora,3,2) < 0) || (substr($hora,3,2) > 60))
+		else if ( ($hora == '') || (substr($hora,0,2) < 0) || (substr($hora,0,2) > 23) || (substr($hora,3,2) < 0) || (substr($hora,3,2) > 60))
 		{
 			$this->addError('Hora inválida!');
-		}
-		else if ( ($hora[2] != ":") || (!$hora[4] == '') || ($hora[5] != '' ) )
-		{
-			$this->addError('Favor informar o campo hora dentro do padrão 00:00');
-		}   
+		} 
 		else
 		{
-    			$data = $this->GetData();
     			$objAbastecimento = $MIOLO->GetBusiness('adm','abastecimento');
 	    		$cf = new MCurrencyFormatter();
 	        	$data->valorAbastecimento = $cf->toDecimal($data->valorAbastecimento);
@@ -173,6 +264,7 @@ class frmAbastecimento extends Form
 	    		}   		
 		}
 	}
+
 	function btnPost2_click()
 	{
 		global $MIOLO;

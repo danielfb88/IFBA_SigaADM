@@ -20,11 +20,14 @@
 ?>
 
 <?
-class frmPatrimonioNew extends MForm
+class frmPatrimonioNew extends MFormAjax
 {
     function __construct()
     {
         parent::__construct('Incluir Novo Item no Patrimônio');
+		
+		$this->page->addJsCode(file_get_contents(dirname(__FILE__).'/js/frmPatrimonioNew.js'));	
+		$this->page->OnSubmit("desabilita()");
         $this->EventHandler();
         $this->defaultButton = false;
     }

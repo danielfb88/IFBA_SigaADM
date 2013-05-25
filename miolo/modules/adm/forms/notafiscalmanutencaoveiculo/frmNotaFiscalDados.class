@@ -29,7 +29,8 @@ class frmNotaFiscalDados extends MForm
 		$this->objNF = $objNF;
         parent::__construct('Nota Fiscal');
         $this->SetClose($MIOLO->GetActionURL('adm','main'));
-        $this->EventHandler();
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
+	    $this->EventHandler();
     }    
     public function CreateFields()
     {
@@ -46,7 +47,8 @@ class frmNotaFiscalDados extends MForm
 			new LookupTextField('lkpVeiculo','','Veículo','15'),
 			new MHiddenField('idEmpresa'),
 			new LookupTextField('lkpEmpresa','','Empresa','30'),
-			new MCalendarField('data','','Data',10),
+			new CalendarField('data','','Data',10),
+			new CalendarField('dataNF','','Data',10),
 			$grid,
 			new Text('manutencao','<b>MANUTENÇÃO</b>'),
 			new MHiddenField('idTipoManutencao'),
@@ -54,23 +56,22 @@ class frmNotaFiscalDados extends MForm
 			new MCurrencyField('valor','','Valor'),
 			new MultiLineField('obs','','Obs','',3,50),
 			new MTextField('valorTotal','','Total','9'),
-					);
+		);
 
 		$buttons = array(
 			new MButton('btnManutencao','Cadastrar Manutenção'),
 			new MButton('btnSalvarManutencao','Cadastrar Manutenção'),
 			new MButton('btnEnviar','Finalizar')
 						);
+
 		$this->SetFields($fields);
 		$this->SetButtons($buttons);
-
-        $validators = array (
-            new MRequiredValidator('placa'),
-            new MRequiredValidator('idEmpresa'),
-	    new MRequiredValidator('data')
-           		    );
-        $this->SetValidators($validators);
-
+		
+		
+		$this->lkpVeiculo->addAttribute('readonly', true);
+		$this->lkpEmpresa->addAttribute('readonly', true);
+		$this->dataNF->addAttribute('readonly', true);
+		
 		$this->SetFieldAttr('lkpVeiculo','module','adm');
 		$this->SetFieldAttr('lkpVeiculo','item','veiculo');
 		$this->SetFieldAttr('lkpVeiculo','event','filler');
@@ -93,20 +94,33 @@ class frmNotaFiscalDados extends MForm
 		$this->SetFieldAttr('lkpTManutencao','visible',false);
 		$this->SetFieldAttr('valor','visible',false);
 		$this->SetFieldAttr('obs','visible',false);
+		$this->SetFieldAttr('data','visible',false);
+		$this->SetFieldAttr('dataNF','visible',true);
 		$this->SetFieldAttr('valorTotal','readonly',true);
 		$this->SetFieldValue('placa',$this->objNF->placa);
 		$this->SetFieldValue('idEmpresa',$this->objNF->idEmpresa);
 		$this->setFieldValue('lkpEmpresa',$this->objNF->empresa->nome);
 		$this->SetFieldValue('lkpVeiculo',$this->objNF->veiculo->modelo);
-		$this->setFieldValue('data',$this->objNF->data);
-		$this->SetFieldValue('valorTotal',$this->objNF->valorTotal);	
+		$this->setFieldValue('dataNF',$this->objNF->data);
+		$this->SetFieldValue('valorTotal',$this->objNF->valorTotal);
+		
 
+	        $validators = array (
+            new MRequiredValidator('placa'),
+            new MRequiredValidator('idEmpresa'),
+	    	new MRequiredValidator('data'),
+	    	new MRequiredValidator('dataNF')
+           		    );
+           		    
+        $this->SetValidators($validators);
+        $this->setData();
 
     }
+    
     function btnManutencao_click()
     {
 		$data = $this->getData();
-		$dataM = $data->data;
+		$dataM = $data->dataNF;
 		if ((strlen(trim($dataM)) == '0'))
 		{
 			$this->addError('Favor Informar corretamente a Data da Nota');
@@ -120,6 +134,7 @@ class frmNotaFiscalDados extends MForm
 			$this->setFieldAttr('obs','visible',true);
 		}
     }
+    
     function btnSalvarManutencao_click()
     {
 		global $MIOLO;
@@ -141,7 +156,7 @@ class frmNotaFiscalDados extends MForm
 		}
 		elseif(($val <= '0') || ($objManutencao->valor <= '0'))
 		{
-			$this->addError('Favor informar corretamente o valor da manutenção');
+			$this->addError('Favor informar corretamente o Valor da Manutenção');
 		}
 		else
 		{
@@ -165,17 +180,31 @@ class frmNotaFiscalDados extends MForm
 		global $MIOLO;
 	
 		$data = $this->getData();
+		$data->data = $data->dataNF;
 		$objNotaFiscal = $this->objNF;
-		$objNotaFiscal->setData($data);
-		try
+		$objNotaFiscal->setData($data);	
+		
+		
+		if($data->lkpVeiculo == null)
 		{
-			$objNotaFiscal->Update();
-			$msg = "Nota Fiscal alterada com sucesso";
-			$MIOLO->Information($msg,$this->manager->GetActionURL('adm','notafiscalmanutencaoveiculo:find',$objNotaFiscal->idNotaFiscal));
+			$this->addError('Favor informar corretamente o Veículo');
 		}
-		catch(Exception $e)
+		elseif($data->lkpEmpresa == null)
 		{
-			$this->manager->Error($e->getMessage());
+			$this->addError('Favor informar corretamente a Empresa');
+		}
+		else
+		{
+			try
+			{
+				$objNotaFiscal->Update();
+				$msg = "Nota Fiscal alterada com sucesso";
+				$MIOLO->Information($msg,$this->manager->GetActionURL('adm','notafiscalmanutencaoveiculo:find',$objNotaFiscal->idNotaFiscal));
+			}
+			catch(Exception $e)
+			{
+				$this->manager->Error($e->getMessage());
+			}
 		}
 	}    
 }

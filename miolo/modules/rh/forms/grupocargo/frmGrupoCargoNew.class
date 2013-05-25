@@ -34,52 +34,69 @@ class frmGrupoCargoNew extends Form
 	   
        $grupocargo = $MIOLO->GetBusiness('rh','grupocargo');
        $fields = array(
-		new TextField('idgrupocargo','','ID Grupo Cargo','3'),
-            	new TextField('descricao','','Nome','12')
+		 			new TextField('idgrupocargo','','ID Grupo Cargo','10'),
+            	new TextField('descricao','','Nome','40','Máx. 40 caracteres')
 	        );
+	        
+	        $this->SetFields($fields);
+	        
+       	  $this->descricao->AddAttribute('maxlength','40');
+       	  $this->idgrupocargo->AddAttribute('maxlength','10');
+	        
+	        $validators = array(
+            //new RequiredValidator('idgrupocargo'),
+            new RequiredValidator('descricao'),
+            
+            new IntegerValidator('idgrupocargo'),
+        );
+        
+        $this->SetValidators($validators);
 		
-        $this->SetFields($fields);
-		
-	$buttons = array(
-        	new FormButton('btnNew', 'Incluir Grupo Cargo')
+		 $buttons = array(
+     	   	new FormButton('btnNew', 'Incluir Grupo Cargo')
 	        );
-	$this->SetButtons($buttons);
+		 $this->SetButtons($buttons);
 
     }
 
     function btnNew_click()
     {
-	global $MIOLO, $page;
+		global $MIOLO, $page;
 
-        $data = $this->GetData();
-	$id = $data->idgrupocargo;
-	if(is_numeric($id))
-	{
-		$grupocargo = $MIOLO->GetBusiness('rh','grupocargo',$id);
-		if (strlen(trim($id)) < '1')
-		{
-			$this->addError('Informe o id do Grupo Cargo');
-		}
-		elseif($grupocargo->isPersistent())
-		{
-			$this->addError('Já existe um registro de Grupo Cargo com esse ID. Favor digite outro ID');
-		}
-		elseif(strlen(trim($data->descricao)) < '5')
-		{
-			$this->addError('Informe o Nome do Grupo Cargo');
-		}
-		else
-		{
-        		$grupocargo->SetData($data);
-			$grupocargo->save();
-        		$go = $MIOLO->GetActionURL('rh','main:grupocargo','&item='.$grupocargo->idGrupoCargo);
-   			$MIOLO->Information('Dados do Grupo Cargo inseridos com sucesso.', $go );
-		}
-	}
-	else
-	{
-		$this->addError('Informe o id Grupo Cargo no padrão numérico');
-	}
+		    $data = $this->GetData();
+			 $id = $data->idgrupocargo;
+			  
+			 // Retirando os caracteres especiais. :-)
+			$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+			$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
+			if(is_numeric($id))
+			{
+				$grupocargo = $MIOLO->GetBusiness('rh','grupocargo',$id);
+				if (strlen(trim($id)) < '1')
+				{
+					$this->addError('Informe o id do Grupo Cargo');
+				}
+				elseif($grupocargo->isPersistent())
+				{
+					$this->addError('Já existe um registro de Grupo Cargo com esse ID. Favor digite outro ID');
+				}
+				elseif(strlen(trim($data->descricao)) < '5')
+				{
+					$this->addError('Informe o Nome do Grupo Cargo');
+				}
+				else
+				{
+				  		$grupocargo->SetData($data);
+					$grupocargo->save();
+				  		$go = $MIOLO->GetActionURL('rh','main:grupocargo','&item='.$grupocargo->idGrupoCargo);
+						$MIOLO->Information('Dados do Grupo Cargo inseridos com sucesso.', $go );
+				}
+			}
+			else
+			{
+				$this->addError('Informe o id Grupo Cargo no padrão numérico');
+			}
     }
 
  }

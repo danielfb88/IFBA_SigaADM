@@ -100,7 +100,7 @@ class frmRequisicaoBiblioteca extends Form
 			      new MTextField('edicao','','Edição',20),
 			      new MTextField('localPublicacao','','Local de Publicação',60),
 			      new MTextField('editora','','Editora',60),
-			      new MTextField('dataPublicacao','','Data de Publicação',5,'Somente o ano. Ex.: 1998'),
+			      new MTextField('dataPublicacao','','Data de Publicação',4,'Somente o ano. Ex.: 1998'),
 			      new MTextField('descFisica','','Descrição Física',80),
 			  /*    new MSelection('idGenero','','Gênero',$generos),
    			      new MSelection('idCurso','','Curso',$cursos),
@@ -140,7 +140,11 @@ class frmRequisicaoBiblioteca extends Form
        $this->addValidator(new MRequiredValidator('idMaterial','Código do Material'));
        $this->addValidator(new MRequiredValidator('localEntrega'));       
        $this->addValidator(new MRequiredValidator('justificativa'));
+       $this->addValidator(new MRequiredValidator('autor'));
+       $this->addValidator(new MRequiredValidator('edicao'));
        $this->addValidator(new MMaskValidator('dataPublicacao','','9999','required'));
+       
+       $this->dataPublicacao->addAttribute('maxlength',4);
        
 		//Alterado 6/4/2010 	Ñ exibe item para o requisitante em caso de pendente.
 		//Alterado 9/4/2010 O Status pendente ñ utilizado para requisição de acervo
@@ -232,20 +236,26 @@ class frmRequisicaoBiblioteca extends Form
 	{
 		$data = $this->getData();
 		$cf = new MCurrencyFormatter();
+		
+		//$data->dataPublicacao;
+		$dataCorrente = date("Y");
 
 		if ((strlen(trim(Form::GetFormValue('titulo'))) < 3))
-			{
-           $this->addError('Você precisa informar o título');
-			}
-			if ((strlen(trim(Form::GetFormValue('localEntrega'))) < 3))
-			{
-           $this->addError('Você precisa informar um local válido');
-			}
-			if ((strlen(trim(Form::GetFormValue('justificativa'))) < 5))
-			{
-           $this->addError('Você precisa informar uma justificativa válida');
-			}
-			
+		{
+           	$this->addError('Você precisa informar o título');
+		}
+		if ((strlen(trim(Form::GetFormValue('localEntrega'))) < 3))
+		{
+           	$this->addError('Você precisa informar um local válido');
+		}
+		if ((strlen(trim(Form::GetFormValue('justificativa'))) < 5))
+		{
+        	$this->addError('Você precisa informar uma justificativa válida');
+		}
+		if($dataCorrente < $data->dataPublicacao)
+		{
+			$this->addError('A data informada é superior a data corrente');
+		}
        /* if ($data->idGenero=='')
         {
            $this->addError('Você precisa indicar o Gênero');
@@ -260,7 +270,7 @@ class frmRequisicaoBiblioteca extends Form
         }*/
 
         //$data->precoEstimado = str_replace("R$","",$data->precoEstimado);
-	$data->precoEstimado = $cf->toDecimal($data->precoEstimado);
+		$data->precoEstimado = $cf->toDecimal($data->precoEstimado);
 
         if ($data->precoEstimado == 0.00)//o valor estimado não pode ser igual a zero
  		{

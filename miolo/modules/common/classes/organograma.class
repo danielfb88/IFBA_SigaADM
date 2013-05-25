@@ -191,6 +191,12 @@ class BusinessCommonOrganograma extends MBusiness
 	    		$this->listByOrg($setor[0]);
 	    	}
     }
+    
+    function findByNome($nome)
+    {
+		$busca = "select count(*) as total from cm_tipoorganograma where sigla = '$nome'";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
 
 }
 ?>

@@ -74,15 +74,26 @@ class frmReservaEsperaUsuario extends Form
 
 		$this->objUsuario = $MIOLO->GetBusiness($module,'usuario');
 		$usuario = $this->objUsuario->GetByLogin($codigo);
-
+		
+		if(!$usuario)
+		{
+			$usuario[0][0] = $this->objUsuario->GetByCartao($codigo);
+			
+			if(!empty($usuario[0][0]))
+			{
+				$dadosusuario = $this->objUsuario->GetById($usuario[0][0]);
+				$usuario = $this->objUsuario->GetByLogin($dadosusuario[0][2]);			
+			}
+		}
+		
+		$nome_usuario = $usuario[0][1];
+		$telefone_usuario = $usuario[0][2];
+		$celular_usuario = $usuario[0][3];
 		
 		$id_usuario = $usuario[0][0];
 		if ($id_usuario == null){
 			$MIOLO->Error("Código do usuário não encontrado.", $MIOLO->GetActionURL($module = $module, $action = $action));
 		}
-		$nome_usuario = $usuario[0][1];
-		$telefone_usuario = $usuario[0][2];
-		$celular_usuario = $usuario[0][3];
 
 		//datagrid
 		$this->SetTitle(NULL);

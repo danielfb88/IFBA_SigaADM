@@ -24,28 +24,39 @@ class frmPatrimonio extends MCompoundForm
     function __construct($objPatrimonio)
     {
         global $MIOLO;
+		
         $this->patrimonio = $objPatrimonio;
         parent::__construct();
         $this->SetClose($MIOLO->GetActionURL('adm','main:itempatrimonio:find'));
-        $this->SetTitle("Item Patrimoniado Número $objPatrimonio->idItemPatrimonio");
+        $this->SetTitle("Patrimônio número $objPatrimonio->idItemPatrimonio");
         $this->SetIcon($MIOLO->GetUi()->GetImage('adm','default_mini.png'));
         $this->EventHandler();
+		
     }
 
     function CreateFields()
     {
-        global $MIOLO, $page, $module, $context, $history;
+        
+		global $MIOLO, $page, $module, $context, $history;
 
+		
         $patrimonio = $this->patrimonio;
         if ($this->oid == NULL) $this->oid = $patrimonio->idItemPatrimonio;
 
+		
 // form
         $ui = $MIOLO->GetUI();
         $form = MForm::GetFormValue('form');
+		
         switch ($form)
         {
             case 'editar' : 
 				$this->_form[0] = $ui->GetForm($module,'frmPatrimonioEditar', $patrimonio, 'patrimonio'); 
+                break;				
+			case 'movimentacoes' : 		
+				$_SESSION['idItemPatrimonio'] = $this->oid;
+				//var_dump ($_SESSION['idItemPatrimonio']);
+                $this->_form[0] = $ui->GetForm($module,'frmPatrimonioMovimentacoes', $patrimonio, 'patrimonio'); 
                 break;
             case 'transferir' : 
                  $this->_form[0] = $ui->GetForm($module,'frmPatrimonioTransferir', $patrimonio, 'patrimonio'); 
@@ -79,7 +90,7 @@ class frmPatrimonio extends MCompoundForm
 		$classificador = $MIOLO->GetBusiness($module,'classificador');
 		$classificador->GetById($this->patrimonio->idClassificador);
 		$movimentoPat = $MIOLO->GetBusiness($module, 'movimentopat');
-		$termo = $movimentoPat->GetNumeroTermoMaisRecente($patrimonio->idItemPatrimonio);
+		//$termo = $movimentoPat->GetNumeroTermoMaisRecente($patrimonio->idItemPatrimonio);
 		$this->_info[0]	= new TextLabel('txtDescricao',$this->patrimonio->descricao,'Descrição');
 		$this->_info[1]	= new TextLabel('txtNumeroSerie',$this->patrimonio->numeroSerie,'Número de Série');
 		$this->_info[2]	= new TextLabel('txtTipoIngresso',$ingresso->item2,'Tipo de Ingresso');
@@ -88,7 +99,7 @@ class frmPatrimonio extends MCompoundForm
 		$this->_info[16]	= new TextLabel('txtDescricaoEstado',$this->patrimonio->descricaoEstado,'Estado do Material');
 		$this->_info[5]	= new TextLabel('txtValor',$this->patrimonio->valor,'Valor');
 		$this->_info[6]	= new TextLabel('txtNotaFiscal',$this->patrimonio->notaFiscal,'Nota Fiscal');
-		$this->_info[7]	= new TextLabel('txtNumeroTermo',$termo, 'Número do Termo');
+		//$this->_info[7]	= new TextLabel('txtNumeroTermo',$termo, 'Número do Termo');
         // 20/10/2010 - Vitor Pacheco
 		$this->_info[8]	= new TextLabel('txtSubElemento',$this->patrimonio->getSubelementoComZeroEsquerda($this->patrimonio->subelemento),'SubElemento');
 		$this->_info[9]	= new TextLabel('txtSetor',$setor->sigla,'Setor');
@@ -105,8 +116,10 @@ class frmPatrimonio extends MCompoundForm
 
 		$this->_info[17] = new TextLabel('txtValorReavaliado', $this->patrimonio->valorReavaliado, 'Valor Reavaliado');
 		$this->_info[18] = new TextLabel('txtDataReavaliacao', $this->patrimonio->dataReavaliacao, 'Data de Reavaliação');
-
-
+		$this->_info[19] = new TextLabel('txtGarantia', $this->patrimonio->garantia, 'Garantia');
+		//
+		//OBS: os mapeamentos dos campos ficam num arquivo XML ... nesse caso: ...\modelues\adm\classes\map\itempatrimonio.xml
+		//
 
 		$this->_info[15] = array(
 			new MButton('btnAnterior','Anterior'),
@@ -117,6 +130,7 @@ class frmPatrimonio extends MCompoundForm
         $action = $context->action;
         $this->_panel[0] = $panel = new ActionPanel('pnlCompound','Opções','',false);
         $panel->AddUserAction('adm_patrimonio_editar',A_EXECUTE,'Editar',$ui->GetImageTheme('','icons/itens_patrimoniais_editar.png'),'adm',$action, $this->oid, array("form"=>"editar"));
+		$panel->AddUserAction('adm_patrimonio_movimentacoes',A_EXECUTE,'Movimentações',$ui->GetImageTheme('','icons/patrimonio_movimentacaobens.png'),'adm',$action, $this->oid, array("form"=>"movimentacoes"));
         $panel->AddUserAction('adm_patrimonio_transferir',A_EXECUTE,'Transferir',$ui->GetImageTheme('','icons/itens_patrimoniais_transferir.png'),'adm',$action, $this->oid, array("form"=>"transferir"));
         $panel->AddUserAction('adm_patrimonio_excluir',A_EXECUTE,'Baixa',$ui->GetImageTheme('','icons/baixa.png'),'adm',$action, $this->oid, array("form"=>"excluir"));
 

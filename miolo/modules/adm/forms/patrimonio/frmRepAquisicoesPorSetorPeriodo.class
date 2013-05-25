@@ -38,7 +38,7 @@ class frmRepAquisicoesPorSetorPeriodo extends MForm
 		);
 		$this->SetFields($fields);
 		$this->SetFieldAttr('setor','module','common');
-		$this->SetFieldAttr('setor','item','setor');
+		$this->SetFieldAttr('setor','item','setor_patri');
 		$this->SetFieldAttr('setor','related', 'idSetor,setor');
 
 		$buttons = array(
@@ -91,7 +91,7 @@ class frmRepAquisicoesPorSetorPeriodo extends MForm
 	        $parameters['pDataIni'] 	= $inicio; 
         	$parameters['pDataFim']	        = $final; 
 	        $parameters['int_pSetor']	= $idSetor; 
-		var_dump($parameters);
+		//var_dump($parameters);
 		
 
  	/*$date = Form::GetFormValue('dataInicial'); 

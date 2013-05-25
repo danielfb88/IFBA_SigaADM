@@ -82,6 +82,8 @@ class frmVinculoExclusao extends Form
 		);
 		$this->SetFields($fields);
 		
+		$this->obs->AddAttribute('maxlength',500);
+		
 		$buttons = array(
 			new FormButton('btnPost','Enviar')
 		);
@@ -121,12 +123,15 @@ class frmVinculoExclusao extends Form
 		$idSituacao = $this->GetFormValue('idSituacao');
 		$obs  = $this->GetFormValue('obs');
 		$pub = $this->getFormValue('publicacao');
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$obs = str_replace($caracteres,"",$obs);
 
-         	if(!$idOcorrencia)
-	       {
+      if(!$idOcorrencia) {
 		  $this->addError('Favor selecionar uma Ocorrência');
-	       }
-               elseif(!$pub)
+	  }
+     elseif(!$pub)
 		{
 		
 			{

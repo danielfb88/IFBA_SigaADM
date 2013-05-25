@@ -34,8 +34,12 @@
 	<parameter name="pURL" isForPrompting="true" class="java.lang.String"/>
 	<parameter name="pIdUsuario" isForPrompting="true" class="java.lang.Integer"/>
 	<parameter name="pTitulo" isForPrompting="false" class="java.lang.String"/>
-	<queryString><![CDATA[SELECT  ad_material.codmaterial,
-	ad_empenho.numero,
+	<queryString><![CDATA[SELECT  ad_subelemento.idsubelemento || ' - ' || ad_subelemento.descricao AS subelemento,
+        CASE 
+          WHEN ad_empenho.numero IS NOT NULL THEN 'Empenho nº '
+          ELSE NULL
+        END AS Numero,
+        ad_material.codmaterial,
         CASE
            WHEN ad_material.descresum IS NOT NULL THEN ad_material.descresum
            ELSE	ad_material.descricao
@@ -64,16 +68,17 @@ FROM (ad_requisicao INNER JOIN ad_movimento ON ((ad_requisicao.idrequisicao=ad_m
 	INNER JOIN ad_uo Requisitante ON (ad_requisicao.iduoreq=Requisitante.iduo)
 	INNER JOIN ad_ordentrega ON (ad_ordentrega.idordement=ad_movimento.idordement))
 	INNER JOIN ad_material ON (ad_movimento.idmaterial=ad_material.idmaterial)
+	INNER JOIN ad_subelemento ON (ad_material.idelemento = ad_subelemento.idelemento AND ad_material.idsubelemento = ad_subelemento.idsubelemento)
 	INNER JOIN ad_tiporeq ON (ad_tiporeq.idtiporeq = ad_requisicao.tiporequisicao)
 	LEFT JOIN ad_itemnota ON (ad_movimento.iditemnota=ad_itemnota.iditemnota)
 	LEFT JOIN ad_empenhado ON (ad_itemnota.idempenhado=ad_empenhado.idempenhado)
 	LEFT JOIN ad_empenho ON (ad_empenhado.idempenho=ad_empenho.idempenho)
-
 WHERE (ad_movimento.idordement = $P{idordement})
-	ORDER BY ad_material.descricao ASC]]></queryString>
+ORDER BY ad_empenho.numero, ad_subelemento.idsubelemento, ad_material.descricao ASC]]></queryString>
 
-	<field name="codmaterial" class="java.math.BigDecimal"/>
+	<field name="subelemento" class="java.lang.String"/>
 	<field name="numero" class="java.lang.String"/>
+	<field name="codmaterial" class="java.math.BigDecimal"/>
 	<field name="descricao" class="java.lang.String"/>
 	<field name="unidade" class="java.lang.String"/>
 	<field name="quantidade" class="java.math.BigDecimal"/>
@@ -97,6 +102,59 @@ WHERE (ad_movimento.idordement = $P{idordement})
 	<variable name="vSoma" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
 		<variableExpression><![CDATA[$F{valortotal}]]></variableExpression>
 	</variable>
+
+		<group  name="Empenho" >
+			<groupExpression><![CDATA[$F{numero}]]></groupExpression>
+			<groupHeader>
+			<band height="18"  isSplitAllowed="true" >
+				<printWhenExpression><![CDATA[new Boolean($F{numero}.length() > 0)
+]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="10"
+						y="0"
+						width="400"
+						height="18"
+						key="textField-28"
+						positionType="Float"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="14" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{numero}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="1"  isSplitAllowed="true" >
+			</band>
+			</groupFooter>
+		</group>
+		<group  name="Sub-elemento de despesa" >
+			<groupExpression><![CDATA[$F{subelemento}]]></groupExpression>
+			<groupHeader>
+			<band height="13"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="7"
+						y="0"
+						width="548"
+						height="13"
+						key="textField-27"
+						positionType="Float"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" pdfFontName="Helvetica-Bold" size="11" isBold="true" isItalic="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{subelemento}]]></textFieldExpression>
+				</textField>
+			</band>
+			</groupHeader>
+			<groupFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+			</groupFooter>
+		</group>
 		<background>
 			<band height="1"  isSplitAllowed="true" >
 			</band>
@@ -202,7 +260,7 @@ WHERE (ad_movimento.idordement = $P{idordement})
 					<reportElement
 						x="143"
 						y="113"
-						width="267"
+						width="256"
 						height="18"
 						key="textField-2"
 						positionType="Float"/>
@@ -242,9 +300,9 @@ WHERE (ad_movimento.idordement = $P{idordement})
 				</staticText>
 				<staticText>
 					<reportElement
-						x="419"
+						x="410"
 						y="113"
-						width="98"
+						width="107"
 						height="18"
 						key="staticText-2"
 						positionType="Float"/>
@@ -271,13 +329,13 @@ WHERE (ad_movimento.idordement = $P{idordement})
 			</band>
 		</title>
 		<pageHeader>
-			<band height="24"  isSplitAllowed="true" >
+			<band height="20"  isSplitAllowed="true" >
 				<staticText>
 					<reportElement
-						x="180"
+						x="76"
 						y="0"
-						width="375"
-						height="20"
+						width="472"
+						height="15"
 						key="staticText-6"
 						positionType="Float"/>
 					<box></box>
@@ -291,7 +349,7 @@ WHERE (ad_movimento.idordement = $P{idordement})
 						x="555"
 						y="0"
 						width="75"
-						height="20"
+						height="15"
 						key="staticText-7"
 						positionType="Float"/>
 					<box></box>
@@ -305,7 +363,7 @@ WHERE (ad_movimento.idordement = $P{idordement})
 						x="635"
 						y="0"
 						width="65"
-						height="20"
+						height="15"
 						key="staticText-8"
 						positionType="Float"/>
 					<box></box>
@@ -319,7 +377,7 @@ WHERE (ad_movimento.idordement = $P{idordement})
 						x="705"
 						y="0"
 						width="70"
-						height="20"
+						height="15"
 						key="staticText-10"
 						positionType="Float"/>
 					<box></box>
@@ -331,7 +389,7 @@ WHERE (ad_movimento.idordement = $P{idordement})
 				<line direction="TopDown">
 					<reportElement
 						x="0"
-						y="22"
+						y="17"
 						width="780"
 						height="1"
 						key="line-2"/>
@@ -339,10 +397,10 @@ WHERE (ad_movimento.idordement = $P{idordement})
 				</line>
 				<staticText>
 					<reportElement
-						x="0"
+						x="8"
 						y="0"
-						width="70"
-						height="20"
+						width="48"
+						height="15"
 						key="staticText-11"
 						positionType="Float"/>
 					<box></box>
@@ -350,20 +408,6 @@ WHERE (ad_movimento.idordement = $P{idordement})
 						<font pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
 					</textElement>
 				<text><![CDATA[Código]]></text>
-				</staticText>
-				<staticText>
-					<reportElement
-						x="75"
-						y="0"
-						width="100"
-						height="20"
-						key="staticText-11"
-						positionType="Float"/>
-					<box></box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
-					</textElement>
-				<text><![CDATA[Nº Empenho]]></text>
 				</staticText>
 				<line direction="TopDown">
 					<reportElement
@@ -396,20 +440,6 @@ WHERE (ad_movimento.idordement = $P{idordement})
 						</reportElement>
 					<graphicElement stretchType="RelativeToTallestObject"/>
 				</rectangle>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="75"
-						y="0"
-						width="100"
-						height="11"
-						key="textField"
-						positionType="Float"/>
-					<box></box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font size="9"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{numero}]]></textFieldExpression>
-				</textField>
 				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="555"
@@ -456,21 +486,21 @@ WHERE (ad_movimento.idordement = $P{idordement})
 					<reportElement
 						x="0"
 						y="0"
-						width="70"
+						width="62"
 						height="11"
 						key="textField"
 						positionType="Float"/>
 					<box></box>
-					<textElement textAlignment="Right" verticalAlignment="Middle">
+					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font size="9"/>
 					</textElement>
 				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{codmaterial}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="180"
+						x="76"
 						y="0"
-						width="375"
+						width="472"
 						height="11"
 						key="textField"
 						positionType="Float"/>
@@ -487,7 +517,7 @@ WHERE (ad_movimento.idordement = $P{idordement})
 			</band>
 		</columnFooter>
 		<pageFooter>
-			<band height="20"  isSplitAllowed="true" >
+			<band height="18"  isSplitAllowed="true" >
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="637"
@@ -522,7 +552,7 @@ WHERE (ad_movimento.idordement = $P{idordement})
 			<band height="131"  isSplitAllowed="true" >
 				<staticText>
 					<reportElement
-						x="6"
+						x="7"
 						y="7"
 						width="77"
 						height="16"
@@ -625,7 +655,7 @@ WHERE (ad_movimento.idordement = $P{idordement})
 					<textElement textAlignment="Center">
 						<font size="10"/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA["Funcionário Responsável".toUpperCase()]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Servidor Responsável".toUpperCase()]]></textFieldExpression>
 				</textField>
 				<line direction="TopDown">
 					<reportElement

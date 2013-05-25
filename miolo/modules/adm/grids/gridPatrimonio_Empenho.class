@@ -1,0 +1,158 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+
+
+<?
+class gridPatrimonio_Empenho extends MDataGrid
+{
+
+    /**
+     * Constructor
+     */
+    function __construct()
+    {
+        global $MIOLO, $self;
+		
+		
+		$columns = array(
+		   new MDataGridColumn('NumeroEmpenho'  ,'Empenho'      ,'left'  , true, '50%' ),		   
+		   new MDataGridColumn('NumItens'       ,'Nº Itens'           ,'right' , true, '10%' ),
+		   new MDataGridColumn('NumItensDist'   ,'Nº Itens distintos' ,'right' , true, '10%' ),		   
+		   new MDataGridColumn('ValorTotal'     ,'Valor Total'         ,'right', true, '30%'),
+		);
+			
+		$patriInicial = Form::GetFormValue('patriInicial');
+		$patriFinal = Form::GetFormValue('patriFinal');
+		$empenho =  Form::GetFormValue('empenho');
+		$notaFiscal = Form::GetFormValue('notafiscal');		
+		$descricao = Form::GetFormValue('descricao');
+		$siglaSetor = Form::GetFormValue('siglaSetor');
+		$idclassificador = Form::GetFormValue('idclassificador');		
+		$tipoIngresso = Form::GetFormValue('tipoIngresso');		
+		$listarTotalizacoes = Form::GetFormValue('listarTotalizacoes');
+		$Order = Form::GetFormValue('ordenacao');
+		
+		//echo('<pre>');
+		//var_dump ($listarTotalizacoes);	
+		//var_dump ($sql->where);  
+		//var_dump ($sql);  
+		//echo('</pre>');
+
+		$sql = new sql("NumeroEmpenho, count(*) AS NumItens, " .
+						' count(distinct Descricao) AS NumItensDist,  SUM(valor) AS ValorTotal',
+		                'Vad_Patrimonio', //$tables
+						"Ativo = 'S'", // where
+						'NumeroEmpenho', //ordenacao
+						'NumeroEmpenho ' //group by
+						);
+
+		if ($tipoIngresso == 'TODOS') { $tipoIngresso = ''; }
+		
+		// SE TODOS OS PARÂMETROS FORAM IGNORADOS ...
+		if ( empty($listarTotalizacoes)  
+		    OR
+		     (  empty($patriInicial) AND empty($patriFinal) AND  empty($empenho) AND
+			    empty($notaFiscal) AND empty($descricao) AND empty($siglaSetor) AND 
+			    empty($idclassificador) AND empty($tipoIngresso) 
+		     ) 
+		   )
+		{
+		    $sql->where .= ' AND idItemPatrimonio = 0';
+			
+			//echo '<pre>'; var_dump ('TODOS OS PARÂMETROS FORAM IGNORADOS ...'); echo '</pre>';
+			//exit();			
+		}
+		else {		
+		
+			if(!empty($patriInicial))
+			{
+				$sql->where .= ' AND idItemPatrimonio >= ' . $patriInicial;
+			}
+			
+			if(!empty($patriFinal))
+			{
+				$sql->where .= ' AND idItemPatrimonio <= ' . $patriFinal;
+			}			
+			
+			if(!empty($empenho))
+			{
+				$empenho = "'" . strtoupper(TRIM($empenho)) . "'"; 
+				$sql->where .= ' AND numeroempenho = ' . $empenho;
+			}
+
+			if(!empty($notaFiscal))
+			{
+				$notaFiscal = '\'%' . strtoupper(TRIM($notaFiscal)) . '%\'';
+				$sql->where .= ' AND upper(NotaFiscal) iLIKE ' . $notaFiscal;
+			}
+			
+			if(!empty($descricao))
+			{
+				$descricao = str_replace(' ','%',$descricao);
+				$descricao = '\'%' . strtoupper(TRIM($descricao)) . '%\'';
+				$sql->where .= ' AND upper(descricao) iLIKE ' . $descricao;
+			}
+			
+			if(!empty($siglaSetor))
+			{
+				$siglaSetor = '\'%' . strtoupper(TRIM($siglaSetor)) . '%\'';
+				$sql->where .= ' AND upper(siglaSetor) iLIKE ' . $siglaSetor;			
+			}
+			
+			if(!empty($idclassificador))
+			{
+				$idclassificador = '\'%' . strtoupper(TRIM($idclassificador)) . '%\'';
+				$sql->where .= ' AND upper(idclassificador) iLIKE ' . $idclassificador;
+			}	
+			if (!empty($tipoIngresso))
+			{
+				if ($tipoIngresso == 'COMPRA') { $tipos = "('1', '8', '9')";}
+				else if ($tipoIngresso == 'DOACAO') { $tipos = "('2')";}
+				else if ($tipoIngresso == 'OUTROS') { $tipos = "('3', '4', '5', '6','7')";}			
+				
+				$sql->where .= ' AND idtipoIngresso IN ' . $tipos;
+			}
+		}
+				
+		//echo('<pre>');
+		//var_dump ($_POST);	
+		//var_dump ($sql->where);  
+		//var_dump ($sql);  
+		//echo('</pre>');
+	
+		//exit();		
+		
+		$href_grid = $MIOLO->GetActionURL('adm',$self);	
+	
+		$aux = $MIOLO->getBusiness('adm', 'executoralmox');
+		$query = $aux->Query($sql);	
+		
+        parent::__construct($query, $columns, $href_grid,20, 0, 'gridPatrimonio_Empenho');
+		//parent::__construct(NULL, $columns, $href, $pageLength, $index, $name, $useSelecteds);
+		
+		//var_dump($this->name);		
+
+		
+    }
+	
+}
+?>

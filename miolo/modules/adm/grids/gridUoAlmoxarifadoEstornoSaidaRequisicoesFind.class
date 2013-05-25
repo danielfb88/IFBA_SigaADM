@@ -38,8 +38,9 @@ class gridUoAlmoxarifadoEstornoSaidaRequisicoesFind extends MObjectGrid
          );
         $this->setFilter(false);
         $idRequisicao = Form::getFormValue('idRequisicao');
-        $requisitante = Form::getFormValue('requisitante');
-	$requisicoes = $this->uoalmoxarifado->listRequisicoesForAlmoxarifadoSaida($idRequisicao, $requisitante);
+        $requisitante = Form::getFormValue('requisitante');	
+		
+		$requisicoes = $this->uoalmoxarifado->listRequisicoesForAlmoxarifadoSaida($idRequisicao, $requisitante);
         $cf = new MCurrencyFormatter();
         /*
         if ( count($requisicoes) == 1 )

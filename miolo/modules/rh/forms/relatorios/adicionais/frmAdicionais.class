@@ -34,7 +34,7 @@ class frmAdicionais extends MForm
         $tabelaGeral = $this->manager->getBusiness('common','tabelageral');
         $query = $tabelaGeral->listByTabela('RH_TIPOADICIONAL');
         $adicionais = $query->chunkResult();
-        $options['4'] = 'TODOS';
+        //$options['4'] = 'TODOS';
         foreach($adicionais as $key => $val) $options[$key] = $val;
         $opAtivos['1'] = 'SOMENTE ATIVOS';
         $opAtivos['2'] = 'ATIVOS E EXCLUÍDOS';
@@ -43,7 +43,7 @@ class frmAdicionais extends MForm
         //$grid = $ui->getGrid('rh','gridAdicionais', NULL,'relatorios');
         $fields = array(
             new MSelection('idAdicional','','Adicional', $options),
-            new MSelection('idAtivos','','Servidores', $opAtivos),
+            //new MSelection('idAtivos','','Servidores', $opAtivos),
             new MSelection('idOrdem','','Ordem', $opOrdem),
             new MCalendarField('dataAdicional','','Data'),
             //$grid,
@@ -155,7 +155,48 @@ class frmAdicionais extends MForm
 	}
 
 
-	function btnReport_click()
+	function btnReport_click() // Em construção
+    {
+	global $MIOLO;
+
+        $selData = $this->getFormValue('dataAdicional');
+        $idAdicional = $this->getFormValue('idAdicional');
+        //$idAtivos = $this->getFormValue('idAtivos');
+        $idOrdem = $this->getFormValue('idOrdem');
+        if ( is_null($selData) or ($selData == "") )
+            $erro[] = "Selecione a data";
+        if ( is_null($idAdicional) or ($idAdicional == "") )
+            $erro[] = "Selecione o tipo de adicional";
+        /*if ( is_null($idAtivos) or ($idAtivos == "") )
+            $erro[] = "Selecione o tipo de servidor";*/
+        if ( is_null($idOrdem) or ($idOrdem == "") )
+            $erro[] = "Selecione o tipo de ordenação";
+        if ( count($erro) > 0 )
+            foreach ( $erro as $e )
+                $this->addError($e);
+        else
+        {
+		if($idOrdem == '2')
+		{
+			$ordem = "cm.pessoa.nome,cm_setor.nomesetor";
+		}
+		else
+		{
+			$ordem = "cm.pessoa.nome";
+		}
+	        $report = new MJasperReport('sigaept'); 
+		$parameters['str_ordem'] = $ordem;
+		$parameters['str_data'] = $selData;
+		$parameters['str_adicional'] = $idAdicional;
+		//$parameters['str_ativos'] = $idAtivos;
+		$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
+		$parameters['int_pIdUsuario']= $MIOLO->login->idkey;
+		$parameters['pURL']=$MIOLO->GetConf('home.url');
+
+	        $report->Execute('rh', 'RelAdicionais',$parameters); 
+        }
+    }
+/*function btnReport_click()
     {
         $selData = $this->getFormValue('dataAdicional');
         $idAdicional = $this->getFormValue('idAdicional');
@@ -179,7 +220,7 @@ class frmAdicionais extends MForm
             $report = $ui->getReport('rh','repAdicionais',$data);
             $report->generate();
         }
-    }
+    }*/
     
     function IntervaloAnos() 
     {

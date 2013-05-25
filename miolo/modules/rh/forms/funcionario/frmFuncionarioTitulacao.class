@@ -121,6 +121,11 @@ class frmFuncionarioTitulacao extends MFormAjax
         	}
 	  
        		$this->SetFields($fields);
+       		
+       		$this->edtentidade->addAttribute('maxlength', 100);
+       		$this->edtTituloTrabalhoFinal->addAttribute('maxlength', 120);
+       		$this->edtAreaConcentracao->addAttribute('maxlength', 100);
+       		$this->edtnomecurso->addAttribute('maxlength', 100);
            		
           
 		/*	   if (($objProvimento->idGrupoCargo == '060') || ($objProvimento->idSituacao != '01')){
@@ -229,7 +234,7 @@ class frmFuncionarioTitulacao extends MFormAjax
                 //$tipoTrabalhoFinalTxt = $this->getFormValue('TipoTrabalhoFinalTxt');
 		$areaConcentracao = strlen(trim($data->areaConcentracao));
 
-               if($titulacao == '')
+        if($titulacao == '')
 		{
 			$this->addError('Selecione uma Formação');
 		}
@@ -237,6 +242,10 @@ class frmFuncionarioTitulacao extends MFormAjax
 		{
 			$this->addError('Informe o Nome do Curso Corretamente');
 		}
+		/*elseif(date('Ymd') < $this->invertData($data->dataFim))
+		{
+			$this->AddError('A data de fim informada é superior à data atual.');
+		}*/
 		elseif($dataFim != '10')
 		{
 			$this->addError('Preencha Corretamente o Campo Data Fim');
@@ -685,5 +694,17 @@ class frmFuncionarioTitulacao extends MFormAjax
 			$this->AddError($e->getMessage());
 		}
     }
+    
+    /*function invertData($datainv)
+	{//recebe a data e o separador
+
+		$ano=substr("$datainv",6, 4);
+		$mes=substr("$datainv",3, 2);
+		$dia=substr("$datainv",0, 2);
+		$datainv="$ano$mes$dia";
+
+		return $datainv;
+	}  */
+    
 }
 ?>

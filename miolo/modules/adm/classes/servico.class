@@ -116,5 +116,19 @@ class BusinessAdmServico extends Business
         $query = $criteria->retrieveAsQuery();
         return $query;
     }
+    
+	//Retorna quantidade de registros com idelemento e idsubelemento iguais
+    function findBySubID($idelemento, $idsubelemento)
+	{
+		$busca = "select count(*) as total from ad_subelemento where idelemento = $idelemento and idsubelemento = $idsubelemento";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+	}
+	
+	//Retorna quantidade de registros com codigos iguais
+	function findByCodigo($codServico)
+	{
+		$busca = "select count(*) as total from ad_servico where codservico = $codServico";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+	}
 }
 ?>

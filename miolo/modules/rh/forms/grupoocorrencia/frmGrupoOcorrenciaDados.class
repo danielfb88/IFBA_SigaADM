@@ -45,13 +45,20 @@ class frmGrupoOcorrenciaDados extends Form
 	   
        	$fields = array(
 		       //new TextLabel('txtCodigo',$this->objGrupoOcorrencia->idGrupoOcorrencia,'Código'),
-                       new TextField('descricao','','Nome','60')
+                       new TextField('descricao','','Nome','30')
 	        );		
         $this->SetFields($fields);
 		
 		$buttons = array(
 			new FormButton('btnSalvar','Enviar')
             );
+            
+        $this->descricao->AddAttribute('maxlength','30');
+        
+	$validators = array(
+           new RequiredValidator('descricao'),
+		);
+        $this->SetValidators($validators);
 		$this->SetButtons($buttons);
 		$this->SetData();
     }
@@ -67,6 +74,11 @@ class frmGrupoOcorrenciaDados extends Form
            global $MIOLO;
 
 		$data = $this->GetData();
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
 		if(strlen(trim($data->descricao)) < '5')
 		{
 			$this->addError('Informe a Descrição');

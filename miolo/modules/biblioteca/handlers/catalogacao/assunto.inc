@@ -18,7 +18,7 @@
  */
 ?>
 <?
-	$perms->CheckAccess('BIB_CATALOGACAO',A_ACCESS,true);
+	/*$perms->CheckAccess('BIB_CATALOGACAO',A_ACCESS,true);
 	$theme->ClearContent();
 	$ui = $MIOLO->GetUI();
 	$navbar->AddOption('Assunto/Obra', $module, 'main:catalogacao:assunto');
@@ -32,5 +32,32 @@
         	$form = $ui->GetForm($module,'frmCatalogacaoAssunto','','');
   	}
 
-     	$theme->InsertContent($form);
+     	$theme->InsertContent($form);*/
+		
+	$perms->CheckAccess('BIB_CATALOGACAO',A_ACCESS,true);
+
+	// obter acesso as classes de Interface de Usuário
+    	$ui = $MIOLO->GetUI();
+
+	// adicionando link na barra de navegação, que aponte para o arquivo atual
+	// a variável $module vem através da URL e aponta para o módulo atual 
+    	$navbar->AddOption('Assuntos', $module, 'main:catalogacao:assunto');
+
+	$theme->ClearContent();
+
+    	if ($item != NULL)
+    	{
+        	//$obra = $this->manager->getBusiness('biblioteca','obra', $item);
+		//$navbar->AddOption("Obra: $obra->numeroDaObra", $module, 'main:admin:assunto');
+	        $form = $ui->GetForm($module,'frmAssunto',$item,'');
+	}
+    	else
+    	{
+        	$form = $ui->GetForm($module,'frmAssunto','','');
+    	}
+	
+	if ($theme->GetContent()  == '')
+	{
+        	$theme->InsertContent($form);
+	}
 ?>

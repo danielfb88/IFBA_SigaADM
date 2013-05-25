@@ -38,57 +38,64 @@ class frmTaxiEditar extends frmTaxiPai
 	{
 		global $MIOLO;
 
-		//Victor fez
 		$this->AddField(new TextLabel('dataIni','','Data Início','8'));
 		$this->AddField(new MCalendarField('dataFim','','Data Fim', '8'));	   
-		$this->AddField(new MCurrencyField('valor','','Valor','7',''));
-		// Vitor feze acima	   	
+		$this->AddField(new MCurrencyField('valor','','Valor','10'));
+		  	
 		$buttons = array(
 			new FormButton("btnSalvar","Salvar")
 		);
 
 		$this->SetButtons($buttons);
+		$this->valor->addAttribute('maxlength',8);
 		$this->SetData();
 	}
 	
 	public function btnSalvar_click()
 	{
 		$this->objTaxi->SetData($this->GetData());
-                $cf = new MCurrencyFormatter();
-
-                if (substr_count($this->objTaxi->valor, ",") == 0)
-                {
+        $cf = new MCurrencyFormatter();
+        
+        //aplicando a máscara no valor
+        $mascara = array("R","$");
+        $taxi->valor = str_replace($mascara, "", $taxi->valor);
+        
+		if (substr_count($this->objTaxi->valor, ",") == 0)
+        {
 			$this->objTaxi->valor = str_replace(".",",",$this->objTaxi->valor);
-                }
-                else
-                {
-                       $this->objTaxi->valor = str_replace(".","",$this->objTaxi->valor);
-                }
+        }
+        else
+        {
+            $this->objTaxi->valor = str_replace(".","",$this->objTaxi->valor);
+        }
 
 		$data = $this->GetData();
-                $taxi = $this->manager->GetBusiness('adm','taxi');
-                $taxi->SetData($data);
+        $taxi = $this->manager->GetBusiness('adm','taxi');
+        $taxi->SetData($data);
 
-                $this->objTaxi->valor = $cf->toDecimal($this->objTaxi->valor);
-                $inicio = $this->objTaxi->dataIni;
-                $final = $this->objTaxi->dataFim;
+        $this->objTaxi->valor = $cf->toDecimal($this->objTaxi->valor);
+        $inicio = $this->objTaxi->dataIni;
+        $final = $this->objTaxi->dataFim;
 
-                $partes_da_data = explode('/',$inicio);
-                $datainicial =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
-                $partes_da_data = explode('/',$final);
-                $datafinal =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+        $partes_da_data = explode('/',$inicio);
+        $datainicial =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+        $partes_da_data = explode('/',$final);
+        $datafinal =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
 
-		if(Form::GetFormValue('dataFim') == ''){
+		if (Form::GetFormValue('dataFim') == '') {
 			$this->AddError("Selecione a Data Fim.");
 		}
-		elseif(Form::GetFormValue('valor') == ''){
+		else if (Form::GetFormValue('valor') == '') {
 			$this->AddError("Informe o valor do Taxi.");
 		}
-		elseif($datafinal < $datainicial){
+		else if ($datafinal < $datainicial) {
 			$this->AddError("A Data fim não deve ser anterior a Data Início.");
 		}
-		elseif($this->objTaxi->valor < 0){
+		else if ($this->objTaxi->valor < 0) {
 			$this->AddError("O valor do Taxi não pode ser negativo.");
+		}
+		else if ($this->objTaxi->valor == 0) {
+			$this->AddError("Forneça um valor válido.");
 		}
 		else
 		{

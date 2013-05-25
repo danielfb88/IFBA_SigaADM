@@ -93,9 +93,10 @@ class BusinessCommonAutor extends Business
    function GetAutorSecundarioByObra($idobra)
 	{
 
-		$sql = new sql('m.idobra,m.conteudo,m.ocorrencia','bt_material m,bt_etiqueta e',"e.idetiqueta=m.idetiqueta and e.tag='700' and m.subcampo='a' and m.idobra = ?");
+		$sql = new sql('m.idobra,m.conteudo,m.ocorrencia','bt_material m,bt_etiqueta e',"e.idetiqueta=m.idetiqueta and e.tag='700' and m.subcampo='a' and m.idobra = ?",'m.idetiqueta,m.subcampo,m.ocorrencia,m.linha');
 
 		$query = $this->Query($sql,$idobra);
+		
 	   return $query;
 	}
         //autor de artigo(periodicos)

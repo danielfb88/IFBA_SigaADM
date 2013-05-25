@@ -294,12 +294,22 @@ class frmPesquisaNumerica extends frmPesquisa
 		$linhas = array();
 		if($data[0])
 			$linhas[] = array('Número da Obra', $data[0]);
-		if($data[1])
-			$linhas[] = array('Título', $data[1]);
-		if($data[2])
-			$linhas[] = array('Subtítulo', $data[2]);
+			
+		if($data[22])
+			$linhas[] = array('Número de Chamada', $data[22]);			
+			
 		if($data[3])
 			$linhas[] = array('Autor', $data[3]);
+		if($data[1])
+		{
+				$titulo = $data[1];
+				if($data[2])
+					$titulo .= ' : '. $data[2];
+				if($data[21])
+					$titulo .= ' / '. $data[21];					
+		
+				$linhas[] = array('Título', $titulo);
+		}
 		if($data[4])
 			$linhas[] = array('Edição', $data[4]);
 		if($data[5])
@@ -308,18 +318,26 @@ class frmPesquisaNumerica extends frmPesquisa
 			$linhas[] = array('Notação de Autor', $data[6]);
 		if($data[7])
 			$linhas[] = array('Notação de Título', $data[7]);
-		if($data[8])
-			$linhas[] = array('Local de Publicação', $data[8]);
-		if($data[9])
-			$linhas[] = array('Editora', $data[9]);
-		if($data[10])
-			$linhas[] = array('Data de Publicação', $data[10]);
-		if($data[11])
-			$linhas[] = array('Descrição Física', $data[11]);
-		if($data[12])
-			$linhas[] = array('Material Complementar', $data[12]);
+		//if($data[8])
+		//	$linhas[] = array('Local de Publicação', $data[8]);
+		//if($data[9])
+		//	$linhas[] = array('Editora', $data[9]);
+		//if($data[10])
+			//$linhas[] = array('Data de Publicação', $data[10]);
+		$linhas[] = array('Imprenta', $this->objObra->getImprentaPontuado($item)); 	
+		//if($data[11])
+			//$linhas[] = array('Descrição Física', $data[11]);
+			
+		$linhas[] = array('Descrição Física', $this->objObra->getDescricaoFisica($item));	
+			
+		//if($data[12])
+			//$linhas[] = array('Material Complementar', $data[12]);
 		if($data[13])
 			$linhas[] = array('Série', $data[13]);
+			
+		if($data[19])
+			$linhas[] = array('ISBN', $data[19]);			
+			
 		if($data[14])
 			$linhas[] = array('Número de Volume', $data[14]);
 		if($data[15])

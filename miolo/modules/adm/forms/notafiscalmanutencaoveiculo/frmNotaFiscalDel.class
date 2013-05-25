@@ -36,7 +36,7 @@ class frmNotaFiscalDel extends Form
 
 		if ($this->objNF->getManutencoes())
 		{
-			$this->manager->Information("A nota fiscal ".$this->objNF->idNotaFiscal." não pode ser excluida pois há manutenções vinculadas a esta nota",$this->manager->GetActionURL('adm','main:notafiscalmanutencaoveiculo:find'));
+			$this->manager->Error("A nota fiscal ".$this->objNF->idNotaFiscal." não pode ser excluida pois há manutenções vinculadas a esta nota",$this->manager->GetActionURL('adm','main:notafiscalmanutencaoveiculo:find'));
 			
 		}
 		else
@@ -56,7 +56,7 @@ class frmNotaFiscalDel extends Form
 				}
 				catch (Exception $e)
 				{
-					$this->manager->Error("Esta nota não pôde ser excluída",$this->manager->GetActionURL('adm','main:notafiscalmanutencaoveiculo',$this->objNF->idNotaFiscal));
+					$this->addError("Esta nota não pôde ser excluída",$this->manager->GetActionURL('adm','main:notafiscalmanutencaoveiculo',$this->objNF->idNotaFiscal));
 				}
 					
 	        }

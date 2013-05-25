@@ -25,6 +25,8 @@ class frmUoAlmoxarifadoEntrada2006 extends Form
     {
         $this->objEstoque = $objEstoque;
         $this->Form('Dados de Entrada de Material');
+		$this->page->addJsCode(file_get_contents(dirname(__FILE__).'/js/frmUoAlmoxarifadoEntrada2006.js'));	
+		$this->page->OnSubmit("desabilita()");
         $this->EventHandler();
     }
 
@@ -79,7 +81,7 @@ class frmUoAlmoxarifadoEntrada2006 extends Form
     function btnPost_click()
     {
         global $item,$MIOLO,$module;
-        
+		
         $data = $this->getData();      	
       	
       	$cf = new MCurrencyFormatter();

@@ -153,10 +153,18 @@ class MUI extends MService
     {
         $file = is_null($dir) ? "grids/$name.class" : "grids/$dir/$name.class";
 
-        $path = $this->manager->getModulePath( $module, $file );
+        $path = $this->manager->getModulePath( $module, $file );	
+		
+		//var_dump($path, $module, $name, $data, $dir);		
+		//exit();
+		
 
         if ( file_exists($path) )
         {
+		
+		//var_dump('o arquivo existe!');		
+		//exit();
+		
             $this->manager->uses( $file, $module );
             $className = $name;
 
@@ -166,7 +174,11 @@ class MUI extends MService
         }
         else
         {
-            throw new EFileNotFoundException( $file, 'UI::GetGrid() :' );
+			//var_dump('o arquivo não existe!');		
+		    //exit();
+
+			throw new EFileNotFoundException( $file, 'UI::GetGrid() :' );
+		
         }
     }
 

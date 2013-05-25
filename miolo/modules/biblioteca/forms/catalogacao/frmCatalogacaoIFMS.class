@@ -1,0 +1,727 @@
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *  
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+<?php
+/**
+* @package SIGA
+* @subpackage Biblioteca
+* @author SETEC/MEC
+*/
+
+
+
+class frmCatalogacaoIFMS extends MForm/*Ajax*/
+{ 
+	private $idficha;
+	private $idsubficha;
+	private $objFicha;
+	private $objObra;
+        private $objEtiqueta;
+        private $objAutor;
+        private $objEditora;
+        private $objAssunto;
+ 
+    function __construct()
+    {
+        global $MIOLO,$module, $theme;
+		
+        parent::__construct('Catalogação - IFMS');
+        $this->SetClose($this->manager->GetActionURL('biblioteca', 'main:catalogacao:catalogacaoifms'));
+        $this->EventHandler(); 
+        $theme->AddStyleFile('jquery-ui.css');
+		$theme->AddStyleFile('tipTip.css');
+		
+      
+		$this->page->AddScript("jquery-1.8.1.min.js");
+        $this->page->AddScript("jquery-ui-1.8.custom.min.js");
+		$this->page->AddScript("jquery.tipTip.minified.js");
+        $this->page->AddScript("conversionfunctions.js");
+	$this->page->addJsCode($this->jsCode());
+        
+
+        
+        if($_POST['__EVENTTARGETVALUE'] == 'submit_button:click' && $_POST['__ISPOSTBACK'] == 'yes')
+        {            
+            $ficha = $this->GetFormValue('hidGenero');
+            $idobra = $this->GetFormValue('hidObra');
+            
+            $this->objObra = $MIOLO->GetBusiness($module,'obra');
+            $this->objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+            $this->objAutor = $MIOLO->GetBusiness($module,'autor');
+            $this->objEditora = $MIOLO->GetBusiness($module,'editora');
+            $this->objAssunto = $MIOLO->GetBusiness($module,'assunto');
+            
+            $result = array();
+            
+            foreach($_POST as $key => $value)
+            {
+                if(!empty($value) || $value == '0')
+                {
+                    $tags = explode('_',$key);
+
+                    if($tags[0] == 'txt')
+                    {
+                        if($tags[1] <= '008')
+                            $result[$tags[1]] = $value;
+                        else
+                        {
+                            if($tags[2] != 'ind1' && $tags[2] != 'ind2')
+                                $result[$tags[1]][$tags[3]-1]['subcampo'][$tags[2]][$tags[4]-1] = $value;
+                            else 
+                                $result[$tags[1]][$tags[3]-1][$tags[2]] = $value;
+                        }  
+                    }
+                }
+            }
+            
+            //Recuperando o autor (Se existir)
+            $idautor = null;
+            $autor = null;
+            $idet = null;
+            $subcampo = null;
+
+            if(isset($result['100'][0]['subcampo']['a'][0]))
+            {
+                         $autor = $result['100'][0]['subcampo']['a'][0];
+                         $idet = $this->objEtiqueta->GetIdByTag('100')->result[0][0];
+                         $subcampo = 'a';
+            }
+            else if(isset($result['110'][0]['subcampo']['a'][0]))
+            {
+                         $autor = $result['110'][0]['subcampo']['a'][0];
+                         $idet = $this->objEtiqueta->GetIdByTag('110')->result[0][0];
+                         $subcampo = 'a';
+            }
+            else if(isset($result['111'][0]['subcampo']['a'][0]))
+            {
+                         $autor = $result['111'][0]['subcampo']['a'][0];
+                         $idet = $this->objEtiqueta->GetIdByTag('111')->result[0][0];
+                         $subcampo = 'a';
+            }
+            else if(isset($result['130'][0]['subcampo']['a'][0]))
+            {
+                         $autor = $result['130'][0]['subcampo']['a'][0];
+                         $idet = $this->objEtiqueta->GetIdByTag('130')->result[0][0];
+                         $subcampo = 'a';
+            }
+            
+	   if($autor != null)
+	   {
+			$idautor = $this->objAutor->GetIdAutorImportacao($autor,$idet,$subcampo);
+			
+			if(!$idautor)
+				$idautor = $this->objAutor->InsertImportacao($autor,$idet,$subcampo);
+	   }
+            
+	   //Recuperando a editora (Se existir)
+	   if(isset($result['260'][0]['subcampo']['b'][0]))
+	   {
+		   $ideditora = $this->objEditora->getIdByDesc($result['260'][0]['subcampo']['b'][0]);
+		   
+		   if(!$ideditora)
+			 $ideditora = $this->objEditora->InsertImportacao($result['260'][0]['subcampo']['b'][0]);
+	    }
+		else
+			$ideditora = null;
+            
+            if($idobra)
+               $this->objObra->GetById($idobra);
+            else
+               $this->objObra->GetById($this->objObra->criaObraImportacao($ficha));
+            
+            $this->objObra->atualizaObraImportacao($this->objObra->idObra,  //idobra
+                                                    $result['245'][0]['subcampo']['a'][0], //titulo
+                                                    $result['245'][0]['subcampo']['b'][0], //subtitulo
+                                                    $idautor, //autor
+                                                    $result['250'][0]['subcampo']['a'][0], //edicao
+                                                    $result['260'][0]['subcampo']['a'][0], //localdepublicacao
+                                                    $ideditora, //ideditora
+                                                    $result['260'][0]['subcampo']['c'][0], //datadepublicacao
+                                                    $idgenero, //genero
+                                                    $result['300'][0]['subcampo']['a'][0], //descfisica
+                                                    $autor, //autor
+                                                    $result['260'][0]['subcampo']['b'][0]); //editora
+            
+            if(!empty($idobra))
+                $this->objObra->DeleteObraValues();
+            
+		//Atualizando as tabelas auxiliares
+		foreach($result as $tag => $value)
+		{
+			$idetiqueta = $this->objEtiqueta->GetIdByTag($tag)->result;
+			$idetiqueta = $idetiqueta[0][0];
+			
+			if($tag <= 8)
+				$this->objObra->saveCamposFixosImportacao($this->objObra->idObra,$idetiqueta,$value);
+			else
+			{
+				foreach($value as $rep => $value2)
+				{			
+                                            
+                                     $this->objObra->saveIndicador($idetiqueta,$rep+1,1,$value2['ind1'],$tag);
+                                     $this->objObra->saveIndicador($idetiqueta,$rep+1,2,$value2['ind2'],$tag);
+						
+					foreach($value2['subcampo'] as $subcampo => $arraysub)
+					{
+						foreach($arraysub as $ocorrenciasub => $valuesub)
+						{
+							$this->objObra->saveMaterialImportacao($this->objObra->idObra,$idetiqueta,$subcampo,$valuesub,$rep+1,$ocorrenciasub+1);
+						
+							//Verificando se é uma tag de assunto (6xx)							
+							if($tag >= 600 && $tag <= 699)
+								
+							{
+								//Por enquanto, apenas a Tag a é considerada para composição do Assunto
+								if($subcampo === 'a')
+								{
+									$idassunto = $this->objAssunto->locateAssunto($idetiqueta,$subcampo,$valuesub);
+									
+									if($idassunto != null)
+									{
+										//Existe o Assunto, vamos aproveitá-lo
+										$this->objAssunto->saveAssuntoObra($idassunto[0][0],$this->objObra->idObra,$rep+1,$idetiqueta);											
+									}
+									else
+									{
+										//Não existe o assunto, vamos inserí-lo
+										$idassunto = $this->objAssunto->InsertImportacao($idetiqueta, $subcampo,$valuesub,			$ocorrenciasub+1,$rep+1, null);									
+										
+											$this->objAssunto->saveIndicador($idassunto,$idetiqueta,1,$value2['ind1'],$ocorrenciasub+1,$rep+1,null,1);
+											$this->objAssunto->saveIndicador($idassunto,$idetiqueta,2,$value2['ind2'],$ocorrenciasub+1,$rep+1,null,2);
+											
+										$this->objAssunto->saveAssuntoObra($idassunto,$this->objObra->idObra,$rep+1,$idetiqueta);										
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		$this->objObra->insertLogImportacao($this->objObra->idObra);
+		
+                if(empty($idobra))
+                    $this->addInfo("A obra foi cadastrada com sucesso! O número dessa obra no sistema é: ".$this->objObra->numeroDaObra);
+                else
+                    $this->addInfo("A obra ".$this->objObra->numeroDaObra." foi atualizada com sucesso!");
+        }
+    }    
+
+    function CreateFields()
+    {
+        global $MIOLO,$module, $item;
+
+		$genero = $this->GetFormValue('selGenero');
+		
+		$this->objObra = $MIOLO->GetBusiness($module,'obra');
+		$objGenero = $MIOLO->GetBusiness($module,'genero');
+                $numeroDaObra = $this->GetFormValue('numero');
+		
+		if($item || $genero || $numeroDaObra)
+		{
+			//Obra selecionada ou Nova Catalogação
+			if($item || $numeroDaObra)
+			{
+                                if($item)
+                                {
+                                    $this->objObra->GetById($item);
+                                    $numeroDaObra = $this->objObra->numeroDaObra;
+                                }
+                                else
+                                    $this->objObra->GetByNumero($numeroDaObra);
+				
+				if(!$this->objObra->idObra)
+				{
+					$this->AddError('Obra não encontrada');
+					return;
+				}
+				
+				$genero = $objGenero->GetByCodigo($this->objObra->idGenero);
+			}
+			else
+				$genero = $objGenero->GetByCodigo($genero);
+				
+			$fields = array();
+				
+			if(!empty($numeroDaObra))
+                        {
+				$fields[] = new MTextLabel('lblObra','Número da obra: '.$numeroDaObra);               
+                                $fields[] = new LinkButton('btnFicha','Ir para a Ficha Catalográfica da Obra '.$this->objObra->numeroDaObra,$MIOLO->GetActionURL($module, 'main:catalogacao:catalogacao', $this->objObra->idObra));
+                        }
+                                
+				$fields[] = new HiddenField('hidGenero',$genero->idgenero);
+				$fields[] = new TextField('txtGenero',$genero->descricao,'Gênero',30);
+                $fields[] = new HiddenField('hidObra',$this->objObra->idObra ? $this->objObra->idObra : '');
+			
+			switch($genero->idgenero)
+			{
+				case 1:
+					$this->idsubficha = 5;
+					break;
+				case 3:
+					$this->idsubficha = 9;
+					break;
+				case 6:
+					$this->idsubficha = 13;
+					break;
+				default:
+					$this->addError('Não existe relação no banco de dados para o gênero escolhido');
+					return;
+			}
+			
+			$fields[] = new MHiddenField('hidsubficha',$this->idsubficha);
+			
+			$camposFixos = array('000','003','005','006','007','008');
+			
+			foreach($camposFixos as $key => $value)
+				$fields[] = $this->makeFixedField($value);
+				
+			$this->SetFields($fields);
+			
+			$this->SetFieldAttr('txtGenero','readonly', true);
+                        
+                        
+			
+			$this->idficha = $genero->idgenero;
+			
+			$this->objFicha = $MIOLO->GetBusiness($module,'ficha');
+
+                        $obraData = $this->objObra->getFormFields($this->idficha,$this->idsubficha,$this->objObra->idObra);
+                        
+                        $this->makeGroup($obraData);
+		}
+		else
+		{
+			//Busca de obra / Seleção de Gênero			
+			$fields = array
+			(
+				new MTextLabel('selecione','Selecione a obra ou escolha o gênero para incluir uma nova obra','&nbsp;'),
+				new MHr(),
+				new MHiddenField('idobra',''),
+				array(
+						new MTextField('numero','','Número',10),
+						new MTextLabel('ou','-OU-','&nbsp;'),
+						new MLookupTextField('titulo','','Título',45),
+				),				
+			
+				new MHr(),
+				new Selection('selGenero','','Selecione o gênero',$objGenero->ListGenero()->result),
+			);
+			$this->SetFields($fields);
+
+			$this->SetFieldAttr('titulo','module','biblioteca');
+			$this->SetFieldAttr('titulo','item','obra');
+			$this->SetFieldAttr('titulo','event','filler');
+			$this->SetFieldAttr('titulo','related','numero,titulo,none,idobra');//'idobra,numero,titulo');
+			$this->addButton(new MButton('btnPost','Enviar'));		
+				
+		}
+    }
+
+	function makeGroup($obraData)
+	{
+            
+            foreach($obraData as $idEtiqueta => $values)
+            {
+                foreach($values['ocorrencias'] as $ocorrencia => $ocvalues)
+                {
+                    $fields = array();
+                    
+                   $fields[] = new MTextLabel('lbl'. $values['tag'] . '_ind1_'.$ocorrencia,'Indicador 1','&nbsp;');
+                    
+                   $fields[] = new MTextField('txt_'. $values['tag'] .'_ind1_'.$ocorrencia,$ocvalues['ind1'],'',1);
+                   
+                   $fields[] = new MTextLabel('lbl'. $values['tag'] . '_ind1_'.$ocorrencia,'Indicador 2','&nbsp;');
+                   
+                   $fields[] = new MTextField('txt_'. $values['tag'] .'_ind2_'.$ocorrencia,$ocvalues['ind2'],'',1);
+                   
+                   $fields[] = new MSpacer(); 
+                    
+                    foreach($ocvalues['subcampos'] as $subcampo => $subvalues)
+                    {
+                        $fields2 = array();
+                        
+                        $repetitivel = $subvalues['repeticao'] == '1' ? ' [R]' : ' [NR]';
+                        
+                        foreach($subvalues['linhas'] as $linha => $lvalue)
+                        {
+                            //Subcampo não repetitível
+                            $fields2[] = new MTextLabel('lbl'. $values['tag'] . $subcampo . '_'.$ocorrencia.'_'.$linha,'['.$subcampo.'] - '.$subvalues['descricao'].$repetitivel,'&nbsp;');
+                            $fields2[] = new MTextField('txt_'. $values['tag'] .'_'. $subcampo . '_'.$ocorrencia.'_'.$linha,$lvalue,'',35);
+                            $fields2[] = new MSpacer();                            
+                        }
+                        
+                        if($subvalues['repeticao'] == '1')
+                        {
+                            $fields2[] = new MSpacer();
+                            $fields2[] = new LinkButton('lnk_s_'.$values['tag'].'_'.$ocorrencia.'_'.count($subvalues['linhas']).'_'.$subcampo,'Adicionar subcampo '.$subcampo,'javascript:void(0)');
+                            
+                            $grupo = new MBaseGroup( 'group'. $values['tag'] . $subcampo.'_'.$ocorrencia, $subcampo . ' - ' . $subvalues['descricao'],$fields2,'horizontal','css');
+                            $grupo->addAttribute('style','padding:10px');
+                            $fields[] = $grupo;                            
+                            
+                        }
+                        else
+                        {
+                            foreach($fields2 as $k => $v)
+                                $fields[] = $v;
+                        }
+                    }
+                    
+                    $repetitivel = $values['repeticao'] == '1' ? ' [R]' : ' [NR]';
+                    
+                    $grupo = new MBaseGroup( 'group'. $values['tag'].'_'.$ocorrencia, $values['tag'] . ' - ' . $values['tag_descricao'].$repetitivel,$fields,'horizontal','css');
+                    $grupo->addAttribute('style','padding:10px');
+                    $this->addfields(array($grupo));                    
+                }
+                
+                if($values['repeticao'] == '1')
+                    $this->addfields(array(new LinkButton('lnk_g_'.$values['tag'].'_'.count($values['ocorrencias']),'Duplicar tag '.$values['tag'],'javascript:void(0)')));
+            }
+	}
+	
+	function jsCode()
+	{
+		global $MIOLO;
+	
+		$url = $MIOLO->getActionURL($module,'main:catalogacao:catalogacaoifms&item=');
+		$urlAjax = $this->manager->getActionUrl('biblioteca','ajaxhandler');
+	
+		return "
+                        jQuery.noConflict();
+
+			jQuery(document).ready(function($){
+                        
+				var valorNumero = '';
+				
+				var update = function (){
+					if($('#idobra').val() != undefined && valorNumero != $('#idobra').val())
+					{
+						valorNumero = $('#idobra').val();
+						window.location = '". $url ."'+valorNumero;
+					}
+					
+					setTimeout(update,150);
+				}
+                                
+                                $('#numero').change(function(){
+                                    $('form').submit();
+                                });
+				
+				$('#selGenero').change(function(){
+					$('form').submit();
+				});
+				
+				var linkClicked = null;
+                                
+				
+				$('.m-form-row').on('click', '.m-link', function(event){
+                                        if($(this).attr('id') == 'btnFicha')
+                                            return;
+                                            
+                                        event.preventDefault();
+                                            
+                                        var values = $(this).attr('id').split('_');
+                                        var idficha = $('#hidGenero').val();
+                                        var idsubficha = $('#hidsubficha').val();
+
+                                        var tag = values[2];
+                                        var ocorrencia = values[3];
+
+                                        if(values[1] == 's')
+                                        {
+                                            var linha = values[4];
+                                            var subcampo = values[5];
+                                        }
+
+                                        linkClicked = this;
+
+                                        if(values[1] == 'g')
+                                        {
+                                        
+                                             $.ajax({
+                                                type: 'POST',
+                                                url: '".$urlAjax."',
+                                                data: {'cpaint_function' : 'ajax_frmCatalogacaoIFMS_makeGroup',
+                                                        'cpaint_argument[]' : [idficha,idsubficha,tag,ocorrencia],
+                                                        'cpaint_response_type' : 'TEXT'
+                                                        },
+                                                success: makeGroup_result,
+                                                dataType: 'TEXT'
+                                            });
+                                        }
+                                        else
+                                        {
+                                             $.ajax({
+                                                type: 'POST',
+                                                url: '".$urlAjax."',
+                                                data: {'cpaint_function' : 'ajax_frmCatalogacaoIFMS_makeSubField',
+                                                        'cpaint_argument[]' : [idficha,idsubficha,tag,ocorrencia,linha,subcampo],
+                                                        'cpaint_response_type' : 'TEXT'
+                                                        },
+                                                success: makeSubField_result,
+                                                dataType: 'TEXT'
+                                            });                                        
+                                        }
+				});
+				
+				var makeGroup_result = function(result) {
+                                        result = convertAllEscapes(result,'none');
+					var divParent = $(linkClicked).parent();
+					$(linkClicked).remove();
+					$(divParent).append(result);
+				}
+								var autor = '';
+                                if($('#txt_100_a_1_1').val() != '')
+									autor = $('#txt_100_a_1_1').val();
+								else if($('#txt_110_a_1_1').val() != '')
+									autor = $('#txt_110_a_1_1').val();
+								else if($('#txt_111_a_1_1').val() != '')
+									autor = $('#txt_111_a_1_1').val();
+								else if($('#txt_130_a_1_1').val() != '')
+									autor = $('#txt_130_a_1_1').val();
+								
+								
+                                var titulo = $('#txt_245_a_1_1').val();
+                                var skip = $('#txt_245_ind2_1').val();
+                                
+                                $('#txt_100_a_1_1, #txt_110_a_1_1, #txt_111_a_1_1, #txt_130_a_1_1').blur(function(event){
+                                    autor = $(this).val();
+                                    updateCutter();
+                                });
+                                
+                                $('#txt_245_a_1_1').blur(function(){
+                                    titulo = $(this).val();
+                                    updateCutter();
+                                });
+                                
+                                 $('#txt_245_ind2_1').blur(function(){
+                                    skip = $(this).val();
+                                    updateCutter();
+                                });
+                                
+                                $('#txt_080_a_1_1, #txt_082_a_1_1').blur(function(){
+                                    $('#txt_090_a_1_1').val($(this).val());
+                                });
+                                
+                                $('#txt_250_a_1_1').blur(function(){
+                                     $('#txt_090_c_1_1').val($(this).val());
+                                });
+                                
+                                var updateCutter = function(){
+                                    $.ajax({
+                                       type: 'POST',
+                                       url: '".$urlAjax."',
+                                       data: {'cpaint_function' : 'ajax_frmPreCatalogacao_BuscaCutter',
+                                               'cpaint_argument[]' : [autor,titulo,skip],
+                                               'cpaint_response_type' : 'TEXT'
+                                               },
+                                       success: updateCutter_result,
+                                       dataType: 'TEXT'
+                                   });                                                                 
+                                }
+                                
+                                var updateCutter_result = function(result){
+                                    result = convertAllEscapes(result,'none');
+                                    $('#txt_090_b_1_1').val($(result).val());                               
+                                }
+                                
+				var makeSubField_result = function(result) {
+                                        result = convertAllEscapes(result,'none');
+					var divParent = $(linkClicked).parent();
+					$(linkClicked).remove();
+					$(divParent).append(result);
+				}
+                                
+                                $('.m-form-row').on('focus','input[type=text]',function(event){                                     
+                                    var values = $(this).attr('id').split('_');
+                                    
+                                    var tabela = null;
+                                    
+                                    if(values[1] >= 100 && values[1] <= 199 && values[2] == 'a')
+                                        tabela = 'bt_autor';
+                                    else if(values[1] == 260 && values[2] == 'b')
+                                        tabela = 'bt_editora';
+                                    else if(values[1] >= 600 && values[1] <= 699 && values[2] == 'a')
+                                        tabela = 'bt_assunto';
+                                    if(values[1] >= 700 && values[1] <= 799 && values[2] == 'a')
+                                    {
+                                        tabela = 'bt_autor';
+                                        values[1] = values[1] - 600;
+                                    }
+                                    else if(values[1] == 245 && values[2] == 'a')
+                                        tabela = 'bt_obra';
+                                        
+                                    if(tabela != null)
+                                    {
+                                        var args = new Array;
+                                        
+                                        args[0] = $(this).val();
+                                        args[1] = values[1];
+                                        args[2] = values[2];
+                                        args[3] = tabela;
+
+                                        $(this).autocomplete({
+                                                source: function(request,response){
+                                                    $.ajax({
+                                                       type: 'POST',
+                                                       url: '".$urlAjax."',
+                                                       data: {'cpaint_function' : 'ajax_frmCatalogacaoAutoComplete',
+                                                               'cpaint_argument[]' : [request.term,args[1],args[2],args[3]],
+                                                               'cpaint_response_type' : 'TEXT'
+                                                               },
+                                                       success: function(result){
+                                                            result = convertAllEscapes(result,'none');
+                                                            options = new Array;
+
+                                                            $(result).find('option').each(function(el,elvalue){
+                                                                var number = $(elvalue).val().replace(/^\s+|\s+$/g,'');
+                                                                if(number.length > 0)
+                                                                    options.push($(elvalue).text());
+                                                            });
+
+                                                            response(options);
+                                                       },
+                                                       error: function() {
+                                                        response([]);
+                                                       },
+                                                       dataType: 'TEXT'
+                                                   });                                               
+                                                },
+                                                minLength: 1,
+                                                autoFocus: true
+                                        });                                      
+                                    }
+                                });
+                                
+                                if(!$('#txt_902_a_1_1').val() && !$('#hidObra').val())
+                                    $('#txt_902_a_1_1').val($('#hidGenero').val());
+                                    
+                                $('.m-form-row').on('click','legend',function(event){
+                                    $(this).parent().find('div').slideToggle('slow');
+                                });
+                                
+                                $('legend').each(function(){
+                                    var tags = new Array('020', '041', '082', '090', '100', '245', '250', '260', '300', '490', '650', '700');
+                                    
+                                    if($(this).parent().attr('id').length == 10)
+                                    {
+                                        var tag = $(this).parent().attr('id').substr(5,3);
+                                        
+                                        if($.inArray(tag,tags) < 0)
+                                            $(this).parent().find('div').slideToggle('slow');
+                                    }
+                                });
+								
+								$('.m-form-row').on('mouseover','input[type=text]',function(event){
+								
+									var values = $(this).attr('id').split('_');
+									
+									if(values[2] == 'ind1' || values[2] == 'ind2')
+									{
+										var obj = this;
+									
+										$.ajax({
+										   type: 'POST',
+										   url: '".$urlAjax."',
+										   data: {'cpaint_function' : 'ajax_frmCatalogacaoIFMS_IndicadorHint',
+												   'cpaint_argument[]' : [values[1],values[2]],
+												   'cpaint_response_type' : 'TEXT'
+												   },
+										   success: function(result){							
+												result = convertAllEscapes(result,'none');
+
+												var title = '';
+												
+												$(result).find('option').each(function(el,elvalue){
+
+													if(el > 0)
+													{
+														title += '<p>' + $(elvalue).html() + '</p>';
+													}
+												});
+
+												$(obj).attr('title',title);
+												$(obj).tipTip({maxWidth: 'auto', edgeOffset: 10});
+										   },
+										   dataType: 'TEXT'
+										});
+
+																				
+									}
+								});
+								
+                                        /*$(this).autocomplete({
+                                                source: function(request,response){
+                                                    $.ajax({
+                                                       type: 'POST',
+                                                       url: '".$urlAjax."',
+                                                       data: {'cpaint_function' : 'ajax_frmCatalogacaoIFMS_IndicadorHint',
+                                                               'cpaint_argument[]' : [request.term,values[1],values[2]],
+                                                               'cpaint_response_type' : 'TEXT'
+                                                               },
+                                                       success: function(result){
+                                                            result = convertAllEscapes(result,'none');
+                                                            options = new Array;
+
+                                                            $(result).find('option').each(function(el,elvalue){
+                                                                var number = $(elvalue).val().replace(/^\s+|\s+$/g,'');
+                                                                if(number.length > 0)
+                                                                    options.push($(elvalue).text());
+                                                            });
+
+                                                            response(options);
+                                                       },
+                                                       error: function() {
+                                                        response([]);
+                                                       },
+                                                       dataType: 'TEXT'
+                                                   });                                               
+                                                },
+												minLength: 0,
+                                                autoFocus: true
+                                        });	*/
+			update();
+			});
+		";
+	}
+	
+	function makeFixedField($campo)
+	{
+		global $MIOLO, $module;
+	
+		$etiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+		
+		$etiqueta->GetByTag($campo);
+                
+                $repetitivel = $campo < '006' || $campo == '008' ? ' [NR]' : ' [R]';
+	
+		if($campo != '005' && $this->objObra->idObra && $this->objObra->getCampoFixo($campo))
+			return new MBaseGroup( "group$campo", "$campo - ".$etiqueta->descricao.$repetitivel,array(new MTextField("txt_$campo",$this->objObra->getCampoFixo($campo),$etiqueta->descricao,35)),'horizontal','css');
+		else
+		{
+			$campoFixo = array('000' => '00000nam  22000005a 4500', '003' => 'IFMS', '005' => substr(date('YmdHis.u'),0,16), '008' => date('ymd') . '                 r               d');
+			
+			if(isset($campoFixo[$campo]))
+				return new MBaseGroup( "group$campo", "$campo - ".$etiqueta->descricao.$repetitivel,array(new MTextField("txt_$campo",$campoFixo[$campo],$etiqueta->descricao,35)),'horizontal','css');			
+		}
+	}
+}
+?>

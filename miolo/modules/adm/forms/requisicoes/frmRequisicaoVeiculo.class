@@ -356,15 +356,15 @@ class frmRequisicaoVeiculo extends Form
                 break;
 
             case 7: // Liberada pela UO Exec, a ser executada pelo gestor da UO executante
-		$this->setFieldAttr('cpf','visible',FALSE); 
-		$this->setFieldAttr('endereco','visible',FALSE);
+				$this->setFieldAttr('cpf','visible',FALSE); 
+				$this->setFieldAttr('endereco','visible',FALSE);
                	$this->setFieldAttr('numrg','visible',FALSE);
                	$this->setFieldAttr('telefone','visible',FALSE);
                	$this->setFieldAttr('bairro','visible',FALSE);
                	$this->setFieldAttr('cep','visible',FALSE);
                	$this->setFieldAttr('edtEstado','visible',FALSE);
                	$this->setFieldAttr('lkpMunicipio','visible',FALSE);
-		$this->setFieldAttr('tipoVeiculo','visible',TRUE);
+				$this->setFieldAttr('tipoVeiculo','visible',TRUE);
                	$this->setFieldAttr('tipoTransporte','visible',FALSE);		
 
                 $this->objRequisicao->getUoExecutante();
@@ -403,7 +403,7 @@ class frmRequisicaoVeiculo extends Form
                     $this->SetFieldAttr('lkpVeiculo','item','veiculo');
                     $this->SetFieldAttr('lkpVeiculo','event','filler');
 
-		    $this->SetFieldAttr('lkpVeiculo','related','null,placa,null,null,lkpVeiculo');
+					$this->SetFieldAttr('lkpVeiculo','related','null,placa,null,null,lkpVeiculo');
                     //$this->SetFieldAttr('lkpVeiculo','related','placa,null,null,lkpVeiculo');
                 }
                 else if (($this->objRequisicao->idUsuarioRequisitante == $idUsuario) || ($this->objRequisicao->uoRequisitante->isGestorOf($idUsuario)))// Se for o requisitante ou o gestor da UO que responde pela requisição
@@ -413,26 +413,26 @@ class frmRequisicaoVeiculo extends Form
                     
                     $this->AddField(new MTextField('lkpMotorista',$itemRequisicao->motorista->pessoa->nome,'Motorista',50));
                     $this->AddField(new MTextField('lkpVeiculo',$veiculo->modelo." - ".$veiculo->placa,'Veículo',50));
-                    $this->SetFieldAttr('lkpMotorista','readonly',true);
-                    $this->SetFieldAttr('lkpVeiculo','readonly',true);	
+                    //$this->SetFieldAttr('lkpMotorista','readonly',true);
+                    //$this->SetFieldAttr('lkpVeiculo','readonly',true);	
                 }	
                 break;
 
             case 9: // Executada Totalmente
-		$this->setFieldAttr('cpf','visible',FALSE);
+				$this->setFieldAttr('cpf','visible',FALSE);
                 $this->setFieldAttr('numrg','visible',FALSE);
                	$this->setFieldAttr('telefone','visible',FALSE);
                	$this->setFieldAttr('bairro','visible',FALSE);
                	$this->setFieldAttr('cep','visible',FALSE);
                	$this->setFieldAttr('edtEstado','visible',FALSE);
                	$this->setFieldAttr('lkpMunicipio','visible',FALSE);
-		$this->setFieldAttr('endereco','visible',FALSE);  
+				$this->setFieldAttr('endereco','visible',FALSE);  
 
                 break;
 
 
             case A: // Recusada a ser acompanhada pela pessoa que requisitou
-		$this->setFieldAttr('cpf','visible',FALSE);
+				$this->setFieldAttr('cpf','visible',FALSE);
                 $this->setFieldAttr('endereco','visible',FALSE);
                 $this->setFieldAttr('numrg','visible',FALSE);
                 $this->setFieldAttr('telefone','visible',FALSE);
@@ -440,7 +440,7 @@ class frmRequisicaoVeiculo extends Form
                 $this->setFieldAttr('cep','visible',FALSE);
                 $this->setFieldAttr('edtEstado','visible',FALSE);
                 $this->setFieldAttr('lkpMunicipio','visible',FALSE);
-		$this->setFieldAttr('tipoVeiculo','visible',TRUE);
+				$this->setFieldAttr('tipoVeiculo','visible',TRUE);
                 $this->setFieldAttr('tipoTransporte','visible',FALSE);
                 $this->AddField(new MultiLineField('motivoRejeicao',$this->objRequisicao->motivoRejeicao,'Motivo da Recusa','',3,50));
                 $this->setFieldAttr('motivoRejeicao','readonly',TRUE);
@@ -472,8 +472,8 @@ class frmRequisicaoVeiculo extends Form
                     $this->addfield(new hiddenfield('idempenho',$itemrequisicao->idempenho));
 
                     $this->setButtonAttr('btnRetornaExecucao','visible',TRUE);     
-			$this->setFieldAttr('cpf','visible',FALSE); 
-     			$this->setFieldAttr('endereco','visible',FALSE);
+					$this->setFieldAttr('cpf','visible',FALSE); 
+					$this->setFieldAttr('endereco','visible',FALSE);
                 	$this->setFieldAttr('numrg','visible',FALSE);
                 	$this->setFieldAttr('telefone','visible',FALSE);
                 	$this->setFieldAttr('bairro','visible',FALSE);
@@ -519,24 +519,24 @@ class frmRequisicaoVeiculo extends Form
 
             case G: //Finalizada
 
-		$this->setFieldAttr('cpf','visible',FALSE);
-                $this->setFieldAttr('endereco','visible',FALSE);
-                $this->setFieldAttr('numrg','visible',FALSE);
-                $this->setFieldAttr('telefone','visible',FALSE);
-                $this->setFieldAttr('bairro','visible',FALSE);
-                $this->setFieldAttr('cep','visible',FALSE);
-                $this->setFieldAttr('edtEstado','visible',FALSE);
-                $this->setFieldAttr('lkpMunicipio','visible',FALSE);
+					$this->setFieldAttr('cpf','visible',FALSE);
+					$this->setFieldAttr('endereco','visible',FALSE);
+					$this->setFieldAttr('numrg','visible',FALSE);
+					$this->setFieldAttr('telefone','visible',FALSE);
+					$this->setFieldAttr('bairro','visible',FALSE);
+					$this->setFieldAttr('cep','visible',FALSE);
+					$this->setFieldAttr('edtEstado','visible',FALSE);
+					$this->setFieldAttr('lkpMunicipio','visible',FALSE);
 
 
-		$itemRequisicao = $this->objRequisicao->getItem();
+					$itemRequisicao = $this->objRequisicao->getItem();
                     $this->AddField(new HiddenField('idMotorista',''));
                     //$this->AddField(new MLookupFieldValue('lkpMotorista',$itemRequisicao->motorista->pessoa->nome,'Motorista',50));
-		    $this->AddField(new TextField('lkpMotorista',$itemRequisicao->motorista->pessoa->nome,'Motorista',50));
+					$this->AddField(new TextField('lkpMotorista',$itemRequisicao->motorista->pessoa->nome,'Motorista',50));
                     $this->AddField(new HiddenField('placa',''));
                     //$this->AddField(new MLookupFieldValue('lkpVeiculo',$itemRequisicao->veiculo->modelo." - ".$itemRequisicao->placa,'Veículo',50));
-		    $objVeiculo = $this->manager->GetBusiness('adm','veiculo',$itemRequisicao->placa);
-		    $this->AddField(new TextField('lkpVeiculo',$objVeiculo->modelo." - ".$itemRequisicao->placa,'Veículo',50));
+					$objVeiculo = $this->manager->GetBusiness('adm','veiculo',$itemRequisicao->placa);
+					$this->AddField(new TextField('lkpVeiculo',$objVeiculo->modelo." - ".$itemRequisicao->placa,'Veículo',50));
                     $this->AddField(new TextField('odometroSaida',$itemRequisicao->odometroSaida,'Odômetro Saída',10));                   
                     $this->AddField(new CalendarField('dataSaida',substr($itemRequisicao->dataHoraSaidaGaragem,0,10),'Data Saída','10','Ex.: 01/01/2001'));
                     $this->AddField(new TextField('horaSaida',substr($itemRequisicao->dataHoraSaidaGaragem,11,5),'Hora Saída',10,'Ex.: 19:00'));
@@ -547,21 +547,21 @@ class frmRequisicaoVeiculo extends Form
                     $this->AddField(new MultiLineField('ocorrencias',$itemRequisicao->ocorrencias,'Ocorrências','',3,50));
                     //
 		
-		$this->setFieldAttr('odometroSaida','readonly',TRUE);
-		$this->setFieldAttr('dataSaida','readonly',TRUE);
-		$this->setFieldAttr('horaSaida','readonly',TRUE);
-		$this->setFieldAttr('odometroChegada','readonly',TRUE);
-		$this->setFieldAttr('dataChegada','readonly',TRUE);
-		$this->setFieldAttr('horaChegada','readonly',TRUE);
-		$this->setFieldAttr('ocorrencias','readonly',TRUE);
-		$this->setFieldAttr('lkpVeiculo','readonly',TRUE);		
-		$this->setFieldAttr('lkpMotorista','readonly',TRUE);		
-                $itemRequisicao = $this->objRequisicao->getItem();
-                $this->setButtonAttr('btnAbastecimento2','visible',TRUE);
-                $this->AddField(new CurrencyField('valorReal',$itemRequisicao->valorReal,'Valor Real',10,'')); // descomentada esta linha em 13/02/2012 pela tarefa http://redmine.renapi.gov.br/issues/26864
-                $this->setFieldAttr('valorReal','readonly',TRUE); // descomentada esta linha em 13/02/2012 pela tarefa http://redmine.renapi.gov.br/issues/26864
-                break;
-        }
+					$this->setFieldAttr('odometroSaida','readonly',TRUE);
+					$this->setFieldAttr('dataSaida','readonly',TRUE);
+					$this->setFieldAttr('horaSaida','readonly',TRUE);
+					$this->setFieldAttr('odometroChegada','readonly',TRUE);
+					$this->setFieldAttr('dataChegada','readonly',TRUE);
+					$this->setFieldAttr('horaChegada','readonly',TRUE);
+					$this->setFieldAttr('ocorrencias','readonly',TRUE);
+					$this->setFieldAttr('lkpVeiculo','readonly',TRUE);		
+					$this->setFieldAttr('lkpMotorista','readonly',TRUE);		
+					$itemRequisicao = $this->objRequisicao->getItem();
+					$this->setButtonAttr('btnAbastecimento2','visible',TRUE);
+					$this->AddField(new CurrencyField('valorReal',$itemRequisicao->valorReal,'Valor Real',10,'')); // descomentada esta linha em 13/02/2012 pela tarefa http://redmine.renapi.gov.br/issues/26864
+					$this->setFieldAttr('valorReal','readonly',TRUE); // descomentada esta linha em 13/02/2012 pela tarefa http://redmine.renapi.gov.br/issues/26864
+					break;
+		}
     }
 
     function setObjectData()	

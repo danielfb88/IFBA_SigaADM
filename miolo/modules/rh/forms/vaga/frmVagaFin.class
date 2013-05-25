@@ -49,7 +49,13 @@ class frmVagaFin extends Form
             new Spacer('10px'),
             new Separator('Escolha a data de finalização da vaga.'),
             new Spacer('5px'),
-            array(new MTextField('fim','','Data de Finalização',10,'dd/mm/aaaa')),
+            array(
+            	new TextField('inicio','','Data de Criação',10)
+            ),
+            array(
+            	//new MTextField('fim','','Data de Finalização',10,'dd/mm/aaaa')
+				new MCalendarField('fim','','Data de Finalização',10)
+            ),
             new Spacer('10px'),
             array (
                 new Text('comentario1','<b>Atenção:</b>'),
@@ -65,8 +71,13 @@ class frmVagaFin extends Form
 
         $this->SetFieldAttr('comentario1','color','red');
         $this->SetFieldAttr('comentario2','color','blue');
+        
+        $this->inicio->addAttribute('readonly', true);
+        $this->fim->addAttribute('readonly', true);
+
+        $this->SetFieldValue('inicio', $this->formatData($this->GetData()->dataInicio));
 	    
-	    $this->fim->addMask('##/##/####',true,'Valor Inválido! Apenas valores numéricos são permitidos!');
+	    //$this->fim->addMask('##/##/####',true,'Valor Inválido! Apenas valores numéricos são permitidos!');
 
         $validators = array(
             new RequiredValidator('fim'),
@@ -100,8 +111,12 @@ class frmVagaFin extends Form
 	public function btnSalvar_click()
 	{
 		global $MIOLO, $module, $self;
+		
+		$dataFim 	 = $this->getFieldValue('fim');
+		$dataInicio  = Form::GetFormValue('inicio');
 
         $this->objVaga->SetData($this->GetData());
+        
 /*
         $grupoC = $MIOLO->GetBusiness($module,'grupocargo');    
         $grupoC = $grupoC->GetById($data->idGrupoCargo);
@@ -117,19 +132,51 @@ class frmVagaFin extends Form
         var_dump($this->objVaga->idCargo);
         echo"<pre>";var_dump($grupoC);echo"</pre>";
 */
-		$this->objVaga->save();
-		if ( $this->objVaga->CheckError() )
+		if(trim($dataFim) == "")
 		{
-			foreach( $this->objVaga->GetErrors() as $e )
-			{
-				$this->AddError("Informe o seguinte erro a equipe do CGCO: ".$e);
-			}
+			$this->addError('Forneça uma data de finalização');
+		}
+		elseif($this->invertData($dataInicio) > $this->invertData($dataFim) )
+		{
+			$this->addError('A data de finalização não pode ser anterior à data de início');
 		}
 		else
 		{
-			$go = $MIOLO->GetActionURL($module,'main:vaga:find');
-			$this->manager->information('Vaga finalizada com sucesso!',$go);
+			$this->objVaga->save();
+			if ( $this->objVaga->CheckError() )
+			{
+				foreach( $this->objVaga->GetErrors() as $e )
+				{
+					$this->AddError("Informe o seguinte erro a equipe do CGCO: ".$e);
+				}
+			}
+			else{
+				$go = $MIOLO->GetActionURL($module,'main:vaga:find');
+				$this->manager->information('Vaga finalizada com sucesso!',$go);
+			}
 		}
+	}
+	
+	function invertData($datainv)
+	{//recebe a data e o separador
+
+		   $ano = substr("$datainv",6, 4);
+		   $mes = substr("$datainv",3, 2);
+		   $dia = substr("$datainv",0, 2);
+		   $datainv = "$ano$mes$dia";
+
+		   return $datainv;
+	}
+	
+	//passa a data no formato aaaa-mm-dd para o formato dd/mm/aaaa
+	function formatData($data)
+	{
+		$ano = substr("$data",0, 4);
+		$mes = substr("$data",5, 2);
+		$dia = substr("$data",8, 2);
+		$dataFormatada = "$dia/$mes/$ano";
+
+		return $dataFormatada;
 	}
 
  }

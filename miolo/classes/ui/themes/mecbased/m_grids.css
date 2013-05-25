@@ -5,7 +5,7 @@
 {
  border:1px solid #CCCCCC;
  background: #DBE2D2;
- font-size: 11px;
+ font-size: 9px;
  width: 100%; 
  text-align: left;
 }
@@ -14,7 +14,7 @@
 {
  color: #000;
  font-weight: normal;
- font-size: 11px;
+ font-size: 9px;
  text-decoration: none;
 }
 
@@ -23,7 +23,7 @@
  background-color: #c0c0c0;
  color: #000;
  font-weight: bold;
- font-size: 11px;
+ font-size: 9px;
  padding: 0;
  text-decoration: none;
  width: 100%;
@@ -57,14 +57,14 @@
 .m-grid-link
 { color: #000;
  font-weight: normal;
- font-size: 11px;
+ font-size: 9px;
  text-decoration: underline;
 }
 
 .m-grid-detail
 { color: #000;
  font-weight: normal;
- font-size: 11px;
+ font-size: 9px;
  text-decoration: underline;
  cursor: '#'; 
 }
@@ -77,7 +77,7 @@
 .m-grid-link-disable
 { color: #999999;
  font-weight: normal;
- font-size: 11px;
+ font-size: 9px;
  text-decoration: underline;
 }
 
@@ -113,7 +113,7 @@
  color: #000;
  background-color: threedface;
  font-weight: bold;
- font-size: 11px;
+ font-size: 9px;
  text-decoration: none;
 }
 
@@ -121,7 +121,7 @@
 {
  background-color: #DBE2D2;
  font-weight: normal;
- font-size: 11px;
+ font-size: 9px;
  text-decoration: none;
  height: 20px;
  line-height: 20px;
@@ -132,7 +132,7 @@
 {
  background-color: threedface;
  font-weight: normal;
- font-size: 11px;
+ font-size: 9px;
  text-decoration: none;
  padding: 4px;
  height: 20px;
@@ -149,7 +149,7 @@
 {
  background-color: #FFF;
  font-weight: normal;
- font-size: 11px;
+ font-size: 9px;
  text-decoration: none;
  padding: 4px;
  border-bottom: 1px solid #c0c0c0;
@@ -171,7 +171,7 @@
  text-decoration: none;
  text-align: left;
  color: #000;
- font-size: 11px;
+ font-size: 9px;
  vertical-align: middle;
  padding:2px;
 }
@@ -181,7 +181,7 @@
  color: #990000;
  font-weight: bold; 
  background-color: #FFF;
- font-size: 11px;
+ font-size: 9px;
  padding: 2px;
  text-align: center;
 }
@@ -260,6 +260,11 @@
 .m-grid-body  thead tr th.data span
 {
   padding-left: 3px; 
+}
+
+.m-grid-body  tbody tr td.data span.m-label
+{
+  font-size: 12px; 
 }
 
 .m-grid-body  thead tr th span.tall
@@ -432,7 +437,7 @@
  text-decoration: underline;
  text-align: center;
  color: #000;
- font-size: 11px;
+ font-size: 9px;
  vertical-align: middle;
  height: 15px;
 }
@@ -440,7 +445,7 @@
 .m-grid-column-link
 {
  font-weight: normal;
- font-size: 11px;
+ font-size: 9px;
  padding: 1x;
  color: #000;
  text-decoration: underline;
@@ -457,7 +462,7 @@
  text-decoration: none;
  text-align: left;
  color: #000;
- font-size: 11px;
+ font-size: 9px;
  vertical-align: middle;
  height: 18px;
 }

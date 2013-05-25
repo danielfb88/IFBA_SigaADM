@@ -39,6 +39,7 @@ class frmTaxiNew extends frmTaxiPai
 		);
 
 		$this->SetButtons($buttons);
+		$this->valor->addAttribute('maxlength',8);
 	}
 
 	function btnNew_click()
@@ -46,41 +47,50 @@ class frmTaxiNew extends frmTaxiPai
 		$data = $this->GetData();
 		$taxi = $this->manager->GetBusiness('adm','taxi');
 		$taxi->SetData($data);
-                $cf = new MCurrencyFormatter();
+        $cf = new MCurrencyFormatter();
+        
+        //aplicando a máscara no valor
+        $mascara = array("R","$");
+        $taxi->valor = str_replace($mascara, "", $taxi->valor);
                 
 		if (substr_count($taxi->valor, ",") == 0)
-                {
-                        $taxi->valor = str_replace(".",",",$taxi->valor);
-                }
-                else
-                {
-                        $taxi->valor = str_replace(".","",$taxi->valor);
-                }
-
-                $taxi->valor = $cf->toDecimal($taxi->valor);
-
+        {
+                $taxi->valor = str_replace(".",",",$taxi->valor);
+        }
+        else
+        {
+                $taxi->valor = str_replace(".","",$taxi->valor);
+        }
+        $taxi->valor = $cf->toDecimal($taxi->valor);
+        
 		$inicio = $taxi->dataIni;
-                $final = $taxi->dataFim;
+        $final = $taxi->dataFim;
 
-                $partes_da_data = explode('/',$inicio);
-                $datainicial =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
-                $partes_da_data = explode('/',$final);
-                $datafinal =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
-
-		if($taxi->dataIni == ''){
+        $partes_da_data = explode('/',$inicio);
+        $datainicial =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+        $partes_da_data = explode('/',$final);
+        $datafinal =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+        
+		if ($taxi->dataIni == '') {
 			$this->AddError("Selecione a Data Início.");
 		}
-		elseif($taxi->dataFim == ''){
+		else if ($taxi->dataFim == '') {
 			$this->AddError("Selecione a Data Fim.");
 		}
-		elseif($taxi->valor == ''){
+		else if ($taxi->valor == '') {
 			$this->AddError("Informe o valor do Taxi.");
 		}
-		elseif ($datafinal < $datainicial){
+		else if ($datafinal < $datainicial) {
 			$this->AddError("A Data fim não deve ser anterior a Data Início.");
 		}
-		elseif($taxi->valor < 0){
+		else if ($taxi->valor < 0) {
 			$this->AddError("O valor do Taxi não pode ser negativo.");
+		}
+		else if ($this->valor == 0) {
+			$this->AddError("Forneça um valor válido.");
+		}
+		else if ($this->findByNome($datainicial) > 0) {
+			$this->AddError("Já existe um taxi cadastrado para essa data.");
 		}
 		else
 		{

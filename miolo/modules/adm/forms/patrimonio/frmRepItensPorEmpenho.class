@@ -32,9 +32,18 @@ class frmRepItensPorEmpenho extends MForm
 	function CreateFields()
     {
 		global $MIOLO, $module, $action, $item, $theme;
+		
+		$opcaoOrdenacao = array(
+			"id"			=>"Número do Patrimônio",
+			"nf_id"		    =>"Nota Fiscal + Número do Patrimônio",
+			"nf_desc"		=>"Nota Fiscal + Descrição",
+			"desc"			=>"Descrição",
+		);		
 
 		$fields = array(
 			new MTextField('empenho','','Empenho',20),
+			new MCheckBox('listarItens','S','Listar itens?', true,''),
+			new MSelection('ordenacao','','Ordenação', $opcaoOrdenacao)
 		);
 		$this->SetFields($fields);
 
@@ -48,20 +57,46 @@ class frmRepItensPorEmpenho extends MForm
     {
 	global $MIOLO, $module, $item;
 	
-		$empenho = Form::GetFieldValue('empenho');
-		if(trim($empenho) == "")
+		$empenho = trim(Form::GetFieldValue('empenho'));
+		
+		$listarItens     = Form::GetFormValue('listarItens') ;
+		
+		
+		if (empty($listarItens)) { $listarItens = 'N';}
+		
+		var_dump($listarItens);
+		//exit();	
+		
+		
+		$ordem = Form::GetFormValue('ordenacao');
+		
+		$opcaoOrdenacao = array(
+			"id"			=>"Número do Patrimônio",
+			"nf_id"		    =>"Nota Fiscal + Número do Patrimônio",
+			"nf_desc"		=>"Nota Fiscal + Descrição",
+			"desc"			=>"Descrição",
+		);		
+		
+		if(empty($empenho))
 		{
 			$this->AddError('É necessário informar o empenho!');	
+		}
+		else if (empty($ordem))
+		{
+		    $this->AddError('É necessário escolher uma opção de ordenação!');
+		
 		}
 		else
 		{
         	$report = new MJasperReport('sigaept'); 
-        	$parameters['SUBREPORT_DIR']	= $MIOLO->GetConf('home.modules');
-        	$parameters['int_pIdUsuario']	= $MIOLO->login->idkey;
-        	$parameters['int_pIdSetor']	= '31'; //Form::GetFormValue('idSetor'); 
-     		$parameters['pEmpenho']		= Form::GetFormValue('empenho'); 
-        	$parameters['pURL']		= $MIOLO->GetConf('home.url');
-        	$report->Execute('adm', 'itensPorEmpenho', $parameters);
+        	$parameters['SUBREPORT_DIR']	   = $MIOLO->GetConf('home.modules');
+        	$parameters['int_pIdUsuario']	   = $MIOLO->login->idkey;
+     		$parameters['str_pNumeroEmpenho']  = $empenho;
+			$parameters['str_pOrdenacao']      = $ordem;
+        	$parameters['pURL']				   = $MIOLO->GetConf('home.url');
+			$parameters['plistarItens']            = $listarItens;
+			//$report->Execute('adm', 'repItensPorEmpenho', $parameters);
+			$report->Execute('adm', 'repEmpenhoConferencia', $parameters);			
 		}
 	}
 }

@@ -24,7 +24,7 @@ class BusinessRhHistFormacao extends MBusiness
     public $idFormacao;
     public $nomeCurso;
     public $entidade;
-    public $dataFim;
+    public $anoEncerramento;
     public $dataAtualizacao;
     public $idEscolaridadePCCTAE;
     public $escolaridadePCCTAE;

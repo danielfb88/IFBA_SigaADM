@@ -31,6 +31,8 @@ class frmUoAlmoxarifadoEstorno2006 extends MCompoundForm
         $this->material = $MIOLO->getBusiness('adm','material',Form::getFormValue('id'));
         //$this->material[0]= $objUo->idUo;
 		parent::__construct("Estorno de Entrada de Material (Anos Anteriores)");
+		$this->page->addJsCode(file_get_contents(dirname(__FILE__).'/js/frmUoAlmoxarifadoEstorno2006.js'));	
+		$this->page->OnSubmit("desabilita()");
         $this->EventHandler();
 		$this->SetClose(null);
     }

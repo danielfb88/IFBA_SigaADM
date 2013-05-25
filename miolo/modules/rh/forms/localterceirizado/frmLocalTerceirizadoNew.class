@@ -21,26 +21,27 @@ class frmLocalTerceirizadoNew extends Form
 { 
 
 	function __construct()
-    	{
-        	$this->Form('Incluir Novo Local de Trabalho');
-        	$this->EventHandler();
+    {
+    	$this->Form('Incluir Novo Local de Trabalho');
+    	$this->EventHandler();
    	}
 
-    	function CreateFields()
-    	{
-
+	function CreateFields()
+	{
 		$fields = array(
             		new MTextField('nome','','Local de Trabalho','40','Máx. 40 caracteres'),			
             		new MHiddenField('idsetor'),
 			new MLookupFieldValue('lkpSetor','','Setor',70),
         			);        
     	
-        	$this->SetFields($fields);
+        $this->SetFields($fields);
         
-        	$this->SetFieldAttr('lkpSetor','module','common');
+        $this->SetFieldAttr('lkpSetor','module','common');
    	 	$this->SetFieldAttr('lkpSetor','item','setor');
   	 	$this->SetFieldAttr('lkpSetor','event','filler');
-    		$this->SetFieldAttr('lkpSetor','related','idsetor,null,lkpSetor,null'); 
+    	$this->SetFieldAttr('lkpSetor','related','idsetor,null,lkpSetor,null'); 
+    	
+    	$this->nome->addAttribute('maxlength',40);
 		
 		$buttons = array(
         	new FormButton('btnNew', 'Incluir Local')
@@ -52,19 +53,22 @@ class frmLocalTerceirizadoNew extends Form
           		 new MRequiredValidator('lkpSetor'),
 		);
        		$this->SetValidators($validators);
-    	}
+    }
 
-    	function btnNew_click()
-    	{
+	function btnNew_click()
+	{
+		$data = $this->GetData();
+			
+		// Retirando os caracteres especiais.	
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->nome = str_replace($caracteres,"",$data->nome);
 
-		$nome = strlen(trim($this->getFormValue('nome')));
-		if($nome < '5')
+		if(strlen(trim($data->nome)) < '5')
 		{
 			$this->addError('Informe o nome do local de trabalho corretamente');
 		}
 		else
 		{
-        		$data = $this->GetData();
         		$local = $this->manager->GetBusiness('rh','localterceirizado');
 			$local->SetData($data);
 

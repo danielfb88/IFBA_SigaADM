@@ -121,6 +121,10 @@
 	$this->SetButtonAttr('btnVoltar', 'visible',false);
 	$this->SetButtonAttr('btnSalvar', 'visible',false);
 	$this->SetButtonAttr('btnRetorna', 'visible',false);
+	$this->empresa1->addAttribute('maxlength',30);
+	$this->empresa2->addAttribute('maxlength',30);
+	$this->empresa3->addAttribute('maxlength',30);
+	$this->termoref->addAttribute('maxlength',60000);
 	
 	// Torna obrigatório o preenchimento dos campos "nº do processo" e "item" no form
 	/*$validators = array( 	new RegExpValidator('empresa1','',null),
@@ -433,35 +437,49 @@
         	}
 	        $cf = new MCurrencyFormatter();
 	        $data->orcamento1 = $cf->toDecimal($data->orcamento1);
-		if ($data->orcamento1 <= 0)
-                {
-                        $this->AddError('Insira um valor válido para orçamento 1.');
-			$ok = false;
-		}
+			if( $data->empresa1 != '' &&  (!preg_match("/^[A-Z|0-9|]/" ,$data->empresa1)))
+			{
+					$this->AddError('Insira um valor válido para nome empresa 1.');
+					$ValorOk = false;
+			}	        
+			if ($data->orcamento1 <= 0)
+            {
+                $this->AddError('Insira um valor válido para orçamento 1.');
+				$ok = false;
+			}
+			if (substr_count($data->orcamento2, ",") == 0) {
+	             $data->orcamento2 = str_replace(".",",",$data->orcamento2);
+		    }else{
+	             $data->orcamento2 = str_replace(".","",$data->orcamento2);
+		    }
+		    $data->orcamento2 = $cf->toDecimal($data->orcamento2);
+			if( $data->empresa2 != '' &&  (!preg_match("/^[A-Z|0-9|]/" ,$data->empresa2)))
+			{
+				$this->AddError('Insira um valor válido para nome empresa 2.');
+				$ValorOk = false;
+			}		            
+		    if ($data->orcamento2 <= 0)
+		    {
+		        $this->AddError('Insira um valor válido para orçamento 2.');
+				$ok = false;
+			}
 
-		if (substr_count($data->orcamento2, ",") == 0) {
-                        $data->orcamento2 = str_replace(".",",",$data->orcamento2);
-                }else{
-                        $data->orcamento2 = str_replace(".","",$data->orcamento2);
-                }
-                $data->orcamento2 = $cf->toDecimal($data->orcamento2);
-                if ($data->orcamento2 <= 0)
-                {
-                        $this->AddError('Insira um valor válido para orçamento 2.');
-			$ok = false;
-		}
-
-		if (substr_count($data->orcamento3, ",") == 0) {
-                        $data->orcamento3 = str_replace(".",",",$data->orcamento3);
-                }else{
-                        $data->orcamento3 = str_replace(".","",$data->orcamento3);
-                }
-                $data->orcamento3 = $cf->toDecimal($data->orcamento3);
-                if ($data->orcamento3 <= 0)
-                {
-                        $this->AddError('Insira um valor válido para orçamento 3.');
-			$ok = false;
-		}
+			if (substr_count($data->orcamento3, ",") == 0) {
+                    $data->orcamento3 = str_replace(".",",",$data->orcamento3);
+            }else{
+                    $data->orcamento3 = str_replace(".","",$data->orcamento3);
+            }
+            $data->orcamento3 = $cf->toDecimal($data->orcamento3);
+            if ($data->orcamento3 <= 0)
+            {
+                $this->AddError('Insira um valor válido para orçamento 3.');
+				$ok = false;
+			}
+			if( $data->empresa3 != '' &&  (!preg_match("/^[A-Z|0-9|]/" ,$data->empresa3)))
+			{
+					$this->AddError('Insira um valor válido para nome empresa 3.');
+					$ValorOk = false;
+			}			
 		$objOrcTerm  = $MIOLO->getBusiness('adm', 'orcamentotermo');
 		$objOrcTerm->setData($data);
 		if ($ok == true){
@@ -504,117 +522,133 @@
 		}
 		
 		function btnSalvar_click()
-	{
-	global $MIOLO;
+		{
+						global $MIOLO;
 
-		$ValorOk = true;
+							$ValorOk = true;
 
-                $data = $this->getData();
-                if (substr_count($data->orcamento1, ",") == 0) {
-                        $data->orcamento1 = str_replace(".",",",$data->orcamento1);
-                }else{
-                        $data->orcamento1 = str_replace(".","",$data->orcamento1);
-                }
-                $cf = new MCurrencyFormatter();
-                $data->orcamento1 = $cf->toDecimal($data->orcamento1);
-                if ($data->orcamento1 <= 0)
-                {
-                        $this->AddError('Insira um valor válido para orçamento 1.');
-                        $ValorOk = false;
-                }
+									$data = $this->getData();
+									if (substr_count($data->orcamento1, ",") == 0) {
+										    $data->orcamento1 = str_replace(".",",",$data->orcamento1);
+									}else{
+										    $data->orcamento1 = str_replace(".","",$data->orcamento1);
+									}
+									$cf = new MCurrencyFormatter();
+									$data->orcamento1 = $cf->toDecimal($data->orcamento1);
+									if( $data->empresa1 != '' &&  (!preg_match("/^[A-Z|0-9|]/" ,$data->empresa1)))
+									{
+										    $this->AddError('Insira um valor válido para nome empresa 1.');
+										    $ValorOk = false;
+									}									
+									if (($data->orcamento1 <= 0))
+									{
+										    $this->AddError('Insira um valor válido para orçamento 1.');
+										    $ValorOk = false;
+									}									
+									if (substr_count($data->orcamento2, ",") == 0) {
+										    $data->orcamento2 = str_replace(".",",",$data->orcamento2);
+									}else{
+										    $data->orcamento2 = str_replace(".","",$data->orcamento2);
+									}
+									$data->orcamento2 = $cf->toDecimal($data->orcamento2);
+									
+									if( $data->empresa2 != '' &&  (!preg_match("/^[A-Z|0-9|]/" ,$data->empresa2)))
+									{
+										    $this->AddError('Insira um valor válido para nome empresa 2.');
+										    $ValorOk = false;
+									}									
+									if ($data->orcamento2 <= 0)
+									{
+										    $this->AddError('Insira um valor válido para orçamento 2.');
+										    $ValorOk = false;
+									}
 
-                if (substr_count($data->orcamento2, ",") == 0) {
-                        $data->orcamento2 = str_replace(".",",",$data->orcamento2);
-                }else{
-                        $data->orcamento2 = str_replace(".","",$data->orcamento2);
-                }
-                $data->orcamento2 = $cf->toDecimal($data->orcamento2);
-                if ($data->orcamento2 <= 0)
-                {
-                        $this->AddError('Insira um valor válido para orçamento 2.');
-                        $ValorOk = false;
-                }
-
-                if (substr_count($data->orcamento3, ",") == 0) {
-                        $data->orcamento3 = str_replace(".",",",$data->orcamento3);
-                }else{
-                        $data->orcamento3 = str_replace(".","",$data->orcamento3);
-                }
-                $data->orcamento3 = $cf->toDecimal($data->orcamento3);
-                if ($data->orcamento3 <= 0)
-                {
-                        $this->AddError('Insira um valor válido para orçamento 3.');
-                        $ValorOk = false;
-                }
-                $objOrcTerm  = $MIOLO->getBusiness('adm', 'orcamentotermo');
-                $objOrcTerm->setData($data);
-                if ($ValorOk == true){
-		   try
-		   {
-			$livro = $this->GetFieldValue('livro');
-//			var_dump($livro);			
-		//Validar Campos
-					$ok = $this->Validar();
-			$ValorOk = $this->ValidaSaldo();
+									if (substr_count($data->orcamento3, ",") == 0) {
+										    $data->orcamento3 = str_replace(".",",",$data->orcamento3);
+									}else{
+										    $data->orcamento3 = str_replace(".","",$data->orcamento3);
+									}
+									$data->orcamento3 = $cf->toDecimal($data->orcamento3);
+									if( $data->empresa3 != '' &&  (!preg_match("/^[A-Z|0-9|]/" ,$data->empresa3)))
+									{
+										    $this->AddError('Insira um valor válido para nome empresa 3.');
+										    $ValorOk = false;
+									}									
+									if ($data->orcamento3 <= 0)
+									{
+										    $this->AddError('Insira um valor válido para orçamento 3.');
+										    $ValorOk = false;
+									}
+									$objOrcTerm  = $MIOLO->getBusiness('adm', 'orcamentotermo');
+									$objOrcTerm->setData($data);
+									if ($ValorOk == true)
+									{
+									   try
+									   {
+											$livro = $this->GetFieldValue('livro');
+											//var_dump($livro);			
+											//Validar Campos
+											$ok = $this->Validar();
+											$ValorOk = $this->ValidaSaldo();
 			
-			if ($ok == 2 or ($livro == true and $ok == 1 ))
-			{
-				if ($ValorOk == true)
-				{
-				$objOrcTerm->status = '1';
-				$semsaldo = false;
-				}else{
-				$semsaldo = true;
-				$objOrcTerm->status = '0';
-					}
-			}
-			else
-			{
-			$objOrcTerm->status = '0';
-			}
+											if ($ok == 2 or ($livro == true and $ok == 1 ))
+											{
+												if ($ValorOk == true)
+												{
+													$objOrcTerm->status = '1';
+													$semsaldo = false;
+												}
+												else
+												{
+													$semsaldo = true;
+													$objOrcTerm->status = '0';
+												}
+											}
+											else
+											{
+												$objOrcTerm->status = '0';
+											}
 	
-		//	var_dump($objOrcTerm->status);
+											//var_dump($objOrcTerm->status);
 
-/*			$objOrcTerm->empresa1 = $this->getFieldValue('empresa1');
-			$objOrcTerm->empresa2 = $this->getFieldValue('empresa2');       
-			$objOrcTerm->empresa3 = $this->getFieldValue('empresa3');
-			$objOrcTerm->orcamento1 = $this->getFieldValue('orcamento1');
-			$objOrcTerm->orcamento2 = $this->getFieldValue('orcamento2');
-			$objOrcTerm->orcamento3 = $this->getFieldValue('orcamento3');
-			$objOrcTerm->termoref = $this->getFieldValue('termoref');
-*/
-		
+											/*$objOrcTerm->empresa1 = $this->getFieldValue('empresa1');
+												$objOrcTerm->empresa2 = $this->getFieldValue('empresa2');       
+												$objOrcTerm->empresa3 = $this->getFieldValue('empresa3');
+												$objOrcTerm->orcamento1 = $this->getFieldValue('orcamento1');
+												$objOrcTerm->orcamento2 = $this->getFieldValue('orcamento2');
+												$objOrcTerm->orcamento3 = $this->getFieldValue('orcamento3');
+												$objOrcTerm->termoref = $this->getFieldValue('termoref');
+											*/			
+											//var_dump('Lic',$this->GetFieldValue('idlicitacao'),'item',$this->item->value);
+											if($semsaldo == false){
+											   $objOrcTerm->Update($this->GetFieldValue('idlicitacao'),$this->item->value);
+											}
 			
-	//var_dump('Lic',$this->GetFieldValue('idlicitacao'),'item',$this->item->value);
-			if($semsaldo == false){
-			   $objOrcTerm->Update($this->GetFieldValue('idlicitacao'),$this->item->value);
-			}
-			
-			//   $action = $this->manager->GetCurrentURL();
-			$action = $MIOLO->getActionURL( $module, "main:orcterm");
-			 if ($ok == 0 or ($ok == 1 and $livro == false))
-					{
-				$this->manager->Information('Dados Salvos Parcialmente.', $action );	
-					}
-			  else
-					{
-			 if ($semsaldo == true)
-			 {
-			   
-			   $this->manager->Information('Valor Maximo Ultrapassado.', $action );
-			  }
-			  else
-			  {
-			  $this->manager->Information('Dados cadastrados com sucesso.', $action );
-			  }
-					}
-		   }
-		   catch (EMioloException $e)
-		   {
-			   $this->AddError('Erro no cadastramento/alteração das informações do Orçamento');
-		   }
-		}
-	}
+											//$action = $this->manager->GetCurrentURL();
+											$action = $MIOLO->getActionURL( $module, "main:orcterm");
+											if ($ok == 0 or ($ok == 1 and $livro == false))
+											{
+												$this->manager->Information('Dados Salvos Parcialmente.', $action );	
+											}
+										  	else
+											{
+										 		if ($semsaldo == true)
+										 		{
+										 			$this->manager->Information('Valor Maximo Ultrapassado.', $action );
+										 	 	}
+										  		else
+												{
+												  	$this->manager->Information('Dados cadastrados com sucesso.', $action );
+												}
+											}
+									   }//try
+									   catch (EMioloException $e)
+									   {
+										   $this->AddError('Erro no cadastramento/alteração das informações do Orçamento');
+									   }
+								}//if
+								return;
+						}
 
 	
 	function btnRetorna_click()
@@ -650,30 +684,30 @@ $action = $MIOLO->getActionURL( $module, "main:orcterm");
 	global $MIOLO, $module,$Idlicitacao,$item;
 
 
-$canc = $this->GetFormValue('canc');
+		$canc = $this->GetFormValue('canc');
 
-if ($canc == 'true')
-{
-$Idlicitacao = $this->GetFormValue('idlicitacao');
-$item = $this->GetFormValue('item');
-$this->CancelarItem($Idlicitacao,$item);
+		if ($canc == 'true')
+		{
+		$Idlicitacao = $this->GetFormValue('idlicitacao');
+		$item = $this->GetFormValue('item');
+		$this->CancelarItem($Idlicitacao,$item);
 
-}
-else if ($canc == 'false')
-{
-$action = $MIOLO->getActionURL( $module, "main:orcterm");
-	$this->manager->Information('O item não foi cancelado', $action );
-}
-	//$MIOLO->getActionURL( $module, "main:orcterm")
-$action_sim = $MIOLO->getActionURL( $module, "main:orcamentotermo",'',array('event'=>'btnCancela_click','canc'=>'true','idlicitacao'=>$this->GetFieldValue('idlicitacao'),'item'=>$this->item->value));
-//$action_sim = $MIOLO->GetActionURL($module,$action,'', array('event'=>'CancelarItem','canc'=>'true'));
-$action_nao = $MIOLO->GetActionURL($module, "main:orcamentotermo",'',array('event'=>'btnCancela_click','canc'=>'false'));
-	$this->manager->Question('Deseja mesmo cancelar o item?',$action_sim,$action_nao);
-	//;
+		}
+		else if ($canc == 'false')
+		{
+		$action = $MIOLO->getActionURL( $module, "main:orcterm");
+			$this->manager->Information('O item não foi cancelado', $action );
+		}
+			//$MIOLO->getActionURL( $module, "main:orcterm")
+		$action_sim = $MIOLO->getActionURL( $module, "main:orcamentotermo",'',array('event'=>'btnCancela_click','canc'=>'true','idlicitacao'=>$this->GetFieldValue('idlicitacao'),'item'=>$this->item->value));
+		//$action_sim = $MIOLO->GetActionURL($module,$action,'', array('event'=>'CancelarItem','canc'=>'true'));
+		$action_nao = $MIOLO->GetActionURL($module, "main:orcamentotermo",'',array('event'=>'btnCancela_click','canc'=>'false'));
+			$this->manager->Question('Deseja mesmo cancelar o item?',$action_sim,$action_nao);
+			//;
 
 
 
-	}
+			}
 	
 	function CancelarItem($Idlicitacao,$item)
 	{

@@ -61,15 +61,16 @@ class MError extends MControl
      */
     function Generate()
     {
+	   
         echo "<html>";
         echo "<body>";
         echo "<form action=\"{$this->href}\">";
-        echo "<table width=\"50%\" border=\"0\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\">\n";
+        echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"3\" align=\"center\">\n";
         echo "  <tr>\n";
         echo "    <td class=\"boxTitle\" bgcolor=\"#990000\" colspan=\"2\"><font color=\"#FFFFFF\"><b>Fatal Error</b></font></td>\n";
         echo "  </tr>\n";
         echo "  <tr>\n";
-        echo "    <td valign=\"top\" width=\"60\"><img src=\"/images/error.gif\" hspace=\"20\"></td>\n";
+        echo "    <td valign=\"top\" width=\"600\"><img src=\"/images/error.gif\" hspace=\"20\"></td>\n";
         echo "    <td class=\"errorText\">";
 
         echo $this->msg;

@@ -68,17 +68,8 @@ class MJasperReport extends MReport
         	$fileLog = $uniqid . ".txt";
 			
 		/*$classPath = "$pathMJasper/lib/jasperreports-3.0.0.jar:$pathMJasper/lib/commons-beanutils-1.7.jar:$pathMJasper/lib/commons-collections-2.1.jar:$pathMJasper/lib/commons-digester-1.7.jar:$pathMJasper/lib/commons-javaflow-20060411.jar:$pathMJasper/lib/commons-logging-api-1.0.2.jar:$pathMJasper/lib/itext-1.3.1.jar:$pathMJasper/lib/ojdbc14.jar:$pathMJasper/lib/iReport.jar:$pathMJasper/jxl-2.4.2.jar:$pathMJasper/";*/
-// 		$classPath = "$pathMJasper/lib/jasperreports-3.0.0.jar:$pathMJasper/lib/commons-beanutils-1.7.jar:$pathMJasper/lib/commons-collections-2.1.jar:$pathMJasper/lib/commons-digester-1.7.jar:$pathMJasper/lib/commons-javaflow-20060411.jar:$pathMJasper/lib/commons-logging-api-1.0.2.jar:$pathMJasper/lib/itext-1.3.1.jar:$pathMJasper/lib/ojdbc14.jar:$pathMJasper/lib/iReport.jar:$pathMJasper/lib/jxl-2.6.3.jar:$pathMJasper/lib/postgresql-8.2-509.jdbc2.jar:$pathMJasper/";
-		
-		/**
-		 * Daniel Bonfim
-		 * 09/01/2013
-		 * 
-		 * Problemas de compatibilidade com o iReport Designer 4.8.0 resolvido alterando
-		 * a versão das bibliotecas jasperreports e itext para: "jasperreports-4.8.0.jar" e "itext-2.1.7.jar" 
-		 */
-        $classPath = "$pathMJasper/lib/jasperreports-4.8.0.jar:$pathMJasper/lib/commons-beanutils-1.7.jar:$pathMJasper/lib/commons-collections-2.1.jar:$pathMJasper/lib/commons-digester-1.7.jar:$pathMJasper/lib/commons-javaflow-20060411.jar:$pathMJasper/lib/commons-logging-api-1.0.2.jar:$pathMJasper/lib/itext-2.1.7.jar:$pathMJasper/lib/ojdbc14.jar:$pathMJasper/lib/iReport.jar:$pathMJasper/lib/jxl-2.6.3.jar:$pathMJasper/lib/postgresql-8.2-509.jdbc2.jar:$pathMJasper/";
-		
+		$classPath = "$pathMJasper/lib/jasperreports-3.0.0.jar:$pathMJasper/lib/commons-beanutils-1.7.jar:$pathMJasper/lib/commons-collections-2.1.jar:$pathMJasper/lib/commons-digester-1.7.jar:$pathMJasper/lib/commons-javaflow-20060411.jar:$pathMJasper/lib/commons-logging-api-1.0.2.jar:$pathMJasper/lib/itext-1.3.1.jar:$pathMJasper/lib/ojdbc14.jar:$pathMJasper/lib/iReport.jar:$pathMJasper/lib/jxl-2.6.3.jar:$pathMJasper/lib/postgresql-8.2-509.jdbc2.jar:$pathMJasper/";
+	
 		$cmd = $pathJava  . "/bin/java -Djava.awt.headless=true -classpath $classPath MJasper \"{$pathMJasper}\" \"{$param}\" \"{$dbUser}\" \"{$dbPass}\" \"{$jdbcDriver}\" \"{$jdbcDb}\"";
 		$cmd .= " 2> $pathLog/$fileLog";
         exec($cmd,$output);

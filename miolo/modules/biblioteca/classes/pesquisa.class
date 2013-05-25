@@ -64,11 +64,7 @@ class Pesquisa extends Business
 	function GetCamposByTitulo($campos, $camposPesquisa)
 	{
 		$result = array();
-		if (!(is_array($campos))) settype($campos,"array");
-        
-
-    
-    
+		if (!(is_array($campos))) settype($campos,"array"); 
         
 		foreach($campos as $campo)
 		{

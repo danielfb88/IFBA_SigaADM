@@ -1,19 +1,37 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="RelVeiculo" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isIgnorePagination="true">
-	<property name="ireport.zoom" value="1.0"/>
-	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
-	<property name="ireport.scriptlethandling" value="0"/>
-	<property name="ireport.encoding" value="UTF-8"/>
-	<import value="net.sf.jasperreports.engine.*"/>
-	<import value="java.util.*"/>
-	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="pURL" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="pIdUsuario" class="java.lang.Integer"/>
-	<parameter name="SUBREPORT_DIR" class="java.lang.String"/>
-	<parameter name="pIdReq" class="java.lang.Integer"/>
-	<queryString>
-		<![CDATA[select
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="RelVeiculo"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Portrait"
+		 pageWidth="595"
+		 pageHeight="842"
+		 columnWidth="535"
+		 columnSpacing="0"
+		 leftMargin="30"
+		 rightMargin="30"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false"
+		 isIgnorePagination="true">
+	<property name="ireport.zoom" value="1.0" />
+	<property name="ireport.x" value="0" />
+	<property name="ireport.y" value="0" />
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pURL" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="pIdUsuario" isForPrompting="true" class="java.lang.Integer"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pIdReq" isForPrompting="true" class="java.lang.Integer"/>
+	<queryString><![CDATA[select
         req.idrequisicao        		as "IDREQ",
         to_char(req.datahorareq ,'DD/MM/YYYY')  as "Data" ,
         to_char(req.datahorareq ,'HH24:MI:SS')    as "HORA" ,
@@ -82,697 +100,1339 @@ from	ad_requisicao req left join ( cm_pessoa p3 left join cm_usuario u3 on ( u3.
 
 where	req.idrequisicao = CAST($P{pIdReq} AS integer)
 and	req.idrequisicao = itemreq.idrequisicao
-and     m.idmotorista = itemreq.idmotorista]]>
-	</queryString>
-	<field name="IDREQ" class="java.math.BigDecimal">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="Data" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="HORA" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="Gestor" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="Req" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="Exec" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="UOReq" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="UOExec" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="Veiculo" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="Transporte" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="passageiro" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="telefone" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="OEnd" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="OBairro" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="OMunicipio" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="OReferencia" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="OData" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="OHORA" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="DEndereco" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="DBairro" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="DMunicipio" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="DReferencia" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="DChegadaData" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="DChegadaHORA" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="DRetornoData" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="DRetornoHORA" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="DKm" class="java.math.BigDecimal">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="DMotivo" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="DOutrosPassageiros" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="MNome" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="MVeiculo" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="MPlaca" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="datasaidagar" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="horasaidagar" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="odometrosaida" class="java.math.BigDecimal">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="datacheggar" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="horacheggar" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="odometrocheg" class="java.math.BigDecimal">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="ocorrencias" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<background>
-		<band/>
-	</background>
-	<title>
-		<band height="29">
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-1" positionType="Float" x="0" y="0" width="535" height="27"/>
-				<subreportParameter name="SUBREPORT_DIR">
-					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="pIdUsuario">
-					<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="pTitulo">
-					<subreportParameterExpression><![CDATA["REQUISIÇÃO DE VEÍCULO"]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="pIdReq">
-					<subreportParameterExpression><![CDATA[$P{pIdReq}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="pURL">
-					<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="pConsulta">
-					<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "/common/reports/Cabecalho.jasper"]]></subreportExpression>
-			</subreport>
-		</band>
-	</title>
-	<pageHeader>
-		<band/>
-	</pageHeader>
-	<columnHeader>
-		<band/>
-	</columnHeader>
-	<detail>
-		<band height="732">
-			<staticText>
-				<reportElement key="staticText-2" positionType="Float" x="0" y="0" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+and     m.idmotorista = itemreq.idmotorista]]></queryString>
+
+	<field name="IDREQ" class="java.math.BigDecimal"/>
+	<field name="Data" class="java.lang.String"/>
+	<field name="HORA" class="java.lang.String"/>
+	<field name="Gestor" class="java.lang.String"/>
+	<field name="Req" class="java.lang.String"/>
+	<field name="Exec" class="java.lang.String"/>
+	<field name="UOReq" class="java.lang.String"/>
+	<field name="UOExec" class="java.lang.String"/>
+	<field name="Veiculo" class="java.lang.String"/>
+	<field name="Transporte" class="java.lang.String"/>
+	<field name="passageiro" class="java.lang.String"/>
+	<field name="telefone" class="java.lang.String"/>
+	<field name="OEnd" class="java.lang.String"/>
+	<field name="OBairro" class="java.lang.String"/>
+	<field name="OMunicipio" class="java.lang.String"/>
+	<field name="OReferencia" class="java.lang.String"/>
+	<field name="OData" class="java.lang.String"/>
+	<field name="OHORA" class="java.lang.String"/>
+	<field name="DEndereco" class="java.lang.String"/>
+	<field name="DBairro" class="java.lang.String"/>
+	<field name="DMunicipio" class="java.lang.String"/>
+	<field name="DReferencia" class="java.lang.String"/>
+	<field name="DChegadaData" class="java.lang.String"/>
+	<field name="DChegadaHORA" class="java.lang.String"/>
+	<field name="DRetornoData" class="java.lang.String"/>
+	<field name="DRetornoHORA" class="java.lang.String"/>
+	<field name="DKm" class="java.math.BigDecimal"/>
+	<field name="DMotivo" class="java.lang.String"/>
+	<field name="DOutrosPassageiros" class="java.lang.String"/>
+	<field name="MNome" class="java.lang.String"/>
+	<field name="MVeiculo" class="java.lang.String"/>
+	<field name="MPlaca" class="java.lang.String"/>
+	<field name="datasaidagar" class="java.lang.String"/>
+	<field name="horasaidagar" class="java.lang.String"/>
+	<field name="odometrosaida" class="java.math.BigDecimal"/>
+	<field name="datacheggar" class="java.lang.String"/>
+	<field name="horacheggar" class="java.lang.String"/>
+	<field name="odometrocheg" class="java.math.BigDecimal"/>
+	<field name="ocorrencias" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="29"  isSplitAllowed="true" >
+				<subreport  isUsingCache="true">
+					<reportElement
+						x="0"
+						y="0"
+						width="535"
+						height="27"
+						key="subreport-1"
+						positionType="Float"/>
+					<subreportParameter  name="SUBREPORT_DIR">
+						<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pIdUsuario">
+						<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pTitulo">
+						<subreportParameterExpression><![CDATA["REQUISIÇÃO DE VEÍCULO"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pIdReq">
+						<subreportParameterExpression><![CDATA[$P{pIdReq}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pURL">
+						<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pConsulta">
+						<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "/common/reports/Cabecalho.jasper"]]></subreportExpression>
+				</subreport>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="732"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="120"
+						height="13"
+						key="staticText-2"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Número:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-3" positionType="Float" x="0" y="16" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="16"
+						width="120"
+						height="13"
+						key="staticText-3"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Data:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-4" positionType="Float" x="0" y="32" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="32"
+						width="120"
+						height="13"
+						key="staticText-4"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Requisitante:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-5" positionType="Float" x="0" y="86" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="86"
+						width="120"
+						height="13"
+						key="staticText-5"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[UO Requisitante:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-6" positionType="Float" x="0" y="102" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="102"
+						width="120"
+						height="13"
+						key="staticText-6"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[UO Executante:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-7" positionType="Float" x="0" y="118" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="118"
+						width="120"
+						height="13"
+						key="staticText-7"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Veículo:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-8" positionType="Float" x="0" y="136" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="136"
+						width="120"
+						height="13"
+						key="staticText-8"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Transporte:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-1" positionType="Float" x="134" y="0" width="212" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{IDREQ}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-2" positionType="Float" x="134" y="16" width="212" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Data}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-3" positionType="Float" x="134" y="32" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Req}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-4" positionType="Float" x="134" y="86" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{UOReq}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-5" positionType="Float" x="134" y="102" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{UOExec}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-6" positionType="Float" x="134" y="118" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Veiculo}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-7" positionType="Float" x="134" y="136" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Transporte}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-9" positionType="Float" x="338" y="16" width="64" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="0"
+						width="212"
+						height="13"
+						key="textField-1"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{IDREQ}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="16"
+						width="212"
+						height="13"
+						key="textField-2"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{Data}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="32"
+						width="401"
+						height="13"
+						key="textField-3"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{Req}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="86"
+						width="401"
+						height="13"
+						key="textField-4"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{UOReq}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="102"
+						width="401"
+						height="13"
+						key="textField-5"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{UOExec}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="118"
+						width="401"
+						height="13"
+						key="textField-6"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{Veiculo}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="136"
+						width="401"
+						height="13"
+						key="textField-7"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{Transporte}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="338"
+						y="16"
+						width="64"
+						height="13"
+						key="staticText-9"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Hora:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-8" positionType="Float" x="403" y="16" width="131" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{HORA}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-10" positionType="Float" x="0" y="162" width="148" height="13"/>
-				<textElement>
-					<font isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="403"
+						y="16"
+						width="131"
+						height="13"
+						key="textField-8"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{HORA}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="162"
+						width="148"
+						height="13"
+						key="staticText-10"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true" isUnderline="true"/>
+					</textElement>
 				<text><![CDATA[DADOS DO PASSAGEIRO]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-11" positionType="Float" x="0" y="182" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="182"
+						width="120"
+						height="13"
+						key="staticText-11"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Nome:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-9" positionType="Float" x="134" y="182" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{passageiro}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-12" positionType="Float" x="0" y="208" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="182"
+						width="401"
+						height="13"
+						key="textField-9"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{passageiro}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="201"
+						width="120"
+						height="13"
+						key="staticText-12"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true" isUnderline="true"/>
+					</textElement>
 				<text><![CDATA[DADOS DA ORIGEM]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-13" positionType="Float" x="0" y="228" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="217"
+						width="120"
+						height="13"
+						key="staticText-13"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Endereço:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-10" positionType="Float" x="134" y="228" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{OEnd}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-14" positionType="Float" x="0" y="244" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="217"
+						width="401"
+						height="13"
+						key="textField-10"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{OEnd}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="233"
+						width="120"
+						height="13"
+						key="staticText-14"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Bairro:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-11" positionType="Float" x="134" y="244" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{OBairro}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-15" positionType="Float" x="0" y="260" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="233"
+						width="401"
+						height="13"
+						key="textField-11"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{OBairro}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="249"
+						width="120"
+						height="13"
+						key="staticText-15"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Municipio:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-16" positionType="Float" x="0" y="276" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="265"
+						width="120"
+						height="13"
+						key="staticText-16"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Referência:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-17" positionType="Float" x="0" y="292" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="281"
+						width="120"
+						height="13"
+						key="staticText-17"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Data saída:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-12" positionType="Float" x="134" y="260" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{OMunicipio}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-13" positionType="Float" x="134" y="276" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{OReferencia}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-14" positionType="Float" x="134" y="292" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{OData}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-15" positionType="Float" x="402" y="292" width="131" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{OHORA}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-18" positionType="Float" x="337" y="292" width="64" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="249"
+						width="401"
+						height="13"
+						key="textField-12"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{OMunicipio}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="265"
+						width="401"
+						height="13"
+						key="textField-13"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{OReferencia}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="281"
+						width="401"
+						height="13"
+						key="textField-14"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{OData}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="402"
+						y="281"
+						width="131"
+						height="13"
+						key="textField-15"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{OHORA}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="337"
+						y="281"
+						width="64"
+						height="13"
+						key="staticText-18"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Hora:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-19" positionType="Float" x="0" y="316" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="302"
+						width="120"
+						height="13"
+						key="staticText-19"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true" isUnderline="true"/>
+					</textElement>
 				<text><![CDATA[DADOS DO DESTINO]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-20" positionType="Float" x="0" y="336" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="318"
+						width="120"
+						height="13"
+						key="staticText-20"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Endereço:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-16" positionType="Float" x="134" y="336" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{DEndereco}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-21" positionType="Float" x="0" y="352" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="318"
+						width="401"
+						height="13"
+						key="textField-16"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DEndereco}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="334"
+						width="120"
+						height="13"
+						key="staticText-21"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Bairro:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-17" positionType="Float" x="134" y="352" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{DBairro}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-22" positionType="Float" x="0" y="368" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="334"
+						width="401"
+						height="13"
+						key="textField-17"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DBairro}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="350"
+						width="120"
+						height="13"
+						key="staticText-22"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Municipio:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-23" positionType="Float" x="0" y="384" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="366"
+						width="120"
+						height="13"
+						key="staticText-23"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Referência:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-24" positionType="Float" x="0" y="400" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="382"
+						width="120"
+						height="13"
+						key="staticText-24"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Previsão chegada:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-18" positionType="Float" x="134" y="368" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{DMunicipio}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-19" positionType="Float" x="134" y="384" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{DReferencia}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-20" positionType="Float" x="134" y="400" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{DChegadaData}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-21" positionType="Float" x="402" y="400" width="131" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{DChegadaHORA}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-25" positionType="Float" x="337" y="400" width="64" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="350"
+						width="401"
+						height="13"
+						key="textField-18"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DMunicipio}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="366"
+						width="401"
+						height="13"
+						key="textField-19"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DReferencia}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="382"
+						width="401"
+						height="13"
+						key="textField-20"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DChegadaData}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="402"
+						y="382"
+						width="131"
+						height="13"
+						key="textField-21"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DChegadaHORA}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="337"
+						y="382"
+						width="64"
+						height="13"
+						key="staticText-25"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Hora:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-26" positionType="Float" x="0" y="417" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="399"
+						width="120"
+						height="13"
+						key="staticText-26"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Previsão retorno:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-22" positionType="Float" x="134" y="417" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{DRetornoData}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-23" positionType="Float" x="403" y="417" width="131" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{DRetornoHORA}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-27" positionType="Float" x="338" y="417" width="64" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="399"
+						width="401"
+						height="13"
+						key="textField-22"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DRetornoData}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="403"
+						y="399"
+						width="131"
+						height="13"
+						key="textField-23"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{DRetornoHORA}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="338"
+						y="399"
+						width="64"
+						height="13"
+						key="staticText-27"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Hora:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-28" positionType="Float" x="0" y="436" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="418"
+						width="120"
+						height="13"
+						key="staticText-28"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Motivo:]]></text>
-			</staticText>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-24" positionType="Float" x="134" y="436" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{DMotivo} == null ? "" : $F{DMotivo})]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-29" positionType="Float" x="0" y="457" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="418"
+						width="401"
+						height="13"
+						key="textField-24"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[($F{DMotivo} == null ? "" : $F{DMotivo})]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="439"
+						width="120"
+						height="13"
+						key="staticText-29"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Outros Passageiros:]]></text>
-			</staticText>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-25" positionType="Float" x="134" y="457" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{DOutrosPassageiros} == null ? "" : $F{DOutrosPassageiros} )]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-30" positionType="Float" x="338" y="182" width="64" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="439"
+						width="401"
+						height="13"
+						key="textField-25"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[($F{DOutrosPassageiros} == null ? "" : $F{DOutrosPassageiros} )]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="338"
+						y="182"
+						width="64"
+						height="13"
+						key="staticText-30"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Telefone:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-26" positionType="Float" x="403" y="182" width="131" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{telefone}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-31" positionType="Float" x="0" y="49" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="403"
+						y="182"
+						width="131"
+						height="13"
+						key="textField-26"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{telefone}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="49"
+						width="120"
+						height="13"
+						key="staticText-31"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Aprovado pelo Gestor:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-27" positionType="Float" x="134" y="49" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Gestor}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-32" positionType="Float" x="0" y="67" width="134" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="49"
+						width="401"
+						height="13"
+						key="textField-27"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{Gestor}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="67"
+						width="134"
+						height="13"
+						key="staticText-32"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Liberado pelo Executor:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-28" positionType="Float" x="134" y="67" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Exec}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-34" positionType="Float" x="0" y="496" width="148" height="13"/>
-				<textElement>
-					<font isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="67"
+						width="401"
+						height="13"
+						key="textField-28"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{Exec}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="465"
+						width="127"
+						height="13"
+						key="staticText-34"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true" isUnderline="true"/>
+					</textElement>
 				<text><![CDATA[DADOS DO MOTORISTA]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-35" positionType="Float" x="0" y="516" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="485"
+						width="120"
+						height="13"
+						key="staticText-35"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Nome:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-29" positionType="Float" x="134" y="516" width="401" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{MNome}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-36" positionType="Float" x="0" y="532" width="120" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="485"
+						width="401"
+						height="13"
+						key="textField-29"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{MNome}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="501"
+						width="120"
+						height="13"
+						key="staticText-36"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Veículo:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-30" positionType="Float" x="134" y="532" width="204" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{MVeiculo}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-37" positionType="Float" x="338" y="532" width="64" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="134"
+						y="501"
+						width="204"
+						height="13"
+						key="textField-30"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{MVeiculo}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="338"
+						y="501"
+						width="64"
+						height="13"
+						key="staticText-37"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Placa:]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement key="textField-31" positionType="Float" x="403" y="533" width="131" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{MPlaca}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="staticText-39" positionType="Float" x="0" y="556" width="150" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="403"
+						y="502"
+						width="131"
+						height="13"
+						key="textField-31"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{MPlaca}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="525"
+						width="150"
+						height="13"
+						key="staticText-39"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Odômetro saída:]]></text>
-			</staticText>
-			<rectangle>
-				<reportElement key="rectangle-1" positionType="Float" x="0" y="572" width="150" height="24"/>
-			</rectangle>
-			<staticText>
-				<reportElement key="staticText-40" positionType="Float" x="192" y="556" width="150" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="0"
+						y="541"
+						width="150"
+						height="24"
+						key="rectangle-1"
+						positionType="Float"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="192"
+						y="525"
+						width="150"
+						height="13"
+						key="staticText-40"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Data saída:]]></text>
-			</staticText>
-			<rectangle>
-				<reportElement key="rectangle-2" positionType="Float" x="192" y="572" width="150" height="24"/>
-			</rectangle>
-			<staticText>
-				<reportElement key="staticText-41" positionType="Float" x="385" y="556" width="150" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="192"
+						y="541"
+						width="150"
+						height="24"
+						key="rectangle-2"
+						positionType="Float"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="385"
+						y="525"
+						width="150"
+						height="13"
+						key="staticText-41"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Hora saída:]]></text>
-			</staticText>
-			<rectangle>
-				<reportElement key="rectangle-3" positionType="Float" x="385" y="572" width="150" height="24"/>
-			</rectangle>
-			<staticText>
-				<reportElement key="staticText-42" positionType="Float" x="0" y="605" width="150" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="385"
+						y="541"
+						width="150"
+						height="24"
+						key="rectangle-3"
+						positionType="Float"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="0"
+						y="574"
+						width="150"
+						height="13"
+						key="staticText-42"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Odômetro chegada:]]></text>
-			</staticText>
-			<rectangle>
-				<reportElement key="rectangle-4" positionType="Float" x="0" y="621" width="150" height="24"/>
-			</rectangle>
-			<staticText>
-				<reportElement key="staticText-43" positionType="Float" x="192" y="605" width="150" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="0"
+						y="590"
+						width="150"
+						height="24"
+						key="rectangle-4"
+						positionType="Float"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="192"
+						y="574"
+						width="150"
+						height="13"
+						key="staticText-43"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Data chegada:]]></text>
-			</staticText>
-			<rectangle>
-				<reportElement key="rectangle-5" positionType="Float" x="192" y="621" width="150" height="24"/>
-			</rectangle>
-			<staticText>
-				<reportElement key="staticText-44" positionType="Float" x="385" y="605" width="150" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="192"
+						y="590"
+						width="150"
+						height="24"
+						key="rectangle-5"
+						positionType="Float"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="385"
+						y="574"
+						width="150"
+						height="13"
+						key="staticText-44"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Hora chegada:]]></text>
-			</staticText>
-			<rectangle>
-				<reportElement key="rectangle-6" positionType="Float" x="385" y="621" width="150" height="24"/>
-			</rectangle>
-			<staticText>
-				<reportElement key="staticText-45" positionType="Float" x="0" y="653" width="150" height="13"/>
-				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+				<rectangle>
+					<reportElement
+						x="385"
+						y="590"
+						width="150"
+						height="24"
+						key="rectangle-6"
+						positionType="Float"/>
+					<graphicElement stretchType="NoStretch"/>
+				</rectangle>
+				<staticText>
+					<reportElement
+						x="0"
+						y="622"
+						width="150"
+						height="13"
+						key="staticText-45"
+						positionType="Float"/>
+					<box></box>
+					<textElement>
+						<font pdfFontName="Helvetica-Bold" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Ocorrências:]]></text>
-			</staticText>
-			<rectangle>
-				<reportElement key="rectangle-7" positionType="Float" x="0" y="669" width="535" height="58"/>
-			</rectangle>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-25" positionType="Float" x="3" y="451" width="401" height="3"/>
-				<textElement/>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="0" y="572" width="150" height="24" isPrintWhenDetailOverflows="true"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="false"/>
-				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{odometrosaida}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="0" y="622" width="150" height="24" isPrintWhenDetailOverflows="true"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="false"/>
-				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{odometrocheg}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="192" y="572" width="150" height="24" isPrintWhenDetailOverflows="true"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="false"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{datasaidagar}.equals("01/01/0001"))?null:$F{datasaidagar}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="385" y="572" width="150" height="24" isPrintWhenDetailOverflows="true"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="false"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{horasaidagar}.equals("00:00:00"))?null:$F{horasaidagar}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="192" y="621" width="150" height="24" isPrintWhenDetailOverflows="true"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="false"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{datacheggar}.equals("01/01/0001"))?null:$F{datacheggar}
-]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="385" y="621" width="150" height="24" isPrintWhenDetailOverflows="true"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="false"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{horacheggar}.equals("00:00:00"))?null:$F{horacheggar}
-]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="8" y="677" width="525" height="50" isPrintWhenDetailOverflows="true"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="10" isBold="false"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{ocorrencias}]]></textFieldExpression>
-			</textField>
-		</band>
-	</detail>
-	<columnFooter>
-		<band/>
-	</columnFooter>
-	<pageFooter>
-		<band/>
-	</pageFooter>
-	<summary>
-		<band/>
-	</summary>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="541"
+						width="150"
+						height="24"
+						key="textField"
+						positionType="Float"
+						isPrintWhenDetailOverflows="true"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{odometrosaida}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="0"
+						y="591"
+						width="150"
+						height="24"
+						key="textField"
+						positionType="Float"
+						isPrintWhenDetailOverflows="true"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{odometrocheg}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="192"
+						y="541"
+						width="150"
+						height="24"
+						key="textField"
+						positionType="Float"
+						isPrintWhenDetailOverflows="true"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[($F{datasaidagar}.equals("01/01/0001"))?null:$F{datasaidagar}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="385"
+						y="541"
+						width="150"
+						height="24"
+						key="textField"
+						positionType="Float"
+						isPrintWhenDetailOverflows="true"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[($F{horasaidagar}.equals("00:00:00"))?null:$F{horasaidagar}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="192"
+						y="590"
+						width="150"
+						height="24"
+						key="textField"
+						positionType="Float"
+						isPrintWhenDetailOverflows="true"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[($F{datacheggar}.equals("01/01/0001"))?null:$F{datacheggar}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="385"
+						y="590"
+						width="150"
+						height="24"
+						key="textField"
+						positionType="Float"
+						isPrintWhenDetailOverflows="true"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[($F{horacheggar}.equals("00:00:00"))?null:$F{horacheggar}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4"
+						y="641"
+						width="525"
+						height="50"
+						key="textField"
+						positionType="Float"
+						isPrintWhenDetailOverflows="true"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{ocorrencias}]]></textFieldExpression>
+				</textField>
+				<line direction="TopDown">
+					<reportElement
+						x="217"
+						y="713"
+						width="318"
+						height="1"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="218"
+						y="715"
+						width="317"
+						height="17"
+						key="staticText-46"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="1_1_2">
+						<font fontName="SansSerif" pdfFontName="Times-Bold" size="8" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Responsável -  SIAPE:                              Nome:           
+]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="2"
+						y="713"
+						width="205"
+						height="1"
+						key="line-3"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="3"
+						y="715"
+						width="204"
+						height="17"
+						key="staticText-47"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="1_1_2">
+						<font fontName="SansSerif" pdfFontName="Times-Bold" size="8" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Motorista]]></text>
+				</staticText>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
 </jasperReport>

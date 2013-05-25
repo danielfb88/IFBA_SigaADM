@@ -46,6 +46,11 @@ class frmUoNew extends Form
       );
 		
         $this->SetFields($fields);
+        
+        $this->sigla->addAttribute('maxlength', 30);
+        $this->nome->addAttribute('maxlength', 50);
+        $this->documentoRef->addAttribute('maxlength', 200);
+        $this->lkpSetor->addAttribute('readonly', TRUE);
 	
 
 	   $this->SetFieldAttr('lkpSetor','module','common');
@@ -73,9 +78,10 @@ class frmUoNew extends Form
 
 	function btnNew_click()
 	{
-		$sigla = Form::GetFormValue('sigla');
-		$nome = Form::GetFormValue('nome');
-		$setor = Form::GetFormValue('idSetor');
+		$sigla 			= Form::GetFormValue('sigla');
+		$nome 			= Form::GetFormValue('nome');
+		$setor 			= Form::GetFormValue('idSetor');
+		$saldoPublico 	= Form::GetFormValue('saldoPublico');
 
 		if( strlen(trim($sigla))<5 )
 		{
@@ -85,9 +91,13 @@ class frmUoNew extends Form
 		{
 			$this->AddError("O campo 'nome' deve conter pelo menos 5 cinco caracteres.");
 		}
-		  elseif(!$setor)
+		elseif(!$setor)
 		{
 			$this->AddError("Um setor deve ser definido.");
+		}
+		elseif($saldoPublico == "")
+		{
+			$this->AddError("Saldo Público deve ser definido.");
 		}
 		else
 		{

@@ -139,6 +139,7 @@ class frmVeiculoEditar extends MForm
                       $valorkm = str_replace(".","",$valorkm);
                 }
 		$valorkm = $cf->toDecimal($valorkm);
+		$ano = date('Y');
         
         if ( Form::GetFormValue('tipoVeiculo') == '' )
 		{
@@ -160,14 +161,14 @@ class frmVeiculoEditar extends MForm
 		{
 			$this->AddError('Informe corretamente o modelo.');
 		}
-		elseif( preg_match("/\D/", Form::GetFormValue('anoFab')) or  (strlen(Form::GetFormValue('anoFab')) !=4 ) or  (Form::GetFormValue('anoFab')<1900) )
+		elseif( preg_match("/\D/", Form::GetFormValue('anoFab')) or  (strlen(Form::GetFormValue('anoFab')) !=4 ) or  (Form::GetFormValue('anoFab')<1900) or (Form::GetFormValue('anoFab') > $ano))
 		{
 			$this->AddError('Informe um ano de fabricação válido.');
 		}
-		elseif( preg_match("/\D/", Form::GetFormValue('anoMod')) or  (strlen(Form::GetFormValue('anoMod')) !=4 ) or  (Form::GetFormValue('anoMod')<1900))
+		elseif( preg_match("/\D/", Form::GetFormValue('anoMod')) or  (strlen(Form::GetFormValue('anoMod')) !=4 ) or  (Form::GetFormValue('anoMod')<1900) or (Form::GetFormValue('anoMod') > ($ano+1)))
 		{
 			$this->AddError('O campo ano modelo está inválido.');
-		}
+		}	
 		elseif( Form::GetFormValue('capacidade') < 2)
 		{
 			$this->AddError('A capacidade do veículo informada é inválida.');

@@ -1,0 +1,153 @@
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+<?php
+/**
+ * @package SIGA
+ * @subpackage Biblioteca
+ * @author SETEC/MEC
+ */
+
+class frmExemplarTransferencia extends Form
+{
+    var $objExemplar;
+    var $numeroObra;
+    var $numeroTombo;
+    var $numeroNovaObra;
+
+
+    /**
+     * 
+     * Construtor da classe
+     * @param $data parametro com o numerotombo:numeroobra
+     */
+    function frmExemplarTransferencia($data)  
+    {
+        global $MIOLO,$module,$item;
+
+        $dados = split(':',$data);
+
+        $this->numeroTombo = $dados[0];
+        $this->numeroObra = $dados[1];
+
+        //Instancia objetos
+        $this->objExemplar = $MIOLO->GetBusiness($module,'exemplar');
+
+        // Título do Formulário
+        $this->Form('Catalogação de Exemplares');
+
+        //Chama o CreateFileds, etc.
+        $this->EventHandler();
+
+        // Botão "enviar" não aparece
+        $this->defaultButton = false;
+
+        // Botão 'fechar', direcionando para o handler biblioteca/main/catalogacao
+        $this->SetClose($this->manager->GetActionURL($module, 'main:catalogacao'));
+    }
+     
+    /**
+     * 
+     * Metodo responsavel pela criacao dos campos
+     */
+    function CreateFields()
+    {
+        global $MIOLO,$module,$action,$item,$trasferencia;
+
+        $ui = $MIOLO->getUI();
+        $fields = Array (
+        new TextField('edtNumerodaObra','','Número da Obra',10),
+        new TextField('edtNumerodoTombo','','Número do Tombo',20),
+        new TextField('edtNumeroNovaObra','','Obra de Destino',10),
+        );
+
+        $this->SetFields($fields);
+
+        $this->SetFieldAttr('edtNumerodaObra', 'visible', true);
+        $this->SetFieldAttr('edtNumerodoTombo', 'visible', true);
+        $this->SetFieldAttr('edtNumeroNovaObra', 'visible', true);
+
+        $this->SetFieldAttr('edtNumerodaObra', 'readonly',true);
+        $this->SetFieldAttr('edtNumerodoTombo', 'readonly',true);
+
+
+        // Botões que aparecem no formulário
+        $buttons = Array(
+        new FormButton('btnTransfere', 'Transferir'),
+        new FormButton('btnVoltar', 'Voltar', $MIOLO->GetActionURL($module = $module, 'main:catalogacao:exemplar',$this->numeroTombo )),
+        );
+
+        $this->SetButtons($buttons);
+
+        $this->SetbuttonAttr('btnVoltar','visible',true);
+        $this->SetbuttonAttr('btnTransfere','visible',true);
+         
+        if($obraIni == null)
+        {
+            $obraIni = $this->GetFormValue('edtObraIni');
+        }
+         
+
+        $validators = array(
+        new RequiredValidator('edtNumerodaObra'),
+        new RequiredValidator('edtNumerodoTombo'),
+        new RequiredValidator('edtNumeroNovaObra'),
+        );
+        $this->SetValidators($validators);
+
+        $this->SetData();
+        $this->page->onLoad("MIOLO_GetElementById('edtNumeroNovaObra').focus();");
+    }
+
+
+    
+    /**
+     * 
+     * Executa a transferencia do exemplar para outra obra
+     */
+    function SetData()
+    {
+        $this->SetFieldValue('edtNumerodaObra',$this->numeroObra);
+        $this->SetFieldValue('edtNumerodoTombo',$this->numeroTombo);
+    }
+
+    
+    /**
+     * 
+     * Executa a transferencia do exemplar para outra obra
+     */
+    function btnTransfere_click()
+    {
+        global $MIOLO,$item,$theme,$module;
+
+        $idNovaObra = $this->GetFormValue('edtNumeroNovaObra');
+         
+        try
+        {
+            $ok = $this->objExemplar->Transfere($this->numeroTombo,$idNovaObra);
+            $MIOLO->Information("Exemplar ". $this->numeroTombo . " transferido com sucesso.", $MIOLO->GetActionURL($module,'main:catalogacao:exemplar',$this->numeroObra,'') );
+        }
+        catch (Exception $e)
+        {
+            $this->addError($e->getMessage());
+        }
+         
+    }
+}
+?>

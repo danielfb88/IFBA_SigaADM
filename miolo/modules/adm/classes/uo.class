@@ -140,7 +140,13 @@ class BusinessAdmUo extends Business
         global $MIOLO;
         $requisitante = strtoupper($requisitante);
         $requisicao = $MIOLO->getBusiness('adm','requisicao');
-
+		
+		if ((! $idRequisicao ) AND ($requisitante == '')) 
+		{
+			$idRequisicao = 0;			
+			$requisitante = 'NULO';
+		}
+		
         $criteria = $requisicao->getCriteria();
         $criteria->setDistinct(true);
         $criteria->addCriteria('idTipoReq','=', "8");
@@ -170,6 +176,10 @@ class BusinessAdmUo extends Business
     function ListOrdemEntregaForAlmoxarifado($numero=null,$idRequisicao=null)
     {
         global $MIOLO;
+		
+		//var_dump ($numero, $idRequisicao);
+		//exit();
+		
         $requisitante = strtoupper($requisitante);
         $ordem = $MIOLO->getBusiness('adm','ordementrega');
         $criteria =  $ordem->getCriteria();
@@ -187,6 +197,14 @@ class BusinessAdmUo extends Business
             $criteria->addCriteria('impresso','=',"'0'");
         }
         $criteria->addCriteria('idUoExecutante','=',"{$this->idUo}");
+		
+		
+		/*echo('<pre>');
+		var_dump (get_class($criteria), $this->idUo);
+		echo('</pre>');*/
+		
+		$criteria->setDistinct (TRUE);
+		
         $cursor = $criteria->retrieveAsCursor();
         while ($ordem = $cursor->getObject())
         {
@@ -218,7 +236,10 @@ class BusinessAdmUo extends Business
         $criteria =  $ordem->getCriteria();
         $criteria->addCriteria('data','>=',"'{$dataInicio}'");
         $criteria->addCriteria('data','<=',"'{$dataFim}'");
+		$criteria->addCriteria('idUoExecutante','=',"{$this->idUo}");
         $criteria->addOrderAttribute('data');
+		//$criteria->setDistinct (TRUE);
+		
         $cursor = $criteria->retrieveAsCursor();
         while ($ordem = $cursor->getObject())
         {

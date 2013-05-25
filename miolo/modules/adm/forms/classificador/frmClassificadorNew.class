@@ -34,9 +34,11 @@ class frmClassificadorNew extends Form
             new TextField('idClassificador','','Código','20', 'Máx. 12 caracteres'),
             new TextField('descricao','','Descricao','50','Máx. 50 caracteres'),
         );
-		
         $this->SetFields($fields);
-	      
+
+	$this->idClassificador->addAttribute('maxlength',12);
+	$this->descricao->addAttribute('maxlength',50);	      
+
 	$buttons = array (
             new FormButton('btnNew', 'Cadastrar Classificador')
         );
@@ -54,10 +56,12 @@ class frmClassificadorNew extends Form
 		$codigo = Form::GetFormValue('idClassificador');
 		$descricao = Form::GetFormValue('descricao');
 
-		if(strlen(trim($codigo))< 4){
+		if(strlen(trim($codigo))< 4)
+		{
 			$this->AddError('O código deve possuir pelo menos quatro caracteres.');
 		}
-		elseif(strlen(trim($descricao))< 3){
+		elseif(strlen(trim($descricao))< 3)
+		{
 			$this->AddError('A descrição deve ter pelo menos três caracteres.');
 		}
 		else
@@ -66,20 +70,27 @@ class frmClassificadorNew extends Form
 
 		      $classificador = $this->manager->GetBusiness('adm','classificador');
 		      $classificador->SetData($data);
-		      try
-		      {
-			      $classificador->idClassificador = strtoupper($classificador->idClassificador);
-			      $classificador->descricao = strtoupper($classificador->descricao);
-			      $classificador->save();
-			      $classificador->Log(OP_INS,"Novo classificador criado");
-			      $go = $this->manager->GetActionURL('adm','main:classificador',$classificador->idClassificador);
-			      $this->manager->Information('Classificador criado com sucesso.',$go);
-			      
-		      }
-		      catch (Exception $e)
-		      {
-			      $this->addError($e->getMessage());
-		      }
+			if($classificador->findByCodigo($classificador->idClassificador))
+			{
+				$this->AddError('Código já cadastrado.');	
+			}
+			else
+			{
+			      try
+			      {
+				      $classificador->idClassificador = strtoupper($classificador->idClassificador);
+				      $classificador->descricao = strtoupper($classificador->descricao);
+				      $classificador->save();
+				      $classificador->Log(OP_INS,"Novo classificador criado");
+				      $go = $this->manager->GetActionURL('adm','main:classificador',$classificador->idClassificador);
+				      $this->manager->Information('Classificador criado com sucesso.',$go);
+				      
+			      }
+			      catch (Exception $e)
+			      {
+				      $this->addError($e->getMessage());
+			      }
+			}
 		}
 	}
 

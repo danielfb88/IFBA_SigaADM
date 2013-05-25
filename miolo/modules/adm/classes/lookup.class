@@ -2073,7 +2073,7 @@ function LookupFuncionario(&$lookup)
 
 	Gera o Lookup de servico externo com
 	busca na tabela ad_servico
-
+	/modulos/adm/classes
 	----------------------------------------*/
 	
 	function LookupServicoExterno(&$lookup)
@@ -2086,24 +2086,22 @@ function LookupFuncionario(&$lookup)
         $lookup->AddFilterField(new TextField('descricao',$descricao,'',30));
         if (!$descricao || $codservico) $descricao = '%';
 		$columns = array(
-			new DataGridColumn('idmaterial','Código','left',true,'10%',false),
-			new DataGridColumn('codservico','Código','left',true,'10%',true),
-			new DataGridColumn('unidade','Un','left',true,'10%',true),
+			new DataGridColumn('idservico','Código','left',true,'10%',false),
+			new DataGridColumn('codservico','Código','left',true,'10%',true),			
 			new DataGridColumn('descricao','Nome','left',true,'70%',true),
 		);
 		$sql = new sql();
 		$sql->SetColumns('
 			idservico,
-			descricao,
-			codservico
-            unidade
+			codservico,
+			descricao			
 		');
 		$sql->SetTables('
 			ad_servico
 		');
-		if ($codmaterial || $descricao)
+		if ($codservico || $descricao)
 		{
-			$where = "(upper(ativo) = 'S' and upper(descricao) like upper('%$descricao%')) or (upper(ativo) = 'S' and codservico = '$codservico')";
+			$where = "(upper(ativo) = 'S' and upper(descricao) like upper('%$descricao%')) or (upper(ativo) = 'S' and cast(codservico as varchar) = '$codservico')";
 			$sql->SetWhere($where);
 		}
 		$sql->SetOrderBy('descricao');
@@ -2122,6 +2120,7 @@ function LookupFuncionario(&$lookup)
 		$filterDependencia = $lookup->GetFilterValue('filter0');
 		if (!$filterDependencia)
 			$filterDependencia = '%';
+
 		$filterIdSetor = $lookup->GetFilterValue('filter1');
 		$filterSetor = $lookup->GetFilterValue('filter2');
 
@@ -2146,7 +2145,7 @@ function LookupFuncionario(&$lookup)
 
         $sql = new sql("iddependencia,dependencia",'ad_dependencia');
 
-        if ( $filterDependencia )
+        if ( $filterDependencia && $filterIdSetor)
         {
             $sql->SetOrderBy('dependencia');
             $sql->where .= " ( upper(dependencia) like upper('{$filterDependencia}%') and idsetor = $filterIdSetor) ";

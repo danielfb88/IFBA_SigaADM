@@ -63,10 +63,14 @@ class frmAniversariantes extends MForm
             array( new MSelection('selMes','','Mês',$k->months,TRUE) , new MSelection('seldmy','','Dia',$dias,false) ),//new MCalendarField('seldmy','','Data',12) ),
             new MSpacer(1),
             new MSelection('selCtg','','Categoria',$this->categorias,false),
+            new MSelection('selMatricula','1','Matrícula',array("1"=>"SIM","2"=>"NÃO")),
+	    new MHiddenField('idSetor'),
+	    new MLookUpTextField('lkpSetor','','Setor','35','Opcional'),		
             new MSpacer(1),
             new MRadioButtonGroup('tadoc',''     ,$opttadoc,false,'','vertical','css'),
             new MSpacer(1),
-            new MRadioButtonGroup('ordem','Ordem',$optordem,false,'','vertical','css')
+            new MRadioButtonGroup('ordem','Ordem',$optordem,false,'','vertical','css'),
+
         );
         $this->SetFields($fields);
         $buttons = array(
@@ -78,6 +82,10 @@ class frmAniversariantes extends MForm
 	$this->setFieldAttr('tadoc','visible',false);
 	$this->setFieldAttr('ordem','visible',false);
 	$this->setFieldAttr('seldmy','visible',false);
+	$this->SetFieldAttr('lkpSetor','module','common');
+	$this->SetFieldAttr('lkpSetor','item','setor');
+        $this->SetFieldAttr('lkpSetor','event','filler');
+        $this->SetFieldAttr('lkpSetor','related','idSetor,lkpSetor');
     }
 
 
@@ -211,37 +219,80 @@ class frmAniversariantes extends MForm
 
         	$selMes = $this->GetFormValue('selMes');
         	$selCtg = $this->getFormValue('selCtg');
+		$selOp = $this->getFormValue('selMatricula');
+		$idSetor = $this->getFormValue('idSetor');
 		if($selCtg == '2')
+		{
 			$stCtg = "APOSENTADOS";
+		}
 		if($selCtg == '1')
+		{
 			$stCtg = "ATIVOS PERMANENTE";
+		}
 		if($selCtg == '12')
+		{
 			$stCtg = "CONTRATOS TEMPORÁRIOS";
-        	if ( is_null($selMes) or empty($selMes) )
-           		 $erro[] = "Selecione o mês";
-       		if ( is_null($selCtg) or empty($selCtg) )
-            		$erro[] = "Selecione a categoria";
-        	if ( count($erro) > 0 )
-        	{
-            		foreach ( $erro as $e )
-                		$this->addError($e);
-       		}
+		}
+		if( is_null($selMes) or empty($selMes) )
+		{
+           		 //$erro[] = "Selecione o mês";
+			$this->addError('Selecione o mês');
+		}
+       		elseif ( is_null($selCtg) or empty($selCtg) )
+		{		
+            		//$erro[] = "Selecione a categoria";
+			$this->addError('Selecione a categoria');
+		}
+		elseif($selOp == '')
+		{
+			$this->addError("Escolha se o relatório terá o campo matrícula ou não");
+		}
        		else
         	{
-			$report = new MJasperReport('sigaept'); 
-			$k = new MKrono();
-		        $stringMes = $k->getMonthByNumber($selMes);
-			$ano = date('Y');
-			$parameters['int_categoria'] = $selCtg;
-			$parameters['str_cat'] = $stCtg;
-			$parameters['str_mes'] = $selMes;
-			$parameters['str_ano'] = $ano;
-			$parameters['str_stMes'] = $stringMes ;
-			$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
-			$parameters['int_pIdUsuario']= $MIOLO->login->idkey;
-			$parameters['pURL']=$MIOLO->GetConf('home.url');
-		        $report->Execute('rh', 'RelAniversariantes',$parameters); 
+			if($idSetor)
+			{
+				$report = new MJasperReport('sigaept'); 
+				$k = new MKrono();
+			        $stringMes = $k->getMonthByNumber($selMes);
+				$ano = date('Y');
+				$parameters['int_categoria'] = $selCtg;
+				$parameters['str_cat'] = $stCtg;
+				$parameters['str_mes'] = $selMes;
+				$parameters['str_ano'] = $ano;
+				$parameters['str_stMes'] = $stringMes ;
+				$parameters['int_setor'] = $idSetor;
+				$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
+				$parameters['int_pIdUsuario']= $MIOLO->login->idkey;
+				$parameters['pURL']=$MIOLO->GetConf('home.url');
+				if($selOp == "1")
+				        $report->Execute('rh', 'RelAniversariantes',$parameters); 
+				elseif($selOp == "2")
+				        $report->Execute('rh', 'RelAniversariantesSM',$parameters); 
+					
+			}
+			else
+			{
+				$report = new MJasperReport('sigaept'); 
+				$k = new MKrono();
+			        $stringMes = $k->getMonthByNumber($selMes);
+				$ano = date('Y');
+				$parameters['int_categoria'] = $selCtg;
+				$parameters['str_cat'] = $stCtg;
+				$parameters['str_mes'] = $selMes;
+				$parameters['str_ano'] = $ano;
+				$parameters['str_stMes'] = $stringMes ;
+				$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
+				$parameters['int_pIdUsuario']= $MIOLO->login->idkey;
+				$parameters['pURL']=$MIOLO->GetConf('home.url');
+				if($selOp == "1")
+				        $report->Execute('rh', 'RelAniversariantesNSetor',$parameters); 
+				elseif($selOp == "2")
+				        $report->Execute('rh', 'RelAniversariantesSMNSetor',$parameters); 
+			
+			}
+
         	}
+
     	}
 
 

@@ -34,9 +34,9 @@ class gridMaterialOrdemEmpenho extends MDataGrid
 			new MDataGridColumn('valortotal','Valor Total','left',false,'10%')
 		);
 
-	
 		$objMovimento = $MIOLO->GetBusiness('adm','movimento');
 		
+				
 		$query = $objMovimento->ListItensMovimento($dadosOrdem[0],$dadosOrdem[1]);
 		parent::__construct($query, $columns);		
 

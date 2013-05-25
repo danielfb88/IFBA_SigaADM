@@ -142,8 +142,8 @@ class gridItensALicitarAjaxPermanente extends MGridAJAX
         // define columns for the grid
         $columns2 = array(
         			new MGridColumn('itemreq','left','','0%',false,'',true),
-					new MGridColumn('Material','left','','40%',true,'',true),
-					new MGridColumn('Elem/SubElem','left','','20%',true,'',true),
+					new MGridColumn('Material','left','','40%',true,'',false),
+					new MGridColumn('Elem/SubElem','left','','20%',true,'',false),
 					new MGridColumn('Qtde.','center','','10%'),
 					new MGridColumn('UN','center','','10%'),
 					new MGridColumn('Preco','center','','10%'),

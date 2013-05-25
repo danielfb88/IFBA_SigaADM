@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="repTransferenciaPatri_Parametros"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="802"
+		 pageHeight="535"
+		 columnWidth="802"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<style 
+		name="Times8"
+		isDefault="true"
+		fontName="Times New Roman"
+		fontSize="8"
+	>
+	</style>
+
+	<parameter name="porigem" isForPrompting="true" class="java.lang.String">
+		<parameterDescription><![CDATA[Sigla do setor de Origem]]></parameterDescription>
+	</parameter>
+	<parameter name="pdestino" isForPrompting="true" class="java.lang.String">
+		<parameterDescription><![CDATA[Sigla do setor de Destino]]></parameterDescription>
+	</parameter>
+	<parameter name="pOrdenacao" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pnomedatainicial" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="pnomedatafinal" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="pnumeroempenho" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="pnotafiscal" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="pidclassificador" isForPrompting="true" class="java.lang.String"/>
+	<queryString><![CDATA[select 
+    Destino.siglaSetor || ' (' ||  Destino.nomesetor || ')' as Destino,
+    Origem.siglaSetor || ' (' ||  Origem.nomesetor || ')' as Origem,
+    Classif.IdClassificador || ' - ' || Classif.Descricao AS Classificador,
+    case $P{pOrdenacao}
+       when 'id'           then 'Número do Patrimônio'
+       when 'nf_id'        then 'Nota Fiscal + Número do Patrimônio'
+       when 'nf_desc'      then 'Nota Fiscal + Descrição'
+       when 'desc'         then 'Descrição'
+    end As NomeOrdenacao
+FROM cm_setor as Destino,
+     cm_setor as Origem LEFT join ad_classificador as Classif ON ( Classif.IdClassificador = $P{pidclassificador})
+WHERE Origem.siglaSetor LIKE $P{porigem}
+  AND Destino.siglaSetor LIKE $P{pdestino}]]></queryString>
+
+	<field name="destino" class="java.lang.String"/>
+	<field name="origem" class="java.lang.String"/>
+	<field name="classificador" class="java.lang.String"/>
+	<field name="nomeordenacao" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="18"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="802"
+						height="18"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="14" isBold="true" isUnderline="true"/>
+					</textElement>
+				<text><![CDATA[Parâmetros do Relatório:]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="64"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="-24"
+						width="535"
+						height="0"
+						forecolor="#808080"
+						key="line"
+						positionType="FixRelativeToBottom"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="48"
+						y="6"
+						width="340"
+						height="15"
+						key="textField"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{destino}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="48"
+						y="23"
+						width="339"
+						height="15"
+						key="textField"/>
+					<box leftPadding="2" rightPadding="2">					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{origem}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="492"
+						y="23"
+						width="303"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{nomeordenacao}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="8"
+						width="42"
+						height="13"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<text><![CDATA[Destino:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="25"
+						width="42"
+						height="13"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<text><![CDATA[Origem:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="434"
+						y="25"
+						width="53"
+						height="13"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<text><![CDATA[Ordenação:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="493"
+						y="6"
+						width="100"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{pnomedatainicial}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="682"
+						y="6"
+						width="100"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{pnomedatafinal}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="412"
+						y="8"
+						width="75"
+						height="13"
+						key="staticText-5"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<text><![CDATA[Data Inicial:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="598"
+						y="8"
+						width="75"
+						height="13"
+						key="staticText-6"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<text><![CDATA[Data Final:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="48"
+						y="40"
+						width="126"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{pnumeroempenho}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="239"
+						y="40"
+						width="100"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{pnotafiscal}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="492"
+						y="40"
+						width="303"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="8" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{classificador}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="42"
+						width="42"
+						height="13"
+						key="staticText-7"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<text><![CDATA[Empenho:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="185"
+						y="42"
+						width="54"
+						height="13"
+						key="staticText-8"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<text><![CDATA[Nota Fiscal:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="421"
+						y="41"
+						width="66"
+						height="13"
+						key="staticText-9"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="8"/>
+					</textElement>
+				<text><![CDATA[Classificador:]]></text>
+				</staticText>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="9"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="0"
+						width="802"
+						height="1"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+		</summary>
+</jasperReport>

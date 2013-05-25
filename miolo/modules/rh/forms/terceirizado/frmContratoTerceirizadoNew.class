@@ -24,6 +24,7 @@ class frmContratoTerceirizadoNew extends Form
     {
         $this->Form('Incluir Novo Contrato');
         $this->EventHandler();
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
     }
 
     function CreateFields()
@@ -35,15 +36,23 @@ class frmContratoTerceirizadoNew extends Form
             new MCalendarField('dataProrrogacao','','Data de Prorrogação',10),
             new MMultiLineField('justificativaPror','','Justificativa da Prorrogação',60,4,60,'Máx. 500'),
 			new MHiddenField('idInstituicao'),  
-			new MLookupFieldValue('instituicao','','Instituição',55),  	
+			new MLookupFieldValue('instituicao','','Instituição',60),  	
 			new MHiddenField('idSetor'),
-			new MLookupFieldValue('lkpSetor','','Setor',70),
+			new MLookupFieldValue('lkpSetor','','Setor',60),
 			new MMultiLineField('objeto','','Descrição',60,4,60,'Máx. 200'),
 			new MMultiLineField('obs','','Observação',60,4,60,'Máx. 500')
         );        
     	
         $this->SetFields($fields);
-  
+        
+        $this->numContrato->addAttribute('maxlength',8);
+		$this->numContrato->addAttribute('onKeyUp','makeMask(this, \'###/####\');');
+		$this->numContrato->addAttribute('onBlur','makeMask(this, \'###/####\');');
+		
+		$this->justificativaPror->addAttribute('maxlength',500);
+		$this->objeto->addAttribute('maxlength',200);
+		$this->obs->addAttribute('maxlength',500);
+		$this->dataProrrogacao->addAttribute('maxlength',10);
         
         //lookup setor
         $this->SetFieldAttr('lkpSetor','module','common');
@@ -65,11 +74,11 @@ class frmContratoTerceirizadoNew extends Form
 		$validators = array(
            //new MMaskValidator('numContrato','','99999999','required'),
            new MRequiredValidator('numContrato'),
-           new MRequiredValidator('instituicao'),
+           //new MRequiredValidator('instituicao'),
            new MRequiredValidator('lkpSetor'),   
-	   new MRequiredValidator('dataInicio'),
+	  	   new MRequiredValidator('dataInicio'),
     	   new MRequiredValidator('dataFim'),
-	   //new MRequiredValidator('dataProrrogacao'), 
+	   	   //new MRequiredValidator('dataProrrogacao'), 
 		);
 		$numero->addAttribute('maxlength',8);
         $dataInicio->addAttribute('maxlength',10);
@@ -83,52 +92,56 @@ class frmContratoTerceirizadoNew extends Form
         $contrato = $this->manager->GetBusiness('rh','contrato');
         $contrato = $contrato->GetByNumero($data->numContrato);
 
-	$dataInicio = $data->dataInicio;
-	$dataFim = $data->dataFim;
-	$dataProrrogacao = $data->dataProrrogacao;
-	$dataInicio = substr($dataInicio,6,4).substr($dataInicio,3,2).substr($dataInicio,0,2);
-	$dataFim = substr($dataFim,6,4).substr($dataFim,3,2).substr($dataFim,0,2);
-	$dataProrrogacao = substr($dataProrrogacao,6,4).substr($dataProrrogacao,3,2).substr($dataProrrogacao,0,2);
-	$numero = strlen(trim($data->numContrato));
-	if($numero < '8')
-	{
-		$this->addError('Informe o número do contrato no formato correto');
-	}
-	elseif ($dataInicio > $dataFim)
-	{
-		$this->addError('Data Fim precisa ser maior que data início');
-	}
-	elseif($dataProrrogacao)
-	{
-		if($dataFim > $dataProrrogacao)
+		$dataInicio = $data->dataInicio;
+		$dataFim = $data->dataFim;
+		$dataProrrogacao = $data->dataProrrogacao;
+		$dataInicio = substr($dataInicio,6,4).substr($dataInicio,3,2).substr($dataInicio,0,2);
+		$dataFim = substr($dataFim,6,4).substr($dataFim,3,2).substr($dataFim,0,2);
+		$dataProrrogacao = substr($dataProrrogacao,6,4).substr($dataProrrogacao,3,2).substr($dataProrrogacao,0,2);
+		$numero = strlen(trim($data->numContrato));
+		
+		if( preg_match("/\D/", Form::getFormValue('numContrato')) && strlen(trim(Form::getFormValue('numContrato'))) < 8 )
+		{
+			$this->AddError('Informe um valor válido para o campo "Número de Contrato"');
+		}
+		elseif(Form::getFormValue('instituicao') == null)
+		{
+			$this->addError('Informe uma instituição');
+		}
+		elseif($numero < '8')
+		{
+			$this->addError('Informe o número do contrato no formato correto');
+		}
+		elseif ($dataInicio > $dataFim)
+		{
+			$this->addError('Data Fim precisa ser maior que data início');
+		}
+		elseif($dataProrrogacao && $dataFim > $dataProrrogacao)
 		{
 			$this->addError('Data Prorrogação precisa ser maior que data fim');
 		}
-	}
-	else
-	{
-		if (! $contrato->idContrato )
-	        {
-		        $contrato = $this->manager->GetBusiness('rh','contrato');
-			$contrato->SetData($data);
-	        	try
-	        	{ 
-	                
-		                $contrato->save();
-	                	$go = $this->manager->GetActionURL('rh','main:contrato',$contrato->idContrato,array('form'=>'dados'));
-		                $this->page->Redirect($go);
-    			}
-    			catch ( Exception $e )
-    			{	
-    				$this->AddError("Informe o seguinte erro a equipe do CGCO: ".$e->getMessage());
-    			}
-        	}
-	        else
+		else
 		{
-        		$this->addInfo("Uma Contrato com esse número foi encontrado em nosso banco de dados. Confira se as informações estão corretas.");
-
+			if (! $contrato->idContrato )
+		    {
+			    $contrato = $this->manager->GetBusiness('rh','contrato');
+				$contrato->SetData($data);
+		    	try
+	    		{   
+		            $contrato->save();
+	            	$go = $this->manager->GetActionURL('rh','main:contrato',$contrato->idContrato,array('form'=>'dados'));
+		            $this->page->Redirect($go);
+				}
+				catch ( Exception $e )
+				{	
+					$this->AddError("Informe o seguinte erro a equipe do CGCO: ".$e->getMessage());
+				}
+	    	}
+		    else
+			{
+		    	$this->addInfo("Uma Contrato com esse número foi encontrado em nosso banco de dados. Confira se as informações estão corretas.");
+			}
 		}
-	}
     }
 
  }

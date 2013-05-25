@@ -19,7 +19,11 @@
  */
 ?>
 
+
+
 <?
+$MIOLO->Uses('controls/linkpatrimonio.class','adm');
+
 class gridItensPatrimonioSelection extends MDataGrid
 {
 
@@ -29,33 +33,164 @@ class gridItensPatrimonioSelection extends MDataGrid
     function __construct()
     {
         global $MIOLO, $self;
-
-	$columns = array(
-	   new MDataGridColumn( 'idItemPatrimonio', 'Número', 'center', true, '15%' ),
-	   new MDataGridColumn( 'descricao', 'Descrição', 'center', false, '55%' ),
-	   new MDataGridColumn( 'setor.sigla', 'Setor','center', true, '15%' ),
-	   new MDataGridColumn( 'numeroempenho', 'Empenho','center', true, '15%' ),
-	);
-
-	//$datagrid = new MDataGrid( $query, $columns, $href_datagrid, 20 );
+		
+		$linkPatrimonio = new LinkPatrimonio('linkpatrimonio','%0%');
+		
+		//$linkPatrimonio->SetClose($MIOLO->GetActionURL('adm','main:itempatrimonio:find'));
+		$columns = array(
+		   new MDataGridColumn( 'idItemPatrimonio', 'Número', 'center', true, '8%' ),
+		   new MDataGridColumn( 'numeroempenho', 'Empenho','center', true, '10%' ),
+		   new MDataGridColumn( 'notafiscal', 'Nota Fiscal','center', true, '8%' ),	   
+		   //new MDataGridColumn( 'descricao', 'Descrição', 'center', false, '55%' ),
+		   new DataGridControl($linkPatrimonio,'patrimonio','Descrição completa','left', false,'64%'),
+		   new MDataGridColumn( 'SiglaSetor', 'Setor','center', true, '10%' ),
+		);
+	
+		//$datagrid = new MDataGrid( $query, $columns, $href_datagrid, 20 );
         
-	$filter = Form::GetFormValue('setores');
-        $setor = empty($filter) ? '%' : $filter;
-        $this->AddFilterText('setor','idSetor',$setor);
-        $this->SetIndex(1);
-        
-	$objPatrimonio = $MIOLO->GetBusiness( 'adm', 'itempatrimonio' );
-	$query = $objPatrimonio->ListByIdSetor($setor);
+		//$ = Form::GetFormValue('setores');
+		
+		//echo('<pre>');
+		//var_dump ($_POST);	
+		//var_dump ($sql->where);  
+		//var_dump ($sql);  
+		//echo('</pre>');
+			
+		$patriInicial = Form::GetFormValue('patriInicial');
+		$patriFinal = Form::GetFormValue('patriFinal');
+		$empenho =  Form::GetFormValue('empenho');
+		$notaFiscal = Form::GetFormValue('notafiscal');		
+		$descricao = Form::GetFormValue('descricao');
+		if (empty($descricao)) { $descricao = Form::GetFormValue('descricaoBusca'); }
+		$siglaSetor = Form::GetFormValue('siglaSetor');
+		$idclassificador = Form::GetFormValue('idclassificador');		
+		$tipoIngresso = Form::GetFormValue('tipoIngresso');		
+		$listarTotalizacoes = Form::GetFormValue('listarTotalizacoes');
+		$ordenacao = Form::GetFormValue('ordenacao');
+		
+		
+		if(!empty($ordenacao))
+		{
+			if($ordenacao == 'id') { $ordenacao = 'idItemPatrimonio';}
+			else if($ordenacao == 'nf_id') { $ordenacao = 'notaFiscal, idItemPatrimonio'; }
+			else if($ordenacao == 'nf_desc') { $ordenacao = 'notaFiscal, descricao, idItemPatrimonio'; }
+			else if($ordenacao == 'desc') { $ordenacao = 'descricao, idItemPatrimonio'; }
+		}	
+		else { $ordenacao = 'idItemPatrimonio';	}	
+		
+		//var_dump ($ordenacao);
+		
+		$sql = new sql("IdItemPatrimonio, NumeroEmpenho, NotaFiscal, Descricao, SiglaSetor",
+		                'Vad_Patrimonio', //$tables
+						"Ativo = 'S'", // where
+						$ordenacao, //ordenacao
+						'' //group by
+						);
+						
+						
+				if ($tipoIngresso == 'TODOS') { $tipoIngresso = ''; }
+		
+		// SE TODOS OS PARÂMETROS FORAM IGNORADOS ...
+		if  (  empty($patriInicial) AND empty($patriFinal) AND  empty($empenho) AND
+			    empty($notaFiscal) AND empty($descricao) AND empty($siglaSetor) AND 
+			    empty($idclassificador) AND empty($tipoIngresso) 
+		    ) 
+		   
+		{
+		    
+			$sql->where .= ' AND idItemPatrimonio = 0';
+			
+			//echo '<pre>'; var_dump ('TODOS OS PARÂMETROS FORAM IGNORADOS ...'); echo '</pre>';
+			//exit();			
+		}
+		else {		
+		
+			if(!empty($patriInicial))
+			{
+				$sql->where .= ' AND idItemPatrimonio >= ' . $patriInicial;
+			}
+			
+			if(!empty($patriFinal))
+			{
+				$sql->where .= ' AND idItemPatrimonio <= ' . $patriFinal;
+			}			
+			
+			if(!empty($empenho))
+			{
+				$empenho = "'" . strtoupper(TRIM($empenho)) . "'"; 
+				$sql->where .= ' AND numeroempenho = ' . $empenho;
+			}
 
-        $href_grid = $MIOLO->GetActionURL('adm',$self);
+			if(!empty($notaFiscal))
+			{
+				$notaFiscal = '\'%' . strtoupper(TRIM($notaFiscal)) . '%\'';
+				$sql->where .= ' AND upper(NotaFiscal) iLIKE ' . $notaFiscal;
+			}
+			
+			if(!empty($descricao))
+			{
+				$descricao = str_replace(' ','%',$descricao);
+				$descricao = '\'%' . strtoupper(TRIM($descricao)) . '%\'';
+				$sql->where .= ' AND upper(descricao) iLIKE ' . $descricao;
+			}
+			
+			if(!empty($siglaSetor))
+			{
+				$siglaSetor = '\'%' . strtoupper(TRIM($siglaSetor)) . '%\'';
+				$sql->where .= ' AND upper(siglaSetor) iLIKE ' . $siglaSetor;			
+			}
+			
+			if(!empty($idclassificador))
+			{
+				$idclassificador = '\'%' . strtoupper(TRIM($idclassificador)) . '%\'';
+				$sql->where .= ' AND upper(idclassificador) iLIKE ' . $idclassificador;
+			}	
+			if (!empty($tipoIngresso))
+			{
+				if ($tipoIngresso == 'COMPRA') { $tipos = "('1', '8', '9')";}
+				else if ($tipoIngresso == 'DOACAO') { $tipos = "('2')";}
+				else if ($tipoIngresso == 'OUTROS') { $tipos = "('3', '4', '5', '6','7')";}			
+				
+				$sql->where .= ' AND idtipoIngresso IN ' . $tipos;
+			}
+			//var_dump (empty($ordenacao), $ordenacao);
+			
+			
+		}
+		  
+		//echo('<pre>');
+		//var_dump ($_POST);	
+		//var_dump ($sql->where);  
+		//var_dump ($sql);  
+		//echo('</pre>');
+	
+		//exit();		
+		
+		$href_grid = $MIOLO->GetActionURL('adm',$self);	
+	
+		$aux = $MIOLO->getBusiness('adm', 'executoralmox');
+		$query = $aux->Query($sql);	
+		
+        parent::__construct($query, $columns, $href_grid,80, 0, 'gridItensPatrimonioSelection');
+		//parent::__construct(NULL, $columns, $href, $pageLength, $index, $name, $useSelecteds);
+		
+		//var_dump($this->name);
+		$this->SetClose( $MIOLO->GetActionURL('adm','main:itempatrimonio:find') );
+		$this->AddActionSelect();
 
-        parent::__construct($query, $columns, $href_grid,50);
-	$this->SetTitle( 'Selecione os Itens para Baixa em Bloco' );
-	$this->SetWidth( '95%' );
-	$this->SetClose( null );
-	$this->AddActionSelect();
-
-        $this->SetLinkType('hyperlink');
+		$this->SetLinkType('hyperlink');		
+	
+		
     }
+	
+	/*function GenerateFooter()
+	{
+		if (!$this->data) 
+			$footer[] = $this->GenerateEmptyMsg();
+		$footer[] = new Separator();
+		$footer[] = $this->GenerateControls();
+		return $footer;
+	}*/
+	
 }
 ?>

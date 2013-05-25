@@ -29,28 +29,35 @@ class frmLicitacaoEditar extends form
 		$this->licitacao = $licitacao;
 		$this->Form('Editar Licitação');
         $this->EventHandler();
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
     }
 
     function CreateFields()
     {
         global $MIOLO;
        
-        $modalidadeLicitacao = $this->manager->getBusiness('adm','modalidadelicitacao');        
+        $modalidadeLicitacao = $this->manager->getBusiness('adm','modalidadelicitacao');     
         $modalidadeLicitacao = $modalidadeLicitacao->listAll();
     	$queryStatus = $this->licitacao->ListAllStatus();
 
-        $tabelaGeral = $this->manager->getBusiness('common','tabelageral');    
+        $tabelaGeral = $this->manager->getBusiness('common','tabelageral');
         $tiposDeEntrega = $tabelaGeral->listByTabela('AD_TIPOENTREGA');
 
         $optYesNo = array("1"=>"SIM","0"=>"NÃO");
-
+		
+		$numeroCompleto = $this->licitacao->numero;
+		//retira sigla, espaco e /ano
+		$numeroLicitacao = substr($numeroCompleto, strpos($numeroCompleto, " ") ? strpos($numeroCompleto, " ")+1 : 0); //retira sigla e espaco, por exemplo, "PR "
+		$numeroLicitacao = substr($numeroLicitacao, 0, strpos($numeroLicitacao, "/") ? strpos($numeroLicitacao, "/") : strlen($numeroLicitacao)); //retira /ano, por exemplo, "/2012"
+		
         $fields = array
         (
             new MTextLabel('dataCriacao',$this->licitacao->dataCriacao,'Criação',10),
             new TextField('dataAbertura',substr($this->licitacao->dataAbertura,0,10),'Abertura',10),
             new Selection('imediata',$this->licitacao->imediata,'Abert. Imediata',$optYesNo),
             new MTextField('horaAbertura',substr($this->licitacao->dataAbertura,11,5),'Hora Abertura',4,'Ex: 19:30'),
-            new MTextField('numero',$this->licitacao->numero,'Número',12),
+            new MTextField('numero',$numeroLicitacao,'Número',12),
+            //new MTextField('numero',$this->licitacao->numero,'Número',12),
             new MSelection('status',$this->licitacao->status,'Status',$queryStatus),
             new MSelection('idModalidadeLicitacao',$this->licitacao->idModalidadeLicitacao,'Modalidade',$modalidadeLicitacao->result),
             new MTextField('validade',$this->licitacao->validade,'Validade',3,'dias'),
@@ -59,6 +66,15 @@ class frmLicitacaoEditar extends form
         );
 		
         $this->SetFields($fields);
+        
+        $this->numero->addAttribute('maxlength', 7);
+		$this->dataAbertura->addAttribute('maxlength', 10);
+		$this->dataAbertura->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+		$this->dataAbertura->addAttribute('onBlur','makeMask(this, \'##/##/####\');');
+		$this->horaAbertura->addAttribute('maxlength', 5);
+		$this->horaAbertura->addAttribute('onKeyUp','makeMask(this, \'##:##\');');
+		$this->horaAbertura->addAttribute('onBlur','makeMask(this, \'##:##\');');
+		$this->obs->addAttribute('maxlength', 1000);
 		
 	
         $buttons = array
@@ -75,7 +91,63 @@ class frmLicitacaoEditar extends form
 		$d = $dt[0];
 		$m = $dt[1];
 		$y = $dt[2];
-		if((strlen($d) != 2) || (strlen($m) != 2) || (strlen($y) != 4) || (!checkdate($m,$d,$y))){
+		
+		$numero 		 = $this->GetFieldValue('numero');
+		$dataAbertura 	 = $this->GetFieldValue('dataAbertura');
+		$horaAbertura 	 = $this->GetFieldValue('horaAbertura');
+		$assuntoProcesso = $this->GetFieldValue('assuntoProcesso');
+		$modalidade 	 = $this->GetFieldValue('idModalidadeLicitacao');
+		$imediata 		 = $this->GetFieldValue('imediata');
+		$tipoEntrega 	 = $this->GetFieldValue('tipoEntrega');
+		$validade 		 = $this->GetFieldValue('validade');
+		$status 		 = $this->GetFieldValue('status');
+		
+		if(($numero <= 0) || (strlen($numero) == 0))
+		{
+			$this->AddError('Informe o número da licitação.');
+		}
+		elseif(!$dataAbertura)
+		{
+			$this->AddError('Informe a data da abertura.');
+		}
+		elseif($imediata=='')
+		{			
+			$this->AddError('Informe se a abertura será imediata.');
+		}
+		elseif(trim($horaAbertura)=='')
+		{
+			$this->AddError('Informe a hora de abertura.');
+		}
+		//elseif( !preg_match("/^[0-2][0-3]:[0-5][0-9]/" ,$horaAbertura) )
+		elseif( !$this->checktime($horaAbertura) )
+		{
+			$this->AddError('A hora de abertura está inválida.');
+		}
+		elseif(!$modalidade)
+		{
+			$this->AddError('Informe a modalidade.');
+		}
+		elseif(trim($validade) == '')
+		{
+			$this->AddError('Informe a validade em dias.');
+		}
+		elseif($validade <= 0)
+		{
+			$this->AddError('Informe uma validade maior que 0.');
+		}
+		elseif( preg_match("/\D/", $validade) )
+		{
+			$this->AddError('A validade está errada, informe em número de dias.');
+		}
+		elseif(!$tipoEntrega)
+		{
+			$this->AddError('Informe o tipo de entrega.');
+		}
+		elseif(!$status)
+		{
+			$this->AddError('Informe o status.');
+		}
+		elseif((strlen($d) != 2) || (strlen($m) != 2) || (strlen($y) != 4) || (!checkdate($m,$d,$y))){
 			$this->AddError('Campo ABERTURA inválido');
 		}else{
        if((!is_numeric($data->validade)) || (int)$data->validade <= 0){
@@ -87,6 +159,47 @@ class frmLicitacaoEditar extends form
         }
         else
         {
+        //para atribuir a sigla ao numero da licitacao, o formato do numero é PR xxxx/aaaa, onde xxxx é o numero da licitacao de 1 a 7 digitos
+        	switch ($modalidade)
+			{
+			case '1' :
+				$sigla = "CV";
+				break;
+			case '2' :
+				$sigla = "TP";
+				break;
+			case '3' :
+				$sigla = "CC";
+				break;
+			case '4' :
+				$sigla = "DL";
+				break;
+			case '5' :
+				$sigla = "PR";
+				break;
+			case '6' :
+				$sigla = "CS";
+				break;
+			case '7' :
+				$sigla = "LN";
+				break;
+			case '8' :
+				$sigla = "IN";
+				break;
+			case '9' :
+				$sigla = "CE";
+				break;
+			case '10' :
+				$sigla = "RP";
+				break;
+			case '500' :
+				$sigla = "PL";
+				break;
+			}
+
+			$numero = $sigla." ".trim($numero)."/".date("Y");
+        	$data->numero = $numero;
+        	
 			$statusAnterior = $this->licitacao->status;
 			$data->dataAbertura = $data->dataAbertura." ".$data->horaAbertura.":00";
 			$this->licitacao->setImediata($data->imediata);
@@ -124,5 +237,17 @@ class frmLicitacaoEditar extends form
 		}
 		$this->manager->Information("Dados da licitação modificados.",$this->manager->getActionUrl('adm','main:licitacoes',$idLicitacao,array('form'=>'item')));
 	}
+	
+	// valida hora 23:59
+	function checktime($time)
+	{
+	   list($hour,$minute) = explode(':',$time);
+	 
+	   if ($hour > -1 && $hour < 24 && $minute > -1 && $minute < 60)
+	   {
+		  return true;
+	   }
+	} 
+	
  }
 ?>

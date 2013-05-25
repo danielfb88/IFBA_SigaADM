@@ -29,15 +29,16 @@ class frmFuncionarioNew extends Form
     
         $this->Form('Incluir Novo Servidor');
         $this->EventHandler();
+	$this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
     }
 
     function CreateFields()
     {
         $cpf = new MTextField('cpf', '', 'CPF', '15');
-        $cpf->addMask('###.###.###-##');
+        //$cpf->addMask('###.###.###-##');
 
         $fields = array(
-            new MTextField    ('nome'    ,'','Nome'           ,55),
+            new MTextField    ('nome','','Nome',55),
             new MCalendarField('datanasc','','Data de Nascimento'),
             $cpf                  //new MTextField('cpf','','CPF',15,'No formato: 999.999.999-99')
         );
@@ -59,6 +60,15 @@ class frmFuncionarioNew extends Form
         $this->SetButtons($buttons);
 
         $this->setButtonAttr('btnNew','visible',FALSE);
+
+		$this->cpf->addAttribute('onKeyUp','makeMask(this, \'###.###.###-##\');');
+        $this->cpf->addAttribute('onBlur','makeMask(this, \'###.###.###-##\');');
+        $this->cpf->AddAttribute('maxlength','14');
+        
+        //Validação do campo datanasc
+        $this->datanasc->AddAttribute('maxlength','10');
+    	$this->datanasc->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+    	$this->datanasc->addAttribute('onBlur','makeMask(this, \'##/##/####\');');		
     }
     
     function btnPost_click()
@@ -77,11 +87,25 @@ class frmFuncionarioNew extends Form
         $cpf = str_replace('-','',str_replace('.','',$data->cpf));
         $pessoa = $this->manager->GetBusiness('common','pessoa');
         $pessoa = $pessoa->getByCpf($cpf);
-	$nome = strlen(trim($data->nome));
-	if($nome < '10')
+		$nome = strlen(trim($data->nome));
+		
+	if($nome < '3')
         {
 		$this->addError("Digite corretamente o nome completo do servidor");
 		$this->setFieldAttr('idFuncionario','visible',false);
+		$this->setFieldAttr('sexo','visible',false);
+	}
+	else if(preg_match("/\d/", $data->nome))
+	{
+		$this->addError("Digite apenas letras no campo Nome.");
+		$this->setFieldAttr('idFuncionario','visible',false);
+		$this->setFieldAttr('sexo','visible',false);
+	}
+	else if (date('Ymd') < invert($data->datanasc))
+	{
+		$this->addError("Data de Nascimento não pode ser superior à Data Atual.");
+		$this->setFieldAttr('idFuncionario','visible',false);
+		$this->setFieldAttr('sexo','visible',false);
 	}
 	else
 	{
@@ -124,6 +148,8 @@ class frmFuncionarioNew extends Form
         	}
         
         	$this->setFieldAttr('cpf','readonly',TRUE);
+		$this->setFieldAttr('nome','readonly',TRUE);
+		$this->setFieldAttr('datanasc','readonly',TRUE);
         	$validators[] = new MMaskValidator('idFuncionario','','999999999','required');
         	$this->SetValidators($validators);
 
@@ -149,12 +175,21 @@ class frmFuncionarioNew extends Form
         $errPessoa = FALSE;
         $msg = "Servidor incluído com sucesso!";
 	$sexo = $this->GetFormValue('sexo');
+	$nome = strlen(trim($funcionario->nome));
 	if($sexo == '')
 	{
 		$this->addError("Informe o sexo do servidor");
 		$this->btnPost_click();
 	}
-	else
+	else if($nome < '10')
+        {
+		$this->addError("Digite corretamente o nome completo do servidor");
+		$this->setFieldAttr('idFuncionario','visible',false);
+	}
+	else if(preg_match("/\W/", $funcionario->nome)) 
+	{
+		$this->addError("Digite apenas letras no campo Nome.");
+	}
 	{
         	if ( ! $funcionario->idPessoa )
         	{
@@ -236,4 +271,15 @@ class frmFuncionarioNew extends Form
     }
 
  }
+
+	function invert($datainv)
+	{//recebe a data e o separador
+
+		$ano=substr("$datainv",6, 4);
+		$mes=substr("$datainv",3, 2);
+		$dia=substr("$datainv",0, 2);
+		$datainv="$ano$mes$dia";
+
+		return $datainv;
+	} 
 ?>

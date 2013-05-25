@@ -50,5 +50,10 @@ class BusinessAdmExecutorServInt extends Business
 		return ( !$query->eof() ) ? $query : FALSE;
 	}
 
+	function findByExecutor($id)
+	{
+		$busca = "select count(*) as total from ad_executorservint where idusuario = '$id'";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
 }
 ?>

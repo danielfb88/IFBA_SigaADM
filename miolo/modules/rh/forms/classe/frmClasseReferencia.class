@@ -41,11 +41,13 @@ class frmClasseReferencia extends Form
        global $MIOLO;
 	   
 		$fields = array(
-            new MTextField('idReferencia','','Código',4),
-            new MTextField('nivelPadrao','','Nível Padrão','3','Máx. 3 caracteres')
+            new MTextField('idReferencia','','Código','4'),
+            new MTextField('nivelPadrao','','Nível Padrão','3')
         );
 		
         $this->SetFields($fields);
+        $this->idReferencia->AddAttribute('maxlength','4');
+        $this->nivelPadrao->AddAttribute('maxlength','3');
 		$this->SetData();	
 		$buttons = array(
 			new MButton('btnSalvar','Enviar'),
@@ -56,7 +58,9 @@ class frmClasseReferencia extends Form
 
 		$validators = array(
 			new RequiredValidator('nivelPadrao'),
-			new RequiredValidator('idReferencia')
+			new RequiredValidator('idReferencia'),
+			
+			new IntegerValidator('idReferencia')
 			);
 
 		$this->SetValidators($validators);
@@ -73,24 +77,32 @@ class frmClasseReferencia extends Form
 
 		$update = $this->referencia->isPersistent();
 		$data = $this->getData();
-		$this->referencia->SetData($data);
-		try 
-        {
-			$this->referencia->save();
-            $go = $MIOLO->GetActionURL('rh','main:classe',$this->referencia->idClasse, array('form'=>'referencias'));
-			if ($update)
-			{
-	            $MIOLO->Information('Nível Padrão atualizado com sucesso.', $go );
-			}
-			else
-			{
-	            $MIOLO->Information('Nível Padrão inserido com sucesso.', $go );
-			}
-        }
-        catch (Exception $e)
-        {
-            $this->AddError($this->referencia->GetErrors());
-        }
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+	   $data->nivelPadrao = str_replace($caracteres,"",$data->nivelPadrao);
+	   
+	   if (strlen(trim($data->nivelPadrao)) < '1')
+		{
+			$this->addError('Especifique Melhor o Campo Nivel Padrao.');
+		}
+		else {
+			try {
+		     		$this->referencia->SetData($data);
+					$this->referencia->save();
+		         $go = $MIOLO->GetActionURL('rh','main:classe',$this->referencia->idClasse, array('form'=>'referencias'));
+					if ($update)
+					{
+			           $MIOLO->Information('Nível Padrão atualizado com sucesso.', $go );
+					}
+					else {
+			         $MIOLO->Information('Nível Padrão inserido com sucesso.', $go );
+					}
+		     }catch (Exception $e)
+		     {
+		         $this->AddError($this->referencia->GetErrors());
+		     }
+		  }
 	}
 
 	function btnExcluir_click()

@@ -45,6 +45,7 @@ class frmServInternoNew extends Form
 		);
 
 		$this->SetFields($fields);
+		$this->descricao->AddAttribute('maxlength',30);
 
 		$this->SetFieldAttr('lkpUo','module','adm');
 		$this->SetFieldAttr('lkpUo','item','uo');
@@ -89,11 +90,15 @@ class frmServInternoNew extends Form
 
 		$this->servInterno->descricao = strtoupper($this->servInterno->descricao);
 
-		if(strlen(trim(Form::GetFormValue('descricao')))<4)
+		if(strlen(trim(Form::GetFormValue('descricao'))) < 4)
 		{
 			$this->AddError('Descreva o serviço interno.');
 		}
-		elseif(Form::GetFormValue('idUoPrestadora') == '')
+		else if(Form::GetFormValue('idRubrica') == '' || Form::GetFormValue('lkpRubrica') == '')
+		{
+			$this->AddError('Selecione uma Rubrica.');
+		}
+		else if(Form::GetFormValue('idUoPrestadora') == '' || Form::GetFormValue('lkpUo') == '')
 		{
 			$this->AddError('Selecione a Unidade Orçamentária Prestadora deste serviço.');
 		}

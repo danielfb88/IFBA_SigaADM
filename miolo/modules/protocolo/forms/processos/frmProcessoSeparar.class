@@ -64,9 +64,9 @@ class frmProcessoSeparar extends MForm
 			$num = $ano.$serie.$codigo;
 			$numProcessoFormatado = new MTextField('numProcessoFormatado',$numFormatado,'Processo:',14);
 			$numProcessoFormatado->setReadOnly(true);
-		#	$autor = new MTextField('autor','','Autor:',90);
-		#	$autor->addAttribute('maxlength','80');
-			$groupSeparar = new MBaseGroup('groupSeparar', 'Selecionar processo',array($numProcessoFormatado,/*$autor*/),'vertical','css');
+			$autor = new MTextField('autor','','Autor:',40);
+			$autor->addAttribute('maxlength','40');
+			$groupSeparar = new MBaseGroup('groupSeparar', 'Selecionar processo',array($numProcessoFormatado,$autor),'vertical','css');
 			$groupSeparar->addAttribute('style','padding:10px');
 		//      fields
 			$fields = array(
@@ -77,9 +77,9 @@ class frmProcessoSeparar extends MForm
 			);
 			$this->SetFields($fields);
 		//      required fields
-/*			$validators = array(
+			$validators = array(
 				new MRequiredValidator('autor'),
-			);*/
+			);
 			$this->setValidators($validators);
 		//      buttons
 			$buttons = array(
@@ -136,7 +136,7 @@ class frmProcessoSeparar extends MForm
 						$andamento->idUsuario = $login->idkey;
 						$andamento->decisao = 'SEPARADO DO PROCESSO '.$this->processoPai->numProcessoFormatado();
 						$andamento->dataDespacho = $andamento->dataSaida;
-				#		$andamento->autor = $data->autor;
+						$andamento->autor = $data->autor;
 						$andamento->status = 'N';
 						$this->processo->addAndamento($andamento);
 						$this->processo->retencao->numAndamento++;
@@ -160,7 +160,7 @@ class frmProcessoSeparar extends MForm
 						$andamento->dataSaida = $andamento->dataEntrada;
 						$andamento->decisao = 'SEPAROU-SE DO PROCESSO '.$this->processo->numProcessoFormatado();
 						$andamento->dataDespacho = $andamento->dataSaida;
-			#			$andamento->autor = $data->autor;
+						$andamento->autor = $data->autor;
 						$this->processoPai->addAndamento($andamento);
 						$this->processoPai->addAndamento($andamento2);
 						$this->processoPai->retencao->setorDestino = null;
@@ -180,10 +180,16 @@ class frmProcessoSeparar extends MForm
 				$emails[$emails->length][0] = $mailSender;
                 foreach($emails as $e)
                 {
-                    if($e[0] != $emails[$emails->length][0])
-						$instituicao = $this->processo->instituicaoUsuario($e[1]);
-					else 
-						$instituicao = $this->processo->instituicaoProcesso();
+                    if($e[1])
+		            {
+		                    $instituicao = $this->processo->instituicaoUsuario($e[1]);
+		                    $pessoa = $e[2];
+		            }
+		            else
+		            {
+		                    $instituicao = $this->processo->instituicaoProcesso();
+		                    $pessoa = $this->processo->solicitante;
+		            }
 					$mail = new PHPMailer();
 					$mail->IsSMTP(); // send via SMTP
 					$mail->Host = $MIOLO->getConf('mail.host');
@@ -200,7 +206,7 @@ class frmProcessoSeparar extends MForm
                                         $mail->ssl = $MIOLO->getConf('mail.ssl');
                                         $mail->Body = "
                                                 <center><h1>TRAMITAÇÃO DO PROCESSO<br /> {$this->processo->numProcessoFormatado()}</h1></center>
-                                                <br /><br />Prezado(a) Sr(a) {$e[2]},
+                                                <br /><br />Prezado(a) Sr(a) {$pessoa},
                                                 <br /><br />O processo {$this->processo->numProcessoFormatado()} foi separado do processo {$this->processoPai->numProcessoFormatado()}
                                                 <br /><br /><b>Objeto: </b>{$objMail}
                                                 <br /><b>Setor Atual: </b>{$this->processo->retencao->setor}
@@ -234,7 +240,7 @@ class frmProcessoSeparar extends MForm
 						$andamento->dataSaida = $andamento->dataEntrada;
 						$andamento->decisao = 'SEPARADO DO PROCESSO '.$this->processoPai->numProcessoFormatado();
 						$andamento->dataDespacho = $andamento->dataSaida;
-			#			$andamento->autor = $data->autor;
+						$andamento->autor = $data->autor;
 						$andamento->status = 'N';
 						$this->processo->addAndamento($andamento);
 						$this->processo->retencao->numAndamento++;
@@ -257,7 +263,7 @@ class frmProcessoSeparar extends MForm
 						$andamento->dataSaida = $andamento->dataEntrada;
 						$andamento->decisao = 'SEPAROU-SE DO PROCESSO '.$this->processo->numProcessoFormatado();
 						$andamento->dataDespacho = $andamento->dataSaida;
-			#			$andamento->autor = $data->autor;
+						$andamento->autor = $data->autor;
 						$this->processoPai->addAndamento($andamento);
 						$this->processoPai->addAndamento($andamento2);
 						$this->processoPai->retencao->setorDestino = null;

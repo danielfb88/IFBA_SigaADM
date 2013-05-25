@@ -48,6 +48,7 @@ class frmIrrfNew extends MForm
 		$this->setFields($fields);
 		
 		$buttons = array(new MButton("btnNew", "Incluir IRRF"));
+		$this->aliquota->addAttribute('maxlength',1);
 		$this->setButtons($buttons);
 		
 		$validators = array(
@@ -92,14 +93,24 @@ class frmIrrfNew extends MForm
                 {
                         $this->addError('É necessário que a data inicial seja inferior a data final!');
                 }
-                elseif( Form::GetFormValue('percentual') <= 0 )
-                {
-                        $this->AddError('Informe um percentual válido.');
-                }
-                elseif( Form::GetFormValue('deducao') <= 0 )
-                {
-                        $this->AddError('Informe uma dedução válida.');
-                }
+               
+               
+                       if ($datainicial >= $datafinal)
+        {
+        	$this->addError('É necessário que a data inicial seja inferior a data final!');
+        }		
+        elseif(!preg_match("/^[0-9]/" ,$irrf->aliquota))
+        {
+        	$this->AddError('O campo "Alíquota" deve conter no máximo 1 caracter.');
+        }
+		elseif( Form::GetFormValue('percentual') <= 0 )
+        {
+            $this->AddError('Informe um percentual válido.');
+        }
+       	elseif( $irrf->deducao <= 0 )
+        {
+        	$this->AddError('Informe uma dedução válida.');
+        }
 		else
 		{
 			try {

@@ -229,6 +229,7 @@ class frmVinculoLancarFerias extends MForm
 
         $buttons = array(
             new FormButton('btnSalvar','Enviar'),
+            new FormButton('btnEditar','Editar'),
             new FormButton('btnExcluir','Excluir'),
             new FormButton('btnInterromper','Interromper Férias')
         );
@@ -237,9 +238,9 @@ class frmVinculoLancarFerias extends MForm
         if($this->ferias->isPersistent())
         {
             // desabilitando os campos desnecessários
-            $this->SetFieldAttr('dataInicio','readonly',TRUE);
+            //$this->SetFieldAttr('dataInicio','readonly',TRUE);
             $this->SetFieldAttr('dataFimPrevista','readonly',TRUE);
-            $this->SetFieldAttr('totalDias','readonly',TRUE);
+            //$this->SetFieldAttr('totalDias','readonly',TRUE);
 
             // abilitando os campos adequados
             $this->SetFieldAttr('dataFim','visible',TRUE);
@@ -247,7 +248,7 @@ class frmVinculoLancarFerias extends MForm
             // se essas ferias já NÃO foram interrompidas - NÃO bloqueia!!
             if (  ($this->ferias->BreakUp()) || (!$this->ferias->PermiteInterrupcao()))
             {
-                $this->SetFieldAttr('dataFim','readonly',TRUE);
+                //$this->SetFieldAttr('dataFim','readonly',TRUE);
                 $this->SetFieldAttr('obs','readonly',TRUE);
             }
             else
@@ -459,6 +460,37 @@ class frmVinculoLancarFerias extends MForm
         	}
     	}
 	}
+    function btnEditar_click()
+    {
+	global $MIOLO;
+
+        $update = $this->ferias->isPersistent();
+        $this->ferias->SetData($this->GetData());
+        $perms = $MIOLO->getPerms();
+
+        // o usuarios é admin ou membro do rh_cadastro
+        $privilegios = ( $perms->isMemberOf('','RH_CADASTRO') || $perms->isAdmin() );
+
+        try
+        {
+            $antecedencia = $perms->isMemberOf('','RH_CADASTRO') || $perms->isAdmin() || $perms->isMemberOf('','RH_SECRETARIA');
+            //$antecedencia = $perms->isMemberOf('','RH_CADASTRO') || $perms->isAdmin();
+            $this->ferias->edit($antecedencia,$privilegios);
+            $go = $MIOLO->GetActionURL('rh','main:vinculo',$this->ferias->idVinculoPerAq, array('form'=>'periodoaquisitivo','id'=>$this->ferias->dataInicioPerAq,'exec'=>'editarperiodo'));
+
+            if ($update)
+            $this->manager->information('Registro de férias atualizado com sucesso.', $go );
+            else
+            $this->manager->information('Férias marcadas com sucesso.', $go );
+        }
+        catch ( ESimpleRnException $e )
+        {
+            $this->AddError($e->getMessage());
+        }
+	
+    }
+
+
 
     function btnInterromper_click()
     {

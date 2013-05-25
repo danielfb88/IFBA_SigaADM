@@ -95,6 +95,8 @@ class frmLiquidacao extends Form
 
 		if( ($fornecedor == null) and ($numero == null) ) //não foi definido critério para o filtro
 		{
+			$MIOLO->Error('Por favor, selecione o fornecedor pelo botão lookup.', $MIOLO->GetActionURL($module, $action) );
+			return;
 		}
 		else
 		{
@@ -102,6 +104,12 @@ class frmLiquidacao extends Form
 			{
 				$empenho = $MIOLO->GetBusiness($module, 'empenho');
 				$dados = $empenho->ListByNumero($numero);
+				if($dados->result[0][5] == NULL) 
+				{
+					$MIOLO->Error('Por favor, especifique um empenho válido.', $MIOLO->GetActionURL($module, $action) );
+					return;				
+				}
+									
 				$idFornecedor = $dados->result[0][5];
 				$fornecedor = $dados->result[0][10];
 			}
@@ -109,10 +117,15 @@ class frmLiquidacao extends Form
 			{
 				if($idFornecedor == null) //nao foi usado o lookup
 				{
+					/*
 					$objFornecedor = $MIOLO->GetBusiness($module, 'fornecedor');
-					$dados = $objFornecedor->GetByDocumentoOuNome($fornecedor);
-					$idFornecedor = $dados[0];
-					$fornecedor = $dados[1];
+					$dados = $objFornecedor->getbyFirst();
+					$idFornecedor = $dados[1];
+					$fornecedor = $dados[0];
+					var_dump($dados);*/
+					$MIOLO->Error('Por favor, selecione o fornecedor pelo botão lookup.', $MIOLO->GetActionURL($module, $action) );
+					return;
+					
 				}
 			}
 		}
@@ -214,7 +227,7 @@ class frmLiquidacao extends Form
 			$id = $empenho->numProcessoFormatado($id);
 			if($id != $numPro)
 			{
-				$MIOLO->Error('Empenhos selecionados possuem Processos de Pagamento diferentes.', $MIOLO->GetActionURL($module, $action) );
+				$MIOLO->Error('Empenhos selecionados possuem Processos de Pagamento diferentes.', $MIOLO->GetActionURL($module, 'main:financeiro:liquidacao') );
 				return;
 			}
 			if($s[1] != null)
@@ -317,100 +330,143 @@ class frmLiquidacao extends Form
 		$item = $this->GetFormValue('item_aux');
 		$notas = $this->GetFormValue('notas');
 
-$itemnota = $MIOLO->GetBusiness($module, 'itemnota');
-$objNota = $MIOLO->GetBusiness('adm', 'notafiscal');
-$arrayNotas = explode(',', $notas);
+		$itemnota = $MIOLO->GetBusiness($module, 'itemnota');
+		$objNota = $MIOLO->GetBusiness('adm', 'notafiscal');
+		$arrayNotas = explode(',', $notas);
 
-foreach($arrayNotas as $nota)
-				{
-		$objNota->GetById($nota);
-		$objNota->retrieveAssociation('itens');
-		if (!$objNota->itens)
+		foreach($arrayNotas as $nota)
 		{
-		$notavazia = 1;
-		}
-					
-				}
-	if ($notavazia == 1)
-		{
-		$MIOLO->Error('Nota sem itens.', $MIOLO->GetActionURL($module, $action) );					
-		}else{
-		
-		$objEmpenho = $MIOLO->GetBusiness($module, 'empenho');
-
-		$idFornecedor = $this->GetFormValue('idFornecedor');
-
-		$cf = new MCurrencyFormatter();
-		//$valorIRRF = str_replace(",",".",$this->GetFormValue('valorIRRF'));
-		$valorIRRF = $this->GetFormValue('valorIRRF');
-		if (substr_count($valorIRRF, ",") == 0) {
-        	      $valorIRRF = str_replace(".",",",$valorIRRF);
-	        }else{
-        	      $valorIRRF = str_replace(".","",$valorIRRF);
-	        }
-	        $valorIRRF = $cf->toDecimal($valorIRRF);
-		//$valorINSS = str_replace(",",".",$this->GetFormValue('valorINSS'));
-		$valorINSS = $this->GetFormValue('valorINSS');
-                if (substr_count($valorINSS, ",") == 0) {
-                      $valorINSS = str_replace(".",",",$valorINSS);
-                }else{
-                      $valorINSS = str_replace(".","",$valorINSS);
-                }
-                $valorINSS = $cf->toDecimal($valorINSS);
-
-		//$valorISS = str_replace(",",".",$this->GetFormValue('valorISS'));
-		$dataLiquidacao = $this->GetFormValue('dataLiquidacao');
-		$obs = $this->GetFormValue('obs');
-		$processo = $this->GetFormValue('processo');
-
-		try
-		{
-			if($processo)
+			$objNota->GetById($nota);
+			$objNota->retrieveAssociation('itens');
+			if (!$objNota->itens)
 			{
-				$objProcesso = $MIOLO->GetBusiness('protocolo', 'processo');
-				$objProcesso->getByNumeroFormatado($processo);
-				$arrayNotas = explode(',', $notas);
-				$objNota = $MIOLO->GetBusiness('adm', 'notafiscal');
-				foreach($arrayNotas as $nota)
-				{
-					$objNota->GetById($nota);
-					$objNota->retrieveAssociation('itens');
-					foreach($objNota->itens as $i)
-					{
-						$i->retrieveAssociation('empenhado');
-						$idEmpenho = $i->empenhado->idEmpenho;
-						$objEmpenho->GetById($idEmpenho);
-						$objEmpenho->numPro = $objProcesso->numProcesso;
-						$objEmpenho->save();
-					}
-				}
+				$notavazia = 1;
 			}
+					
+		}
+		if ($notavazia == 1)
+		{
+			$MIOLO->Error('Nota sem itens.', $MIOLO->GetActionURL($module,$action) );					
+		}
+		else
+		{
+			$objEmpenho = $MIOLO->GetBusiness($module, 'empenho');
 
-			$liquidacao = $objEmpenho->Liquidacao($notas, $idFornecedor, $valorIRRF, $valorINSS, $valorISS, $dataLiquidacao, $obs);
+			$idFornecedor = $this->GetFormValue('idFornecedor');
 
-			//se ainda houver nfs para o empenho, volta já para a segunda tela 
-			$notaFiscal = $MIOLO->GetBusiness('adm', 'notafiscal');
-			if($notaFiscal->existeNotaNaoLiquidadaPorEmpenho($objEmpenho->idEmpenho) > 0)
+			$cf = new MCurrencyFormatter();
+			//$valorIRRF = str_replace(",",".",$this->GetFormValue('valorIRRF'));
+			$valorIRRF = $this->GetFormValue('valorIRRF');
+			$valorINSS = $this->GetFormValue('valorINSS');
+			$valorISS = $this->GetFormValue('valorISS');
+			$dataLiquidacao = $this->GetFormValue('dataLiquidacao');
+			
+			$valorIRRF = str_replace("R$", "", $valorIRRF);
+			$valorIRRF = str_replace(",", "", $valorIRRF);
+			$valorIRRF = str_replace(".", "", $valorIRRF);
+			$valorINSS = str_replace("R$", "", $valorINSS);
+			$valorINSS = str_replace(",", "", $valorINSS);
+			$valorINSS = str_replace(".", "", $valorINSS);
+			$valorISS = str_replace("R$", "", $valorISS);
+			$valorISS = str_replace(",", "", $valorISS);
+			$valorISS = str_replace(".", "", $valorISS);			
+			
+
+			if(!is_numeric($valorIRRF)) 
 			{
-				$action_ok = $MIOLO->GetActionURL($module, $action, '', array('event'=>'btnEmpenhos_click', 'empenho'=>$objEmpenho->numero));
+				$this->addError("Forneça somente números para o campo Valor IN/SRF.");		
+			}
+			else if(!is_numeric($valorINSS))
+			{
+				$this->addError("Forneça somente números para o campo Valor INSS.");	
+			}
+			else if(!is_numeric($valorISS))
+			{
+				$this->addError("Forneça somente números para o campo Valor ISS.");
+			}
+			else if($dataLiquidacao == NULL)
+			{
+				$this->addError("Forneça uma data válida para o campo Data Liquidação.");
 			}
 			else
 			{
-				$action_ok = $MIOLO->GetActionURL($module, $action);
+
+				if (substr_count($valorIRRF, ",") == 0) 
+				{
+				      $valorIRRF = str_replace(".",",",$valorIRRF);
+				}
+				else
+				{
+				      $valorIRRF = str_replace(".","",$valorIRRF);
+				}
+			
+				$valorIRRF = $cf->toDecimal($valorIRRF);
+				//$valorINSS = str_replace(",",".",$this->GetFormValue('valorINSS'));
+				$valorINSS = $this->GetFormValue('valorINSS');
+				if (substr_count($valorINSS, ",") == 0) 
+				{
+				      $valorINSS = str_replace(".",",",$valorINSS);
+				}
+				else
+				{
+				      $valorINSS = str_replace(".","",$valorINSS);
+				}
+				$valorINSS = $cf->toDecimal($valorINSS);		
+
+				//$valorISS = str_replace(",",".",$this->GetFormValue('valorISS'));
+				$dataLiquidacao = $this->GetFormValue('dataLiquidacao');
+				$obs = $this->GetFormValue('obs');
+				$processo = $this->GetFormValue('processo');
+
+				try
+				{
+					if($processo)
+					{
+						$objProcesso = $MIOLO->GetBusiness('protocolo', 'processo');
+						$objProcesso->getByNumeroFormatado($processo);
+						$arrayNotas = explode(',', $notas);
+						$objNota = $MIOLO->GetBusiness('adm', 'notafiscal');
+						foreach($arrayNotas as $nota)
+						{
+							$objNota->GetById($nota);
+							$objNota->retrieveAssociation('itens');
+							foreach($objNota->itens as $i)
+							{
+								$i->retrieveAssociation('empenhado');
+								$idEmpenho = $i->empenhado->idEmpenho;
+								$objEmpenho->GetById($idEmpenho);
+								$objEmpenho->numPro = $objProcesso->numProcesso;
+								$objEmpenho->save();
+							}
+						}
+					}
+
+					$liquidacao = $objEmpenho->Liquidacao($notas, $idFornecedor, $valorIRRF, $valorINSS, $valorISS, $dataLiquidacao, $obs);
+
+					//se ainda houver nfs para o empenho, volta já para a segunda tela 
+					$notaFiscal = $MIOLO->GetBusiness('adm', 'notafiscal');
+					if($notaFiscal->existeNotaNaoLiquidadaPorEmpenho($objEmpenho->idEmpenho) > 0)
+					{
+						$action_ok = $MIOLO->GetActionURL($module, $action, '', array('event'=>'btnEmpenhos_click', 'empenho'=>$objEmpenho->numero));
+					}
+					else
+					{
+						$action_ok = $MIOLO->GetActionURL($module, $action);
+					}
+
+					$action_report = $MIOLO->GetActionURL($module, $action,'',array('event'=>'report', 'liquidacao'=>$liquidacao, 'idFornecedor'=>$idFornecedor, 'notas'=>$notas));
+
+					//$bot_report = new MButtonWindow('', '&nbsp;&nbsp;Imprimir&nbsp;&nbsp;', $action_report);
+					$bot_voltar = new MButton('', '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', $action_ok);
+
+					$MIOLO->Information("Liquidação realizada com sucesso<BR><BR><BR>&nbsp;"."&nbsp;&nbsp;".$bot_voltar->generate(), 'NONE');
+				}
+				catch (Exception $e)
+				{
+					$MIOLO->Error($e->getMessage(), $MIOLO->GetActionURL($module, $action, '', array()) );
+				}
 			}
-
-			$action_report = $MIOLO->GetActionURL($module, $action,'',array('event'=>'report', 'liquidacao'=>$liquidacao, 'idFornecedor'=>$idFornecedor, 'notas'=>$notas));
-
-			//$bot_report = new MButtonWindow('', '&nbsp;&nbsp;Imprimir&nbsp;&nbsp;', $action_report);
-			$bot_voltar = new MButton('', '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', $action_ok);
-
-			$MIOLO->Information("Liquidação realizada com sucesso<BR><BR><BR>&nbsp;"."&nbsp;&nbsp;".$bot_voltar->generate(), 'NONE');
 		}
-		catch (Exception $e)
-		{
-			$MIOLO->Error($e->getMessage(), $MIOLO->GetActionURL($module, $action, '', array()) );
-		}
-			}
 	}
 
 	function report()

@@ -43,10 +43,15 @@ class frmDiplomaLegalNew extends Form
         	new FormButton('btnNew', 'Incluir Diploma Legal')
             );
 		$this->SetButtons($buttons);
+		
+		 $this->idDiplomaLegal->AddAttribute('maxlength','2');
+       $this->descricao->AddAttribute('maxlength','20');
 
 		$validators = array(
            new RequiredValidator('idDiplomaLegal'),
            new RequiredValidator('descricao'),
+           
+           new IntegerValidator('idDiplomaLegal'),
 		);
        $this->SetValidators($validators);
 
@@ -58,20 +63,29 @@ class frmDiplomaLegalNew extends Form
 
         	$data = $this->GetData();
 		$id = $data->idDiplomaLegal;
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
 		if(is_numeric($id))
 		{
-	        	$diplomaLegal = $MIOLO->GetBusiness($module,'diplomalegal',$id);
+	      $diplomaLegal = $MIOLO->GetBusiness($module,'diplomalegal',$id);
 			if (strlen(trim($id)) < '1')
 			{
-				$this->addError('Informe o id do Diploma Legal');
+				$this->addError('Informe o id do Diploma Legal.');
+			}
+			else if ($id <= 0)
+			{
+				$this->addError('Informe um id valido para o Diploma Legal.');
 			}
 			elseif($diplomaLegal->isPersistent())
 			{
-				$this->addError('Já existe um registro de Diploma Legal com esse ID. Favor digite outro ID');
+				$this->addError('Já existe um registro de Diploma Legal com esse ID. Favor digite outro ID.');
 			}
 			elseif(strlen(trim($data->descricao)) < '5')
 			{
-				$this->addError('Informe a Descrição do Diploma Legal');
+				$this->addError('Informe a Descrição do Diploma Legal.');
 			}
 			else
 			{

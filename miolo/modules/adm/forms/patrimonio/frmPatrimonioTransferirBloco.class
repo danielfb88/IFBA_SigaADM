@@ -18,86 +18,152 @@
  */
 
 MIOLO::Import('extensions::class.phpmailer.php','PHPMailer');
-class frmPatrimonioTransferirBloco extends MForm
+class frmPatrimonioTransferirBloco extends MFormAjax
 {
 
 	protected $objPatrimonio;
 	protected $perms;
-	
+
     function __construct($objPatrimonio)
     {
 		global $MIOLO,$module,$action,$item;
 		
 		$this->objPatrimonio = $objPatrimonio;
+		parent::__construct('Transferir Itens em Bloco - OBS: campos de busca NÃO obrigatórios!');
 		$this->perms  = $MIOLO->getPerms();
-        parent::__construct('Transferir Itens em Bloco');
-		$this->SetClose(null);
+		$this->SetClose(null);	
+		$this->page->addJsCode(file_get_contents(dirname(__FILE__).'/js/frmPatrimonioTransferirBloco.js'));	
+		$this->page->OnSubmit("desabilita()");
         $this->EventHandler();
     }
+	
+	
 
-    function CreateFields()
+    public function CreateFieldsAuth()
     {
 		global $MIOLO, $action, $module, $item;
+
+        $opcaoOrdenacao = array(
+			"id"			=>"Número do Patrimônio",
+			"nf_id"		    =>"Nota Fiscal + Número do Patrimônio",
+			"nf_desc"		=>"Nota Fiscal + Descrição",
+			"desc"			=>"Descrição",
+		);		
+	
 		$ui = $MIOLO->GetUI();
         $grid = $ui->GetGrid( 'adm', 'gridItensPatrimonioSelection' );
         $grid->SetTitle(NULL);
-		$tabelaGeral = $MIOLO->GetBusiness( 'common', 'tabelageral' );
-		$options = $tabelaGeral->ListByTabela( 'AD_MOTIVOBAIXAPAT' );
+		
+		$gridPatrimonioInstituicao = $ui->GetGrid( 'adm', 'gridPatrimonioInstituicao' );
+		$gridPatrimonioInstituicao->SetTitle('Panorama geral');
+		
+		//var_dump($this->$grid);
+		
+		//$tabelaGeral = $MIOLO->GetBusiness( 'common', 'tabelageral' );
+		//$options = $tabelaGeral->ListByTabela( 'AD_MOTIVOBAIXAPAT' );
 
 		$objSetor = $this->manager->GetBusiness( 'common', 'setor' );                
 		$optionSetores= $objSetor->listAll();	
 
+		$findButton = new ButtonFind('');
+		$findButton->SetName('btnFind');
+		
+		$lkclassificador = new MLookupTextField('idclassificador','','Classificador', 6);
+		$lkpsetor = new MLookupTextField('siglaSetor','','Localização',10, $filter='possuipatri');
+		
+		//(MLookup)$lkpsetor->AddFilterField( new MHiddenField('possuipatri'));		
 		
 		$fields = array
 			(
+			//new MSeparator('OBS: Os campos de busca NÃO são obrigatórios'),
+			$gridPatrimonioInstituicao,
+			new MSpacer(1),
+			array( 
+				new MTextField('patriInicial','','Patrimônio Inicial',10),
+				new MTextField('patriFinal','','Patrimônio Final',10),			
+				new MTextField('empenho','','Empenho',20),
+				new MTextField('notafiscal','','Nota Fiscal',10),
+			),
+			new MTextField('descricaoBusca','','Descrição',54),
+				//OBS:Não utilizar o campo "descricao" pois senão atualiza a descrição do item.
+			array (
+				//new MTextField('siglaSetor','','Sigla do Setor',10),	
+				$lkpsetor,
+				$lkclassificador,
+				//new MTextField('idClassificador','','ID do classificador',6),
+				new MSelection('ordenacao','','Ordenação', $opcaoOrdenacao),			
+				$findButton,
+			),
+			new MSpacer(1),
+			new MSeparator('Patrimônios a transferir:'),
 				$grid,
 				new MSpacer(1),
 				new MLookupTextField('setor','','Setor de Destino',50),
 				new MHiddenField('idSetor'),
+				//new MHiddenField('possuipatri'),
 				new MLookupTextField('dependencia','','Dependência de Destino',50),
 				new MHiddenField('idDependencia'),
-				new MCalendarField('dataMovimento',date('d/m/Y'),'Data',20),
+				new MHiddenField('possuipatri'),
+				new MCalendarField('dataMovimento',date('d/m/Y'),'Data',20),			
+				
 			);
+			
+        $this->SetFields($fields);		
 		
-        $this->SetFields($fields);
+		$lkpsetor->setFieldsIni ($this, 'common', 'setor_patri', 'idSetor');
+		
 		$this->SetFieldAttr('setor','module','common');
 		$this->SetFieldAttr('setor','item','setor');
 		$this->SetFieldAttr('setor','related','idSetor,setor');
+		
+		$this->SetFieldAttr('idclassificador','module','common');
+		$this->SetFieldAttr('idclassificador','item','Classificador');		
+		$this->SetFieldAttr('idclassificador','related','idclassificador');
+		$this->SetFieldAttr('idclassificador','filter','idclassificador,idclassificador'); // o segundo filtro é apenas para habilitar filter0
+		
 		$this->SetFieldAttr('dependencia','module','adm');
 		$this->SetFieldAttr('dependencia','item','dependencia');
 		$this->SetFieldAttr('dependencia','related','idDependencia,dependencia');
 		$this->SetFieldAttr('dependencia','filter','dependencia,idSetor,setor');
 
+		$btnSalvar = new MButton('btnSalvar', 'Transferir');
+
 		$buttons = array
 			(
-        	   new MButton('btnSalvar', 'Transferir')
-            );
-		$this->SetButtons($buttons);
+        	   $btnSalvar,
+            );		
+		$this->SetButtons($buttons);	
 
-		 /*	$validators = array
-			(
-				new MRequiredValidator('idSetor'),
-				new MRequiredValidator('setor'),
-		    );
-		$this->SetValidators($validators);  */
+		$this->page->onLoad("MIOLO_GetElementById('siglaSetor').focus();");
+		
+		
     }
 
 	public function btnSalvar_click()
 	{
-		global $MIOLO;
-
-		$selected = $this->GetFormValue('select');
-		$countItens = 0;
-	    foreach ($selected as $item) //conta qtas itens foram selecionadas
-        { 
+		global $MIOLO;	
+		
+		$selected = $this->GetFormValue('select' . 'gridItensPatrimonioSelection');
+		$countItens = 0;		
+		
+		
+		foreach ($selected as $item) //conta qtas itens foram selecionadas
+		{ 
 			$countItens++;
-    	}
+		}
 
 		$data = $this->getData();
+		
+		if ( empty($data->idDependencia) OR empty($data->dependencia) ) 
+		{
+			$iddependencia_destino = null;
+		} 
+		else { $iddependencia_destino = $data->idDependencia; }		
+		
 		if($countItens == 0)
-        {       
-            $this->addError("Você deve selecionar quais itens deseja dar baixa.");
-        }
+		{       
+			$this->addError("Você deve selecionar quais itens deseja dar transferir.");
+		}
 		elseif($data->setor == '' || $data->idSetor == '')
 		{
 			$this->addError("O setor deve ser selecionado. Utilize a lupa.");
@@ -109,17 +175,11 @@ class frmPatrimonioTransferirBloco extends MForm
 		else
 		{
 		
-        /*  IFRO - Alan de Oliveira Silva
-            Controle de Acesso de usuários no Patrimônio
-            -- Inicio --
-        */
-        
-		    $setor = $MIOLO->GetBusiness('common','setor');
-		    $user  = $MIOLO->GetBusiness('common','usuario');   		
-		    $usuario = $user->GetByLogin($MIOLO->login->id);
-		    $instituicao_usuario = $setor->getById($usuario->idSetor)->idinstituicao;	      
-        // --Fim-- 
-        
+			$setor = $MIOLO->GetBusiness('common','setor');
+			$user  = $MIOLO->GetBusiness('common','usuario');   		
+			$usuario = $user->GetByLogin($MIOLO->login->id);
+			$instituicao_usuario = $setor->getById($usuario->idSetor)->idinstituicao;	      
+		
 			$dependenciaOrigem = $this->objPatrimonio->idDependencia;
 
 			$movimentoPat = $this->manager->GetBusiness('adm','movimentopat');
@@ -139,24 +199,25 @@ class frmPatrimonioTransferirBloco extends MForm
 					$numItens++;
 					$objPatrimonioBloco = $this->manager->GetBusiness( 'adm','itempatrimonio' );
 					$objPatrimonioBloco->GetById( $sel );
-					$instituicao_patrimonio = $objPatrimonioBloco->idSetor;	 
+					$idSetorOrigem = $objPatrimonioBloco->idSetor;	
+					$instituicao_patrimonio = $setor->getById($idSetorOrigem)->idinstituicao;
 					$dependencia_origem = $objPatrimonioBloco->idDependencia;
 					$objPatrimonioBloco->SetData( $this->GetData() );
 
-			   		if ($instituicao_usuario == $instituicao_patrimonio || $this->perms->checkAccess('ADM_PATRIMONIOADMIN', A_EXECUTE)) {
-     
+					if ($instituicao_usuario == $instituicao_patrimonio || $this->perms->checkAccess('ADM_PATRIMONIOADMIN', A_EXECUTE)) {
+		
 						$movimentoPat = $this->manager->GetBusiness('adm','movimentopat');
 						$novoIdNumeroTermo = $movimentoPat->GetTermoFormatado($movimentoPat->GetNextIdTermo());
 
-						$objPatrimonioBloco->idDependencia = ($data->idDependencia) ? ($data->idDependencia) : null;
+						$objPatrimonioBloco->idDependencia = $iddependencia_destino;
 
 						$movimentoPat->numeroTermo = $novoIdNumeroTermo . '/' . date('Y');
 						$movimentoPat->tipoMovimento = '2';
 						$movimentoPat->idItemPatrimonio = $objPatrimonioBloco->idItemPatrimonio;
-						$movimentoPat->idSetorOrigem = $instituicao_patrimonio;
+						$movimentoPat->idSetorOrigem = $idSetorOrigem;//;$instituicao_patrimonio;
 						$movimentoPat->idSetorDestino = $data->idSetor;
 						$movimentoPat->idDependenciaOrigem = $dependencia_origem;
-						$movimentoPat->idDependenciaDestino = ($data->idDependencia) ? ($data->idDependencia) : null;
+						$movimentoPat->idDependenciaDestino = $iddependencia_destino;
 						$movimentoPat->dataMovimento = $data->dataMovimento;
 
 						$objPatrimonioBloco->save();
@@ -210,11 +271,17 @@ class frmPatrimonioTransferirBloco extends MForm
 					}else {
 						$msg = 'Este usuário não tem permissão para acessar este Patrimonio';
 						$this->manager->Information($msg,$this->manager->GetActionURL('adm','main:patrimonio'));
+						echo '<pre>';
+						var_dump('$idSetorOrigem = ' . $idSetorOrigem, 
+							'$instituicao_usuario = ' . $instituicao_usuario, 
+							'$instituicao_patrimonio = ' . $instituicao_patrimonio );
+						echo '</pre>';
 					}
 				}
 				$dadosItens .= "</table>";
 				// Pega instituição para que possa pegar os dados das pessoas que tem acesso ao patrimônio
 				$instituicao = $MIOLO->GetBusiness('common','instituicao');
+				/* //TODO: Habilitar notificações por e-mail
 				if (count($dadosEmail) != 0)
 				{
 					// Guarda os dados que serão utilizados no envio de e-mails em um único array
@@ -265,17 +332,48 @@ class frmPatrimonioTransferirBloco extends MForm
 						$mail->Send();
 					}
 				}
+				*/
+				
 				
 				$itens = substr($itens, 0, -1);			
-				$action_voltar = $this->manager->getActionURL('adm','main:transferirbloco','','');
-				$action_rep = $this->manager->getActionURL('adm','main:transferirbloco','', array("itens"=>$itens, "numItens"=>$numItens, "idSetor"=>$data->idSetor, "dataTransferencia"=>$data->dataMovimento, "event"=>"btnConfirma_click"));
-				$this->manager->Confirmation("Itens transferidos com sucesso. Exibir relatório da transferência?",$action_rep, $action_voltar);
+				$this->page->refresh();
+				$this->addInfo('Transferência concluída com sucesso!');
+				//sleep(5);
+				$this->page->onLoad("MIOLO_GetElementById('patriInicial').focus();");
+				
+								
+				/*
+				$ui = $MIOLO->GetUI();
+				$grid = $ui->GetGrid( 'adm', 'gridItensPatrimonioSelection' );
+				$grid->SetSelecteds('');
+				$grid->refesh();*/
+				
+				//NÃO MOSTRAR CONFIRMAÇÃO PARA NÃO MUDAR DE TELA. --Thunder
+				//$action_voltar = $this->manager->getActionURL('adm','main:transferirbloco','','');
+				//$action_rep = $this->manager->getActionURL('adm','main:transferirbloco','', array("itens"=>$itens, "numItens"=>$numItens, "idSetor"=>$data->idSetor, "dataTransferencia"=>$data->dataMovimento, "event"=>"btnConfirma_click"));
+				//$this->manager->Confirmation("Itens transferidos com sucesso. Exibir relatório da transferência?",$action_rep, $action_voltar);
 			}
 			catch (Exception $e)
 			{
 				$this->addError($e->getMessage());
 			}
+		}			
+		
+	}
+	
+	public function CreateFields()
+	{
+		global $MIOLO, $action, $module, $item, $perms;
+		
+		$login = $MIOLO->GetLogin();
+		$perm = $MIOLO->getPerms()->isMemberOf($login,'ADM_PATRIMONIOADMIN');
+		if ($perm == false) { $perm = $MIOLO->getPerms()->isMemberOf($login,'ADM_PATRIMONIO'); 
 		}
+		
+		if ($perm ==false) {
+			$this->AddError('Permissão para patrimônio negada');		
+		}
+		else { $this->CreateFieldsAuth(); }		
 		
 	}
 

@@ -1,0 +1,109 @@
+Cadastrar a descri ̧ao dos dados bibliogr ́ ficos associados a um acervo com a finali-
+dade de uma f ́ cil identifica ̧ao e recupera ̧ao do mesmo atrav ́ s de fichas bibliogr ́ ficas
+digitais.
+Os modulos que contemplam a cataloga ̧ ao no sistema:
+Pr ́ -Cataloga ̧ao, Cataloga ̧ao e Exemplares apresentam fun ̧oes espec ́ficas para o
+gerenciamento do acervo de forma precisa e simplificada.
+Este m ́ dulo inclui a manuten ̧ao de registros bibliogr ́ ficos, a inclus ̃ o de exemplares
+para estes registros, a manuten ̧ao de uma base de assuntos, ou vocabul ́ rio controlado,
+a emiss ̃ o de etiquetas de c ́ digo de barras, assim como a emiss ̃ o de etiqueta lombada.
+
+=======
+O sistema de biblioteca como sistema de comunica ̧ao contempla o m ́ dulo circula ̧ao
+sobre a movimenta ̧ao do acervo bibliogr ́ fico.
+
+
+
+
+
+    <#tarefa>: número da tarefa.
+    <CDU | módulo>: CDU relacionado ou nome do módulo SIGA-ADM no caso de não haver um CDU relacionado.
+    <%conclusão>: percentual de conclusão da tarefa.
+        corrigido: erro que não permitia utilização de CARNES como ALIMENTOS (#173 / SIGA-ADM-CDU-XXX-YYYY / 90%)
+        removido: tabela ALIMENTO (#173 / SIGA-ADM-CDU-XXX-YYYY / 100%)
+        adicionado: relatório de Ordem de Entrega convertido para Jasper. (#24779 / Módulo Almoxarifado / 100%)
+
+==============
+Novo arquivo:
+svn commit  -m  'resolvido:  Campos inserindo valor nulo.  (#32302 / SIGA-ADM  / 100%) '  frmOperação.class
+
+svn commit  -m  'resolvido:  Campos inserindo valor nulo.  (#32303 / SIGA-ADM  / 100%) '  frmGenero.class
+
+svn commit  -m  'resolvido:  Emitir uma mensagem após editar um Gênero.  (#32305 / SIGA-ADM  / 100%) '  frmGenero.class
+
+svn commit  -m  'resolvido:  Corrigir erro ao inserir mais de 20 caracteres.  (#32310 / SIGA-ADM  / 100%) '  frmEditora.class    
+
+svn commit  -m  'resolvido:  Corrigir erro ao editar uma nova Editora.  (#32311 / SIGA-ADM  / 100%) '  frmEditora.class    ---erro
+---Validar os campos 
+svn commit  -m  'resolvido:  Corrigir erro ao inserir mao inserir uma nova Área de Conhecimento.  (#32387 / SIGA-ADM  / 100%) '  frmColecao.class
+svn commit  -m  'resolvido:  Campos inserindo valor espaço para Infração .  (#32388 / SIGA-ADM  / 100%) '  frmInfracao.class
+svn commit  -m  'resolvido:  Campos inserindo valor espaço para Situações de Reserva.  (#32389 / SIGA-ADM  / 100%) '  frmReserva.class                
+====semana 26/03
+svn commit  -m  'resolvido:  Validar Campos na pesquisa  em Cadastrar Marc.  (#32422 / SIGA-ADM  / 100%) '  frmCadastrarMarc.class falta   quando só tem a tag???
+svn commit  -m  'resolvido:  Validar Campos na pesquisa .  (#32453 / SIGA-ADM  / 100%) '  frmCatalogacaoObra.class    
+svn commit  -m  'resolvido:  Validar Campos na pesquisa .  (#32465 / SIGA-ADM  / 100%) '  frmCatalogacaoAssunto.class    
+====semana 27/03
+svn commit  -m  'resolvido:  Validar Campos na pesquisa  em Cadastrar Marc.  (#32422 / SIGA-ADM  / 100%) '  frmCadastrarMarc.class---- falta   quando só tem a tag???
+svn commit  -m  'resolvido:  Validar Campos Observacoes dos usuarios.  (#32551 / SIGA-ADM  / 100%) '  frmUsuarioObservacoes.class
+svn commit  -m  'resolvido:  Validar Campos em Infracoes dos  (#32553 / SIGA-ADM  / 100%) '  frmUsuarioInfracoes.class
+//frmUsuarioValidacao
+svn commit  -m  'resolvido:  Validar Campos de validacao de cartão (#32553 / SIGA-ADM  / 100%) '  frmUsuarioValidacao.class  ---falta testar a validação do cartão com espaço
+svn commit  -m  'fechado:  Retirar caracteres entre os campos da Catalogação Direta (#32464 / SIGA-ADM  / 100%) '  frmCatalogacaoDireta.class 
+28/03
+svn commit  -m  'resolvido:  Validar Campos na pesquisa .  (#32569 / SIGA-ADM  / 100%) '  frmCatalogacaoObra.class    -- falta commit
+svn commit  -m  'resolvido:  Campo de retorno do lookup Alteração do Grupo do Usuário.  (#32558 / SIGA-ADM  / 100%) '  frmUsuarioAltGrupo.class    -- falta commit
+svn commit  -m  'resolvido:  nova função em lookup:Alteração do Grupo do Usuário .  (#32558 / SIGA-ADM  / 100%) '  lookup.class    -- falta commit
+svn commit  -m  'fechado:  Icone Cadastro de Observacoes.  (#32550 / SIGA-ADM  / 100%) '  cadastro_de_observacoes.png    -- falta commit
+----------------------  29/03
+Validar o campo ISBN em Pré-Catalogação  tarefa :32492
+svn commit  -m  'resolvido:  Validar o campo ISBN em Pré-Catalogação .  (#32492 / SIGA-ADM  / 100%) '  frmPreCatalogacao.class    -- falta commit
+----demais campos na pré:
+svn commit  -m  'resolvido:  Validar os campos ao inserir  em Pré-Catalogação .  (#32435 / SIGA-ADM  / 90%) '  frmPreCatalogacao.class    -- falta commit  e testar Letra maiuscula!!  tela :   lookup de comom e de classes
+
+
+---------------------------------> redmine fora do AR:  frmMultaHistOperador
+svn commit  -m  'resolvido:  Validar os campos periodo inicial e final no historico de multas por operador .  (# ------ / SIGA-ADM  / 100%) '  frmMultaHistOperador.class    -- 
+
+____>>>>>>> comitado em comon -letras maiuscula d a1 palavra do loockup
+
+29959
+svn commit  -m  'comitado:  Novo formato na pesquisa do Municipio:apenas a primeira letra maiúscula.  (#29959 / SIGA-Common  / 100%) '  lookup.class    
+
+falta commit          ---------------> Historico de multas por operador
+=====
+
+tarefa:32578  ** falta//::Exemplares após incluir/editar um exemplar o sistema apresenta a mensagem de sucesso, porém logo após apresenta a seguinte mensagem de erro:
+
+32577 ---Em Catalogação::Exemplares ao incluir um exemplar o sistema não está gravando o nome do autor. Como mostra a figura abaixo, tela de edição do exemplar.
+
+
+32469 --- Validar campos ao Incluir Exemplares
+
+
+--->   REVER 32578 -- corrigir erro ao Incluir/Editar um Exemplar  ,NÃO COMITOU POIS FALTA editar um exemplar
+
+RESOLVIDO 50%    --->Bug #32284: Corrigir erro ao gerar Etiquetas
+
+--->32309 	Bug	Bug #32284	Validar os campos ao inserir uma nova Editora
+----------------------------------------------->> 
+
+32424  --- Corrigir erro ao cadastrar uma Etiqueta Marc21  -- comitado!!
+
+32309    Validar os campos ao inserir uma nova Editora  -- comitado
+
+
+---->frmEmprestimoRecintoComunidade  e emprestimo.class  ALTERADAS PARA A TAREFA NUMERO:33202 ---Corrigir erro ao realizar um empréstimo no recinto
+
+frmEmprestimoRecinto.class -- >  referente ao retorno da tela -ok tarefa 33201
+
+=====================
+CREATE TABLE bt_emprestimo_temp (
+    idemprestimo_temp integer NOT NULL,
+    idusuario_temp integer NOT NULL,
+    idexemplar integer NOT NULL,
+    datahoradoemprestimo timestamp with time zone,
+    "datahoraprevdevolucao " timestamp with time zone,
+    datahoradadevolucao timestamp with time zone
+);
+
+

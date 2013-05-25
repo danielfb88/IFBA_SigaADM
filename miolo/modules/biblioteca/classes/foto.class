@@ -1,0 +1,103 @@
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+<?php
+/**
+* @package SIGA
+* @subpackage Biblioteca
+* @author SETEC/MEC
+*/
+
+class BusinessBibliotecaFoto extends Business
+{
+	var $dbsigaedu;
+
+	function BusinessBibliotecaFoto()
+	{
+		global $MIOLO;
+	
+		$this->dbsigaedu = $MIOLO->GetDatabase('sigaedu');
+	}
+
+    public function image($id = -1) {
+		$query = $this->dbsigaedu->Query("
+						SELECT encode(pessoa_fisica.foto, 'base64') as foto from pessoa_fisica where pessoa_fisica.id = $id
+					");
+        
+        $image = $query->result[0][0];
+        
+        if (empty($image)){
+            // Imagem 'sem imagem'
+            $image = 'R0lGODlhUABQAPcAALK5vqCpsdLW2fDx8uHj56y2v6q0vbvDy9LY3ZGao6GrtMXM06WutouTmqmw
+tr7EyrvAxuzx9Z2osdPZ3uXo6+ns7rW8wsbN1Ofr8Kq0vvj6/PP2+MzT2MPIzZujqpymr6iyu7i9
+w+zv8tnd4eTp7fz+/tzg4r3Dyebq7dre46qzutnb3ujr77W9xeHk6Nje487U2rG5we3u8ert8aOu
+t9/i5au1vs3S1szR1q20u7K7w7O6wMrQ1fz9/vT4+qOttsnN0cXL0La7wayzuqqyt6ixuvT3+vLz
+9J2lrZqkrt/j5t3i5c7T18rP08nO0q23v6mzvPDz9fT2+Pj5+vz9/fr7/P39/eLo7Ozw8+Po7ePp
+7e/y9fH09u3x8/L09vP19+7x9Pn6+/X3+Pf5+vv8/Pv7/Pz8/f7+/uHn7OLn7O/y9Pr7++7y9PL1
+9/r6++3w8/T296awufb4+fX3+fb3+eru8evv8vf4+eXq7unt8ejs8Obr7+vu8ufr7+jt8Obq7ufs
+8OTp7qexuqeyu/j6+6WvuKiyvOru8qizvO/z9qmzvaexu+nu8fDz9vT3+O7y9aSuuPH1+Pb4+qSv
+uObp7PT3+fD096WvueLn6unu8qaxuvH09/b4+Ofq7v///6m0vfL1+Pf5++7x9ff4+v7//6+4wPj4
++fb3+PD09v7+//X4+uTq7evv89ne4drd4Pv8/evv8fL2997h5KWwuevw8uTm6bK5wuLn6fX19vn5
+++rt8uns8Ont8KCpr/v9/r7FzPHz9aivt/T2+bO8xISMlOrv86u0u/X2+Pb4++bq7/P09qixufz8
+/KmyuZegqfj6+u7w8fn6+uzx9P/+/+/z9Zmjq8LK0O7x86exuff6+6u2vau2v9fb4Pj5+/n5+tTZ
+3PDz9KSss/P19q61veru8Ovu8cjM0snP1u7v8LC5wquzvLG6wuHm6eHm6vT1+OLl6KawuKaxuaew
+uKewufb2+NDW3J2nr9DS1u7v8qavuLC3vaWwu6GstqKrtfv9/c7S1SH5BAAAAAAALAAAAABQAFAA
+AAj/AM8IHEiwoMGDCBMqXMhQoJWHECNKnEixosWLGDNq3Mixo0eKVEKKHEmypMmTKFOqXMmypcuX
+ME2amUmzps2bOHPq3Mmz50wyQIMKHUq0qNGjSJMqBVqmqdOnUKNKnUq1qtWrTato3cq1q9evYMOK
+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
+D7jAB55vXxv84AhPeK3xEBAAOw==';
+        }
+        
+        //return '<img src="data:image/jpeg;base64,' . $image . '"/>';
+		return "data:image/jpeg;base64,$image";
+    }
+}
+?>

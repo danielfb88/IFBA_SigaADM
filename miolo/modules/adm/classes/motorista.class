@@ -117,6 +117,12 @@ class BusinessAdmMotorista extends Business
         	return $criteria->retrieveAsQuery();
 	}
 	
+	//Retorna quantidade de ocorrências iguais ao número de carteira de habilitação.
+	function findByIdPessoa($pessoa)
+    {
+		$busca = "select count(*) as total from ad_motorista where idpessoa = '$pessoa'";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }	
 }
 
 	

@@ -31,13 +31,16 @@ class frmPtrNew extends Form
 	function CreateFields()
 	{
 		$fields = array (
-			new TextField('idPtr','','Código','6 '),
+			new TextField('idPtr','','Código','6','Máx. 6 caracteres'),
 			new TextField('descricao','','Descricao','50','Máx. 50 caracteres'),
-			new TextField('progTrab','','Prog. Trabalho','20'),
+			new TextField('progTrab','','Prog. Trabalho','20','Máx. 15 caracteres'),
 	//		new TextField('uorcamento','','Unidade Orçamentária','3'),
 		);
-
 		$this->SetFields($fields);
+
+		$this->descricao->addAttribute('maxlength',50);
+		$this->idPtr->addAttribute('maxlength',6);
+		$this->progTrab->addAttribute('maxlength',15);
 
 		$buttons = array (
 			new FormButton('btnNew', 'Cadastrar PTR')
@@ -81,16 +84,24 @@ class frmPtrNew extends Form
 		{
 			$ptr = $this->manager->GetBusiness('adm','ptr');
 			$ptr->SetData($data);
-			try
+			
+			if($ptr->findByCodigo($ptr->idPtr))
 			{
-				$ptr->save();
-				$ptr->Log(OP_INS,"Novo ptr criado");
-				$go = $this->manager->GetActionURL('adm','main:ptr:find',$ptr->idPtr);
-				$this->manager->Information('PTR criada com sucesso.',$go);
+				$this->AddError('Código já cadastrado.');	
 			}
-			catch (Exception $e)
+			else
 			{
-				$this->addError($e->getMessage());
+				try
+				{
+					$ptr->save();
+					$ptr->Log(OP_INS,"Novo ptr criado");
+					$go = $this->manager->GetActionURL('adm','main:ptr:find',$ptr->idPtr);
+					$this->manager->Information('PTR criada com sucesso.',$go);
+				}
+				catch (Exception $e)
+				{
+					$this->addError($e->getMessage());
+				}
 			}
 		}
 	}

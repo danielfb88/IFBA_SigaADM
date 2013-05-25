@@ -252,10 +252,16 @@ class frmRequisicaoFind extends Form
         if ( $controlGroup2 )
     	{
     		$fields[] = $controlGroup2;
-    	}       
-		
+    	}
+    	
     	$fields[] = $grid;
         $this->SetFields($fields);
+        
+        $validators = array(
+            new MIntegerValidator('requisicao','Número da Requisicao'),
+        );
+        
+        $this->SetValidators($validators);
 
 		$this->SetFieldAttr('lkpMunicipio','module','common');
         $this->SetFieldAttr('lkpMunicipio','item','municipio');

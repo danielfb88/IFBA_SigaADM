@@ -83,10 +83,15 @@ class MDataGrid extends MGrid
     */
     function __construct($query, $columns, $href, $pageLength = 15, $index = 0, $name = '', $useSelecteds = true)
     {
-        $this->query = $query;
+        
+		$this->query = $query;
+		
+		//var_dump(get_class($query));
+		//exit;
         parent::__construct(NULL, $columns, $href, $pageLength, $index, $name, $useSelecteds);
-
-        if ( $this->pageLength )
+		
+		//var_dump('aqui2');
+		if ( $this->pageLength )
         {
             $this->pn = new MGridNavigator($this->pageLength, $this->rowCount,
             $this->GetURL($this->filtered, $this->ordered), $this);
@@ -106,6 +111,7 @@ class MDataGrid extends MGrid
             $columns = array($columns);
         foreach ($columns as $k => $c)
         {
+			//var_dump($this->columns);
             $this->columns[$c->field] = $c;
             $this->columns[$c->field]->index = $this->query->GetColumnNumber($c->field);
             $this->columns[$c->field]->grid = $this;

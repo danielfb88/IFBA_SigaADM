@@ -50,8 +50,10 @@ class frmCatalogacaoFichaObra extends MForm
     {
 		global $MIOLO, $module, $action;
         
-                
 		$this->obra = $this->manager->getBusiness('biblioteca','obra',$this->idObra);
+		
+		$this->obra = $this->obra->GetById($this->idObra);
+		
 		$this->operacao = $this->manager->getBusiness('biblioteca','operacao');
 		$this->logOperacao = $this->manager->getBusiness('biblioteca','log');
 
@@ -60,7 +62,19 @@ class frmCatalogacaoFichaObra extends MForm
 		$query = $this->logOperacao->GetIdusuarioByIdentificadorAndIdoperacao($this->obra->idObra, $objOperacao->idoperacao);
 
         //Concatenação dos Autores Secundários, caso existam 29/06/2010
-        $autorSecundario1= $this->obra->descAutorSec2;
+		$material = $this->obra->GetAutoresSec($this->idObra);
+		
+		if($material != null)
+		{
+			foreach($material as $key => $value)
+			{
+				$autoresSecundarios .= $value[0];
+				if(isset($material[$key+1]))
+					$autoresSecundarios .= ", ";
+			}
+		}
+		
+        /*$autorSecundario1= $this->obra->descAutorSec2;
         $autorSecundario2= $this->obra->descAutorSec3;
         $autoresSecundarios = $autorSecundario1;
 
@@ -69,7 +83,7 @@ class frmCatalogacaoFichaObra extends MForm
         {
             $autoresSecundarios .= " , ";
             $autoresSecundarios .= $autorSecundario2;
-        }
+        }*/
 
         //Concatenação dos Assuntos da Obra , caso existam mais de uma ocorrência
      
@@ -85,13 +99,13 @@ class frmCatalogacaoFichaObra extends MForm
             $assuntos = null;
         }
         
-        $assunto_dois= $this->obra->assunto2;
+        /*$assunto_dois= $this->obra->assunto2;
        
         if ($assunto_dois != NULL  )
         {
             $assuntos .= " , ";
             $assuntos .= $assunto_dois;
-        }
+        }*/
 
         //  TRATANDO CDU E CDD
 
@@ -135,7 +149,8 @@ class frmCatalogacaoFichaObra extends MForm
             new MTextLabel('autor', ($this->obra->autor != null) ? ($this->obra->autor) : '&nbsp;', 'Autor'),
             new MTextLabel('cutter', ($this->obra->cutter != null) ? ($this->obra->cutter) : '&nbsp;', 'Cutter'),            
 
-            new MTextLabel('autorsecundario', ($this->obra->autor != null) ? $autoresSecundarios : '&nbsp;', 'Autor Secundário'),
+            //new MTextLabel('autorsecundario', ($this->obra->autor != null) ? $autoresSecundarios : '&nbsp;', 'Autor Secundário'),
+			new MTextLabel('autorsecundario', isset($autoresSecundarios) ? $autoresSecundarios : '&nbsp;', 'Autor Secundário'),
 
             //new MTextLabel('autorsecundario', ($this->obra->autor != null) ? $this->obra->descAutorSec : '&nbsp;', 'Autor Secundário'),   $autoresSecundarios
 
@@ -171,13 +186,13 @@ class frmCatalogacaoFichaObra extends MForm
 				new MButton('btnDuplicar', 'Duplicar Obra'),
 				new MButton('btnExcluir', 'Excluir Obra'),
 				new MButtonWindow('btnMarc', 'MARC', $MIOLO->GetActionURL($module = $module, 'marc', $this->idObra)),
-                new MButton('btnAutor', 'Autor Secundário', $MIOLO->GetActionURL($module = $module , 'catalogacaoautorsecundario', $this->idObra)),
+                //new MButton('btnAutor', 'Autor Secundário', $MIOLO->GetActionURL($module = $module , 'catalogacaoautorsecundario', $this->idObra)),
 
                                   
                 //new MButtonWindow('btnAssunto', 'Assunto', $MIOLO->GetActionURL($module = $module , 'main:catalogacao:catalogacaoassunto', $this->idObra)),
 
                 
-                new MButton('btnAssunto', 'Assunto', $MIOLO->GetActionURL($module = $module , 'main:catalogacao:assunto', $numerodaobra)),
+                new MButton('btnAssunto', 'Assunto', $MIOLO->GetActionURL($module = $module , 'main:catalogacao:assunto&event=btnDetails:click&item='.$this->idObra.'&object=obra')),
 
                 //new MButtonWindow('btnAlteracao', 'Alterar Catalogacao', $MIOLO->GetActionURL($module = $module , 'main:catalogacao:catalogacaoalteracao',  $this->idObra)),
                 new MButton('btnIncluirEtiqueta2', 'Incluir Exemplar'),
@@ -241,11 +256,8 @@ class frmCatalogacaoFichaObra extends MForm
                     }
                     if ($item != NULL)
                     {
-                    
-       				 $goto = $this->manager->getActionURL('biblioteca','main:catalogacao:exemplar',$item);
-        
-                    $this->manager->getActionURL('biblioteca','main:catalogacao:catalogacaoetiqueta',$item);
-                    $this->page->redirect($goto);
+						 $go = $this->manager->GetActionURL('biblioteca', 'main:catalogacao:exemplar', '', array('event'=>'btnConsultar_click', 'edtNumerodaObra'=> $item)) ;						 
+						 $this->page->redirect($go);					
                     }
                 }
 
@@ -296,7 +308,7 @@ class frmCatalogacaoFichaObra extends MForm
         }
         if ($item != NULL)
         {
-            $go = $this->manager->getActionURL('biblioteca','main:catalogacao:catalogacaoalteracao',$item);
+            $go = $this->manager->getActionURL('biblioteca','main:catalogacao:catalogacaoifms',$item);
             $this->page->redirect($go);
         }
     }

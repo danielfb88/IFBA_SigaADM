@@ -1,0 +1,100 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+class frmUoAlmoxarifadoRepRequisicoesMaterial_2 extends MForm
+{
+	protected $uoalmoxarifado;
+    
+    function __construct($objUo)
+    {
+        $this->uoalmoxarifado = $objUo;
+		parent::__construct("Relatório de Requisições de Materiais (provenientes deste almoxarifado)");
+        $this->EventHandler();
+    }
+
+	function CreateFields()
+	{
+		$fields = array(
+			new MTextField('catmat','','CATMAT',10), 
+			new MTextField('pExecutora', '', 'Executora', 10, 'Facultativo! Exemplos: 1) CAMPUS 2) CAMPUS-SETOR'),	
+			new MTextField('pAnoMesReq', '', 'A partir do Ano/mês', 6, 'Facultativo! Exemplo: 201309'),
+		);
+		$this->SetFields($fields);
+	
+		$buttons = Array
+		(
+			new FormButton('btnGerarRelatorio', 'Gerar Relatório','pdf')
+		);
+		$this->SetButtons($buttons, 'PDF');
+	}
+	
+	function btnGerarRelatorio_click()
+	{
+		global $MIOLO, $item;
+
+		$catmat = Form::GetFormValue('catmat');	
+		
+		if(empty($catmat)){ $this->AddError('Por gentileza informe o CATMAT'); }
+			else
+			{
+				$report = new MJasperReport('sigaept');
+				$parameters['SUBREPORT_DIR']    = $MIOLO->GetConf('home.modules');
+				$parameters['pURL']             = $MIOLO->GetConf('home.url');
+				$parameters['int_pIdUsuario']   = $MIOLO->login->idkey;                       
+				$parameters['int_pidUoReq']    = $item; 		
+				
+				$pAnoMesReq = Form::GetFormValue('pAnoMesReq');			
+					
+				$pExecutora = Form::GetFormValue('pExecutora');
+				
+				$pExecutora = str_replace('-', '%', $pExecutora);
+				$pExecutora = str_replace(' ', '%', $pExecutora);
+				
+				if (empty($pAnoMesReq)) {	$pAnoMesReq = 0;  $pnomeAnoMesReq = 'INDIFERENTE'; }
+					else { $pnomeAnoMesReq = substr($pAnoMesReq,0,4) . '/' . substr($pAnoMesReq,4,2); }				
+						
+				if (empty ($pExecutora)) { $pExecutora = '%';} else { $pExecutora .= '%'; }		
+				
+				$pnomeExecutora = $pExecutora == '%' ? 'INDIFIERENTE' : str_replace('%', '', $pExecutora);				
+				
+				$aux = $MIOLO->getBusiness('adm', 'executoralmox');
+				$sql = new sql("replace (NomeUo, '-', ' ')", 'vad_uo', 'idUO = ' . $item);
+				$query = $aux->Query($sql);
+				$pnomeUO = $query->result[0][0];
+				
+				$parameters['int_pcodMaterial']			= $catmat; 
+				$parameters['str_pExecutora']			= $pExecutora; 
+				$parameters['int_pAnoMesReq']			= $pAnoMesReq;
+				$parameters['str_pnomeExecutora']		= $pnomeExecutora;
+				$parameters['str_pnomeAnoMesReq']		= $pnomeAnoMesReq;				
+				$parameters['pnomeUO'] 					= $pnomeUO;
+				
+				/*echo('<pre>');
+				var_dump ($parameters);
+				echo('</pre>');
+				exit();*/
+				$report->Execute('adm', 'repRequisicoesMaterial_2', $parameters);
+			}
+	}
+    
+}
+?>

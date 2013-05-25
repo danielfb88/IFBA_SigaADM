@@ -137,8 +137,14 @@ class frmRequisicaoAlmoxarifado extends MForm
     
     function btnConfirmarSolicitar_click(){
 		$data = $this->getData();
+		
+		$data->localEntrega = str_replace(chr(13), " - ", $data->localEntrega);
+		$data->localEntrega = str_replace(chr(10), "", $data->localEntrega);
+		
 		$data->localEntrega = str_replace("; ; ","; ", str_replace("
-","; ",trim($data->localEntrega))) ;
+","; ",trim($data->localEntrega))) ;		
+		
+		
         	if (!is_array($this->objRequisicao->materialAlmoxarifado))
         	{
         	    $url = $this->manager->GetActionURL('adm','main:requisicoes',$this->objRequisicao->idRequisicao,array('form'=>'item'));

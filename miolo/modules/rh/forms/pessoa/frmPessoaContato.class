@@ -38,6 +38,7 @@ class frmPessoaContato extends Form
         $this->pessoa = $pessoa;
 		parent::__construct('Contato');
         $this->EventHandler();
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
 	}
 
     public function CreateFields()
@@ -60,6 +61,7 @@ class frmPessoaContato extends Form
 		$this->SetFields($fields);
 		$validators = array(
 			new MMaskValidator('cep','','99999999','required'),
+			new EmailValidator('email'),
 		);
 		$this->SetValidators($validators);
 		
@@ -70,7 +72,12 @@ class frmPessoaContato extends Form
 
 		$this->cep->AddAttribute('maxlength','8');
 
-
+		$this->telefone->addAttribute('maxlength',13);
+		$this->telefone->addAttribute('onKeyUp','makeMask(this, \'(##)####-####\');');
+		$this->telefone->addAttribute('onBlur','makeMask(this, \'(##)####-####\');');
+		$this->celular->addAttribute('maxlength',13);
+		$this->celular->addAttribute('onKeyUp','makeMask(this, \'(##)####-####\');');
+		$this->celular->addAttribute('onBlur','makeMask(this, \'(##)####-####\');');
 
 
 //        $this->setFieldAttr('uf','readonly',TRUE);
@@ -116,24 +123,37 @@ class frmPessoaContato extends Form
 	 */
 	public function btnSalvar_click()
 	{
-		$this->pessoa->SetData($this->GetData());
-    $this->pessoa->idmunicipio = $this->getFormValue('idMunicipio');        
-        
-    try
-		{
-		  $operacao  = OP_UPD;  
-			$descricao = "Atualização dos dados de contato. Id pessoa: ".
-										$this->pessoa->idpessoa." Via rh";
-		  
-			$this->pessoa->beginTransaction();
-		  $this->pessoa->save();
-      $this->pessoa->log($operacao,$descricao);
-			$this->AddInfo('Dados atualizados');
-		  $this->pessoa->endTransaction();
-		}
-		catch (exception $e)
-		{
-		  $this->AddError($e->getMessage());
+	$this->pessoa->SetData($this->GetData());
+    $this->pessoa->idmunicipio = $this->getFormValue('idMunicipio');    
+    
+    if( (Form::GetFormValue('telefone')!='') and preg_match("/\D/", Form::GetFormValue('telefone')) and
+	strlen(trim(Form::GetFormValue('telefone'))) < 13 )
+	{
+		$this->AddError('Campo telefone inválido.');
+	}
+	elseif( (Form::GetFormValue('celular')!='') and preg_match("/\D/", Form::GetFormValue('celular')) and
+	strlen(trim(Form::GetFormValue('celular'))) < 13 )
+	{
+		$this->AddError('Campo celular inválido.');
+	}
+	else
+	{   	    
+		try
+			{
+			  $operacao  = OP_UPD;  
+				$descricao = "Atualização dos dados de contato. Id pessoa: ".
+											$this->pessoa->idpessoa." Via rh";
+			  
+				$this->pessoa->beginTransaction();
+			  $this->pessoa->save();
+		  $this->pessoa->log($operacao,$descricao);
+				$this->AddInfo('Dados atualizados');
+			  $this->pessoa->endTransaction();
+			}
+			catch (exception $e)
+			{
+			  $this->AddError($e->getMessage());
+			}
 		}
 	}
 }

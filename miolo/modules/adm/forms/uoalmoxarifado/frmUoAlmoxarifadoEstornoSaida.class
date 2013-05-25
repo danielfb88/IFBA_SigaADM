@@ -33,6 +33,8 @@ class frmUoAlmoxarifadoEstornoSaida extends MCompoundForm
         $this->uoalmoxarifado = $objUO;
         $this->requisicao = $MIOLO->getBusiness('adm','requisicao',$this->idRequisicaoValue);
 		parent::__construct("Estorno de Saída de Material - Requisição de almoxarifado {$this->requisicao->idRequisicao}");
+		$this->page->addJsCode(file_get_contents(dirname(__FILE__).'/js/frmUoAlmoxarifadoEstornoSaida.js'));	
+		$this->page->OnSubmit("desabilita()");
         $this->eventHandler();
 		$this->SetClose(null);
     }
@@ -40,6 +42,7 @@ class frmUoAlmoxarifadoEstornoSaida extends MCompoundForm
     function CreateFields()
     {
         global $item;
+		
 		$tipoReq = $this->manager->GetBusiness('adm','tiporeq');
 		$tipoReq->GetById($this->requisicao->idTipoReq);
        	$tabelaGeral = $this->manager->GetBusiness('common','tabelageral');
@@ -67,6 +70,7 @@ class frmUoAlmoxarifadoEstornoSaida extends MCompoundForm
 		$ordemEntrega = $MIOLO->GetBusiness($module, 'ordementrega');
 		$idRequisicao = $this->idRequisicaoValue;
 		$cf = new MCurrencyFormatter();
+		
 
 		try
 		{
@@ -74,68 +78,78 @@ class frmUoAlmoxarifadoEstornoSaida extends MCompoundForm
 			$objRequisicao->getById($idRequisicao);
 			$objRequisicao->retrieveAssociation('materialAlmoxarifado');
 			$objRequisicao->beginTransaction();
-
+			
 			$valorTotalReq = 0.0;
 			foreach($objRequisicao->materialAlmoxarifado as $m)
 			{
 				//Item Requisição
-				$itemReq = $MIOLO->GetBusiness($module, 'itemreq');
-				$itemReq->GetById($m->idRequisicao, $m->idMaterial);
-				$itemReq->status = '0';//SOLICITADO
-				$itemReq->setTransaction($objRequisicao->getTransaction());
-				$itemReq->save();
-
-				//busca movimento original
-				$itemReq->retrieveAssociation('movimento');
-				if($itemReq->movimento)
+				if ( ($m->quantAutorizada) AND ($m->quantAutorizada > 0) )
 				{
-					foreach($itemReq->movimento as $mov)
-					{
-						if(!$mov->idMovimentoRef)
-						{
-							$movimento = $mov;
-						}
-					}
-				}
 				
-				//novo movimento (estorno)
-				$novoMovimento = $MIOLO->GetBusiness($module, 'movimento');
-				$novoMovimento->tipoMovimento = '4';//ESTORNO SAIDA
-				$novoMovimento->dataMovimento = date('d/m/Y');
-				$novoMovimento->quantidade = $movimento->quantidade;
-				$novoMovimento->valorTotal = $movimento->valorTotal;
-				$novoMovimento->idRequisicao = $movimento->idRequisicao;
-				$novoMovimento->idMaterial = $movimento->idMaterial;
-				$novoMovimento->idItemNota = $movimento->idItemNota;
-				$novoMovimento->idMovimentoRef = $movimento->idMovimento;
-				$novoMovimento->setTransaction($objRequisicao->getTransaction());
-				$novoMovimento->save();
+						$itemReq = $MIOLO->GetBusiness($module, 'itemreq');
+						$itemReq->GetById($m->idRequisicao, $m->idMaterial);
+						
+						$itemReq->status = '0';//SOLICITADO
+						$itemReq->setTransaction($objRequisicao->getTransaction());
+						$itemReq->save();
 
-				//grava referencia no movimento original e apaga idOrdemEntrega
-				$movimento->idMovimentoRef = $novoMovimento->idMovimento;
-				$idOrdemEntrega = $movimento->idOrdemEntrega;
-				$movimento->idOrdemEntrega = '';
-				$movimento->setTransaction($objRequisicao->getTransaction());
-				$movimento->save();
+						//busca movimento original
+						$itemReq->retrieveAssociation('movimento');
+						if($itemReq->movimento)
+						{
+							foreach($itemReq->movimento as $mov)
+							{
+								if(!$mov->idMovimentoRef)
+								{
+									$movimento = $mov;
+								}
+							}
+						}
+						
+						//novo movimento (estorno)
+						$novoMovimento = $MIOLO->GetBusiness($module, 'movimento');
+						$novoMovimento->tipoMovimento = '4';//ESTORNO SAIDA
+						$novoMovimento->dataMovimento = date('d/m/Y');
+						$novoMovimento->quantidade = $movimento->quantidade;
+						$novoMovimento->valorTotal = $movimento->valorTotal;
+						$novoMovimento->idRequisicao = $movimento->idRequisicao;
+						$novoMovimento->idMaterial = $movimento->idMaterial;
+						$novoMovimento->idItemNota = $movimento->idItemNota;
+						$novoMovimento->idMovimentoRef = $movimento->idMovimento;
+						$novoMovimento->setTransaction($objRequisicao->getTransaction());
+						$novoMovimento->save();
 
-				//se não houver outro movimento para a mesma ordem, apaga a ordem de entrega
-				$ordemEntrega->GetById($idOrdemEntrega);
-				$ordens = $movimento->ListMovimentosByOrdemEntrega($ordemEntrega->numero);
-				if(count($ordens->result) == 1)
-				{
-					$ordemEntrega->setTransaction($objRequisicao->getTransaction());
-					$ordemEntrega->delete();
+						//grava referencia no movimento original e apaga idOrdemEntrega
+						
+						$movimento->idMovimentoRef = $novoMovimento->idMovimento;
+						$idOrdemEntrega = $movimento->idOrdemEntrega;
+						$movimento->idOrdemEntrega = '';
+						$movimento->setTransaction($objRequisicao->getTransaction());
+						$movimento->save();
+
+						//se não houver outro movimento para a mesma ordem, apaga a ordem de entrega
+						$ordemEntrega->GetById($idOrdemEntrega);
+						$ordens = $movimento->ListMovimentosByOrdemEntrega($ordemEntrega->numero);
+						if(count($ordens->result) == 1)
+						{
+							$ordemEntrega->setTransaction($objRequisicao->getTransaction());
+							$ordemEntrega->delete();
+						}
+
+						//estoque
+						$estoque->GetById($this->uoalmoxarifado->idUo, $movimento->idMaterial);
+						$estoque->estoque += $novoMovimento->quantidade;
+						$estoque->valorTotal = $cf->toDecimal($estoque->valorTotal) + $cf->toDecimal($novoMovimento->valorTotal);
+						$estoque->setTransaction($objRequisicao->getTransaction());
+						$estoque->save();
+
+						//Somatório do valor de todos os itens
+						$valorTotalReq = $cf->toDecimal($valorTotalReq) + $cf->toDecimal($movimento->valorTotal);
 				}
-
-				//estoque
-				$estoque->GetById($this->uoalmoxarifado->idUo, $movimento->idMaterial);
-				$estoque->estoque += $novoMovimento->quantidade;
-				$estoque->valorTotal = $cf->toDecimal($estoque->valorTotal) + $cf->toDecimal($novoMovimento->valorTotal);
-				$estoque->setTransaction($objRequisicao->getTransaction());
-				$estoque->save();
-
-				//Somatório do valor de todos os itens
-				$valorTotalReq = $cf->toDecimal($valorTotalReq) + $cf->toDecimal($movimento->valorTotal);
+				else 
+				{
+					//var_dump( 'Quant zerada - pulando !');
+				}
 			}
 
 			////atualizações referentes a orçamento e a lançamento interno
@@ -155,7 +169,7 @@ class frmUoAlmoxarifadoEstornoSaida extends MCompoundForm
 			$objRequisicao->uoRequisitante->setTransaction($objRequisicao->getTransaction());
 			$objRequisicao->uoRequisitante->addPrevisaoRemoveDebito($requisita->idRubrica, $valorTotalReq, $valorTotalReq, $anoRequisicao);
 			$objRequisicao->Log(OP_UPD,"Requisicao ".$objRequisicao->idRequisicao.": retorno de previsao de debito e remocao de debito de ".$valorTotalReq." na UO ".$objRequisicao->uoRequisitante->idUo);
-
+			
 			//Lançamento interno da remocao de debito/previsao debito
 			$lancamentoInt = $this->manager->getBusiness('adm','lancamentoint');
 			$lancamentoInt->setTransaction($objRequisicao->getTransaction());
@@ -171,13 +185,13 @@ class frmUoAlmoxarifadoEstornoSaida extends MCompoundForm
 			$lancamentoInt->obs = "Estorno de Saida de Almoxarifado";
 			$lancamentoInt->save();
 			$lancamentoInt->Log(OP_INS,"Lançamento Interno numero ".$lancamentoInt->idLancamentoInt." gerado com sucesso para a Requisicao ".$objRequisicao->idRequisicao.".");                 
-
+			
 			//Remove credito executante na Uo Executante
 			$objRequisicao->getUoExecutante();
 			$objRequisicao->uoExecutante->setTransaction($objRequisicao->getTransaction());
 			$objRequisicao->uoExecutante->removeCreditoExecutante($requisita->idRubrica, $valorTotalReq, $anoRequisicao);
 			$objRequisicao->Log(OP_UPD,"Requisicao ".$objRequisicao->idRequisicao.": remocao de credito executante de ".$valorTotalReq." na UO ".$objRequisicao->uoExecutante->idUo);
-
+			
 			//Lançamento interno da remocao do credito executante
 			$lancamentoInt2 = $this->manager->getBusiness('adm','lancamentoint');
 			$lancamentoInt2->setTransaction($objRequisicao->getTransaction());
@@ -197,11 +211,14 @@ class frmUoAlmoxarifadoEstornoSaida extends MCompoundForm
 			//Requisição
 			$objRequisicao->status = '4';//AUTORIZADA PELO GESTOR
 			$objRequisicao->save();
+			
 
 			$objRequisicao->endTransaction();
 
 			$objRequisicao->Log(OP_DEL,"Estorno de Saida: " . $objRequisicao->idRequisicao);
+			
 			$MIOLO->Information('Estorno feito com sucesso.', $MIOLO->GetActionURL($module,$action,$item,array('form'=>'estornosaidamaterial')));
+			
 		}
 		catch (Exception $e)
 		{

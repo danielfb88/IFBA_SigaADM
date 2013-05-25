@@ -43,12 +43,14 @@ class frmClasseDados extends Form
        $tabelaGeral = $MIOLO->GetBusiness('common','tabelageral');
 		$fields = array(
             new TextField('idClasse','','Código','10'),
-            new TextField('classe','','Classe','10','Máx. 10 caracteres'),
-            new TextField('nome','','Nome','12','Máx. 12 caracteres'),
+            new TextField('classe','','Classe','20'),
+            new TextField('nome','','Nome','30'),
 			new Selection('categoria','','Categoria')
         );
 		
         $this->SetFields($fields);
+        $this->classe->AddAttribute('maxlength','20');
+        $this->nome->AddAttribute('maxlength','30');
 		
 	   	$query = $tabelaGeral->ListByTabela('RH_CATEGORIA');
 	    $this->SetFieldAttr('categoria','options',$query->chunkResult()); 
@@ -80,20 +82,29 @@ class frmClasseDados extends Form
 
 	public function btnSalvar_click()
 	{
-             global $MIOLO;
-   
-		$this->objClasse->SetData($this->GetData());
-		$this->objClasse->save();
-
-            $go = $MIOLO->GetActionURL('rh','main:classe',$this->objClasse->idClasse);
-	    $MIOLO->Information('Dados da Classe atualizados com sucesso.', $go );
-
-		if ( $this->objClasse->CheckError() )
+      global $MIOLO;
+             
+      $data = $this->GetData();
+      
+      // Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->nome = str_replace($caracteres,"",$data->nome);
+		$data->classe = str_replace($caracteres,"",$data->classe);
+		
+   	if (strlen(trim($data->classe)) < '1')
 		{
-			foreach( $this->objClasse->GetErrors() as $e )
-			{
-				$this->AddError("Informe o seguinte erro a equipe do CGCO: ".$e);
-			}
+			$this->addError('Especifique Melhor o Campo Classe.');
+		}
+		else if(strlen(trim($data->nome)) <= '4')
+		{
+			$this->addError('Especifique Melhor o Campo Nome.');
+		}
+		else
+		{
+			$this->objClasse->SetData($data);
+			$this->objClasse->save();
+		   $go = $MIOLO->GetActionURL('rh','main:classe',$this->objClasse->idClasse);
+			$MIOLO->Information('Dados da Classe atualizados com sucesso.', $go );
 		}
 	}
  }

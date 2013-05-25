@@ -29,13 +29,33 @@ class BusinessRhPercQualificacao extends MBusiness
     public $dataFim;
     public $escolaridadePCCTAE;
     
-    
-
     function __construct($data=null)
     {
        parent::__construct('sigaept',$data);
     }
 
-    
+    function getById($id, $proxy=true)
+    {
+       
+        $this->idPercQualificacao = 1;
+        $this->retrieve();
+	if ( $this->nivelClassificacao == NULL)
+        {
+            throw new ESimpleRnException("idescolaridadepcctae inexistente na tabela rh_percqualificacacao");
+        }
+        else
+        {
+	       return $this;
+	}
+    }
+    function getByIdEscolaridadePCCTAE($idEscolaridadePCCTAE){
+        $sql = new sql('*','rh_percqualificacao','idescolaridadepcctae=?');
+            $query = $this->Query($sql,$idEscolaridadePCCTAE);
+            if ( !$query->eof() )
+            {
+                $this->SetData($query->GetRowObject());
+            }
+        return $this;
+    }
 }
 ?>

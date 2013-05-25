@@ -1,0 +1,148 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+
+
+<?
+class gridPatrimonio_AtualizacaoEmBloco extends MDataGrid
+{
+
+    /**
+     * Constructor
+     */
+    function __construct()
+    {
+        global $MIOLO, $self;
+	
+		$business = $MIOLO->getBusiness('adm', 'itempatrimonio');
+	
+		$columns = array(
+			//new MDataGridColumn('MinIdDescricao' ,'MinIdDescricao' ,'left'  , false, '10%'  ),
+			new MDataGridColumn('Descricao'      ,'Descrição Resumida' ,'left'  , false, '69%' ),				
+			new MDataGridColumn('NumItens'       ,'Nº Itens'           ,'right' , true, '7%' ),	
+			new MDataGridColumn('NumNotasFiscais','Nº Notas Fiscais'   ,'right',   true, '7%'),
+			new MDataGridColumn('ValorUnitario'  ,'Valor Unitário'        ,'right', true, '7%'),
+			new MDataGridColumn('ValorTotal'     ,'Valor Total'        ,'right', true, '10%'),
+		);
+			
+		$patriInicial = Form::GetFormValue('patriInicial');
+		$patriFinal = Form::GetFormValue('patriFinal');
+		$numeroempenho =  Form::GetFormValue('numeroempenho');
+		$descricao = pg_escape_string(Form::GetFormValue('descricao'));
+		$notaFiscal = Form::GetFormValue('notaFiscal');
+		
+		$sql = new sql("DescricaoOriginal AS Descricao, MIN(idItemPatrimonio) AS MinIdDescricao, count(*) AS NumItens, " .
+						' MIN(Valor) AS ValorUnitario, SUM(valor) AS ValorTotal, count(distinct NotaFiscal) AS NumNotasFiscais',
+		                'Vad_Patrimonio', //$tables
+						"Ativo = 'S'", // where
+						'DescricaoOriginal', //ordenacao
+						'DescricaoOriginal ' //group by
+						);
+
+		if ($tipoIngresso == 'TODOS') { $tipoIngresso = ''; }
+		
+		// SE TODOS OS PARÂMETROS FORAM IGNORADOS ...
+		if 
+		   (  empty($patriInicial) AND empty($patriFinal) AND  empty($numeroempenho) AND empty($descricao) )
+		{
+		    
+			$sql->where .= ' AND idItemPatrimonio = 0';
+			
+		}
+		else {		
+		
+			if(!empty($patriInicial))
+			{
+				
+				/*$numeroEmpenhos = 0;
+				
+				if (!empty($patriFinal)) { // verifico se os itens são apenas de um único empenho!
+										
+					$sqlEmpenhos = new sql(' count(distinct numeroEmpenho) AS NumEmpenhos', 
+						' ad_itempatrimonio ' ,
+						' idItemPatrimonio >= ' . $patriInicial .  '   AND idItemPatrimonio <= ' . $patriFinal );					
+					
+					$queryEmpenho = $business->Query($sqlEmpenhos );
+					
+					$numeroEmpenhos = $queryEmpenho->result[0][0];					
+				}
+								
+				if ($numeroEmpenhos != 1) 
+					{
+						$sql->where .= ' AND NumeroEmpenho IS NULL AND idItemPatrimonio >= ' . $patriInicial; 
+						// só itens que não são associados a empenhos0
+					}
+					else { $sql->where .= ' AND idItemPatrimonio >= ' . $patriInicial;  }
+				*/
+				
+				
+				$sql->where .= ' AND NumeroEmpenho IS NULL AND idItemPatrimonio >= ' . $patriInicial; 
+						// só itens que não são associados a empenhos0
+				
+			}
+			
+			if(!empty($patriFinal))
+			{
+				$sql->where .= ' AND idItemPatrimonio <= ' . $patriFinal;
+			}			
+			
+			if(!empty($numeroempenho))
+			{
+				$numeroempenho = "'" . strtoupper(TRIM($numeroempenho)) . "'"; 
+				$sql->where .= ' AND numeroempenho = ' . $numeroempenho; // NÃO PODE SER LIKE TEM QUE SER IGUAL!
+			}
+			
+			if (!empty($notaFiscal))
+			{
+				$notaFiscal = "'" . strtoupper(TRIM($notaFiscal)) . "'"; 
+				$sql->where .= ' AND notaFiscal = ' . $notaFiscal; // NÃO PODE SER LIKE TEM QUE SER IGUAL!
+			}
+
+			if(!empty($descricao))
+			{
+				$descricao = "'" . TRIM($descricao) . "'"; 
+				$sql->where .= ' AND TRIM(DescricaoOriginal) = ' . $descricao; // NÃO PODE SER LIKE TEM QUE SER IGUAL!
+			}			
+			
+		}
+		
+		//header("Content-Type: text/html; charset=UTF-8");
+		//echo('<pre>');
+		//	var_dump($numeroEmpenhos, $sql->where);
+		//echo('</pre>');
+		
+		$href_grid = $MIOLO->GetActionURL('adm',$self);	
+	
+		
+		$query = $business->Query($sql);			
+		
+        parent::__construct($query, $columns, $href_grid,20, 0, 'gridPatrimonio_AtualizacaoEmBloco');
+		//parent::__construct(NULL, $columns, $href, $pageLength, $index, $name, $useSelecteds);
+		//parent::__construct($query,$columns,$action,0);
+		
+		$this->AddActionSelect();	
+
+		$this->SetLinkType('hyperlink');
+		
+    }
+	
+}
+?>

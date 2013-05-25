@@ -41,7 +41,7 @@ class frmOrcamentoEditar extends CompoundForm
 
 		$fields = array
 			(
-				new TextField('ano','','Ano','10'),
+				new TextField('ano','','Ano','4'),
 				new LookupTextField('lkpPtr','','PTR',50),
 				new HiddenField('idptr',NULL),
 				new LookupTextField('lkpFonte','','Fonte',50),
@@ -54,6 +54,10 @@ class frmOrcamentoEditar extends CompoundForm
             );
 		
         $this->SetFields($fields);
+        
+        $this->ano->AddAttribute('maxlength',4);
+		$this->valor->AddAttribute('maxlength',12);
+        
 		$this->SetFieldAttr('lkpPtr','module',$module);
 		$this->SetFieldAttr('lkpPtr','item','Ptr');
 		$this->SetFieldAttr('lkpPtr','event','filler');
@@ -80,14 +84,13 @@ class frmOrcamentoEditar extends CompoundForm
 			   new RequiredValidator('lkpFonte'),
 			   new RequiredValidator('data'),
 		    );
-		$this->SetValidators($validators);
+		//$this->SetValidators($validators);
 		$this->SetData();
     }
 
 	function SetData()
 	{
 		$data = $this->objOrcamento;
-		
 		$this->SetFieldValue('ano',$data->orcamento->ano);
 		$this->SetFieldValue('lkpPtr',$data->orcamento->idPtr);
 		$this->SetFieldValue('idptr',$data->orcamento->idPtr);
@@ -113,69 +116,93 @@ class frmOrcamentoEditar extends CompoundForm
 		$data->valor = $this->GetFormValue('valor');		
 	}
 	
-	
-	public function btnSalvar_click()
-	{
-		$this->objOrcamento->SetData($this->GetData());
-		//var_dump($this->objOrcamento->orcamento->ano);
-		if (substr_count($this->objOrcamento->valor, ",") == 0) 
-		{
-                   $this->objOrcamento->valor = str_replace(".",",",$this->objOrcamento);
-                }
-		else
-		{
-                   $this->objOrcamento->valor = str_replace(".","",$this->objOrcamento->valor);
-                }
-
-                $cf = new MCurrencyFormatter();
-		$this->objOrcamento->valor = $cf->toDecimal($this->objOrcamento->valor);             
-		$this->objOrcamento->orcamento->dotacao = ":0";
-		$this->objOrcamento->orcamento->suplementacao = ":0";
-		$this->objOrcamento->orcamento->bloqueio = ":0";
-		$this->objOrcamento->orcamento->anulacao = ":0";
-		
-		switch ($this->objOrcamento->tipoOrc)
-        {
-            case 1:
-                $this->objOrcamento->orcamento->dotacao = $this->objOrcamento->valor;
-                break;
-            case 2:
-                $this->objOrcamento->orcamento->suplementacao = $this->objOrcamento->valor;
-                break;
-            case 3:
-                $this->objOrcamento->orcamento->bloqueio = $this->objOrcamento->valor;
-                break;
-            case 4:
-                $this->objOrcamento->orcamento->anulacao = $this->objOrcamento->valor;
-                break;
-        }
-		
-		try
-		{
-			$this->objOrcamento->begintransaction();
-			$this->objOrcamento->orcamento->save();
-			$this->objOrcamento->save();
-			$this->objOrcamento->Log(OP_UPD,"Dados de orçamento modificados");
-			$this->objOrcamento->endtransaction();
-			$go = $this->manager->GetActionURL('adm','main:orcamento',$this->objOrcamento->idOrcamento);
-			$this->manager->Information('Orçamento alterado com sucesso', $go);			
-		}
-		catch (Exception $e)
-		{
-			$this->addError($e->getMessage());
-		}
-	}
-	
-	function invert($datainv,$sep)
-	
-			{//recebe a data e o separador
+	function invert($datainv,$sep) {//recebe a data e o separador
 
 		$ano=substr("$datainv",0, 4);
 		$mes=substr("$datainv",5, 2);
 		$dia=substr("$datainv",8, 2);
 		$datainv="$dia$sep$mes$sep$ano";
 		return $datainv;
-			}	
+	}
+	
+	
+	public function btnSalvar_click()
+	{
+		$this->objOrcamento->SetData($this->GetData());
+		if ( ($this->objOrcamento->valor != NULL) && (strpos($this->objOrcamento->valor,"-") != 0)) {
+			if ( substr_count($this->objOrcamento->valor, ",") == 0) 
+			{
+		          $this->objOrcamento->valor = str_replace(".",",",$this->objOrcamento);
+		     }
+			else
+			{
+		          $this->objOrcamento->valor = str_replace(".","",$this->objOrcamento->valor);
+		    }
+		}
+
+                $cf = new MCurrencyFormatter();
+                $this->objOrcamento->valor = $cf->toDecimal($this->objOrcamento->valor);
+                
+                $idptr = $this->GetFormValue('idptr');
+                $valor = $this->objOrcamento->valor;
+                $ano = $this->GetFormValue('ano');
+                $idfonte = $this->GetFormValue('idfonte');
+                $idrubrica = $this->GetFormValue('idrubrica');
+                $tipoorc = $this->GetFormValue('tipoorc');
+
+				if((strlen($ano) != 4 ) || ($ano < 2000)){
+					$this->AddError("Digite um ANO válido");
+				}elseif(($idptr == NULL)  || ($this->objOrcamento->orcamento->GetPtrById($idptr)) == NULL){
+					$this->AddError("Campo PTR inválido (Utilize a lupa)");
+				}elseif($idfonte == NULL){
+					$this->AddError("Campo FONTE inválido (Utilize a lupa)");
+				}elseif($idrubrica == NULL ) {
+					$this->AddError("Campo RUBRICA inválido (Utilize a lupa)");
+				}elseif($tipoorc == NULL){
+					$this->AddError("Campo TIPO deve ser informado");
+				}else if ($valor < 0) {
+					$this->AddError("O valor do Orçamento não pode ser negativo.");
+				}else if ($valor == 0) {
+					$this->AddError("Forneça um valor válido.");
+				}else {
+							            
+						$this->objOrcamento->orcamento->dotacao = ":0";
+						$this->objOrcamento->orcamento->suplementacao = ":0";
+						$this->objOrcamento->orcamento->bloqueio = ":0";
+						$this->objOrcamento->orcamento->anulacao = ":0";
+		
+						switch ($this->objOrcamento->tipoOrc)
+						{
+							case 1:
+								$this->objOrcamento->orcamento->dotacao = $this->objOrcamento->valor;
+								break;
+							case 2:
+								$this->objOrcamento->orcamento->suplementacao = $this->objOrcamento->valor;
+								break;
+							case 3:
+								$this->objOrcamento->orcamento->bloqueio = $this->objOrcamento->valor;
+								break;
+							case 4:
+								$this->objOrcamento->orcamento->anulacao = $this->objOrcamento->valor;
+								break;
+						}
+		
+						try
+						{
+							$this->objOrcamento->begintransaction();
+							$this->objOrcamento->orcamento->save();
+							$this->objOrcamento->save();
+							$this->objOrcamento->Log(OP_UPD,"Dados de orçamento modificados");
+							$this->objOrcamento->endtransaction();
+							$go = $this->manager->GetActionURL('adm','main:orcamento',$this->objOrcamento->idOrcamento);
+							$this->manager->Information('Orçamento alterado com sucesso', $go);			
+						}
+						catch (Exception $e)
+						{
+							$this->addError($e->getMessage());
+						}
+				}
+		}
 	
  }
 ?>

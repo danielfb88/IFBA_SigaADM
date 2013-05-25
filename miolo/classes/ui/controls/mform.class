@@ -1465,6 +1465,8 @@ class MForm extends MControl
 //      $field = $this->$name;
 //      $field->$attr = $value;
         $this->fields[$name]->$attr = $value; 
+		
+		//var_dump(fields[$name]->$attr);
     }
     
     

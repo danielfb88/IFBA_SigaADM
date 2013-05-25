@@ -61,56 +61,83 @@ class frmGrupoCargoCargo extends Form
 	$this->SetFieldAttr('idcargo','readonly',true);
      
     $buttons = array(
-	new FormButton('btnSalvar','Enviar'),
-    new FormButton('btnExcluir','Excluir')
+		new FormButton('btnSalvar','Enviar'),
+		 new FormButton('btnExcluir','Excluir')
     );
+    
+    $this->escolaridade->AddAttribute('maxlength','2');
+    $this->descricao->AddAttribute('maxlength','40');
+
+     $validators = array(
+         new RequiredValidator('idJornada'),
+         new RequiredValidator('descricao'),
+         new RequiredValidator('escolaridade'),
+         
+         new IntegerValidator('idJornada'),
+     );
+        
+     $this->SetValidators($validators);
 	
    $this->SetButtons($buttons);
    $this->SetButtonAttr('btnExcluir','visible',$this->cargo->isPersistent());
     }
 
 	function SetData()
-	{
-	    
+	{ 
      $this->SetFieldValue('idcargo',$this->cargo->idCargo);
      $this->SetFieldValue('escolaridade',$this->cargo->escolaridadeMinima);
-	 $this->SetFieldValue('idjornada',$this->cargo->idJornada);
-	 $this->SetFieldValue('descricao',$this->cargo->descricao);
+	  $this->SetFieldValue('idjornada',$this->cargo->idJornada);
+	  $this->SetFieldValue('descricao',$this->cargo->descricao);
 	}
 
 	public function btnSalvar_click()
 	{
-       	global $MIOLO;
+      global $MIOLO;
 
 		$update = $this->cargo->isPersistent();
 
 		$data = new FormData();
-        $data->idCargo = $this->GetFormValue('idcargo');
-      	$data->escolaridadeMinima = $this->GetFormValue('escolaridade');
-	    $data->idJornada = $this->GetFormValue('idjornada');
+      $data->idCargo = $this->GetFormValue('idcargo');
+      $data->escolaridadeMinima = $this->GetFormValue('escolaridade');
+	   $data->idJornada = $this->GetFormValue('idjornada');
 		$data->descricao = $this->GetFormValue('descricao');
-		$this->cargo->SetData($data);
-	    
-  try 
-   {
-     $this->cargo->save();
-     $go = $MIOLO->GetActionURL('rh','main:grupocargo',$this->cargo->idGrupoCargo, array('form'=>'cargos'));
-     if ($update)
-	 {
-	     $MIOLO->Information('Cargo atualizado com sucesso.', $go );
-	 }
-	 else
-	 {
-	     $MIOLO->Information('Cargo inserido com sucesso.', $go );
-	 }
-   }
-   catch (Exception $e)
-   {
-            $this->AddError($this->cargo->GetErrors());
-   }
 		
- }
-
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+	    
+	    if(is_numeric($data->idJornada))
+		{
+			if (strlen(trim($data->idJornada)) < '1')
+			{
+				$this->addError('Informe o id da jornada.');
+			}
+			elseif(strlen(trim($data->descricao)) <= '5')
+			{
+				$this->addError('Informe a Descrição do Cargo.');
+			}
+			else {
+				  try 
+					{
+						  $this->cargo->SetData($data);
+						  $this->cargo->save();
+						  $go = $MIOLO->GetActionURL('rh','main:grupocargo',$this->cargo->idGrupoCargo, array('form'=>'cargos'));
+					  if ($update)
+					 {
+						  $MIOLO->Information('Cargo atualizado com sucesso.', $go );
+					 }
+					 else
+					 {
+						  $MIOLO->Information('Cargo inserido com sucesso.', $go );
+					 }
+				}
+				catch (Exception $e)
+				{
+							$this->AddError($this->cargo->GetErrors());
+				}
+			}
+		}
+	}
 
     function btnExcluir_click()
 	{

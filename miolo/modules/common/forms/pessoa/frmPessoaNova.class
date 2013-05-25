@@ -52,6 +52,8 @@ class frmPessoaNova extends Form
         parent::__construct('Incluir Pessoa');
         $this->SetClose($MIOLO->GetActionURL('common','main'));
         $this->SetIcon($MIOLO->GetUI()->GetImage('common','pessoa_mini.png'));
+        // Adiciona script para criação de máscaras.
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
     }    
     
     public function CreateFields()
@@ -74,7 +76,7 @@ class frmPessoaNova extends Form
             array(
                 new TextField('nome','','Nome',40),
                 new SelectionSexo('sexo','','Sexo'),
-            ),          
+                ),         
             new LookupTextField('lkpNaturalidade','','Naturalidade',40),
             new HiddenField('idmunicipio'),
             new TextField('cep','','CEP (só números)',20),
@@ -96,9 +98,11 @@ class frmPessoaNova extends Form
         $this->SetButtons($buttons);
         $this->defaultButton = false;
 		
+		$this->cep->AddAttribute('maxlength','8');
+		
 		//Validação do campo datanasc
     	$this->datanasc->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
-    	$this->datanasc->addAttribute('onBlur','makeMask(this, \'##/##/####\');');
+    	$this->datanasc->addAttribute('onBlur','makeMask(this, \'##/##/####\');');		
         
         $this->SetFieldAttr('lkpNaturalidade','module','rh');
         $this->SetFieldAttr('lkpNaturalidade','item','municipio');
@@ -113,7 +117,7 @@ class frmPessoaNova extends Form
 		new RequiredValidator('cep'),
 	);
 	
-		$this->cep->AddAttribute('maxlength','8');
+		
 		
 	$this->SetValidators($validators);
 
@@ -159,15 +163,21 @@ class frmPessoaNova extends Form
 	{
 		global $MIOLO, $page;
 
+		$today = date("d/n/Y");
+		
 		if( strlen(trim(Form::GetFormValue('nome'))) < 4 )
 		{
 			$this->AddError('O nome deverá possuir pelo menos quatro letras.');
 		}
+		elseif( preg_match("/[0-9]/", Form::GetFormValue('nome')) )
+		{
+			$this->AddError('O nome deverá possuir somente letras.');
+		}		
 		elseif( Form::GetFormValue('sexo') == '' )
 		{
 			$this->AddError('Informe o sexo da pessoa.');
 		}
-		elseif( date('Y/m/d') < $this->invert(Form::GetFormValue('datanasc'),"/") )
+		elseif( date('Ymd') < $this->invert(Form::GetFormValue('datanasc')) )
 		{		
 			$this->AddError('A data de nascimento informada é inválida.');
 		}
@@ -208,22 +218,25 @@ class frmPessoaNova extends Form
 			}
 		}
 	}
-	function invert($datainv,$sep){//recebe a data e o separador
+	
+	function invert($datainv)
+	{//recebe a data e o separador
 
-	$ano=substr("$datainv",6, 4);
-	$mes=substr("$datainv",3, 2);
-	$dia=substr("$datainv",0, 2);
-	$datainv="$ano$sep$mes$sep$dia";
+		$ano=substr("$datainv",6, 4);
+		$mes=substr("$datainv",3, 2);
+		$dia=substr("$datainv",0, 2);
+		$datainv="$ano$mes$dia";
 
-	return $datainv;
-			}
+		return $datainv;
+	}
 
-function is_chrome()
-{
-return(eregi("chrome", $_SERVER['HTTP_USER_AGENT']));
-}
-function formatarData($string)
-   {
+	function is_chrome()
+	{
+		return(eregi("chrome", $_SERVER['HTTP_USER_AGENT']));
+	}
+	
+	function formatarData($string)
+    {
       $resultado = '';
       if($string)
       {
@@ -231,7 +244,7 @@ function formatarData($string)
          $resultado = $data[2].'/'.$data[1].'/'.$data[0];
       }
       return $resultado;
-   }			
+    }			
 
 }
 ?>

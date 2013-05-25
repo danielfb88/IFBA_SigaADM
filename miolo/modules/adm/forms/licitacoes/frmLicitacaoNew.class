@@ -31,6 +31,7 @@ class frmLicitacaoNew extends Form
 
 		$this->Form('Abrir nova Licitação');
 		$this->EventHandler();
+		$this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
 	}
 
 	function CreateFields()
@@ -104,6 +105,15 @@ class frmLicitacaoNew extends Form
 
 
 		$this->SetFields($fields);
+		
+		$this->numero->addAttribute('maxlength', 7); //no banco esta 15, mas é gerada a licitacao no formato PR xxxx/aaaa,sendo xxxx o numero
+		$this->dataAbertura->addAttribute('maxlength', 10);
+		$this->horaAbertura->addAttribute('onKeyUp','makeMask(this, \'##:##\');');
+		$this->horaAbertura->addAttribute('onBlur','makeMask(this, \'##:##\');');
+		$this->horaAbertura->addAttribute('maxlength', 5);
+		$this->assuntoProcesso->addAttribute('maxlength', 1000);
+		$this->elemento->addAttribute('maxlength', 6);
+		$this->subelemento->addAttribute('maxlength', 2);
 
 		$buttons = Array(
 			new FormButton('btnPost','Adicionar Itens'),
@@ -186,6 +196,10 @@ class frmLicitacaoNew extends Form
 		{
 			$this->AddError('Informe a validade em dias.');
 		}
+		elseif($validade <= 0)
+		{
+			$this->AddError('Informe uma validade maior que 0.');
+		}
 		elseif( preg_match("/\D/", $validade) )
 		{
 			$this->AddError('A validade está errada, informe em número de dias.');
@@ -194,7 +208,7 @@ class frmLicitacaoNew extends Form
 		{
 			$this->AddError('Informe o tipo de entrega.');
 		}
-		elseif(!$assuntoProcesso)
+		elseif((trim($assuntoProcesso)=='') || (!$assuntoProcesso))
 		{
 			$this->AddError('Informe o assunto do processo a ser gerado por esta licitação.');
 		}

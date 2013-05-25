@@ -49,6 +49,8 @@ class frmCatalogacaoFichaObra extends MForm
     function CreateFields()
     {
 		global $MIOLO, $module, $action;
+		
+				var_dump('hereeeee');
         
                 
 		$this->obra = $this->manager->getBusiness('biblioteca','obra',$this->idObra);

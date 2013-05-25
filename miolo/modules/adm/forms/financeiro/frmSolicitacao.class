@@ -55,6 +55,7 @@ class frmSolicitacao extends Form
 		$this->SetFieldAttr('licitacao','event','filler');
 		$this->SetFieldAttr('licitacao','related', '"",licitacao,"","","","","","",solicitacao');
 		$this->SetFieldAttr('licitacao','filter', 'licitacao,status');
+		$this->licitacao->addAttribute('readonly', true);
 
 		$button = array(
 			new FormButton('btnEnviar','Enviar'),
@@ -64,6 +65,12 @@ class frmSolicitacao extends Form
        	$this->SetButtons($button);
 		$this->SetButtonAttr('btnVoltarStatus','visible',false);
 		$this->SetButtonAttr('btnConfirmar','visible',false);
+		
+		$validators = array(
+			new RequiredValidator('licitacao'),
+		);
+	
+		$this->SetValidators($validators);
 
 		$this->manager->page->addJsCode("
 			function atualizaTotal(i,total,valormax)

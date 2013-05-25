@@ -76,9 +76,9 @@ class frmProcessoDesapensar extends MForm
 		    $numProcessos = array($num=>$numFormatado);
 		}
 		$numProcesso = new MSelection('numProcesso',$num,'Processo:',$numProcessos);
-	#	$autor = new MTextField('autor','','Autor:',90);
-	#	$autor->addAttribute('maxlength','80');
-		$groupDesapensar = new MBaseGroup('groupDesapensar', 'Selecionar processo',array($numProcesso/*,$autor*/),'vertical','css');
+		$autor = new MTextField('autor','','Autor:',40);
+		$autor->addAttribute('maxlength','40');
+		$groupDesapensar = new MBaseGroup('groupDesapensar', 'Selecionar processo',array($numProcesso,$autor),'vertical','css');
 		$groupDesapensar->addAttribute('style','padding:10px');
 	//      fields
 		$fields = array(
@@ -89,9 +89,9 @@ class frmProcessoDesapensar extends MForm
 		$this->SetFields($fields);
 		$this->setFieldAttr('numProcessoFormatado','readonly',true);
 	//      required fields
-	/*	$validators = array(
+		$validators = array(
 				new MRequiredValidator('autor'),
-		);*/
+		);
 		$this->setValidators($validators);
 	//      buttons
 		$buttons = array(
@@ -104,6 +104,7 @@ class frmProcessoDesapensar extends MForm
 		$this->manager->Information($msg,$this->manager->GetActionURL('protocolo','main:processos',$this->processo->numProcesso));
 	}
     }
+
     public function btnDesapensar_click()
     {
     
@@ -148,7 +149,7 @@ class frmProcessoDesapensar extends MForm
 		            $andamento->dataSaida = date("YmdHi");
 		            $andamento->decisao = 'DESAPENSADO DO PROCESSO '.$this->processoPai->numProcessoFormatado();
 		            $andamento->dataDespacho = $andamento->dataSaida;
-		        #    $andamento->autor = $data->autor;
+		            $andamento->autor = $data->autor;
 		            $andamento->status = 'N';
 		            $this->processo->addAndamento($andamento);
 		            $this->processo->addAndamento($andamento2);
@@ -166,7 +167,7 @@ class frmProcessoDesapensar extends MForm
 		            $andamento->dataSaida = $andamento->dataEntrada;
 		            $andamento->decisao = 'DESAPENSOU-SE DO PROCESSO '.$this->processo->numProcessoFormatado();
 		            $andamento->dataDespacho = $andamento->dataDespacho;
-		         #   $andamento->autor = $andamento->autor;
+		            $andamento->autor = $andamento->autor;
 		            $this->processoPai->addAndamento($andamento);
 		            $this->processoPai->addAndamento($andamento2);
 		            $this->processoPai->setTransaction($this->processo->getTransaction());
@@ -182,10 +183,16 @@ class frmProcessoDesapensar extends MForm
 				$emails[$emails->length][0] = $mailSender;
                 foreach($emails as $e)
                 {
-                    if($e[0] != $emails[$emails->length][0])
-						$instituicao = $this->processo->instituicaoUsuario($e[1]);
-					else 
-						$instituicao = $this->processo->instituicaoProcesso();
+                    if($e[1])
+		            {
+		                    $instituicao = $this->processo->instituicaoUsuario($e[1]);
+		                    $pessoa = $e[2];
+		            }
+		            else
+		            {
+		                    $instituicao = $this->processo->instituicaoProcesso();
+		                    $pessoa = $this->processo->solicitante;
+		            }
 					$mail = new PHPMailer();
 					$mail->IsSMTP(); // send via SMTP
 					$mail->Host = $MIOLO->getConf('mail.host');
@@ -202,7 +209,7 @@ class frmProcessoDesapensar extends MForm
 	                                $mail->ssl = $MIOLO->getConf('mail.ssl');
         	                        $mail->Body = "
                                                 <center><h1>TRAMITAÇÃO DO PROCESSO<br /> {$this->processo->numProcessoFormatado()}</h1></center>
-                                                <br /><br />Prezado(a) Sr(a) {$e[2]},
+                                                <br /><br />Prezado(a) Sr(a) {$pessoa},
 						<br /><br />O processo {$this->processo->numProcessoFormatado()} foi desapensado do processo {$this->processoPai->numProcessoFormatado()}
                                                 <br /><br /><b>Objeto: </b>{$objMail}
                                                 <br /><b>Setor Atual: </b>{$this->processo->retencao->setor}

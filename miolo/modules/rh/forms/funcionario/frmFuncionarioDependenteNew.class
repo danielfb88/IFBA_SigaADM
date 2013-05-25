@@ -79,6 +79,10 @@ class frmFuncionarioDependenteNew extends Form
 	{
 		$this->addError("Digite o nome completo do dependente corretamente");
 	}
+	elseif( date('Ymd') < $this->invertData(Form::GetFormValue('datanasc')) )
+	{		
+		$this->AddError('A data de nascimento informada é superior à data atual.');
+	}
 	else
 	{
 	        if ( $pessoa->idpessoa )
@@ -176,6 +180,17 @@ class frmFuncionarioDependenteNew extends Form
             $this->btnPost_click();
         }
     }
+    
+    function invertData($datainv)
+	{//recebe a data e o separador
+
+		$ano=substr("$datainv",6, 4);
+		$mes=substr("$datainv",3, 2);
+		$dia=substr("$datainv",0, 2);
+		$datainv="$ano$mes$dia";
+
+		return $datainv;
+	}  
 
  }
 ?>

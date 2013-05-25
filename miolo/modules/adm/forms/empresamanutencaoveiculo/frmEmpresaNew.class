@@ -34,12 +34,12 @@ class frmEmpresaNew extends MForm
     {
 
 		$fields = array(
-			new MTextField('nome','','Nome','20'),
-			new MTextField('cnpj','','CNPJ','18'),	
-			new MTextField('razaoSocial','','Razão Social','40'),
-			new MTextField('rua','','Rua','50'),
-			new MTextField('numero','','Número','5'),
-			new MTextField('bairro','','Bairro','30'),
+			new MTextField('nome','','Nome','20','Máx. 20 caracteres'),
+			new MTextField('cnpj','','CNPJ','18','formato (10.000.000/0001-01)'),	
+			new MTextField('razaoSocial','','Razão Social','40','Máx 40 caracteres'),
+			new MTextField('rua','','Rua','50','Máx. 50 caracteres'),
+			new MTextField('numero','','Número','5','Máx. 5 caracteres'),
+			new MTextField('bairro','','Bairro','30','Máx. 30 caracteres'),
 			new MHiddenField('idMunicipio'),
 			new LookupTextField('lkpMunicipio','','Município','40'),
 			new MTextField('cep','','CEP','9','Formato: 99999-999'),
@@ -49,6 +49,21 @@ class frmEmpresaNew extends MForm
 		$buttons = new MButton('btnEnviar');
 		$this->SetFields($fields);
 		$this->SetButtons($buttons);
+
+		$this->nome->addAttribute('maxlength',20);
+		$this->cnpj->addAttribute('maxlength',18);
+		$this->cnpj->addAttribute('onKeyUp','makeMask(this, \'##.###.###/####-##\');');
+		$this->cnpj->addAttribute('onBlur','makeMask(this, \'##.###.###/####-##\');');
+		$this->razaoSocial->addAttribute('maxlength',40);
+		$this->rua->addAttribute('maxlength',50);
+		$this->numero->addAttribute('maxlength',5);
+		$this->bairro->addAttribute('maxlength',30);
+		$this->cep->addAttribute('maxlength',9);
+		$this->cep->addAttribute('onKeyUp','makeMask(this, \'#####-###\');');
+		$this->cep->addAttribute('onBlur','makeMask(this, \'#####-###\');');
+		$this->telefone->addAttribute('maxlength',13);
+		$this->telefone->addAttribute('onKeyUp','makeMask(this, \'(##)####-####\');');
+		$this->telefone->addAttribute('onBlur','makeMask(this, \'(##)####-####\');');
 
 		$this->SetFieldAttr('lkpMunicipio','module','common');
 		$this->SetFieldAttr('lkpMunicipio','item','municipio');
@@ -79,42 +94,38 @@ class frmEmpresaNew extends MForm
 			$this->addError("O campo número deve conter apenas números!");
 		}
 		else{
-			if(!preg_match("/\([0-9][0-9]\)\ {0,1}[0-9]{4}-[0-9]{4}/i", $tel)){
-				$this->addError("O campo deve estar neste formato (99)9999-9999");
+			$objEmpresa = $MIOLO->GetBusiness('adm','empresamanutencaoveiculo');
+			$data = $this->getData();
+			$empresaCnpj = $objEmpresa->listByCnpj($data->cnpj);
+			if ($empresaCnpj->result) // Se houver empresa com este cnpj
+			{
+				$this->AddError("Há registro de uma empresa com este cnpj no sistema. Não é possivel duplicá-lo");
 			}
-			else{
-				$objEmpresa = $MIOLO->GetBusiness('adm','empresamanutencaoveiculo');
-				$data = $this->getData();
-				$empresaCnpj = $objEmpresa->listByCnpj($data->cnpj);
-				if ($empresaCnpj->result) // Se houver empresa com este cnpj
+			else
+			{
+				$objEmpresa->setData($data);
+				$var = $objEmpresa->checkSpace($objEmpresa);
+				if ($var)
 				{
-					$this->AddError("Há registro de uma empresa com este cnpj no sistema. Não é possivel duplicá-lo");
+					$this->AddError("Favor preencher corretamente o campo: ".$var);
 				}
 				else
 				{
-					$objEmpresa->setData($data);
-					$var = $objEmpresa->checkSpace($objEmpresa);
-					if ($var)
+					$objEmpresa->setMunicipio($data->idMunicipio);
+					try
 					{
-						$this->AddError("Favor preencher corretamente o campo: ".$var);
+						$objEmpresa->Save();
+						$msg = "Empresa Cadastrada com sucesso";
+						$this->manager->Information($msg,$this->manager->GetActionURL('adm','main:empresamanutencaoveiculo:find'));
 					}
-					else
+					catch(Exception $e)
 					{
-						$objEmpresa->setMunicipio($data->idMunicipio);
-						try
-						{
-							$objEmpresa->Save();
-							$msg = "Empresa Cadastrada com sucesso";
-							$this->manager->Information($msg,$this->manager->GetActionURL('adm','main:empresamanutencaoveiculo:find'));
-						}
-						catch(Exception $e)
-						{
-							$this->manager->Error($e->getMessage());
-						}
+						$this->manager->Error($e->getMessage());
 					}
-			    }
-   			}
-		}
+				}
+		    }
+   		}
+		
      }
 }
 ?>

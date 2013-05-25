@@ -94,6 +94,7 @@ class frmPessoaDocumentos extends Form
 		
 		$this->SetFields($fields);
 		
+		$this->cpf->addAttribute('maxlength',18);
 		$this->cpf->addAttribute('onKeyUp','makeMask(this, \'###.###.###-##\');');
 		$this->cpf->addAttribute('onBlur','makeMask(this, \'###.###.###-##\');');
 				
@@ -149,7 +150,7 @@ class frmPessoaDocumentos extends Form
         $this->SetFieldValue('datarg', $data->datarg);
                 
         $this->SetFieldValue('cpf', $this->convertCPF($data->cpf));
-        
+                
         $this->SetFieldValue('tituloeleitor', $data->tituloeleitor);
         $this->SetFieldValue('zonatitulo', $data->zonatitulo);
         $this->SetFieldValue('secaotitulo', $data->secaotitulo);
@@ -205,16 +206,26 @@ class frmPessoaDocumentos extends Form
 	{
 		$data = $this->GetData();
 		$this->pessoa->SetData($data);
-		
-		$this->pessoa->cpf = str_replace('-','',str_replace('.','',$this->pessoa->cpf));			
+		$this->pessoa->cpf = str_replace('-','',str_replace('.','',$this->pessoa->cpf));	
+				
 		if ((! is_numeric($this->pessoa->cpf)) && ($this->pessoa->cpf!=null))
 		{
 			$this->AddError("CPF inválido no caso de informação não numérica ou fora dos padrões");
 		}
-		
-		$this->pessoa->save();
-    $this->pessoa->log(OP_UPD,"Atualização dos dados de documento. Id pessoa: ".$this->pessoa->idpessoa." Via rh");
-		$this->AddInfo('Dados atualizados');
+		elseif(($this->pessoa->cpf != null) && ($this->pessoa->findByNomeCPF($this->pessoa->nome, $this->pessoa->cpf) == 0) && ($this->pessoa->findByCPF($this->pessoa->cpf)))
+		{
+			$this->AddError("CPF já cadastrado.");	
+		}
+		elseif( date('Ymd') < $this->invert(Form::GetFormValue('datarg')) )
+		{		
+			$this->AddError('A data de expedição informada é superior à data corrente.');
+		}
+		else
+		{
+			$this->pessoa->save();
+			$this->pessoa->log(OP_UPD,"Atualização dos dados de documento. Id pessoa: ".$this->pessoa->idpessoa." Via rh");
+			$this->AddInfo('Dados atualizados');
+		}
 	}
 	
 	/*
@@ -246,5 +257,16 @@ class frmPessoaDocumentos extends Form
 		 return $nCPF;	
 		}
 	}
+	
+	function invert($datainv)
+	{//recebe a data e o separador
+
+		$ano=substr("$datainv",6, 4);
+		$mes=substr("$datainv",3, 2);
+		$dia=substr("$datainv",0, 2);
+		$datainv="$ano$mes$dia";
+
+		return $datainv;
+	}    		
 }
 ?>

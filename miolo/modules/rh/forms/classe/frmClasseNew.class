@@ -32,14 +32,16 @@ class frmClasseNew extends Form
 	   
        $tabelaGeral = $MIOLO->GetBusiness('common','tabelageral');
 		$fields = array(
-            new TextField('classe','','Classe','10','Máx. 10 caracteres'),
-            new TextField('nome','','Nome','12','Máx. 12 caracteres'),
-			new Selection('categoria','','Categoria')
+            new TextField('classe','','Classe','20'),
+            new TextField('nome','','Nome','30'),
+			   new Selection('categoria','','Categoria')
         );
 		
         $this->SetFields($fields);
+        $this->classe->AddAttribute('maxlength','20');
+        $this->nome->AddAttribute('maxlength','30');
 		
-	   	$query = $tabelaGeral->ListByTabela('RH_CATEGORIA');
+	    $query = $tabelaGeral->ListByTabela('RH_CATEGORIA');
 	    $this->SetFieldAttr('categoria','options',$query->chunkResult()); 
 		
 		$buttons = array(
@@ -60,13 +62,28 @@ class frmClasseNew extends Form
 		global $MIOLO, $page, $module;
 
         $data = $this->GetData();
-        $classe = $MIOLO->GetBusiness($module,'classe');
-		$classe->SetData($data);
-        $classe->save();
- 
-        $go = $MIOLO->GetActionURL('rh','main:classe',$classe->idClasse);
-        $page->Redirect($go);
+        
+        // Retirando os caracteres especiais. :-)
+		  $caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		  $data->nome = str_replace($caracteres,"",$data->nome);
+		  $data->classe = str_replace($caracteres,"",$data->classe);
+        
+			if (strlen(trim($data->classe)) < '1')
+			{
+				$this->addError('Especifique Melhor o Campo Classe.');
+			}
+			else if(strlen(trim($data->nome)) <= '4')
+			{
+				$this->addError('Especifique Melhor o Campo Nome.');
+			}
+			else
+			{
+				  $classe = $MIOLO->GetBusiness($module,'classe');
+				  $classe->SetData($data);
+				  $classe->save();
+		 		  $go = $MIOLO->GetActionURL('rh','main:classe',$classe->idClasse);
+				  $page->Redirect($go);
+		   }
     }
-
  }
 ?>

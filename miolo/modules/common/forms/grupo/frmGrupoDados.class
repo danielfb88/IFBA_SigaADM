@@ -19,7 +19,7 @@
  */
 ?>
 
-<?
+<?php
 class frmGrupoDados extends MForm
 {
     private $grupo;
@@ -41,16 +41,23 @@ class frmGrupoDados extends MForm
                     new MTextField('grupo','','Grupo','55'),
         ); 
         
-        $this->SetFields($fields);		
-
+        $fields[0]->addAttribute('maxlength', 50); //campo grupo
+        $this->SetFields($fields);
         
         $buttons = array(
             new MButton('btnSalvar','Enviar')
         );
         
         $this->SetButtons($buttons);
+
+	$validators = array(
+            new MRequiredValidator('grupo'),
+        );
+        
+        $this->SetValidators($validators);
         
         $this->setData();
+
 	}
 
     function setData()
@@ -67,16 +74,35 @@ class frmGrupoDados extends MForm
     
 	function btnSalvar_click()
 	{
-		$data = $this->GetData();
-        $this->grupo->grupo = $data->grupo;
-		try
+		$nomeGrupo 	= $this->grupo->grupo;
+		$nomeGrupoNovo 	= $this->GetData()->grupo;
+		$nomeGrupoNovo 	= strtoupper($nomeGrupoNovo);
+		
+		//nao aceita grupo com menos de 3 caracteres
+		if( strlen(trim(Form::GetFormValue('grupo'))) < 3)
 		{
-			$this->grupo->save();
-            $this->addInfo("Grupo salvo com sucesso.");
+			$this->AddError('Detalhe melhor campo grupo.');
 		}
-		catch (Exception $e)
+		// Verificando se já existe grupo com o mesmo nome digitado.
+		elseif($this->grupo->findByNome(strtoupper(trim(Form::GetFormValue('grupo'))))
+			&& (strcmp(strtoupper($nomeGrupo), strtoupper($nomeGrupoNovo)) != 0) //so gera erro se o nome for diferente do nome no BD
+		)
 		{
-			$this->AddError($e->GetMessage());
+			$this->addError('Grupo já cadastrado.');
+		}
+		else
+		{
+			$data = $this->GetData();
+			$this->grupo->grupo = $data->grupo;
+			try
+			{
+				$this->grupo->save();
+		    		$this->addInfo("Grupo salvo com sucesso.");
+			}
+			catch (Exception $e)
+			{
+				$this->AddError($e->GetMessage());
+			}
 		}
 	}
 }

@@ -23,7 +23,7 @@ class frmProcesso extends CompoundForm
 {
     protected $oid;
     protected $processo;
-	protected $autor;
+	//protected $autor;
     protected $setor;
     protected $setoracesso;
     protected $perms;
@@ -33,7 +33,7 @@ class frmProcesso extends CompoundForm
         global $MIOLO;
 //      set vars
         $this->processo = $objProcesso;
-		$this->autor = $MIOLO->GetBusiness('common','usuario')->GetById($this->processo->iduser)->GetName();
+		/*$this->autor = $MIOLO->GetBusiness('common','usuario')->GetById($this->processo->iduser)->GetName();*/
         $this->setor = $MIOLO->getBusiness('protocolo','setor');
         $this->setoracesso = $MIOLO->getBusiness('protocolo','setoracesso');
         $this->perms  = $MIOLO->getPerms();
@@ -370,7 +370,7 @@ class frmProcesso extends CompoundForm
         $tipo = array("A"=>"PROTOCOLADO","P"=>"PROCESSO");
         $this->_info[]	= new MTextLabel('tipo',$tipo[$this->processo->tipo],'Tipo');
 		$this->_info[]	= new MTextLabel('numProcesso',$this->processo->instituicao.".".$this->processo->numProcessoFormatado(),'Número');
-		$this->_info[]	= new MTextLabel('autorProcesso',$this->autor,'Autor');
+		/*$this->_info[]	= new MTextLabel('autorProcesso',$this->processo->autor,'Autor');*/
 		$this->_info[]	= new MTextLabel('dataAbertura',$this->processo->dataFormatada($this->processo->dataAbertura),'Data Abertura');
 		$this->_info[]	= ($this->processo->retencao->setor) ? new MTextLabel('setorAtual',$this->processo->retencao->setor,'Setor') : new MTextLabel('setorAtual','NENHUM','Setor');
         switch ($this->processo->retencao->status)

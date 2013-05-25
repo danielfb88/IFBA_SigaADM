@@ -38,6 +38,8 @@ class frmHotelNew extends frmHotelPai
 			new FormButton("btnNew","Cadastrar Hotel")
 		);
 		$this->SetButtons($buttons);
+		$this->nome->addAttribute('maxlength',30);
+		$this->valorDiaria->addAttribute('maxlength',8);
 	}
 
 	function btnNew_click()
@@ -51,18 +53,20 @@ class frmHotelNew extends frmHotelPai
 	        }
 
 		$cf = new MCurrencyFormatter();
-	        $data->valorDiaria = $cf->toDecimal($data->valorDiaria);
+	    $data->valorDiaria = $cf->toDecimal($data->valorDiaria);
 
 		$hotel = $this->manager->GetBusiness('adm','hotel');
 		$hotel->SetData($data);
 		$hotel->ativo = $data->ativo;
-		
-		$hotel->nome = strtoupper($hotel->nome);
-//		$hotel->valorDiaria = str_replace(',', '.', $hotel->valorDiaria);
+		$hotel->nome  = strtoupper($hotel->nome);
 		
 		if(strlen(trim($hotel->nome)) < 4)
 		{
 			$this->AddError('Insira um nome válido para o Hotel.');
+		}
+		elseif(strlen(trim($hotel->nome)) > 30)
+		{
+			$this->AddError('Insira um nome menor que 30 caracteres.');
 		}
 		elseif(trim($hotel->valorDiaria) == '')
 		{

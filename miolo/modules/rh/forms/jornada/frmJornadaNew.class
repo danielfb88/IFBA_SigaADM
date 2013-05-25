@@ -43,7 +43,7 @@ class frmJornadaNew extends Form
 		
         $this->SetFields($fields);
 		
-        $idjornada->AddAttribute('maxlength','2');
+        $idjornada->AddAttribute('maxlength','5');
         $descricao->AddAttribute('maxlength','20');
 
         $validators = array(
@@ -72,12 +72,16 @@ class frmJornadaNew extends Form
     	{
 		global $MIOLO, $page, $module, $action, $item;
 
-
-	       	$data = $this->GetData();
+	   $data = $this->GetData();
 		$id = $data->idJornada;
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+	
 		if(is_numeric($id))
 		{
-	      	        $jornada = $MIOLO->GetBusiness($module,'jornada',$id);
+	      $jornada = $MIOLO->GetBusiness($module,'jornada',$id);
 			if (strlen(trim($id)) < '1')
 			{
 				$this->addError('Informe o id da jornada');
@@ -92,11 +96,10 @@ class frmJornadaNew extends Form
 			}
 			else
 			{
-
-		        	$jornada->SetData($data);
+		     	$jornada->SetData($data);
 				$jornada->save();
 				$go = $MIOLO->GetActionURL('rh','main:jornada',$jornada->idJornada);
-	   			 $MIOLO->Information('Dados da Jornada inseridos com sucesso.', $go );
+	   		$MIOLO->Information('Dados da Jornada inseridos com sucesso.', $go );
 			}
 		}
 		else

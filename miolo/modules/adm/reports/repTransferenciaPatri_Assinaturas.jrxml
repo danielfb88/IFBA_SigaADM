@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="repTransferenciaPatri_Assinaturas"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="842"
+		 pageHeight="595"
+		 columnWidth="842"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="AllSectionsNoDetail"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<queryString><![CDATA[select 1 as vudu
+where 1 = 1]]></queryString>
+
+	<field name="vudu" class="java.lang.Integer"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="134"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="24"
+						width="380"
+						height="1"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="-1"
+						y="85"
+						width="383"
+						height="1"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="421"
+						y="85"
+						width="380"
+						height="1"
+						key="line-3"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="3"
+						y="27"
+						width="383"
+						height="30"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="1_1_2">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="9" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Data: ____/____/_____    RESPONSÁVEL TRANSPORTE (dispensável no mesmo prédio)
+CPF:                                        Nome:                                                                                            
+]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="-1"
+						y="88"
+						width="383"
+						height="30"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="1_1_2">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="9" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Data Conferência: ____/____/________    SETOR DE DESTINO
+SIAPE:                                     Nome:  ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="421"
+						y="88"
+						width="380"
+						height="30"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="1_1_2">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="9" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Data Ciência: ____/____/________             PATRIMÔNIO
+SIAPE:                                              Nome:  ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="421"
+						y="27"
+						width="380"
+						height="30"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="1_1_2">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="9" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Data Expedição: ____/____/________       SETOR DE ORIGEM
+SIAPE:                                               Nome:           
+]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="421"
+						y="24"
+						width="380"
+						height="1"
+						key="line-4"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</summary>
+</jasperReport>

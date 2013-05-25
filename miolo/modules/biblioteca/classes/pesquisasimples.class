@@ -181,8 +181,24 @@ class BusinessBibliotecaPesquisaSimples extends Pesquisa
 
 				foreach($termos as $termo)
 				{
-					$termo = addslashes($termo);
-					$conteudo .= "(upper(sem_acentos(conteudo)) LIKE '%$termo%') AND ";
+					if($termo != '%')
+					{
+						$termo = addslashes($termo);
+							$conteudo .= "(sem_acentos(conteudo) ILIKE sem_acentos('% _".$termo."_ %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('% ".$termo."_ %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('% _".$termo." %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('".$termo."_ %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('% _".$termo."') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('_".$termo."_') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('".$termo."_') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('_".$termo."') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('".$termo."') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('% ".$termo." %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('".$termo." %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('% ".$termo."')) AND ";
+					}
+					else
+						$conteudo .= "(conteudo ilike '%') AND ";
 				}
 				$conteudo = substr($conteudo, 0, -5);
 
@@ -190,21 +206,31 @@ class BusinessBibliotecaPesquisaSimples extends Pesquisa
 				{
 					foreach($termos2 as $termo2)
 					{
-						$termo2 = addslashes($termo2);
-						$conteudo2 .= "(upper(sem_acentos(conteudo))  LIKE '%$termo2%') AND ";
+						if($termo2 != '%')
+						{
+							$termo2 = addslashes($termo2);
+							$conteudo2 .= "(sem_acentos(conteudo) ILIKE sem_acentos('% _".$termo2."_ %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('% ".$termo2."_ %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('% _".$termo2." %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('".$termo2."_ %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('% _".$termo2."') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('_".$termo2."_') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('".$termo2."_') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('_".$termo2."') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('".$termo2."') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('% ".$termo2." %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('".$termo2." %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('% ".$termo2."')) AND ";
+						}
+						else
+							$conteudo2 .= "(conteudo ilike '%') AND ";
 					}
 					$conteudo2 = substr($conteudo2, 0, -5);
 					$conteudo = $conteudo . ') OR (' . $conteudo2;
 				}
 			}
-
                       
 			$campos = $this->GetCamposByTitulo($data->ConsultarPor_1,$camposPesquisa);
-            /*
-            var_dump("Campos ooooooooooo<br>");
-            var_dump($campos);
-           var_dump("<br><br>");
-            */
 			foreach ($campos as $campo_subcampo)
 			{
 				$inBusca .= (($inBusca != '') ? ',' : '(') . '(' . $campo_subcampo[0] . ',' . "'" . $campo_subcampo[1] . "')";  
@@ -212,6 +238,7 @@ class BusinessBibliotecaPesquisaSimples extends Pesquisa
 			$inBusca .= (($inBusca != '') ? ')' : '');
 
 			$where1 = "(idetiqueta,subcampo) IN $inBusca AND $conteudo";
+			
             if(!$ehPeriodico){
                 $sql1 = "SELECT distinct idobra FROM bt_material WHERE $where1";
                 $from = "bt_obra o, bt_material mm, (SELECT distinct o.idobra FROM ";
@@ -487,8 +514,12 @@ class BusinessBibliotecaPesquisaSimples extends Pesquisa
 
 	function ListExemplaresByIdObra($idobra)
 	{
-		$sql = new sql('distinct(e.idexemplar),o.numerodaobra as obra, e.numerodotombo as exemplar,r.descricao as tipo,es.descricao as estado,u.descricao as unidade, volume, volume as prevdev','bt_exemplar e,bt_regracirculacao r,bt_estado es,bt_unidade u, bt_obra o',"e.idobra=$idobra and e.idregracirculacao = r.idregracirculacao and e.idestado = es.idestado and e.idunidade = u.idunidade and e.idobra = o.idobra",'unidade, e.numerodotombo, volume');
+		$sql = new sql('distinct(e.idexemplar),o.numerodaobra as obra, cast(e.numerodotombo as integer) as exemplar,r.descricao as tipo,es.descricao as estado,u.descricao as unidade, volume, volume as prevdev','bt_exemplar e,bt_regracirculacao r,bt_estado es,bt_unidade u, bt_obra o',"e.idobra=$idobra and e.idregracirculacao = r.idregracirculacao and e.idestado = es.idestado and e.idunidade = u.idunidade and e.idobra = o.idobra",'unidade, exemplar, volume');
         $query = $this->Query($sql);
+		
+		/*echo '<pre>';
+		var_dump($query->result);
+		echo '</pre>';*/
 		
 		for($i=0; $i<count($query->result); $i++)
 		{

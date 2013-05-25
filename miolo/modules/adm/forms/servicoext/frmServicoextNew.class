@@ -52,8 +52,12 @@ class frmServicoextNew extends Form
 			new MTextField('idsubelemento','','Subelemento','2','Máximo 2 algarismos'),
 			new MSelection('ativo','S','Ativo',$opcoes1)
 		);
-        
 		$this->SetFields($fields);
+		
+		$this->codservico->addAttribute('maxlength',9);
+		$this->descricao->addAttribute('maxlength',200);
+		$this->idelemento->addAttribute('maxlength',6);
+		$this->idsubelemento->addAttribute('maxlength',2);
 
 		$buttons = array(
 		new MButton('btnNew', 'Incluir Serviço Externo')
@@ -97,6 +101,16 @@ class frmServicoextNew extends Form
 		{
 			$this->AddError('O Subelemento deve ser um número.');
 		}
+		elseif(! ($servico->findBySubID(Form::GetFormValue('idelemento'),Form::GetFormValue('idsubelemento')) ))
+		{
+			$this->AddError('Elemento e/ou Subelemento não cadastrado.');
+		}
+		/*
+		elseif($servico->findByCodigo(Form::GetFormValue('codservico')))
+		{
+			$this->AddError('Código já cadastrado.');
+		}
+		*/
 		else
 		{
 			try

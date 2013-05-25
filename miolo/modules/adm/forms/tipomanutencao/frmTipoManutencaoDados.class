@@ -33,18 +33,17 @@ class frmTipoManutencaoDados extends Form
     {
        global $MIOLO;
 		$fields = array(
-            new TextField('tipoManutencao','','Tipo','30'),
+            new TextField('tipoManutencao','','Tipo','30', 'Máx. 30 caracteres'),
 			new HiddenField('idTipoManutencao','')
         );
 		
         $this->SetFields($fields);
-
 		$buttons = array(
         	new FormButton('btnSalvar', 'Salvar')
 			        );
 
 		$this->SetButtons($buttons);
-	
+		$this->tipoManutencao->addAttribute('maxlength',30);
 		$validators = array(
 			new RequiredValidator('tipoManutencao')
 		);
@@ -68,6 +67,10 @@ class frmTipoManutencaoDados extends Form
 		elseif(strlen(trim($this->objTipoManutencao->tipoManutencao)) == '0')
 		{
 			$this->addError('Favor informar o Tipo de Manutenção');
+		}
+		elseif(!preg_match("/^[A-Z|0-9]/" ,$this->objTipoManutencao->tipoManutencao))
+		{
+			$this->addError('Campo nome inválido');
 		}
 		else
 		{

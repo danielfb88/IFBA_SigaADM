@@ -47,13 +47,39 @@ class frmGeral extends MForm
         $this->SetButtons($buttons); 
     }
 
-    function btnReport_click()
+    /*function btnReport_click()
     {
         $ui = $this->manager->getUi();
         $file = ($this->getFormValue('ordem')=='nome')?'repGeralNome':'repGeralSetor';        
         $report = $ui->getReport('rh',$file);
         $report->generate();
-    }
+    }*/
+	function btnReport_click()
+	{
+		global $MIOLO; 	
+		
+		$op = $this->getFormValue('ordem');
+		if($op == 'nome')
+		{
+		        $report = new MJasperReport('sigaept'); 
+			$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
+			$parameters['int_pIdUsuario']= $MIOLO->login->idkey;
+			$parameters['pURL']=$MIOLO->GetConf('home.url');
+		        $report->Execute('rh', 'RelGeralNome',$parameters); 
+		}
+		elseif($op == 'setor')
+		{
+		       	$report = new MJasperReport('sigaept'); 
+			$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
+			$parameters['int_pIdUsuario']= $MIOLO->login->idkey;
+			$parameters['pURL']=$MIOLO->GetConf('home.url');
+		        $report->Execute('rh', 'RelGeralAGSetor',$parameters); 
+		}
+		else
+		{		
+			$this->addError('Selecione a opção para a geração do relatório');
+		}
+	}
     
     function btnGerarCSV_click()
 	{

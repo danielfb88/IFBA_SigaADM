@@ -28,6 +28,36 @@ class MStatusBar extends MControl
 	    global $MIOLO;
         parent::__construct();
         $this->AddStyleFile('m_themeelement.css');
+		
+		$this->page->addJsCode('
+			var timeout = '. ($this->manager->getConf('session.timeout') * 60 - 1) .';
+			
+			var toMMSS = function(value){
+				var ss = value % 60;
+				
+				if(ss == 0 || Math.round(value / 60) == 0)
+					var mm = Math.round(value / 60);
+				else
+					var mm = Math.round(value / 60) - 1;
+				
+				return (mm < 10 ? "0"+mm : mm) + ":" + (ss < 10 ? "0"+ss : ss );
+			}
+			
+			var interval = window.setInterval(function(){
+				var text = document.getElementById("sessaotimer");
+				text.innerHTML = "Tempo de sessão: "+toMMSS(timeout);
+				
+				if(timeout != 0)
+					timeout--;
+				else
+				{
+					window.clearInterval(interval);
+					text.style.color = "#f00";
+					alert("A sessão expirou!");
+				}
+			},1000);
+		');
+		
         $this->cols = $cols;
 
         $login = $this->manager->GetLogin();
@@ -47,6 +77,7 @@ class MStatusBar extends MControl
             $this->AddInfo('Entrada às:' . ' ' . Date('H:i', $login->time) . ' (' . sprintf('%02d:%02d', $online / 60, $online % 60) . ')');
             $this->AddInfo('Data:' . ' ' . Date('d/m/Y', $login->time));
             $this->AddInfo('Versão:' . ' ' . $versao);
+			$this->AddInfo('<span id="sessaotimer">Tempo de sessão: '. $this->manager->getConf('session.timeout') .':00 </span>');
 
         }
         else

@@ -47,21 +47,26 @@ class frmServicoextDados extends MForm
             new MHiddenField('idServico'),
 			new MSelection('ativo','S','Ativo',$opcoes1)
         );
-
         $this->SetFields($fields);
         $this->SetFieldAttr('idServico','readonly',true);
+
+	$this->codservico->addAttribute('maxlength',9);
+	$this->descricao->addAttribute('maxlength',200);
+	$this->idelemento->addAttribute('maxlength',6);
+	$this->idsubelemento->addAttribute('maxlength',2);
         
         $buttons = array(
                   new MButton('btnSalvar','Enviar'),
         );        
         $this->SetButtons($buttons);
-        
-/*
-        $validators = array(
-              new RequiredValidator('descricao')
-        );
-        $this->SetValidators($validators);
-*/        
+           
+	$validators = array(
+		new RequiredValidator('codservico'),
+		//new RequiredValidator('descricao'),
+		new RequiredValidator('idelemento'),
+		new RequiredValidator('idsubelemento')
+	);
+	$this->SetValidators($validators);
 
         $this->SetData();
     }
@@ -81,22 +86,51 @@ class frmServicoextDados extends MForm
     {
         $dadosServico = $this->objServico->getData();
         $data = $this->getData();
-
-        if (($data->idelemento != $dadosServico->idelemento)||($data->idsubelemento != $dadosServico->idsubelemento))
-        {
-              if ($this->objServico->jaFoiEmpenhado()->result == NULL)    //nunca foi empenhado
-              {
-                  $this->salvarAlteracoes();
-              }
-              else
-              {
-                  $this->manager->error('Existe empenho com este Servico. <BR> Não é possível alterar o elemento ou subelemento.');
-              }
-        }
-        else
-        {
-            $this->salvarAlteracoes();
-        }
+	
+	if(!is_numeric(Form::GetFormValue('codservico')))
+	{
+		$this->AddError('O código do serviço deve ser composto por números.');
+	}
+	elseif( strlen(trim(Form::GetFormValue('descricao'))) < 5 )
+	{
+		$this->AddError('Descreva melhor o serviço externo.');
+	}
+	elseif( !is_numeric(Form::GetFormValue('idelemento')) )
+	{
+		$this->AddError('O Elemento deve ser um número.');
+	}
+	elseif( !is_numeric(Form::GetFormValue('idsubelemento')) )
+	{
+		$this->AddError('O Subelemento deve ser um número.');
+	}
+	elseif(! ($this->objServico->findBySubID(Form::GetFormValue('idelemento'),Form::GetFormValue('idsubelemento')) ))
+	{
+		$this->AddError('Elemento e/ou Subelemento não cadastrado.');
+	}
+	/*
+	elseif($this->objServico->findByCodigo(Form::GetFormValue('codservico')))
+	{
+		$this->AddError('Código já cadastrado.');
+	}
+	*/
+	else
+	{
+		if (($data->idelemento != $dadosServico->idelemento)||($data->idsubelemento != $dadosServico->idsubelemento))
+		{
+		      if ($this->objServico->jaFoiEmpenhado()->result == NULL)    //nunca foi empenhado
+		      {
+		          $this->salvarAlteracoes();
+		      }
+		      else
+		      {
+		          $this->manager->error('Existe empenho com este Servico. <BR> Não é possível alterar o elemento ou subelemento.');
+		      }
+		}
+		else
+		{
+		    $this->salvarAlteracoes();
+		}
+	}
     }
 
     function salvarAlteracoes()

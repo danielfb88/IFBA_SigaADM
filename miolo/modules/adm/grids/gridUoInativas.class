@@ -39,7 +39,8 @@ class gridUoInativas extends DataGrid2
      */
     function __construct()
     {
-        global $MIOLO, $self;
+        //global $MIOLO, $self;
+        global $MIOLO, $self, $perms;
 
         $linkUo = new LinkUo('linkuo','%0%');
         $columns = array(
@@ -52,10 +53,25 @@ class gridUoInativas extends DataGrid2
         $this->AddFilterText('uo','Uo',$uo);
         $this->SetIndex(1);
         $objUo = $MIOLO->GetBusiness('adm','uo');
+
+/*
         if ($uo == '%')
-	    $query = $objUo->ListByNomeAtivo(strtoupper("$uo"), 'N');
-	else
-	    $query = $objUo->ListByNomeAtivo(strtoupper("'$uo%'"), 'N');
+	    	$query = $objUo->ListByNomeAtivo(strtoupper("$uo"), 'N');
+		else
+	    	$query = $objUo->ListByNomeAtivo(strtoupper("'$uo%'"), 'N');
+        $href_grid = $MIOLO->GetActionURL('adm',$self);
+*/
+        if ($perms->CheckAccess('ADM_FINANCAS',A_EXECUTE))
+        {
+            $query = $objUo->ListByNomeAtivo(strtoupper($uo), 'N');
+        }
+        else if ($perms->CheckAccess('ADM_GESTORUO',A_EXECUTE))
+        {
+            $idUsuario = $MIOLO->GetLogin()->idkey;
+            $gestor = $MIOLO->GetBusiness('adm','gestor');
+        	$query = $gestor->listUoByUsuario($idUsuario);
+        }
+
         $href_grid = $MIOLO->GetActionURL('adm',$self);
 
 

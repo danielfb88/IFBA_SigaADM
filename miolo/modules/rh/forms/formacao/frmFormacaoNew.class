@@ -37,6 +37,18 @@ class frmFormacaoNew extends Form
     $this->SetFields($fields);
     $buttons = array(new FormButton('btnNew', 'Incluir Formação'));
     $this->SetButtons($buttons);
+    
+    $this->idFormacao->AddAttribute('maxlength','4');
+    $this->formacao->AddAttribute('maxlength','40');
+
+	 $validators = array(
+	   new RequiredValidator('formacao'),
+	   new RequiredValidator('idFormacao'),
+	   
+	   new IntegerValidator('idFormacao'),
+	 );
+	  
+	 $this->SetValidators($validators);
   }
 
 	function btnNew_click()
@@ -45,6 +57,11 @@ class frmFormacaoNew extends Form
 		
 		$data = $this->GetData();
 		$id = $data->idFormacao;
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->formacao = str_replace($caracteres,"",$data->formacao);
+		
 		if(is_numeric($id))
 		{
 	        	$formacao = $MIOLO->GetBusiness($module,'formacao',$id);

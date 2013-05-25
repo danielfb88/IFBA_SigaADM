@@ -45,6 +45,7 @@ class frmPessoaDadosPessoais extends MFormAJAX
 		parent::__construct('Dados Pessoais');
 		$this->registerMethod('ajax_btnAnoChegada');
 		$this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/js/frmDadosPessoaisAjax.js'));
+		$this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
         $this->EventHandler();
     }
 
@@ -205,11 +206,26 @@ class frmPessoaDadosPessoais extends MFormAJAX
         {
             try
             {
-                $data = $this->GetData();
-        		$this->pessoa->SetData($data);
-	        	$this->pessoa->save();
-                $this->pessoa->log(OP_UPD,"Atualização dos dados pessoais. Id pessoa: ".$this->pessoa->idpessoa." Via rh");
-	    	    $this->AddInfo('Dados atualizados');
+            	if( preg_match("/[0-9]/", Form::GetFormValue('nomepai')) )
+				{
+					$this->AddError('O nome do pai deverá possuir somente letras.');
+				}
+				elseif( preg_match("/[0-9]/", Form::GetFormValue('nomemae')) )
+				{
+					$this->AddError('O nome da mãe deverá possuir somente letras.');
+				}
+				elseif( date('Ymd') < $this->invert(Form::GetFormValue('datanasc')) )
+				{		
+					$this->AddError('A data de nascimento informada é superior à data corrente.');
+				}
+				else
+				{		
+		            $data = $this->GetData();
+		    		$this->pessoa->SetData($data);
+			    	$this->pessoa->save();
+		            $this->pessoa->log(OP_UPD,"Atualização dos dados pessoais. Id pessoa: ".$this->pessoa->idpessoa." Via rh");
+				    $this->AddInfo('Dados atualizados');
+				}
             }
             catch ( Exception $e )
             {
@@ -236,9 +252,20 @@ class frmPessoaDadosPessoais extends MFormAJAX
 		$this->manager->getTheme()->setContent($anochegbrasil);
     }
     
-		function is_chrome()
-		{
+	function is_chrome()
+	{
 		return(eregi("chrome", $_SERVER['HTTP_USER_AGENT']));
-		}    		
+	}
+	
+	function invert($datainv)
+	{//recebe a data e o separador
+
+		$ano=substr("$datainv",6, 4);
+		$mes=substr("$datainv",3, 2);
+		$dia=substr("$datainv",0, 2);
+		$datainv="$ano$mes$dia";
+
+		return $datainv;
+	}    		
 }
 ?>

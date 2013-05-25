@@ -46,8 +46,19 @@ class frmGrupoCargoDados extends Form
 		
         );
 		
-        $this->SetFields($fields);
-		$this->SetFieldAttr('idGrupoCargo','readonly',true);
+      $this->SetFields($fields);
+	        
+       	  $this->descricao->AddAttribute('maxlength','40');
+	        
+	        $validators = array(
+            //new RequiredValidator('idgrupocargo'),
+            new RequiredValidator('descricao'),
+            
+            new IntegerValidator('idgrupocargo'),
+        );
+        
+        $this->SetValidators($validators);
+		  $this->SetFieldAttr('idGrupoCargo','readonly',true);
 	
 		$buttons = array(
 		new FormButton('btnSalvar','Enviar')
@@ -68,6 +79,11 @@ class frmGrupoCargoDados extends Form
 	{
 		global $MIOLO;
 		$data = $this->GetData();
+		
+		 // Retirando os caracteres especiais. :-)
+			$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+			$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
 		if(strlen(trim($data->descricao)) < '5')
 		{
 			$this->addError('Informe o Nome do Grupo Cargo');

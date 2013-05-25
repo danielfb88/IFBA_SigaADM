@@ -23,6 +23,23 @@
 class frmFornecedorEdit extends Form
 {
     protected $objFornecedor;
+    
+    function insertMask($string, $mascara) //ex: (32), (##)
+       {
+               $stringComMascara = "";
+               for ($i = 0, $j = 0; $i < strlen($mascara); $i++)
+               {
+                       if ($mascara[$i] != "#")
+                       {
+                               $stringComMascara = $stringComMascara.$mascara[$i];
+                       }
+                       else
+                       {
+                               $stringComMascara = $stringComMascara.$string[$j++];
+                       }
+               }
+               return $stringComMascara;
+       }
 	
     function __construct($fornecedor)
     {
@@ -31,22 +48,21 @@ class frmFornecedorEdit extends Form
         $this->objFornecedor->retrieveAssociation('instituicao');
         $this->Form($this->objFornecedor->instituicao->nome);
         $this->EventHandler();
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
     }
-
+    
     function CreateFields()
-    {
-        $sexos = array("M"=>"MASCULINO","F"=>"FEMININO");
-        
+    {  
         $objBanco = $this->manager->GetBusiness('common','banco');
         $objQuery = $objBanco->ListAll();
         array_unshift($objQuery->result,Array('0'=>'','1'=>''));
         
         $this->objFornecedor->retrieveAssociation('instituicao');
         $municipio = $this->manager->getBusiness('common','municipio',$this->objFornecedor->instituicao->idmunicipio);
-        
+ 
         $fields = array(
             array(
-                new MTextField('cnpj', $this->objFornecedor->instituicao->cgc,'CNPJ (Somente números)',22),
+                new MTextField('cnpj','','CNPJ (Somente números)',22),
                 new TextField('empresa',$this->objFornecedor->instituicao->nome,'Empresa',40)
             ),
 
@@ -65,12 +81,12 @@ class frmFornecedorEdit extends Form
 
             array(
                 $rua = new MTextField('rua',$this->objFornecedor->instituicao->rua, 'Endereço',50),
-                new TextField('cep',$this->objFornecedor->instituicao->cep, 'CEP (só números)',15)
+                new TextField('cep','', 'CEP (só números)',15)
             ),
             
             array(
-                new TextField('fax',$this->objFornecedor->instituicao->fax, 'FAX',15),
-                new TextField('telefone',$this->objFornecedor->instituicao->telefone,'Telefone',15),
+                new TextField('fax','', 'FAX',15),
+                new TextField('telefone','','Telefone',15),
                 new TextField('email',$this->objFornecedor->instituicao->email,'E-Mail',30)
             ),
 
@@ -78,9 +94,43 @@ class frmFornecedorEdit extends Form
         );
 		
         $this->SetFields($fields);
-        $validators = array(new MIntegerValidator('cnpj','','required'));
+        
+        $buttons = Array(
+            new FormButton('btnCadastraNovoFornecedor','Salvar Fornecedor')
+        );
+        $this->SetButtons($buttons);
+        
+        $validators = array(new CNPJValidator('cnpj','','required','Informe um CNPJ Válido'));
         $this->SetValidators($validators);
-        $rua->AddAttribute('maxlength','80');
+
+        $this->email->addAttribute('maxlength',30);
+        $rua->AddAttribute('maxlength','50');
+        $this->idAgencia->AddAttribute('maxlength','10');
+        $this->contaCorrente->AddAttribute('maxlength','10');
+        $this->empresa->AddAttribute('maxlength','75');
+		$this->cep->addAttribute('maxlength',9);
+		$this->cep->addAttribute('onKeyUp','makeMask(this, \'#####-###\');');
+		$this->cep->addAttribute('onBlur','makeMask(this, \'#####-###\');');
+		$this->cnpj->addAttribute('maxlength',18);
+		$this->cnpj->addAttribute('onKeyUp','makeMask(this, \'##.###.###/####-##\');');
+		$this->cnpj->addAttribute('onBlur','makeMask(this, \'##.###.###/####-##\');');
+		$this->telefone->addAttribute('maxlength',13);
+		$this->telefone->addAttribute('onKeyUp','makeMask(this, \'(##)####-####\');');
+		$this->telefone->addAttribute('onBlur','makeMask(this, \'(##)####-####\');');
+		$this->fax->addAttribute('maxlength',13);
+		$this->fax->addAttribute('onKeyUp','makeMask(this, \'(##)####-####\');');
+		$this->fax->addAttribute('onBlur','makeMask(this, \'(##)####-####\');');
+		
+		$this->setFieldValue('cnpj',$this->insertMask($this->objFornecedor->instituicao->cgc,"##.###.###/####-##"));
+		
+		if (strcmp($this->objFornecedor->instituicao->cep,""))
+			$this->setFieldValue('cep',$this->insertMask($this->objFornecedor->instituicao->cep,"#####-###"));
+			
+		if (strcmp($this->objFornecedor->instituicao->fax,""))
+			$this->setFieldValue('fax',$this->insertMask($this->objFornecedor->instituicao->fax,"(##)####-####"));
+		
+		if (strcmp($this->objFornecedor->instituicao->telefone,""))
+			$this->setFieldValue('telefone',$this->insertMask($this->objFornecedor->instituicao->telefone,"(##)####-####"));
         
         $this->SetFieldAttr('idAgencia','module','common');
         $this->SetFieldAttr('idAgencia','item','bancoAgencia');
@@ -91,11 +141,7 @@ class frmFornecedorEdit extends Form
         $this->SetFieldAttr('lkpMunicipio','item','municipio');
         $this->SetFieldAttr('lkpMunicipio','event','filler');
         $this->SetFieldAttr('lkpMunicipio','related','idmunicipio,lkpMunicipio');
-
-        $buttons = Array(
-            new FormButton('btnCadastraNovoFornecedor','Salvar Fornecedor')
-        );
-        $this->SetButtons($buttons);
+        
     }
 
     function preencherBanco($sender='',$key="")
@@ -118,50 +164,83 @@ class frmFornecedorEdit extends Form
         $mascara = array(".","/","-");
         $cnpj = str_replace($mascara, "", $data->cnpj);
         $data->cnpj =  $cnpj;
-        $action = $this->manager->GetActionURL($module,'main:fornecedor:edit&item='.$item);
-            
-			
-        try
+        
+        //aplicando a máscara no cep
+        $mascara = array(".","/","-");
+        $cep = str_replace($mascara, "", $data->cep);
+        $data->cep =  $cep;
+        
+        //aplicando a máscara no fax
+        $mascara = array(".","/","-","(",")");
+        $fax = str_replace($mascara, "", $data->fax);
+        $data->fax =  $fax;
+        
+        //aplicando a máscara no telefone
+        $mascara = array(".","/","-","(",")");
+        $telefone = str_replace($mascara, "", $data->telefone);
+        $data->telefone =  $telefone;
+        
+         $action = $this->manager->GetActionURL($module,'main:fornecedor:edit&item='.$item);
+		
+        if($data->idBanco==null){
+			$this->AddError('Selecione a agência pelo botão que chama um grid em popup das agencias pré-cadastradas. ele pode ser visualizado logo abaixo do campo agência na cor vermelha. Obrigado!');
+		}        
+		elseif(strlen(trim($data->empresa)) < 2){
+			$this->AddError('Informe o nome da Empresa corretamente.');
+		}	
+		elseif($data->contaCorrente == ''){
+			$this->AddError('É necessário informar o número da conta corrente!');
+		}	
+		elseif($data->idmunicipio == ''){
+			$this->AddError('Informe o município de localização da empresa.');
+		}
+		elseif(strlen(trim($data->rua))< 5){
+			$this->AddError('Informe corretamente o endereço da empresa.');
+		}
+        else
         {
-            if ($data->cnpj)
-            {
-                if ((strlen($data->cnpj)==11) || (strlen($data->cnpj)==14)){
-                    $instituicao = $this->manager->getBusiness('common','instituicao',$this->objFornecedor->idInstituicao);
-                    $data->empresa = strtoupper($data->empresa);
-                    $instituicao->cgc = $data->cnpj;
-                    $instituicao->nome = $data->empresa;
-                    $instituicao->idpais = '024';
-                    $instituicao->idmunicipio = $data->idmunicipio;
-                    $instituicao->telefone = $data->telefone;
-                    $instituicao->rua = $data->rua;
-                    $instituicao->cep = $data->cep;
-                    $instituicao->fax = $data->fax;
-                    $instituicao->email = $data->email;
+		    try
+		    {
+		        if ($data->cnpj)
+		        {
+		            if ((strlen($data->cnpj)==11) || (strlen($data->cnpj)==14)){
+		                $instituicao = $this->manager->getBusiness('common','instituicao',$this->objFornecedor->idInstituicao);
+		                $data->empresa = strtoupper($data->empresa);
+		                $instituicao->cgc = $data->cnpj;
+		                $instituicao->nome = $data->empresa;
+		                $instituicao->idpais = '024';
+		                $instituicao->idmunicipio = $data->idmunicipio;
+		                $instituicao->telefone = $data->telefone;
+		                $instituicao->rua = $data->rua;
+		                $instituicao->cep = $data->cep;
+		                $instituicao->fax = $data->fax;
+		                $instituicao->email = $data->email;
 
-                    $instituicao->Update();
+		                $instituicao->Update();
 					
-                }
-                else $MIOLO->Error("Número inválido de caracteres no campo CNPJ",$action);
-            }
+		            }
+		            else $MIOLO->Error("Número inválido de caracteres no campo CNPJ",$action);
+		        }
 			
-            $fornecedor = $this->manager->getBusiness('adm','fornecedor',$this->objFornecedor->idFornecedor);
-            $fornecedor->contaCorrente = $data->contaCorrente;
-            $fornecedor->idInstituicao = $this->objFornecedor->idInstituicao;
-            $fornecedor->idPessoa = $data->idPessoa;
-            $fornecedor->idBanco = $data->idBanco;
-            $fornecedor->idAgencia = $data->idAgencia;
-            $fornecedor->save();
-            $fornecedor->Log(OP_INS,"Fornecedor Alterado. idInstituicao: ".$instiuicao->idinstituicao.", idFornecedor: ".$fornecedor->idFornecedor);
+		        $fornecedor = $this->manager->getBusiness('adm','fornecedor',$this->objFornecedor->idFornecedor);
+		        $fornecedor->contaCorrente = $data->contaCorrente;
+		        $fornecedor->idInstituicao = $this->objFornecedor->idInstituicao;
+		        $fornecedor->idPessoa = $data->idPessoa;
+		        $fornecedor->idBanco = $data->idBanco;
+		        $fornecedor->idAgencia = $data->idAgencia;
+		        $fornecedor->save();
+		        $fornecedor->Log(OP_INS,"Fornecedor Alterado. idInstituicao: ".$instiuicao->idinstituicao.", idFornecedor: ".$fornecedor->idFornecedor);
 
-            $idFornecedor = $fornecedor->idFornecedor;
+		        $idFornecedor = $fornecedor->idFornecedor;
 
-            $href = $MIOLO->getActionURL('adm', 'main:fornecedor:saldoempenho','', '');
-            $this->manager->information("Alteração de fornecedor efetuada com sucesso.",$href);
-        }
-        catch (Exception $e)
-        {
-            $this->AddError("Informe o seguinte erro a equipe do CGCO: ".$e->getMessage());
-        }
-    }
+		        $href = $MIOLO->getActionURL('adm', 'main:fornecedor:saldoempenho','', '');
+		        $this->manager->information("Alteração de fornecedor efetuada com sucesso.",$href);
+		    }
+		    catch (Exception $e)
+		    {
+		        $this->AddError("Informe o seguinte erro a equipe do CGCO: ".$e->getMessage());
+		    }
+		}
+	}
 }
 ?>

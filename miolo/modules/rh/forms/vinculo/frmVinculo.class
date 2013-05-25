@@ -386,6 +386,9 @@ class frmVinculo extends frmFuncionario
             case 'mudancaCargo' :
                     $this->_form[] = $ui->GetForm('rh','frmVinculoMudancaCargo',$vinculo,'vinculo');
                  break;
+	    case 'editVinculo' :
+                    $this->_form[] = $ui->GetForm('rh','frmVinculoEditDadosVinculo',$vinculo,'vinculo');
+		 break;
 
             case 'remocao' :
                     $this->_form[] = $ui->GetForm('rh','frmVinculoRemocao',$vinculo,'vinculo');

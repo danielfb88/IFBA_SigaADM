@@ -44,7 +44,7 @@ class frmPatrimonioEditar extends MForm
         $tabelaGeral = $MIOLO->GetBusiness('common', 'tabelageral');
         $options = $tabelaGeral->ListByTabela('AD_TIPOINGRESSOPAT');
         $fields = array(
-            new MMultiLineField('descricao','','Descrição',60,5,60,'Máx. 500 caracteres'),
+            new MMultiLineField('descricao','','Descrição',60,5,60,'Máx. 1000 caracteres'),
             new MTextField('numeroSerie','','Número de Série',20),
             new MHiddenField('idMaterial'),
             new MTextField('marcaModelo','','Marca/Modelo',60,'Máx. 50 caracteres'),
@@ -100,6 +100,7 @@ class frmPatrimonioEditar extends MForm
     function SetData()
     {
         global $MIOLO, $module;
+		
 
         $data = $this->objPatrimonio;
         $setor = $MIOLO->GetBusiness('common','setor');
@@ -114,9 +115,9 @@ class frmPatrimonioEditar extends MForm
             $data->empenhado->retrieveAssociation('empenho');
         }
         $this->SetFieldValue('descricao',$data->descricao);
-        $this->SetFieldValue('numeroSerie',$data->numeroSerie);
+        $this->SetFieldValue('numeroSerie',trim(strtoupper($data->numeroSerie)));
         $this->SetFieldValue('idMaterial',$data->idMaterial);
-        $this->SetFieldValue('marcaModelo',$data->marcaModelo);
+        $this->SetFieldValue('marcaModelo',trim($data->marcaModelo));
         $this->SetFieldValue('descricaoEstado',$data->descricaoEstado);
         $this->SetFieldValue('idClassificador',$data->idClassificador);
         $this->SetFieldValue('dataAquisicao',$data->dataAquisicao);
@@ -124,8 +125,8 @@ class frmPatrimonioEditar extends MForm
         $this->SetFieldValue('numeroEmpenho',($data->numeroEmpenho) ? $data->numeroEmpenho : $data->empenhado->empenho->numero);
         $this->SetFieldValue('idSetor',$data->idSetor);
         // 18/10/2010 - Vitor Pacheco
-	$this->SetFieldValue('datainiciouso', $data->datainiciouso);
-	$this->SetFieldValue('idvidautil', $data->idvidautil);
+		$this->SetFieldValue('datainiciouso', $data->datainiciouso);
+		$this->SetFieldValue('idvidautil', $data->idvidautil);
 
         $processo = $this->manager->GetBusiness('protocolo','processo');
         $this->SetFieldValue('numPro',$processo->numProcessoFormatado($data->numPro));
@@ -139,6 +140,17 @@ class frmPatrimonioEditar extends MForm
         $this->SetFieldValue('idDependencia',$data->idDependencia);
         $this->SetFieldAttr('setor', 'readonly', true);
         $this->SetFieldAttr('numeroEmpenho', 'readonly', true);
+		
+		//
+		$this->SetFieldAttr('descricao', 'readonly', true);
+		$this->SetFieldAttr('marcaModelo', 'readonly', true);
+		$this->SetFieldAttr('idClassificador', 'readonly', true);
+		$this->SetFieldAttr('classificador', 'readonly', true);
+		$this->SetFieldAttr('dataAquisicao', 'readonly', true);
+		$this->SetFieldAttr('datainiciouso', 'readonly', true);
+		$this->SetFieldAttr('notaFiscal', 'readonly', true);
+		$this->SetFieldAttr('valor', 'readonly', true);
+		
     }
 	
     public function btnSalvar_click()
@@ -167,6 +179,13 @@ class frmPatrimonioEditar extends MForm
 	        $codigo = substr($this->objPatrimonio->numPro,12,2);
 	        $this->objPatrimonio->numPro = $ano.$serie.$codigo;
 			$this->objPatrimonio->subelemento = substr($this->objPatrimonio->idvidautil, -4, -2);
+			
+			if ((!empty($this->objPatrimonio->numeroSerie)) ) {
+				var_dump(TO_upper);
+				
+				$this->objPatrimonio->numeroSerie = strtoupper($this->objPatrimonio->numeroSerie);
+			}
+			
 			if (substr_count($this->objPatrimonio->valor, ",") == 0) 
 			{
 		        	$this->objPatrimonio->valor = str_replace(".",",",$this->objPatrimonio->valor);

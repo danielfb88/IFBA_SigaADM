@@ -27,6 +27,8 @@ class frmPessoaDadosBancarios extends MForm
         $this->pessoa = $pessoa;
 		parent::__construct('Dados Bancários');
         $this->EventHandler();
+        // Adiciona script para criação de máscaras.
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../mask.js'));
     }
 
     public function CreateFields()
@@ -57,15 +59,23 @@ class frmPessoaDadosBancarios extends MForm
 	   	$this->SetFieldAttr('lkpAgencia','item','bancoagencia');
 	   	$this->SetFieldAttr('lkpAgencia','event','filler');
 	   	$this->SetFieldAttr('lkpAgencia','related',',agencia,selBanco');
-	   	$this->SetFieldAttr('lkpAgencia','filter','selBanco,agencia');		
+	   	$this->SetFieldAttr('lkpAgencia','filter','selBanco,agencia');	
+	   	
+	   	     //Validação do campo datanasc
+   	    $this->datapispasep->addAttribute('maxlength',10);
+    	$this->datapispasep->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+    	$this->datapispasep->addAttribute('onBlur','makeMask(this, \'##/##/####\');');	
+
+        $validators = array(
+       		new MDATEDMYValidator('datapispasep'),
+		);
+		$this->SetValidators($validators);	
 
         
 		$buttons = array(
 			new MButton('btnSalvar','Enviar')
 		);
 					
-		
-		
 		$this->SetButtons($buttons);
         $this->setButtonAttr('btnSalvar','visible',($perms->checkAccess('rh_pessoas',A_ACCESS) || $perms->checkAccess('adm_dados_bancarios',A_ACCESS) ) );
 		  $pispasep[0]->AddAttribute('maxlength','11');
@@ -105,18 +115,38 @@ class frmPessoaDadosBancarios extends MForm
             $data = $this->GetData();
             $objAgencia->agencia = $data->idagencia;
             $objAgencia->banco = $data->idbanco;
+	
+	        $agencia = $this->manager->getBusiness('common','agencia');
+            $agencia->getById($objAgencia);
             
-            if (!(is_numeric($data->pispasep)))
+			// || (strlen($data->pispasep) < 11)
+            if ( !( (is_numeric($data->pispasep)) || ($data->pispasep == '') ) || ((strlen($data->pispasep) < 11) && (strlen($data->pispasep) != 0)))
             {
             	$this->AddError("Número do PIS/PASEP inválido!");
-            
             }
-            
-            $agencia = $this->manager->getBusiness('common','agencia');
-            $agencia->getById($objAgencia);
-            if ($agencia->nome == NULL)
+            elseif( (Form::GetFormValue('selBanco') != NULL) && ($agencia->nome == NULL))
             {
-                $this->AddInfo("Agência não existe.");
+                $this->AddError("Agência não informada (Use a lupa).");
+            }
+            elseif( (Form::GetFormValue('selBanco') != NULL) && ($data->conta == NULL))
+            {
+            	$this->AddError("Conta não informada.");
+            }
+            elseif( (Form::GetFormValue('datapispasep') == NULL) && ($data->pispasep != ''))
+            {
+            	$this->addError('Informe a data.');
+            }
+            elseif(date('Ymd') < $this->invert(Form::GetFormValue('datapispasep')) )
+            {
+            	$this->addError('A data informada é superior a data corrente.');
+            }
+            elseif( ($data->bancopispasep == NULL) && ($data->pispasep != ''))
+            {
+            	$this->addError('Selecione um banco referente ao PIS/PASEP.');
+            }
+            elseif( ($data->idbanco == NULL) && ($agencia->nome == NULL) && ($data->conta == NULL) && ($data->pispasep == NULL) && (Form::GetFormValue('datapispasep') == NULL) && ($data->bancopispasep == NULL))
+            {
+            	$this->addInfo('Nenhum dado foi atualizado.');
             }
             else
             {
@@ -131,5 +161,17 @@ class frmPessoaDadosBancarios extends MForm
             $this->AddError("Erro! Verifique os dados fornecidos");
         }
 	}
+	
+	//inverte a data para fazer validação se a data fornecida no formulário é superior a data corrente
+	function invert($datainv)
+	{//recebe a data e o separador
+
+		$ano=substr("$datainv",6, 4);
+		$mes=substr("$datainv",3, 2);
+		$dia=substr("$datainv",0, 2);
+		$datainv="$ano$mes$dia";
+
+		return $datainv;
+	} 
 }
 ?>

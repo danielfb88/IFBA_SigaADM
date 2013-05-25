@@ -154,6 +154,7 @@ class BusinessAdmMovimento extends Business
 		$criteria->addCriteria('tipoMovimento','=', "'$tipo'");
 		$criteria->addCriteria('idMovimentoRef','IS', "null");
 		return $criteria->retrieveAsQuery();
+		
 	}
 
 	function ListByEmpenhoTipos($empenho, $tipos)

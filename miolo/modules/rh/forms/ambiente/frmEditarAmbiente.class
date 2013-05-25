@@ -102,8 +102,11 @@ class frmEditarAmbiente extends MForm
 
             $buttons = array( new MButton('btnPost','Salvar edição do ambiente') );
             $this->setButtons($buttons);
-
+            
             $this->SetFields($fields);
+            
+            $this->obs->AddAttribute('maxlength',500);
+            
             $this->SetDataUltimoProvimento();
             $this->setData();
             $validators = array( new MRequiredValidator('idAmbiente','Ambiente','required') );
@@ -179,6 +182,10 @@ class frmEditarAmbiente extends MForm
     function btnPost_click()
     {
         $data = $this->GetData();
+        
+         // Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->obs = str_replace($caracteres,"",$data->obs);
 
         $k = new MKrono();
 

@@ -48,6 +48,9 @@ class frmDiplomaLegalDados extends Form
         );
 		
         $this->SetFields($fields);
+        
+       $this->idDiplomaLegal->AddAttribute('maxlength','2');
+       $this->descricao->AddAttribute('maxlength','20');
 
 		$this->SetFieldAttr('idDiplomaLegal','readonly',true);
 		
@@ -59,7 +62,7 @@ class frmDiplomaLegalDados extends Form
            new RequiredValidator('descricao'),
 		);
 	    $this->SetValidators($validators);
-		$this->SetData();
+		 $this->SetData();
     }
 	
 	function SetData()
@@ -71,9 +74,14 @@ class frmDiplomaLegalDados extends Form
 
 	public function btnSalvar_click()
 	{
-           global $MIOLO;
+      global $MIOLO;
 
 		$data = $this->GetData();
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
 		if(strlen(trim($data->descricao)) < '5')
 		{
 			$this->addError('Informe a Descrição do Diploma Legal');
@@ -82,8 +90,8 @@ class frmDiplomaLegalDados extends Form
 		{
 			$this->objDiplomaLegal->SetData($data);
 			$this->objDiplomaLegal->save();
-		        $go = $MIOLO->GetActionURL('rh','main:diplomalegal',$this->objDiplomaLegal->idDiplomaLegal);
-	    		$MIOLO->Information('Dados do Diploma Legal atualizados com sucesso.', $go );
+		   $go = $MIOLO->GetActionURL('rh','main:diplomalegal',$this->objDiplomaLegal->idDiplomaLegal);
+	      $MIOLO->Information('Dados do Diploma Legal atualizados com sucesso.', $go );
 		}
 	}
 

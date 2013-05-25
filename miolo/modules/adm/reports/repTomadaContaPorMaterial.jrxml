@@ -445,8 +445,16 @@ where idmaterial = $P{idMaterial}]]>
 	</columnHeader>
 	<detail>
 		<band height="20">
+			<rectangle>
+				<reportElement key="rectangle-1" style="zebra" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="1" width="796" height="14" backcolor="#D7D7D7">
+					<printWhenExpression><![CDATA[new Boolean(!(($V{COLUMN_COUNT}.intValue() % 2) == 1))]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Dotted"/>
+				</graphicElement>
+			</rectangle>
 			<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
-				<reportElement key="textField" mode="Opaque" x="736" y="1" width="60" height="15"/>
+				<reportElement key="textField" mode="Transparent" x="736" y="1" width="60" height="15"/>
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
@@ -467,70 +475,70 @@ where idmaterial = $P{idMaterial}]]>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{codmaterial}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
-				<reportElement key="textField" mode="Opaque" x="283" y="1" width="45" height="15"/>
+				<reportElement key="textField" mode="Transparent" x="283" y="1" width="45" height="15"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{saldoanterior} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{saldoanterior} ))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="true">
-				<reportElement key="textField" mode="Opaque" x="332" y="1" width="59" height="15"/>
+				<reportElement key="textField" mode="Transparent" x="332" y="1" width="59" height="15"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{entrada} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{entrada}))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
-				<reportElement key="textField" mode="Opaque" x="466" y="1" width="49" height="15"/>
+				<reportElement key="textField" mode="Transparent" x="466" y="1" width="49" height="15"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{saidas} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{saidas}))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
-				<reportElement key="textField" mode="Opaque" x="394" y="1" width="71" height="15"/>
+				<reportElement key="textField" mode="Transparent" x="394" y="1" width="71" height="15"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{extraorcamentaria} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{extraorcamentaria}))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0.00;-###0.00" isBlankWhenNull="false">
-				<reportElement key="textField" mode="Opaque" x="235" y="1" width="47" height="15"/>
+				<reportElement key="textField" mode="Transparent" x="235" y="1" width="47" height="15"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{unidade}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="false">
-				<reportElement key="textField" mode="Opaque" x="515" y="1" width="53" height="15"/>
+				<reportElement key="textField" mode="Transparent" x="515" y="1" width="53" height="15"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{quantanterior}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="false">
-				<reportElement key="textField" mode="Opaque" x="562" y="1" width="49" height="15"/>
+				<reportElement key="textField" mode="Transparent" x="562" y="1" width="49" height="15"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{quantentrada}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="false">
-				<reportElement key="textField" mode="Opaque" x="620" y="1" width="35" height="15"/>
+				<reportElement key="textField" mode="Transparent" x="620" y="1" width="35" height="15"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{quantsaida}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="false">
-				<reportElement key="textField" mode="Opaque" x="698" y="1" width="35" height="15"/>
+				<reportElement key="textField" mode="Transparent" x="698" y="1" width="35" height="15"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{quantatual}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
-				<reportElement key="textField" mode="Opaque" x="660" y="1" width="35" height="15" isPrintWhenDetailOverflows="true"/>
+				<reportElement key="textField" mode="Transparent" x="660" y="1" width="35" height="15" isPrintWhenDetailOverflows="true"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>

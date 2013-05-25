@@ -1,0 +1,73 @@
+<?
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+class frmVinculoEditDadosVinculo extends Form
+{
+	protected $objVinculo;
+    protected $provimento;
+    protected $grupoOcorrencia;
+    protected $ocorrencia;
+    protected $today;
+
+    function __construct($objVinculo)
+    {
+        global $MIOLO;
+        
+        $this->today = date('d/m/Y');
+	$this->objVinculo = $objVinculo;
+        parent::__construct('Edição dos dados do vínculo');
+        $this->eventHandler();
+    }
+
+    function CreateFields()
+    {
+
+	$fields = array(
+		new MCalendarField('dataConcurso',$this->objVinculo->dataConcurso,'Data Concurso','10'),
+		new MCalendarField('dataPosse',$this->objVinculo->dataPosse,'Data Posse','10'),
+		new MTextField('classificacaoConcurso',$this->objVinculo->classificacaoConcurso,'Classificação no Concurso','4'),
+			);	
+	$this->setFields($fields);
+	$buttons = array(
+		new MButton('btnEdit','Editar')
+			);
+	$this->setButtons($buttons);
+	
+    }
+    function btnEdit_click()
+    {
+	global $MIOLO, $page, $action, $item;
+	
+	$data = $this->GetData();
+	$this->objVinculo->setData($data);
+	try
+	{
+       		$this->objVinculo->save();
+		$msg = "Dados editados com sucesso.";
+		$go = $MIOLO->getActionUrl('rh','main:vinculo',$this->objVinculo->idVinculo,array('form'=>'dadosFuncionais'));
+		$MIOLO->information($msg,$go);
+	}
+        catch ( Exception $e )
+	{
+		$this->AddError("Informe o seguinte erro a equipe de Suporte: ".$e);
+	}
+    }
+
+ }
+?>

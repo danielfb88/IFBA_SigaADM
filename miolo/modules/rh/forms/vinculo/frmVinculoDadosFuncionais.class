@@ -205,7 +205,8 @@ class frmVinculoDadosFuncionais extends Form
         $this->SetFields($fields);
 
         $buttons = array(
-            new MButton('btnMudanca','Cadastrar Mudança de Cargo',$this->manager->getActionUrl('rh','main:vinculo',$this->objVinculo->idVinculo,array('form'=>'mudancaCargo')))
+            new MButton('btnMudanca','Cadastrar Mudança de Cargo',$this->manager->getActionUrl('rh','main:vinculo',$this->objVinculo->idVinculo,array('form'=>'mudancaCargo'))),
+	    new MButton('btnEditarVinculo','Editar Dados do Vínculo',$this->manager->getActionUrl('rh','main:vinculo',$this->objVinculo->idVinculo,array('form'=>'editVinculo'))),
         );
 
         $this->setButtons($buttons);

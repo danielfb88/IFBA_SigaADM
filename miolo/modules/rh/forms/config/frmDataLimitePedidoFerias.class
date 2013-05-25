@@ -48,7 +48,7 @@ class frmDataLimitePedidoFerias extends MForm
 	                       '12' => 'Dezembro',
                        ); 
                        
-		$ui = $MIOLO->GetUI();
+		  $ui = $MIOLO->GetUI();
         $grid = $ui->GetGrid($module,'gridDatasLimiteParaFerias');
         $grid->SetTitle(null);	
 
@@ -84,8 +84,11 @@ class frmDataLimitePedidoFerias extends MForm
         $ano->AddAttribute('maxlength','4');
         
 		$validators = array(
-			new MRangeValidator('anoPrevisto','Ano','1970',date(Y)+10,'i','required'),
+			new RequiredValidator('anoPrevisto'),
 			new MRangeValidator('mesPrevisto','Mês','1','12','i','required'),
+			
+			new MDATEDMYValidator('dtLimite'),
+			new IntegerValidator('anoPrevisto'),
         );
        $this->SetValidators($validators);
        $this->defaultButton = false;
@@ -119,17 +122,40 @@ class frmDataLimitePedidoFerias extends MForm
     {
 		global $MIOLO,$module;
     	$objCalendarioFerias = $MIOLO->GetBusiness($module,'calendarioferias');
-    	$objCalendarioFerias->setData($this->getData());
-    	if ($objCalendarioFerias->salvar())
-    	{
-			$MIOLO->Information("A data foi incluída com sucesso.");
+    	
+    	$data = $this->getData();
+    	
+    	// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->anoPrevisto = str_replace($caracteres,"",$data->anoPrevisto);
+    	
+    	$auxData = $data->dtLimite;
+    	$anoLimite = substr("$auxData",6, 4);
+		$mesLimite = substr("$auxData",3, 2);
+		
+		if (strlen($data->anoPrevisto) < '4') {
+    		$this->addError('Informe o Ano Previsto Corretamente.');
     	}
-    	else 
-    	{
-    		$MIOLO->Error("Este período já possui uma data marcada.");
+    	else if ($data->anoPrevisto < '1969' || $data->anoPrevisto >= '3000' )  {
+    		$this->addError('Informe Um Ano Previsto Válido.');
     	}
+    	else if ($anoLimite < $data->anoPrevisto || $mesLimite < $data->mesPrevisto )  {
+    		$this->addError('A Data Limite Nao Pode Ser Anterior a Data Prevista.');
+    	}
+    	else if (strlen($data->mesPrevisto) < '1') {
+    		$this->addError('Informe o id da jornada');
+    	}
+    	else {
+    			$objCalendarioFerias->setData($data);
+    			if ($objCalendarioFerias->salvar())
+    			{
+					$MIOLO->Information("A data foi incluída com sucesso.");
+    			}
+    			else {
+    				$MIOLO->Error("Este período já possui uma data marcada.");
+    			}
+    		}
     }
-    
 
     public function btnExcluir_Click()
     {

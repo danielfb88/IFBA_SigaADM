@@ -49,7 +49,7 @@ class gridHistExemp extends MDataGrid
 
         $columns = array(
 				new MDataGridColumn('idemprestimo','Código do Empréstimo','center', true,'10%'),
-				new MDataGridColumn('login','Código do Usuário','center', true,'10%'),
+				new MDataGridColumn('idusuario','Id do Usuário','center', true,'10%'),
 				new MDataGridColumn('datahoradoemprestimo','Data/Hora do Empréstimo','center', false,'20%'),
 				new MDataGridColumn('datahoraprevisaodevolucao','Data/Hora Previsão Devolução','center', false,'20%'),
 				new MDataGridColumn('datahoradadevolucao','Data/Hora Devolução','center', false,'20%'),

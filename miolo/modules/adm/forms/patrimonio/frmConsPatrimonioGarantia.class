@@ -1,0 +1,274 @@
+<?
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+ 
+
+
+MIOLO::Import('extensions::class.phpmailer.php','PHPMailer');
+class frmConsPatrimonioGarantia extends MFormAjax
+{
+
+	protected $objPatrimonio;
+	protected $perms;
+	
+    function __construct($objPatrimonio)
+    {
+		global $MIOLO,$module,$action,$item;
+		
+		//var_dump($_POST);
+		
+		$this->objPatrimonio = $objPatrimonio;
+		$this->perms  = $MIOLO->getPerms();
+        parent::__construct('CONSULTA DE GARANTIAS PATRIMONIAIS');
+		$this->SetClose($MIOLO->GetActionURL('adm','main:consgarantiapatri:find'));
+		$this->page->addJsCode(file_get_contents(dirname(__FILE__).'/js/frmConsPatrimonioGarantia.js'));
+        $this->EventHandler();
+    }
+
+    function CreateFields()
+    {
+		global $MIOLO, $action, $module, $item;
+		
+		//var_dump($_POST);
+	
+
+		$TipoGarantia = array(
+	        array('Todos','TODOS'),
+		    array('Garantia ainda não definida','UNDEF'),
+			array('Patrimônios COM garantia','COM_GARANTIA'),
+			array('Patrimônios SEM garantia','SEM_GARANTIA'),
+			array('Apenas "itens específicos"','ESPECIFICO'),			
+        );
+		
+		$opcaoOrdenacao = array(
+			"id"			=>"Número do Patrimônio",
+			"nf_id"		    =>"Nota Fiscal + Número do Patrimônio",
+			"nf_desc"		=>"Nota Fiscal + Descrição",
+			"desc"			=>"Descrição",
+			"garantia"		=>"Garantia",
+		);	
+
+		
+		$findButton = new ButtonFind('');
+		$findButton->SetName('btnFind');
+		
+		$lkempenho = new MLookupTextField('numeroempenho','','Empenho',12);
+		$lkdescricao = new MLookupTextField('descricao','','Descrição', 104); // Descrição DE UM EMPENHO
+		$lkclassificador = new MLookupTextField('idclassificador','','Classificador', 6); // Descrição DE UM EMPENHO
+		$lkpsetor = new MLookupTextField('siglaSetor','','Localização',10, 'Informe a SIGLA do setor ou a da instituição (Exemplos: CAMPUS, CAMPUS-PROAD)');
+		/*__construct($name='',$value='',$label='', 
+                 $size=10,$hint='',$validator=null,$related='',
+	             $module='',$item='', $event='filler', $filter='', $autocomplete=true)*/
+				 
+		
+		$today = date("d/m/Y");
+		
+		
+		$g_ini = new DateTime();
+		$g_fim = new DateTime();
+		$g_fim->add( new DateInterval( "P3M" ) );
+		
+		$garantia_ini = $g_ini->format( "d/m/Y" );
+		$garantia_fim = $g_fim->format( "d/m/Y" );
+		
+		
+		
+		//$DateTime->add( new DateInterval( "P30D" ) ); // adiciona 30 dias
+		//$DateTime->add( new DateInterval( "P2M" ) ); // adiciona 2 meses
+		//$DateTime->add( new DateInterval( "P5Y" ) ); // adiciona 5 anos
+		//$DateTime->add( new DateInterval( "P5Y2M30D" ) ); // adiciona 30 dias, 2 meses e 5 anos
+		
+		
+		//$comboTipoGarantia = new MSelection('tipogarantia','TODOS','Tipo de garantia', $TipoGarantia);
+		
+		$radioTipoGarantia = new MRadioButtonGroup('tipogarantia', 'Escolha o tipo', $TipoGarantia, 'COM_GARANTIA', '', 'vertical', 'css');
+				
+		$radioTipoGarantia->AddAttribute('onClick',"javascript:doHabilitarCampos();");
+		
+		
+		$ui = $MIOLO->GetUI();
+		//var_dump($ui); 
+        $grid = $ui->GetGrid( 'adm', 'gridGarantiaPatrimonio' );
+        $grid->SetTitle('Bens Patrimoniais');		
+		$grid->emptyMsg = 'Nenhum registro com base nos parâmetros!';
+
+        $gridClassif = $ui->GetGrid( 'adm', 'gridGarantiaPatrimonio_Classificador' );
+        $gridClassif->SetTitle('Classificadores (ordenados pelo fim das garantias)');
+		$gridClassif->emptyMsg = 'Nenhum registro com base nos parâmetros!';
+		
+		
+		$gridEmpenho = $ui->GetGrid( 'adm', 'gridGarantiaPatrimonio_Empenho' );
+        $gridEmpenho->SetTitle('Empenhos (ordenados pelo fim das garantias)');
+		$gridEmpenho->emptyMsg = 'Nenhum registro com base nos parâmetros!';
+		
+		$gridInstituicao = $ui->GetGrid( 'adm', 'gridGarantiaPatrimonio_Instituicao' );
+        $gridInstituicao->SetTitle('Instituições (ordenadas pelo fim das garantias)');
+		$gridInstituicao->emptyMsg = 'Nenhum registro com base nos parâmetros!';
+		
+		
+		$fields = array
+			(
+			$radioTipoGarantia,
+			
+			array (
+				new MTextLabel('lblRep','Intervalo para garantias',' '),
+				new MCalendarField('garantiaIni',$garantia_ini ,'Inicial','10'),
+				new MCalendarField('garantiaFim',$garantia_fim ,'Final','10'),
+				),
+				
+			$lkpsetor,
+			new MHiddenField('idSetor'),
+			
+			$lkempenho ,  			
+			$lkclassificador,
+			new MHiddenField('MinIdDescricao'), // Id do patrimônio da descrição),
+			$lkdescricao,			
+			array( 			    
+				new MTextField('patriInicial','','Patrimônio Inicial',10),
+				new MTextField('patriFinal','','Patrimônio Final',10),
+				
+			),
+			new MSelection('ordenacao','garantia','Ordenação', $opcaoOrdenacao),
+			//$findButton,
+			$gridClassif,
+			$gridInstituicao,
+			$gridEmpenho,			
+			$grid,
+			);
+			
+        $this->SetFields($fields);		
+		
+		$this->SetFieldAttr('numeroempenho','module','common');
+		$this->SetFieldAttr('numeroempenho','item','Garantia_Empenho');
+		$this->SetFieldAttr('numeroempenho','related','numeroempenho');
+		
+		$lkpsetor->setFieldsIni ($this, 'common', 'setor_patri', 'idSetor');
+		
+		/*$this->SetFieldAttr('setor','module','common');
+		$this->SetFieldAttr('setor','item','setor_patri');
+		$this->SetFieldAttr('setor','related','siglaSetor');	*/
+		
+		
+		$this->SetFieldAttr('descricao','module','common');
+		$this->SetFieldAttr('descricao','item','Garantia_Descricao');		
+		$this->SetFieldAttr('descricao','related','MinIdDescricao,descricao');
+		$this->SetFieldAttr('descricao','filter','descricao,descricao');// o segundo filtro é apenas para habilitar filter0
+		
+		$this->SetFieldAttr('idclassificador','module','common');
+		$this->SetFieldAttr('idclassificador','item','Garantia_Classificador');		
+		$this->SetFieldAttr('idclassificador','related','idclassificador');
+		$this->SetFieldAttr('idclassificador','filter','idclassificador,idclassificador'); // o segundo filtro é apenas para habilitar filter0
+		
+		
+		//$button = new MButton('butExecutar', 'TESTE ----- Executar');
+		
+		$buttons = array
+			(
+				new MButton('butConsultar', 'Consultar'),
+				//$button,
+            );
+		$this->SetButtons($buttons);
+		
+		//$button->AddAttribute('onClick',"javascript:doDesabilitaExec();");
+		
+		//$this->SetButtonAttr('butExecutar','visible',false);
+		
+		$this->page->onLoad("javascript:doHabilitarCampos();");		
+		 
+		$this->page->onSubmit("doDesabilitaExec()");
+    }
+	
+	public function butConsultar_click()
+	{
+
+	}
+	
+	public function butExecutar_click()
+	{
+		
+		global $MIOLO;
+		
+		/*echo "
+			<script>
+				obj = document.getElementById('butExecutar');
+				console.log(obj);
+				obj.disabled = true;
+				//obj.style.backgroundColor = \"#FF0000\";				
+				//desabilitaTexto(obj);
+			</script>
+		";*/
+		
+		/*echo "
+			<script>
+				doDesabilitaExec();
+			</script>";*/
+		
+		
+		
+		//$this->setButtonAttr('butExecutar', 'enabled', false);
+		
+		$db = $MIOLO->GetDatabase('sigaept');
+		
+		//var_dump('aqui');
+		
+		
+        $sql = ' insert into TempGarantia (Tipo, numeroempenho, descricao) '.
+               ' values (?,?,?)';
+			   
+		$numeroempenho =  Form::GetFormValue('numeroempenho');
+		$tipogarantia = Form::GetFormValue('tipogarantia');	
+		$descricao = Form::GetFormValue('descricao');
+		
+		//echo('<pre>');
+		//var_dump($numeroempenho, $tipogarantia, $descricao, $sql);		
+		//echo('</pre>');
+        
+        $args = array($tipogarantia, $numeroempenho, $descricao);
+        
+		
+        try
+		{
+			$ok = $db->Execute($db->Prepare($sql,$args));
+			$foco = 'numeroempenho';		
+			$this->page->onLoad("MIOLO_GetElementById($foco).focus();");
+	
+		}	
+		catch (Exception $e)
+		{
+			$this->addError('Não foi possível executar: ' . $e->getMessage());
+		}
+		
+		//$this->setButtonAttr('butExecutar', 'enabled', true);
+        
+        //echo('<pre>');
+		//var_dump($db);
+		//echo('</pre>');
+		
+		
+		
+		
+
+	}
+	
+
+	
+	
+
+ }
+?>

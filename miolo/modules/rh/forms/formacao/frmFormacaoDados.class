@@ -51,6 +51,19 @@ class frmFormacaoDados extends Form
 		$buttons = array(
 			new FormButton('btnPost','Enviar')
         );
+        
+    $this->idFormacao->AddAttribute('maxlength','4');
+    $this->formacao->AddAttribute('maxlength','40');
+
+	 $validators = array(
+	   new RequiredValidator('formacao'),
+	   new RequiredValidator('idFormacao'),
+	   
+	   new IntegerValidator('idFormacao'),
+	 );
+	  
+	 $this->SetValidators($validators);
+        
 		$this->SetButtons($buttons);
 		$this->SetData();
     }
@@ -67,6 +80,10 @@ class frmFormacaoDados extends Form
 		global $MIOLO;
 
 		$data = $this->GetData();
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->formacao = str_replace($caracteres,"",$data->formacao);
 
 		if(strlen(trim($data->formacao)) < '5')
 		{

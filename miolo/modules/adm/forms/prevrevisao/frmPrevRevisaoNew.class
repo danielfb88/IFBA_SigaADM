@@ -19,7 +19,7 @@
  */
 ?>
 
-<?
+<?php
 class frmPrevRevisaoNew extends MForm
 {
     public function __construct()
@@ -48,6 +48,8 @@ class frmPrevRevisaoNew extends MForm
 		$this->SetFieldAttr('lkpVeiculo','event','filler');
 		$this->SetFieldAttr('lkpVeiculo','related','null,placa,lkpVeiculo,null');
 		
+		$this->lkpVeiculo->addAttribute('readonly', true);
+		
  		$validators = array(
  		new RequiredValidator('lkpVeiculo'),
  		new RequiredValidator('dataPrevista')
@@ -58,21 +60,39 @@ class frmPrevRevisaoNew extends MForm
     function btnEnviar_click()
     {
 		global $MIOLO;
-		$data = $this->getData();
-		$objPrevRevisao = $MIOLO->GetBusiness('adm','prevrevisao');
-		$objPrevRevisao->setData($data);
-		$objPrevRevisao->situacao = '1';
-		try
+		if( ($this->invertDate(Form::GetFormValue('dataPrevista'))) < (date("Ymd")) ) //verifica se a data da previsao é posterior a data atual
 		{
-			$objPrevRevisao->Save();
-			$msg = "Previsão Cadastrada com sucesso";
-			$this->manager->Information($msg,$this->manager->GetActionURL('adm','prevrevisao:find'));
+			$this->AddError('Data inválida, a data deve ser posterior ou igual a data de hoje.');
 		}
-		catch(Exception $e)
+		else
 		{
-			$this->manager->Error($e->getMessage());
+			$data = $this->getData();
+			$objPrevRevisao = $MIOLO->GetBusiness('adm','prevrevisao');
+			$objPrevRevisao->setData($data);
+			$objPrevRevisao->situacao = '1';
+			try
+			{
+				$objPrevRevisao->Save();
+				$msg = "Previsão Cadastrada com sucesso";
+				$this->manager->Information($msg,$this->manager->GetActionURL('adm','prevrevisao:find'));
+			}
+			catch(Exception $e)
+			{
+				$this->manager->Error($e->getMessage());
+			}
 		}
    }
+   
+   function invertDate($datainv)
+	{//recebe a data e o separador
+
+		$ano	=substr("$datainv",6, 4);
+		$mes	=substr("$datainv",3, 2);
+		$dia	=substr("$datainv",0, 2);
+		$datainv="$ano$mes$dia";
+		
+		return $datainv;
+	}
     
 }
 ?>

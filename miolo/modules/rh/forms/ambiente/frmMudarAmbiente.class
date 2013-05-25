@@ -90,6 +90,8 @@ class frmMudarAmbiente extends MForm
         $fields[] = new MMultiLineField ('obs','','Observação',25,5,40,'Máx. 500');
 
         $this->SetFields($fields);
+        
+        $this->obs->AddAttribute('maxlength',500);
                 
         $buttons = array( new MButton('btnPost','Salvar novo ambiente') );
         $this->setButtons($buttons);
@@ -132,6 +134,10 @@ class frmMudarAmbiente extends MForm
     function btnPost_click()
     {
         $data = $this->GetData();
+        
+        // Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->obs = str_replace($caracteres,"",$data->obs);
 
         $k = new MKrono();
         

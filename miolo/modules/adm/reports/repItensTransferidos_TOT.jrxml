@@ -1,0 +1,664 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="repItensTransferidos_TOT"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="842"
+		 pageHeight="595"
+		 columnWidth="802"
+		 columnSpacing="0"
+		 leftMargin="20"
+		 rightMargin="20"
+		 topMargin="20"
+		 bottomMargin="20"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<parameter name="pIdUsuario" isForPrompting="true" class="java.lang.Integer"/>
+	<parameter name="pURL" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="pOrigem" isForPrompting="true" class="java.lang.Integer">
+		<parameterDescription><![CDATA[Identiticação do setor]]></parameterDescription>
+	</parameter>
+	<parameter name="pDestino" isForPrompting="true" class="java.lang.Integer">
+		<parameterDescription><![CDATA[Identiticação do setor]]></parameterDescription>
+	</parameter>
+	<queryString><![CDATA[select Destino.siglaSetor || ' (' ||  Destino.nomesetor || ')' as NomeSetor,
+    CASE when Patri.NotaFiscal is null then '' else Patri.NotaFiscal END AS NotaFiscal,
+    CASE when Patri.NumeroEmpenho is null then '' else Patri.NumeroEmpenho END AS NumeroEmpenho,
+    Patri.Descricao 
+       || 
+       case 
+         when Patri.MarcaModelo is null then ''
+         when TRIM(Patri.MarcaModelo) = '' then ''
+         else '; Marca/Modelo: ' || Patri.MarcaModelo
+       end 
+       || 
+       case 
+         when Patri.NumeroSerie is null then ''
+         when TRIM(Patri.NumeroSerie) = '' then ''
+         else '- nº de série: ' || Patri.NumeroSerie
+       end 
+       ||
+       case
+         when NomeTipoIngresso IS NULL then '' -- caso criarem um novo tipo ainda não def. na visão
+         else ' - Tipo Ingresso: ' || NomeTipoIngresso
+       end
+       ||
+       case 
+         when Patri.DescricaoEstado is null then ''
+         when TRIM(Patri.DescricaoEstado) = '' then ''
+         else chr(10) || 'Estado: ' || Patri.DescricaoEstado
+       end 
+       AS Descricao,     
+     Patri.NumeroSerie,
+     Patri.MarcaModelo,
+     TO_CHAR(Patri.DATAAQUISICAO,'DD/MM/YYYY') as data,
+     Patri.valor,
+     Patri.iditempatrimonio,
+     Origem.siglaSetor || ' (' ||  Origem.nomesetor || ')' as setororigem
+from ad_itempatrimonio as Patri 
+  JOIN TempTransf AS MOV ON  (Patri.iditempatrimonio = Mov.ID)
+  join cm_setor as Destino on (Mov.Destino = Destino.idsetor)
+  join cm_setor as Origem ON (Mov.Origem = Origem.idSetor)
+  left join vad_tipoingressopatri AS Ingresso ON (Patri.TipoIngresso = Ingresso.idTipoIngresso)
+where Origem.idSetor = $P{pOrigem}
+  AND Destino.idsetor = $P{pDestino}
+order by NomeSetor ASC, Descricao ASC, Patri.iditempatrimonio ASC
+limit 5000]]></queryString>
+
+	<field name="nomesetor" class="java.lang.String"/>
+	<field name="notafiscal" class="java.lang.String"/>
+	<field name="numeroempenho" class="java.lang.String"/>
+	<field name="descricao" class="java.lang.String"/>
+	<field name="numeroserie" class="java.lang.String"/>
+	<field name="marcamodelo" class="java.lang.String"/>
+	<field name="data" class="java.lang.String"/>
+	<field name="valor" class="java.math.BigDecimal"/>
+	<field name="iditempatrimonio" class="java.math.BigDecimal"/>
+	<field name="setororigem" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="210"  isSplitAllowed="true" >
+				<subreport  isUsingCache="true">
+					<reportElement
+						mode="Transparent"
+						x="0"
+						y="8"
+						width="802"
+						height="96"
+						key="subreport"/>
+					<subreportParameter  name="pTitulo">
+						<subreportParameterExpression><![CDATA["Itens Transferidos"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pURL">
+						<subreportParameterExpression><![CDATA[$P{pURL}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter  name="pConsulta">
+						<subreportParameterExpression><![CDATA[$P{pIdUsuario}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression  class="java.lang.String"><![CDATA[/*$P{SUBREPORT_DIR} +"\\common\\reports\\CabecalhoPaisagem.jasper"*/
+"C:\\SIGA-ADM-DEV\\miolo\\modules\\common\\reports\\CabecalhoPaisagem.jasper"]]></subreportExpression>
+				</subreport>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="109"
+						width="802"
+						height="1"
+						key="line"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="80"
+						y="181"
+						width="470"
+						height="21"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="12" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{nomesetor}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						mode="Opaque"
+						x="0"
+						y="113"
+						width="802"
+						height="66"
+						forecolor="#030A03"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Justified" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Times-Bold" size="14" isBold="true" isPdfEmbedded ="true"/>
+					</textElement>
+				<text><![CDATA[Recebo os bens patrimoniais abaixo relacionados, rubricando cada uma das páginas e firmando ao final. Concordo com o estado do material descrito, com as especificações presentes e me comprometo zelar pela sua conservação, além de comunicar qualquer irregularidade ou movimentação indevida.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="3"
+						y="184"
+						width="73"
+						height="14"
+						key="staticText-9"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="12" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[DESTINO:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="551"
+						y="184"
+						width="244"
+						height="18"
+						forecolor="#FF0033"
+						key="staticText-10"/>
+					<box topPadding="3"></box>
+					<textElement textAlignment="Right">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="12" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Nº Itens: 5      Valor Total:  7018,61
+
+]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="27"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="140"
+						y="8"
+						width="342"
+						height="14"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="8" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Descrição]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="8"
+						width="36"
+						height="14"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="8" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Nº Patri]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="564"
+						y="8"
+						width="52"
+						height="14"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="8" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Aquisição]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="-1"
+						width="802"
+						height="1"
+						key="line"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="25"
+						width="802"
+						height="1"
+						key="line"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="695"
+						y="8"
+						width="106"
+						height="14"
+						key="staticText"/>
+					<box topPadding="3"></box>
+					<textElement textAlignment="Center">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Setor Antigo (Origem)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="627"
+						y="8"
+						width="56"
+						height="14"
+						key="staticText"/>
+					<box topPadding="3"></box>
+					<textElement textAlignment="Right">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="8" isBold="true"/>
+					</textElement>
+				<text><![CDATA[Valor Aquis.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="38"
+						y="8"
+						width="38"
+						height="14"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="8" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[NF]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="80"
+						y="8"
+						width="57"
+						height="14"
+						key="staticText-2"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="8" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Empenho]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="487"
+						y="8"
+						width="74"
+						height="14"
+						key="staticText-3"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="8" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Número Série]]></text>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="14"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						x="0"
+						y="0"
+						width="802"
+						height="14"
+						forecolor="#FFFFFF"
+						backcolor="#F5F5E5"
+						key="rectangle-1"
+						stretchType="RelativeToTallestObject">
+							<printWhenExpression><![CDATA[new Boolean(($V{REPORT_COUNT}.intValue()) % 2 == 0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="RelativeToTallestObject"/>
+				</rectangle>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="2"
+						y="1"
+						width="33"
+						height="12"
+						key="textField-2"
+						stretchType="RelativeToTallestObject"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Roman" size="8" isPdfEmbedded ="false"/>
+					</textElement>
+				<textFieldExpression   class="java.math.BigDecimal"><![CDATA[$F{iditempatrimonio}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="141"
+						y="1"
+						width="342"
+						height="12"
+						key="textField-3"
+						stretchType="RelativeToTallestObject"/>
+					<box></box>
+					<textElement textAlignment="Justified" verticalAlignment="Middle">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Roman" size="8" isPdfEmbedded ="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{descricao}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="574"
+						y="1"
+						width="42"
+						height="12"
+						key="textField-4"
+						stretchType="RelativeToTallestObject"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Roman" size="8" isPdfEmbedded ="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{data}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="695"
+						y="-1"
+						width="106"
+						height="12"
+						key="textField"/>
+					<box topPadding="3"></box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{setororigem}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="621"
+						y="-2"
+						width="70"
+						height="13"
+						key="textField"/>
+					<box topPadding="3"></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Roman" size="8"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[($F{valor} == null ? " - " : DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format($F{valor}))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="38"
+						y="1"
+						width="38"
+						height="12"
+						key="textField-17"
+						stretchType="RelativeToTallestObject"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Roman" size="8" isPdfEmbedded ="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{notafiscal}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="80"
+						y="1"
+						width="57"
+						height="12"
+						key="textField-18"
+						stretchType="RelativeToTallestObject"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Roman" size="8" isPdfEmbedded ="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{numeroempenho}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="487"
+						y="1"
+						width="84"
+						height="12"
+						key="textField-19"
+						stretchType="RelativeToTallestObject"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Roman" size="8" isPdfEmbedded ="false"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{numeroserie}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="21"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="321"
+						y="5"
+						width="161"
+						height="12"
+						key="textField-16"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="759"
+						y="2"
+						width="36"
+						height="19"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+						<font fontName="sansserif" pdfFontName="Helvetica" size="10" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" pdfEncoding ="CP1252" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="585"
+						y="2"
+						width="170"
+						height="19"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="sansserif" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="6"
+						y="6"
+						width="70"
+						height="14"
+						key="staticText-8"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="12" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Rúbricas:]]></text>
+				</staticText>
+			</band>
+		</pageFooter>
+		<lastPageFooter>
+			<band height="21"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="4"
+						y="9"
+						width="161"
+						height="12"
+						key="textField-16"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="760"
+						y="1"
+						width="36"
+						height="14"
+						forecolor="#000000"
+						backcolor="#FFFFFF"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+						<font fontName="sansserif" pdfFontName="Helvetica" size="10" isBold="false" isItalic="false" isUnderline="false" isPdfEmbedded ="false" pdfEncoding ="CP1252" isStrikeThrough="false" />
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="586"
+						y="1"
+						width="170"
+						height="14"
+						key="textField"/>
+					<box>					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+</box>
+					<textElement textAlignment="Right">
+						<font fontName="sansserif" size="10"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+				</textField>
+			</band>
+		</lastPageFooter>
+		<summary>
+			<band height="109"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="3"
+						y="15"
+						width="380"
+						height="1"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="76"
+						width="383"
+						height="1"
+						key="line-2"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="422"
+						y="76"
+						width="380"
+						height="1"
+						key="line-3"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="4"
+						y="18"
+						width="383"
+						height="30"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="1_1_2">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="9" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Data: ____/____/_____    RESPONSÁVEL TRANSPORTE (dispensável no mesmo prédio)
+CPF:                                        Nome:                                                                                            
+]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="0"
+						y="79"
+						width="383"
+						height="30"
+						key="staticText-5"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="1_1_2">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="9" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Data Conferência: ____/____/________    SETOR DE DESTINO
+SIAPE:                                     Nome:  ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="422"
+						y="79"
+						width="380"
+						height="30"
+						key="staticText-6"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="1_1_2">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="9" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Data Ciência: ____/____/________             PATRIMÔNIO
+SIAPE:                                              Nome:  ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="422"
+						y="18"
+						width="380"
+						height="30"
+						key="staticText-7"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle" lineSpacing="1_1_2">
+						<font fontName="Myriad Web Pro" pdfFontName="Times-Bold" size="9" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
+				<text><![CDATA[Data Expedição: ____/____/________       SETOR DE ORIGEM
+SIAPE:                                               Nome:           
+]]></text>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="422"
+						y="15"
+						width="380"
+						height="1"
+						key="line-4"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+			</band>
+		</summary>
+</jasperReport>

@@ -59,9 +59,9 @@ class frmProcessoAnexar extends MFormAjax
 			$numProcesso->related = 'numProcesso';
 			$numProcesso->filter = 'numProcesso,numProcessoCorrente';
 			$numProcesso->addAttribute('maxlength','14');
-			#$autor = new MTextField('autor','','Autor:',90);
-			#$autor->addAttribute('maxlength','80');
-			$groupAnexo = new MBaseGroup('groupAnexo', 'Selecionar processo',array($numProcesso,new MSpacer(),/*$autor*/),'vertical','css');
+			$autor = new MTextField('autor','','Autor:',40);
+			$autor->addAttribute('maxlength','40');
+			$groupAnexo = new MBaseGroup('groupAnexo', 'Selecionar processo',array($numProcesso,new MSpacer(),$autor),'vertical','css');
 			$groupAnexo->addAttribute('style','padding:10px');
 
 			//      fields
@@ -74,9 +74,9 @@ class frmProcessoAnexar extends MFormAjax
 			$this->SetFields($fields);
 
 			//      required fields
-/*			$validators = array(
+			$validators = array(
 				new MRequiredValidator('autor'),
-			);*/
+			);
 			$this->setValidators($validators);
 
 			//      buttons
@@ -168,7 +168,7 @@ class frmProcessoAnexar extends MFormAjax
 				$andamento2->setorDestino = $andamento2->setor;
 				$andamento2->idUsuario = $login->idkey;
 				$andamento2->decisao = 'RECEBEU COMO ANEXO O PROCESSO '.$this->processo->numProcessoFormatado();
-				#$andamento2->autor = $andamento->autor;
+				$andamento2->autor = $andamento->autor;
 				$this->processoPai->addAndamento($andamento2);
 				$this->processoPai->addAndamento($andamento3);
 				$this->processoPai->retencao->setData($andamento3);
@@ -186,10 +186,16 @@ class frmProcessoAnexar extends MFormAjax
 				$emails[$emails->length][0] = $mailSender;
                 foreach($emails as $e)
                 {
-                    if($e[0] != $emails[$emails->length][0])
-						$instituicao = $this->processo->instituicaoUsuario($e[1]);
-					else 
-						$instituicao = $this->processo->instituicaoProcesso();
+                    if($e[1])
+                    {
+                            $instituicao = $this->processo->instituicaoUsuario($e[1]);
+                            $pessoa = $e[2];
+                    }
+                    else
+                    {
+                            $instituicao = $this->processo->instituicaoProcesso();
+                            $pessoa = $this->processo->solicitante;
+                    }
 					$mail = new PHPMailer();
 					$mail->IsSMTP(); // send via SMTP
 					$mail->Host = $MIOLO->getConf('mail.host');
@@ -206,7 +212,7 @@ class frmProcessoAnexar extends MFormAjax
 					$mail->ssl = $MIOLO->getConf('mail.ssl');
 					$mail->Body = "
 						<center><h1>TRAMITAÇÃO DO PROCESSO<br /> {$this->processo->numProcessoFormatado()}</h1></center>
-						<br /><br />Prezado(a) Sr(a) {$e[2]},
+						<br /><br />Prezado(a) Sr(a) {$pessoa},
 						<br /><br />O processo {$this->processo->numProcessoFormatado()} foi anexado ao processo {$this->processoPai->numProcessoFormatado()}
 						<br /><br /><b>Objeto: </b>{$objMail}
 						<br /><b>Setor Atual: </b>{$this->processo->retencao->setor}

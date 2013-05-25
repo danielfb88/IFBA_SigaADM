@@ -86,6 +86,7 @@ class MMultiTextField3 extends MMultiTextField2
             }
         }
 
+		
         $this->value = $r;
     }
 

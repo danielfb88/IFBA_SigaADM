@@ -19,7 +19,7 @@
  */
 ?>
 
-<?
+<?php
 class frmUoOrcamentoInternoNew extends Form
 {
     
@@ -44,6 +44,8 @@ class frmUoOrcamentoInternoNew extends Form
         );
 		
         $this->SetFields($fields);
+        
+        $this->lkpRubrica->addAttribute('readonly', true);
         
         $this->SetFieldAttr('tipoLancamento','visible',false);
        
@@ -70,13 +72,13 @@ class frmUoOrcamentoInternoNew extends Form
 		$data = $this->getData();
 		$cf = new MCurrencyFormatter();
 		if (substr_count($data->valor, ",") == 0)
-                {
-                        $data->valor = str_replace(".",",",$data->valor);
-                }
-                else
-                {
-                        $data->valor = str_replace(".","",$data->valor);
-                }
+        {
+            $data->valor = str_replace(".",",",$data->valor);
+        }
+        else
+        {
+            $data->valor = str_replace(".","",$data->valor);
+        }
 
 		$data->valor = $cf->toDecimal($data->valor);
 		

@@ -28,6 +28,8 @@
 idrubrica as contacontabil,
 SUM(valor) as valor_bruto,
 
+
+
 -- VALOR DEPRECIÁVEL MÊS
 -- * Quando o total de meses ultrapassar o tempo de vida útil do item deve-se considerar o valor depreciável do mês como ZERO.
 -- * Quando o
@@ -56,13 +58,38 @@ CASE extract(day from iniciouso) WHEN 1 THEN
     CASE ((extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))-1) > mesesdepreciacao WHEN true THEN
         mesesdepreciacao
     ELSE
-        ((extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))-1)
+	CASE (databaixa is null) WHEN TRUE THEN
+		((extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))-1)
+	ELSE
+		CASE ((extract(year from databaixa) = extract(year from date($P{mesRelatorio})) AND (extract(month from databaixa)+ 1) = extract(month from date($P{mesRelatorio})))) WHEN TRUE THEN
+			(extract(year from AGE(databaixa, iniciouso))* 12 + extract(month from AGE(databaixa, iniciouso)))
+		ELSE
+		(extract(year from AGE(date(databaixa), iniciouso)) * 12 +
+	extract(month from AGE(date(databaixa), iniciouso)) +
+	extract(day from AGE(date(databaixa), iniciouso))/30)
+		END
+	END
     END
 ELSE
     CASE (extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso))) > mesesdepreciacao WHEN true THEN
         mesesdepreciacao
     ELSE
-        (extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))
+	CASE (databaixa is null) WHEN TRUE THEN
+            (extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))
+        ELSE
+		CASE ((extract(year from databaixa) = extract(year from date($P{mesRelatorio})) AND (extract(month from databaixa)+ 1) = extract(month from date($P{mesRelatorio})))) WHEN TRUE THEN
+			(extract(year from AGE(date('01/'||extract(month from databaixa)||'/'||
+extract(year from databaixa)), iniciouso))* 12 + extract(month from AGE(date('01/'||extract(month from databaixa)||'/'||
+extract(year from databaixa)), iniciouso)))
+		ELSE
+		(select extract(year from AGE(date(databaixa), Data)) * 12 +
+	extract(month from AGE(date(databaixa), data)) +
+	extract(day from AGE(date(databaixa), data)) / 30
+from
+(SELECT date('01/'||DATE_PART('MONTH',CAST(iniciouso AS DATE) + INTERVAL '1 MONTHS')||'/'||
+DATE_PART('YEAR',CAST(iniciouso AS DATE) + INTERVAL '1 MONTHS')) AS Data) as foo)
+		END
+	END
     END
 END)) as valordepreciado,
 
@@ -74,18 +101,49 @@ CASE extract(day from iniciouso) WHEN 1 THEN
     CASE ((extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))-1) > mesesdepreciacao WHEN true THEN
         mesesdepreciacao
     ELSE
-        ((extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))-1)
+	CASE (databaixa is null) WHEN TRUE THEN
+            ((extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))-1)
+        ELSE
+		CASE ((extract(year from databaixa) = extract(year from date($P{mesRelatorio})) AND (extract(month from databaixa)+ 1) = extract(month from date($P{mesRelatorio})))) WHEN TRUE THEN
+			(extract(year from AGE(databaixa, iniciouso))* 12 + extract(month from AGE(databaixa, iniciouso)))
+		ELSE
+		(extract(year from AGE(date(databaixa), iniciouso)) * 12 +
+	extract(month from AGE(date(databaixa), iniciouso)) +
+	extract(day from AGE(date(databaixa), iniciouso))/30)
+		END
+	END
     END
 ELSE
     CASE (extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso))) > mesesdepreciacao WHEN true THEN
         mesesdepreciacao
     ELSE
-        (extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))
+	CASE (databaixa is null) WHEN TRUE THEN
+            (extract(year from AGE(date($P{mesRelatorio}), iniciouso))* 12 + extract(month from AGE(date($P{mesRelatorio}), iniciouso)))
+        ELSE
+		CASE ((extract(year from databaixa) = extract(year from date($P{mesRelatorio})) AND (extract(month from databaixa)+ 1) = extract(month from date($P{mesRelatorio})))) WHEN TRUE THEN
+			(extract(year from AGE(date('01/'||extract(month from databaixa)||'/'||
+extract(year from databaixa)), iniciouso))* 12 + extract(month from AGE(date('01/'||extract(month from databaixa)||'/'||
+extract(year from databaixa)), iniciouso)))
+		ELSE
+		(select extract(year from AGE(date(databaixa), Data)) * 12 +
+	extract(month from AGE(date(databaixa), data)) +
+	extract(day from AGE(date(databaixa), data)) / 30
+from
+(SELECT date('01/'||DATE_PART('MONTH',CAST(iniciouso AS DATE) + INTERVAL '1 MONTHS')||'/'||
+DATE_PART('YEAR',CAST(iniciouso AS DATE) + INTERVAL '1 MONTHS')) AS Data) as foo)
+		END
+	END
     END
 END))) as valorLiquido
 
 FROM vw_depreciacao
-WHERE iniciouso < date($P{mesRelatorio}) and (idrubrica != 142121800 and idrubrica != 142128700)
+WHERE iniciouso < date($P{mesRelatorio})
+	AND
+	      CASE (databaixa is not null) WHEN TRUE THEN
+	             (cast($P{mesRelatorio} as date) < CAST(databaixa AS DATE) + INTERVAL '2 MONTHS')
+	      ELSE
+         	             TRUE
+	      END
 GROUP BY
 idrubrica
 ORDER BY
@@ -213,7 +271,7 @@ Conta Contábil]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="staticText-4" x="151" y="8" width="54" height="28"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
+				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Valor

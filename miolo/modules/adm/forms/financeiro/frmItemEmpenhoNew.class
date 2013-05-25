@@ -38,7 +38,6 @@ class frmItemEmpenhoNew extends MFormAjax
 		$objEmpenho->retrieveAssociation('empenhoRef');
 		$objEmpenho->retrieveAssociation('fornecedor');
 		$objEmpenho->fornecedor->retrieveAssociation('instituicao');
-	//	$objEmpenho->retrieveAssociation('orcamento');
 		if($objEmpenho->orcamento){
 			$objEmpenho->orcamento->retrieveAssociation('ptr');
 			$objEmpenho->orcamento->retrieveAssociation('rubrica');
@@ -93,7 +92,6 @@ class frmItemEmpenhoNew extends MFormAjax
 					new MCalendarField('dataEmpenho', $objEmpenho->dataEmpenho,'Data do Empenho','10'),
 					new MSelection('tipoEmpenho',$objEmpenho->tipoEmpenho,'Tipo de Empenho',$optEmpenho),
 					new MSelection('tipoEntrega',$objEmpenho->tipoEntrega,'Tipo de Entrega',$optTipoEntrega),
-					//new MSelection('contrato','','Tem contrato?',$optContrato),
 					new MSelection('modalidadeEmp',$objEmpenho->modalidadeEmp,'Modalidade Empenho',$optModalidadeEmpenho),
 					new MSelection('idUoEntrega',$objEmpenho->idUoEntrega,'Local de entrega',$opLocaisEntrega),
 					new MSelection('processo','','Processo',$opProcesso),
@@ -111,11 +109,9 @@ class frmItemEmpenhoNew extends MFormAjax
 					new MHiddenField('idLicitacao'),
 					new MMultiLineField('obs','','Observação',240,4,40,'',''),
 					$grid,
-					#campos do Material
 					new LookupTextField('servico', '', 'Serviço', 60),
 					new MHiddenField('idServico'),
 					new LookupTextField('material', '', 'Material', 60),
-					//new MTextField('complemento','','Complemento',100),
 					new MMultiLineField('complemento','','Complemento',240,10,80,'',''),
 					array (
 							new MCurrencyField('valorEmpenhadoMaterial','','Valor',13),
@@ -146,7 +142,7 @@ class frmItemEmpenhoNew extends MFormAjax
 		$this->setFieldValue('obs',$objEmpenho->obs,true);
 		if ($objEmpenho->empenhado[0]->licitacao->idTipoLicitacao=='2'){
 			$this->setFieldAttr('material','visible',false);
-		}if ($objEmpenho->empenhado[0]->licitacao->idTipoLicitacao=='1'){
+		}if ($objEmpenho->empenhado[0]->licitacao->idTipoLicitacao=='1'  ||  $objEmpenho->empenhado[0]->licitacao->idTipoLicitacao=='4' ||  $objEmpenho->empenhado[0]->licitacao->idTipoLicitacao=='3'){
 			$this->setFieldAttr('servico','visible',false);
 			$this->setFieldAttr('complemento','visible',false);
 		}
@@ -206,6 +202,12 @@ class frmItemEmpenhoNew extends MFormAjax
 		$this->SetFieldAttr('lkpUO','item','UoAtiva');
 		$this->SetFieldAttr('lkpUO','event','filler');
 		$this->SetFieldAttr('lkpUO','related', 'idUO,lkpUO');
+		
+		$validators = array(
+			new MIntegerValidator('quantidadeEmpenhadoMaterial'),
+		);
+		
+		$this->SetValidators($validators);
 
 	}
 	
@@ -214,59 +216,75 @@ class frmItemEmpenhoNew extends MFormAjax
 		$idServico= $this->getFormValue('idServico');
 		$idMaterial= $this->getFormValue('idMaterial');
 		$idEmpenho= $this->empenho->idEmpenho;
-		$quantPedida= $this->getFormValue('valorEmpenhadoMaterial');
-		$precoEstimado= $this->getFormValue('quantidadeEmpenhadoMaterial');
-		$idTipoLicitacao=$this->getFormValue('idTipoLicitacao');
+		$precoEstimado= $this->getFormValue('valorEmpenhadoMaterial');
+		$quantPedida= $this->getFormValue('quantidadeEmpenhadoMaterial');
 		$localEntrega = $this->getFormValue('localEntrega');
 		$this->preencheComboNovaRequisicao();
-		try{
-			if($idTipoLicitacao=='2'){//se é serviço, várias requisicoes são salvas
-				#requisicao
-				//echo "requisicao de serviço";
-				$objRequisicao=$this->manager->getBusiness('adm','requisicao');
-				$objRequisicao->status='6';
-				$objRequisicao->idTipoReq='9';
-				$objRequisicao->idUoRequisitante = $this->getFormValue('idUO');
-				$objRequisicao->idUoExecutante =$this->getFormValue('idUoEntrega');
-				$objRequisicao->localEntrega = $localEntrega;
-				$objRequisicao->dataHora =date("d/m/Y H:i:s");
-				$objRequisicao->save();
-				$objRequisicao->Log(OP_UPD,"Requisição salva - janela de saldo de empenho");
-				//var_dump($objRequisicao->idRequisicao);
-				$idRequisicao = $objRequisicao->idRequisicao;
-			}elseif($idTipoLicitacao=='1'){//material
-				$opcaoNovaRequisicao = $this->getFormValue('requisicaoNova');
-				//var_dump($opcaoNovaRequisicao);
-				if ($opcaoNovaRequisicao=="0"){//nova requisicao
-					#requisicao
+		$caracteres = array("R", "$", ",", ".");
+		$auxValor = str_replace($caracteres, "", $precoEstimado);
+		$idTipoLicitacao = $this->getFormValue('idTipoLicitacao');
+		
+		if($idTipoLicitacao=='2'){//se é serviço
+			if(strlen($idMaterial) == 0) {
+				$this->addError("Selecione um Serviço.");
+			}
+		
+		}else if($idTipoLicitacao=='1' || $idTipoLicitacao=='4' || $idTipoLicitacao=='3'){//material
+			if(strlen($idMaterial) == 0) {
+				$this->addError("Selecione um Material.");
+			}
+		}
+		
+		if (strlen($localEntrega) < 7) {
+			$this->addError("Especifique Melhor o Local de Entrega.");
+		}
+		if ($quantPedida <= 0) {
+			$this->addError("Quantidade Invalida.");
+		}
+		if (strlen($auxValor) == 0 || $auxValor <= 0) {
+			$this->addError("Valor Invalido.");
+		}
+		if ($this->errors == '') {
+			try {
+				if($idTipoLicitacao=='2'){//se é serviço, várias requisicoes são salvas
 					$objRequisicao=$this->manager->getBusiness('adm','requisicao');
 					$objRequisicao->status='6';
-					$objRequisicao->dataHora =date("d/m/Y H:i:s");
-					$objRequisicao->idTipoReq='7';//
+					$objRequisicao->idTipoReq='9';
 					$objRequisicao->idUoRequisitante = $this->getFormValue('idUO');
 					$objRequisicao->idUoExecutante =$this->getFormValue('idUoEntrega');
 					$objRequisicao->localEntrega = $localEntrega;
-					$objRequisicao->idTipoReq = $this->getFormValue("idTipoLicitacao");
+					$objRequisicao->dataHora =date("d/m/Y H:i:s");
 					$objRequisicao->save();
 					$objRequisicao->Log(OP_UPD,"Requisição salva - janela de saldo de empenho");
 					$idRequisicao = $objRequisicao->idRequisicao;
-					//echo 'inserindo nova requisicao'.$idRequisicao;
-				}else{
-					//utiliza uma outra requisicao
-					//echo 'requisicao velha '.$opcaoNovaRequisicao;
-					$idRequisicao = $opcaoNovaRequisicao;
+				}elseif($idTipoLicitacao=='1' || $idTipoLicitacao=='4' || $idTipoLicitacao=='3'){//material
+					$opcaoNovaRequisicao = $this->getFormValue('requisicaoNova');
+					if ($opcaoNovaRequisicao == '0' || $opcaoNovaRequisicao == NULL) { //nova requisicao
+						$objRequisicao=$this->manager->getBusiness('adm','requisicao');
+						$objRequisicao->status='6';
+						$objRequisicao->dataHora =date("d/m/Y H:i:s");
+						$objRequisicao->idTipoReq='7';//
+						$objRequisicao->idUoRequisitante = $this->getFormValue('idUO');
+						$objRequisicao->idUoExecutante =$this->getFormValue('idUoEntrega');
+						$objRequisicao->localEntrega = $localEntrega;
+						$objRequisicao->idTipoReq = $this->getFormValue("idTipoLicitacao");
+						$objRequisicao->save();
+						$objRequisicao->Log(OP_UPD,"Requisição salva - janela de saldo de empenho");
+						$idRequisicao = $objRequisicao->idRequisicao;
+					}else{
+						$idRequisicao = $opcaoNovaRequisicao;
+					}
 				}
+			}catch (Exception $e){
+				$this->addError($e->getMessage());
 			}
-		}catch (Exception $e){
-			$this->addError($e->getMessage());
+			$this->showGrid($idRequisicao);
+			$this->preencheComboNovaRequisicao();
 		}
-		$this->showGrid($idRequisicao);
-		$this->preencheComboNovaRequisicao();
 	}
 
 	function preencheComboNovaRequisicao(){
 		
-		//$data = $this->getFormValue('data');
 		$opNovaRequisicao[0]='Nova requisicão';
 		foreach($this->itens as $item){
 			$opNovaRequisicao[$item[4]] = $item[4];
@@ -279,7 +297,6 @@ class frmItemEmpenhoNew extends MFormAjax
 		$id = $this->getFormValue('id');
 		$this->showGrid(NULL, $id);
 		$this->preencheComboNovaRequisicao();		
-
 	}
 	
 	function MyRowMethod($i, $row, $actions, $columns)
@@ -291,7 +308,7 @@ class frmItemEmpenhoNew extends MFormAjax
 	function showGrid($idRequisicao=NULL,$deleteId=NULL){
 		global $MIOLO;
 		$data = $this->getFormValue('data');
-		if($deleteId){		
+		if($deleteId) {	
 			foreach($data as $item){
 				if($item[5]!=$deleteId){
 					$dataAux[] =  $item;
@@ -303,7 +320,7 @@ class frmItemEmpenhoNew extends MFormAjax
 		$valor=$this->getFormValue('valorEmpenhadoMaterial');
 		
 		if(!is_null($idRequisicao)){
-			if($this->getFormValue('idTipoLicitacao')=='1'){
+			if($this->getFormValue('idTipoLicitacao')=='1' || $this->getFormValue('idTipoLicitacao')=='4' || $this->getFormValue('idTipoLicitacao')=='3'){
 				$idMaterial=$this->getFormValue('idMaterial');
 				$material=$this->manager->getBusiness('adm','material',$idMaterial);		
 				$data[] = array ($idMaterial, $material->descricao, $quantidade,$valor,$idRequisicao,uniqid());
@@ -347,23 +364,18 @@ class frmItemEmpenhoNew extends MFormAjax
 		foreach ( $data as $d ){
 			$cf = new MCurrencyFormatter();
 			$itemEmpenhado[$d[0]]['quantidadeEmp'] += $cf->toDecimal($d[2]);
-			//var_dump($cf->toDecimal($d[2]));
-			//echo '<br>';
-			//$itemEmpenhado[$d[0]]['valorEmp']+=$d[3];
 			$itemEmpenhado[$d[0]]['valorEmp']+=$cf->toDecimal($d[3]);
 			$itemEmpenhado[$d[0]]['itemLicitacao']=NULL;
 		}		
 		$this->getFormValue('idEmpenho');
 		$idLicitacao = $this->getFormValue('idLicitacao');
 		foreach ( $itemEmpenhado as $key=>$item ){
-			#item licitacao
 			$objItemLicitacao=$this->manager->getBusiness('adm','itemlicitacao');
 			$newItem = $objItemLicitacao->GetNewItemLicitacao($idLicitacao);
 			$objItemLicitacao->idLicitacao=$idLicitacao;
 			$objItemLicitacao->item=$newItem;
 			$objItemLicitacao->save();
 			$objItemLicitacao->Log(OP_UPD,"Item Licitação salvo - janela de saldo de janela de saldo de empenho");
-			#empenhado
 			$itemEmpenhado[$key]['itemLicitacao']=$objItemLicitacao->item;
 			$objEmpenhado=$this->manager->getBusiness('adm','empenhado');
 			
@@ -376,15 +388,11 @@ class frmItemEmpenhoNew extends MFormAjax
 			$objEmpenhado->idEmpenho = $this->getFormValue('idEmpenho');
 			$objEmpenhado->idLicitacao = $idLicitacao;
 			
-		//	$objEmpenhado->idOrcamento = 
 			$objEmpenhado->item = $objItemLicitacao->item;
 			$objEmpenhado->save();
 			$objEmpenhado->Log(OP_UPD,"Empenhado salvo - janela de saldo de empenho");
 		}
-		//var_dump($itemEmpenhado);
 		foreach ( $data as $d ){
-			#itemreq
-			//var_dump($itemEmpenhado[$d[0]]['itemLicitacao']);
 			if($idTipoLicitacao=='2'){//serviço
 				$objItemServExt=$this->manager->getBusiness('adm','itemservext');
 				$objItemServExt->idRequisicao =$d[4];
@@ -396,7 +404,7 @@ class frmItemEmpenhoNew extends MFormAjax
 				$objItemServExt->complemento = $d[6];
 				$objItemServExt->save();
 				$objItemServExt->Log(OP_UPD,"Item serviço externo salvo - janela de saldo de empenho");
-			}if($idTipoLicitacao=='1'){//material
+			}if($idTipoLicitacao=='1' || $idTipoLicitacao=='4' || $idTipoLicitacao=='3'){//material
 				$objItemReq=$this->manager->getBusiness('adm','itemreq');
 				$objItemReq->idRequisicao=$d[4];
 				$objItemReq->idMaterial=$d[0];
@@ -418,7 +426,6 @@ class frmItemEmpenhoNew extends MFormAjax
 		switch($idTipoLicitacao){
 			case 1://material
 			{	//echo "grid material";
-				//var_dump($this->getFormValue('idEmpenho'));
 				$result = $objEmpenhado->ListByIdEmpenho($this->getFormValue('idEmpenho'));				
 				break;
 			}
@@ -426,6 +433,16 @@ class frmItemEmpenhoNew extends MFormAjax
 			{
 				//echo "grid serviço";
 				$result = $objEmpenhado->ListItensServExtEmpenhadosByEmpenho($this->getFormValue('idEmpenho'));
+				break;
+			}
+			case 3://material
+			{	//echo "grid material";
+				$result = $objEmpenhado->ListByIdEmpenho($this->getFormValue('idEmpenho'));				
+				break;
+			}
+			case 4://material
+			{	//echo "grid material";
+				$result = $objEmpenhado->ListByIdEmpenho($this->getFormValue('idEmpenho'));				
 				break;
 			}
 		}
@@ -439,8 +456,6 @@ class frmItemEmpenhoNew extends MFormAjax
 		);
 		$datagrid = new DataGrid2($result,$columns,$action,0);
 		$datagrid->SetRowMethod($this,'MyRowMethod');
-		//$href = $MIOLO->getActionURL('adm', 'main:financeiro:saldoempenho','', array('event'=>'deleteEmpenhado','idEmpenhado'=>'#0#'));
-		//$datagrid->AddActionDelete($href);
 		$this->addField($datagrid);
 		
 		

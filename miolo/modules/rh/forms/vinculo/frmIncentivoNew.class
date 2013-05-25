@@ -51,13 +51,15 @@ class frmIncentivoNew extends MForm
         $incentivo->idVinculo = $this->objVinculo->idVinculo;
         $incentivo = $incentivo->getArrayFormacoes();
 
-                
+       $qual = $MIOLO->getBusiness('rh', 'percqualificacao');
+	$qual->idPercQualificacao = $this->objPerc;
+//	$qual = $qual->getById(1,'');
+
         $tiposRelacao = array(
             array('DIRETA', 'D'),
             array('INDIRETA', 'I')
         );
-        
-
+       
         $newFields = array(
             new MSpacer('1'),
             array (new MSelection('qualificacao', '', 'Escoha uma qualificação', $this->getQualificacaoOptions())),
@@ -89,11 +91,12 @@ class frmIncentivoNew extends MForm
         );
 
         $qualificacaoFields = $this->createDetalhes($this->objIncentivo->getQualificacao());
-        
+//echo "<pre>";	print_r($this->objIncentivo); echo"</pre>"; die;
         $fields = array(
             new MSpacer('1'),
             $themeBox = new MThemeBox("Dados da {$this->objIncentivo->getTipoQualificacao()} associada ao incentivo:", $qualificacaoFields),
             new MSpacer('1'),
+
             array(
                 $nivelClassificacao = new MTextField('nivel', $this->objIncentivo->percQualificacao->nivelClassificacao,'Nível',3, '', '', true),
                 $nivelEscolaridade = new MTextField('nivelEscolaridade', $this->objIncentivo->percQualificacao->escolaridadePCCTAE->descricao,'Nível de escolaridade formal',50, '', '', true),
@@ -108,16 +111,28 @@ class frmIncentivoNew extends MForm
         $buttons = array(
             new MButton('btnConceder', 'Conceder novo incentivo')
         );
-
+    if ($this->objIncentivo->histFormacao->idEscolaridadePCCTAE != NULL) 
+    {
         $hiddens = array(
             new MHiddenField('h_idHistFormacao', $this->objIncentivo->idHistFormacao),
             new MHiddenField('h_idHistTitulacao', $this->objIncentivo->idHistTitulacao),
             new MHiddenField('h_dataIncentivo', $this->objIncentivo->dataIncentivo),
             new MHiddenField('h_relacao', $this->objIncentivo->relacao),
             new MHiddenField('h_percentualAplicado', $this->objIncentivo->percentualAplicado),
-            new MHiddenField('h_idPercQualificacao', $this->objIncentivo->idPercQualificacao),
+            new MHiddenField('h_idPercQualificacao', $this->objIncentivo->histFormacao->idEscolaridadePCCTAE),
         );
-
+    }
+    else
+    {
+	$hiddens = array(
+            new MHiddenField('h_idHistFormacao', $this->objIncentivo->idHistFormacao),
+            new MHiddenField('h_idHistTitulacao', $this->objIncentivo->idHistTitulacao),
+            new MHiddenField('h_dataIncentivo', $this->objIncentivo->dataIncentivo),
+            new MHiddenField('h_relacao', $this->objIncentivo->relacao),
+            new MHiddenField('h_percentualAplicado', $this->objIncentivo->percentualAplicado),
+            new MHiddenField('h_idPercQualificacao', $this->objIncentivo->histTitulacao->idEscolaridadePCCTAE),
+        );
+    }
         $relacao->addAttribute('readonly', 'true');
         $relacao->addAttribute('disable', 'true');
         $relacao->addAttribute('readonly', 'true');
@@ -139,13 +154,13 @@ class frmIncentivoNew extends MForm
 
     function createDetalhes($objQualificacao) {
 
-        if ($objQualificacao->idHistFormacao) {
+        if ($this->getFormValue('h_idHistFormacao')) {
             //Objeto de histformacao
             $qualificacao = $objQualificacao->formacao->formacao . " - " . $objQualificacao->escolaridadePCCTAE->descricao;
             $nomeCurso = $objQualificacao->nomeCurso;
         } else {
             //Objeto de histtitulacao
-            $qualificacao = $objQualificacao->getTitulacao() . ' - ' . $objQualificacao->escolaridadePCCTAE->descricao;
+            $qualificacao = $objQualificacao->formacao->formacao . ' - ' . $objQualificacao->escolaridadePCCTAE->descricao;
             $nomeCurso = $objQualificacao->nomecurso;
         }
             $fields = array(
@@ -202,7 +217,7 @@ class frmIncentivoNew extends MForm
                 }
                 //foreach($titulacoes as $idHistTitulacao => $descricao) $ArrayTitulacoes[] = array($idHistTitulacao, $descricao);
                 foreach($titulacoes as $idHistTitulacao => $descricao)
-                    $ArrayTitulacoes[] = new MOption( "T$idHistTitulacao", "T$idHistTitulacao", $descricao, false,"T$idHistTitulacao");
+                    $ArrayTitulacoes[] = new MOption( "T$idHistTitulacao", "T$idHistTitulacao", $descricao, true,"T$idHistTitulacao");
             }
 
         } else {
@@ -256,20 +271,26 @@ class frmIncentivoNew extends MForm
 
     function btnConceder_click() {
     global $MIOLO;
-
+	
         $objIncentivo = $MIOLO->getBusiness('rh', 'histincentivo');
         $objIncentivo->idVinculo = $this->objVinculo->idVinculo;
 
         $idHistFormacao = $this->getFormValue('h_idHistFormacao');
         $idHistTitulacao = $this->getFormValue('h_idHistTitulacao');
 
+	$qual = $MIOLO->getBusiness('rh', 'percqualificacao');
+	$qual->idPercQualificacao = $this->objPerc;
+	$qual = $qual->getByIdEscolaridadePCCTAE($this->getFormValue('h_idPercQualificacao'));
+
         if ($idHistFormacao) $objIncentivo->idHistFormacao = $idHistFormacao;
         else if ($idHistTitulacao) $objIncentivo->idHistTitulacao = $idHistTitulacao;
-        
+ //print_r($this->objIncentivo);die;
         $objIncentivo->dataIncentivo = $this->getFormValue('h_dataIncentivo');
         $objIncentivo->relacao = $this->getFormValue('h_relacao');
-        $objIncentivo->percentualAplicado = $this->getFormValue('h_percentualAplicado');
-        $objIncentivo->idPercQualificacao = $this->getFormValue('h_idPercQualificacao');
+        $objIncentivo->percentualAplicado = $this->getFormValue('h_percentualAplicado'); 
+//h_percentual refere-se ao idEscolaridadePCCTAE que é passado no hidden dependendo da condição: 
+//$this->objIncentivo->histFormacao->idEscolaridadePCCTAE ou $this->objIncentivo->histTitulacao->idEscolaridadePCCTAE
+	$objIncentivo->idPercQualificacao = $qual->idPercQualificacao;
         $objIncentivo->save();
         
         $action = $MIOLO->GetActionURL('rh','main:vinculo',$this->objVinculo->idVinculo, array('form'=>'incentivo','id'=> $objIncentivo->idHistIncentivo));

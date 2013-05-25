@@ -103,7 +103,7 @@ class frmrepMudancasAmbiente extends MForm
     } // btnidVinculo_click2
 
 
-    function btnReport_click()
+    /*function btnReport_click()
     {
         $idVinculo = $this->GetFormValue('idVinculo');
         $this->btnidVinculo_click2($idVinculo);
@@ -125,8 +125,30 @@ class frmrepMudancasAmbiente extends MForm
             $report = $ui->getReport('rh','repMudancasAmbiente',$this->data);
             $report->generate();
         }
-    } // btnReport_click
+    } // btnReport_click*/
 
+	function btnReport_click()
+    	{
+		global $MIOLO;
+	
+		$matricula = $this->getFormValue('idVinculo');
+		$nome = $this->getFormValue('nome');
+		if (!$matricula)
+		{
+			$this->addError('Selecione o Servidor');
+		}
+		else
+		{
+			$report = new MJasperReport('sigaept'); 
+			$parameters['int_matricula'] = $matricula;
+			$parameters['str_nome'] = $nome;
+			$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
+			$parameters['int_pIdUsuario']= $MIOLO->login->idkey;
+			$parameters['pURL']=$MIOLO->GetConf('home.url');
+		        $report->Execute('rh', 'RelMudancaAmbiente',$parameters); 
+		}
+	}
+ 
 
     function btnGerarCSV_click()
     {

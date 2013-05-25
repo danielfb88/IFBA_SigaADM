@@ -455,48 +455,24 @@ Miolo.validate.prototype = {
 },
     check_EMAIL: function(email)
 {
-    var achou_ponto=false;
-    var achou_arroba=false;
-    var achou_caracter=false;
-    
-    for (var i=0; i<email.length; i++) 
-    {
-        if (email.charAt(i)=="@")
-        { 
-            if (email.charAt(i+1)==".")
-            {
-                achou_arroba=false;
-            }
-            else
-            {
-                achou_arroba=true;
-            }
-        }
-        else if (email.charAt(i)==".") 
+        var format = new RegExp(/^[A-Za-z0-9_\-\.]+@[A-Za-z0-9_\-\.]{2,}\.[A-Za-z0-9]{2,}(\.[A-Za-z0-9])?/);
+        if(typeof(email) == "string")
         {
-            achou_ponto=true;
+                if(format.test(email))
+                { 
+                	return true; 
+                }
         }
-        else if (email.charAt(i)!=" ") 
+        else if(typeof(email) == "object")
         {
-            achou_caracter=true;
+                if(format.test(email.value))
+                { 
+                    return true; 
+                }
+        }else
+        {
+        	return false;
         }
-    }
-    
-    if ((email.charAt(0)=="W" || email.charAt(0)=="w") &&
-        (email.charAt(1)=="W" || email.charAt(1)=="w") &&
-        (email.charAt(2)=="W" || email.charAt(2)=="w") &&
-        (email.charAt(3)=="."))
-        {
-            achou_ponto=false;
-            achou_caracter=false;
-        }
-        
-        if(email.charAt(email.length-1)==".")
-        {
-            achou_ponto=false;
-        }	
-        
-        return (achou_ponto && achou_arroba && achou_caracter);
 },
     check_DATEDMY: function(date)
 {

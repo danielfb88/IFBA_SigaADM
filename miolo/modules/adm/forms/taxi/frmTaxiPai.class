@@ -31,8 +31,8 @@ class frmTaxiPai extends Form
 	function CommonFields()
     	{
        	   $this->AddField(new MCalendarField('dataIni','','Data Início','8'));
-	   $this->AddField(new MCalendarField('dataFim','','Data Fim', '8'));	   
-	   $this->AddField(new MCurrencyField('valor','','Valor','7',''));	   		
+	   	$this->AddField(new MCalendarField('dataFim','','Data Fim', '8'));	   
+	   	$this->AddField(new MCurrencyField('valor','','Valor','10'));	   		
     	} 
 
 	function SetData()
@@ -40,7 +40,13 @@ class frmTaxiPai extends Form
 		$data = $this->objTaxi;
 		$this->SetFieldValue('dataIni',$data->dataIni);
 		$this->SetFieldValue('dataFim',$data->dataFim);
-		$this->SetFieldValue('valor',$data->valor);		
+		$this->SetFieldValue('valor',$data->valor);
 	}
+	
+	function findByNome($dataIni)
+    {
+		$busca = "select count(*) as total from ad_taxi where dataini = '$dataIni'";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
  }
 ?>

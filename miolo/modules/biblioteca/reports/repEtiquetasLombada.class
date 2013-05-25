@@ -37,12 +37,12 @@ class repEtiquetasLombada extends MPDFReport
    function __construct()
    {
       global $MIOLO, $module, $page, $context, $self, $action, $perms; 
-      parent::__construct(NULL, NULL, 0, NULL, /*'landscape'*/'portrait', /*'a4'*/'letter'); 
+      parent::__construct(NULL, NULL, 0, NULL, /*'landscape'*/'portrait', 'a4'/*'letter'*/); 
       $ui = $MIOLO->GetUI();
       $this->img = $ui->GetImageSrc('logonet.png','biblioteca');
       $this->timestamp = date('d/m/Y G:i');
-
-      $this->pdf->ezSetMargins(100, 40, 20, 20);
+	  
+	  $this->pdf->ezSetMargins(100, 40, 20, 20);
    }
 
   function GeneratePageHeader()
@@ -140,7 +140,8 @@ class repEtiquetasLombada extends MPDFReport
    {
       global $MIOLO, $module;
       $this->etiqueta = $MIOLO->GetBusiness($module,'etiquetaPronta');
-      $this->etiqueta->SetData(6180,'Letter',$this->pdf);  
+      //Jucele: Alterado tipo de etiqueta de 'A4255' para 'A4256'  
+	  $this->etiqueta->SetData('A4256','A4',$this->pdf);  
 	  
 	  if(!is_numeric($skip) || $skip > $this->etiqueta->quantity['horizontal']*$this->etiqueta->quantity['vertical'])
 		$skip = 1;	   
@@ -152,12 +153,12 @@ class repEtiquetasLombada extends MPDFReport
       {
             $objEtiqueta = $MIOLO->GetBusiness($module,'etiquetaLombada');
             
-            $this->pdf->setLineStyle(1,'','',array(3));
+            //$this->pdf->setLineStyle(1,'','',array(3));
 
-            $this->pdf->rectangle($this->etiqueta->currentX,
+            /*$this->pdf->rectangle($this->etiqueta->currentX,
                $this->etiqueta->currentY - $this->etiqueta->dimensions['height'],
                $this->etiqueta->dimensions['width'],
-               $this->etiqueta->dimensions['height']);
+               $this->etiqueta->dimensions['height']);*/
 			
 			$toprint = array();
 
@@ -166,7 +167,7 @@ class repEtiquetasLombada extends MPDFReport
 		  if(!empty($valor))
 			array_push($toprint,$valor);
 
-           $cutter = $MIOLO->GetBusiness($module,'cutter');
+           /*$cutter = $MIOLO->GetBusiness($module,'cutter');
 
            $valor2 = $objEtiqueta->getConteudoTag($idexemplar[0],'245','a') ;
 
@@ -175,12 +176,15 @@ class repEtiquetasLombada extends MPDFReport
            else if($valor1 = $objEtiqueta->getConteudoTag($idexemplar[0],'111','a'))
               $valor1 =  $cutter->getCutter($valor1,$valor2);
            else
-               $valor1 =  $cutter->getCutter($objEtiqueta->getConteudoTag($idexemplar[0],'130','a'));
+               $valor1 =  $cutter->getCutter($objEtiqueta->getConteudoTag($idexemplar[0],'130','a'));*/
+			   
+			$valor1 = $objEtiqueta->getConteudoTag($idexemplar[0],'090','b') ;
 
 		if(!empty($valor1))
 			array_push($toprint,$valor1);			 
      
-   	    $valor = $valor2 = $objEtiqueta->getConteudoTag($idexemplar[0],'250','a');
+   	    //$valor = $valor2 = $objEtiqueta->getConteudoTag($idexemplar[0],'250','a');
+		$valor = $valor2 = $objEtiqueta->getConteudoTag($idexemplar[0],'090','c');
    	    if(!empty($valor))
 		  array_push($toprint,$valor);
 
@@ -191,13 +195,21 @@ class repEtiquetasLombada extends MPDFReport
      
    	    $valor = $valor2 = $objEtiqueta->getNumeroExemplar($idexemplar[0]);
    	    if(!empty($valor))
-		  array_push($toprint,"ex. $valor");	
+		  array_push($toprint,"ex. $valor");
 
-		  $x = $this->etiqueta->currentX + (($this->etiqueta->dimensions['width'] - $this->pdf->getTextWidth(11,$toprint[0]))/2);
+		$bigger = $this->pdf->getTextWidth(11,$toprint[0]);
+		
+		/*foreach($toprint as $k => $v)
+		{
+			if($this->pdf->getTextWidth(11,$v) > $bigger)
+				$bigger = $this->pdf->getTextWidth(11,$v);
+		}*/
+
+		  $x = $this->etiqueta->currentX + (($this->etiqueta->dimensions['width'] - $bigger)/2);
 		  $posicionaLetrasY = $this->etiqueta->currentY - 11 - (($this->etiqueta->dimensions['height'] - (count($toprint)*11))/2);
 		  foreach($toprint as $k => $v)
 		  {
-			$this->pdf->addText($x,$posicionaLetrasY,11,$v,0);
+			$this->pdf->addText($x-14,$posicionaLetrasY,11,$v,0);
 			$posicionaLetrasY -= 11;
 		  }
 
@@ -210,19 +222,18 @@ function gerarParaMuitosExemplaresCapa($x,$y,$width,$data,$lista)
       global $MIOLO, $module;
 
       $this->etiqueta = $MIOLO->GetBusiness($module,'etiquetaPronta');
-      $this->etiqueta->SetData(6182,'Letter',$this->pdf);
+      $this->etiqueta->SetData('A4256','A4',$this->pdf);
      
-
       foreach($lista as $idexemplar)
       {
          $objEtiqueta = $MIOLO->GetBusiness($module,'etiquetaLombada');
          
          $this->pdf->setLineStyle(1,'','',array(3));
-
-         $this->pdf->rectangle($this->etiqueta->currentX,
+		
+        /* $this->pdf->rectangle($this->etiqueta->currentX,
             $this->etiqueta->currentY - $this->etiqueta->dimensions['height'],
             $this->etiqueta->dimensions['width'],
-            $this->etiqueta->dimensions['height']);
+            $this->etiqueta->dimensions['height']);*/
 
          $x = $this->etiqueta->currentX + 12;
          $posicionaLetrasY = $this->etiqueta->currentY;
@@ -230,35 +241,45 @@ function gerarParaMuitosExemplaresCapa($x,$y,$width,$data,$lista)
          $primeiraLinha = null;
 
          $posicionaLetrasY -= 11;
-         $cdd = $objEtiqueta->getConteudoTag($idexemplar[0],'082','a') ;
-         $primeiraLinha .= $cdd . ' ';
+         //$cdd = $objEtiqueta->getConteudoTag($idexemplar[0],'082','a') ;
+         //$primeiraLinha .= $cdd . ' ';
 
-        $cutter = $MIOLO->GetBusiness($module,'cutter');
+        //$cutter = $MIOLO->GetBusiness($module,'cutter');
 
-         $titulo = $objEtiqueta->getConteudoTag($idexemplar[0],'245','a');
+         //$titulo = $objEtiqueta->getConteudoTag($idexemplar[0],'245','a');
 
-          if($autor = $objEtiqueta->getConteudoTag($idexemplar[0],'100','a'))  
+          /*if($autor = $objEtiqueta->getConteudoTag($idexemplar[0],'100','a'))  
              $primeiraLinha .= $cutter->getCutter($autor,$titulo);
           else if($autor = $objEtiqueta->getConteudoTag($idexemplar[0],'111','a'))
              $primeiraLinha .= $cutter->getCutter($autor,$titulo);
           else
-             $primeiraLinha .= $cutter->getCutter($objEtiqueta->getConteudoTag($idexemplar[0],'130','a'));      
+             $primeiraLinha .= $cutter->getCutter($objEtiqueta->getConteudoTag($idexemplar[0],'130','a'));*/
 
-          $valor  = $objEtiqueta->getConteudoTag($idexemplar[0],'250','a');
+			 //$valor1 = $objEtiqueta->getConteudoTag($idexemplar[0],'090','b') ;
+		 
+			 //if(!empty($valor1))
+				//$primeiraLinha .= $valor1;
 
-          $primeiraLinha .= ' '. $valor;  
+          //$valor  = $objEtiqueta->getConteudoTag($idexemplar[0],'250','a');
+		  //$valor  = $objEtiqueta->getConteudoTag($idexemplar[0],'090','c');
 
-          $this->pdf->addText($x,$posicionaLetrasY,9, utf8_decode('Nº de cham. ' .$primeiraLinha),0);
+          //$primeiraLinha .= ' '. $valor;  
 
-          $posicionaLetrasY -= 10  ;  
+          //$this->pdf->addText($x,$posicionaLetrasY,9, utf8_decode('Nº de cham. ' .$primeiraLinha),0);
+		  
+         $un =  $objEtiqueta->getUnidade($idexemplar[0]);
 
-          $this->pdf->addText($x,$posicionaLetrasY,9, utf8_decode('Autor: ' .$autor),0);
+         $this->pdf->addText($x,$posicionaLetrasY,9, utf8_decode($un),0);  		  
 
-         $posicionaLetrasY -= 10  ;  
+          $posicionaLetrasY -= 20  ;  
 
-          $this->pdf->addText($x,$posicionaLetrasY,9, utf8_decode('Título: ' .$titulo),0);     
+          //$this->pdf->addText($x,$posicionaLetrasY,9, utf8_decode('Autor: ' .$autor),0);
+
+         //$posicionaLetrasY -= 10  ;  
+
+          //$this->pdf->addText($x,$posicionaLetrasY,9, utf8_decode('Título: ' .$titulo),0);     
           
-         $posicionaLetrasY -= 10 ;
+         //$posicionaLetrasY -= 10 ;
 
          $tombo = $objEtiqueta->getNumeroTomboExemplar($idexemplar[0]);         
 
@@ -270,7 +291,7 @@ function gerarParaMuitosExemplaresCapa($x,$y,$width,$data,$lista)
                 'samesize'  => true,
             );
 
-	 $barcode = $MIOLO->GetBusiness($module,'PDFBarcode');
+		 $barcode = $MIOLO->GetBusiness($module,'PDFBarcode');
          $barcode->SetData($this->pdf, $barcode_options);     
 
          $fp=popen(dirname(__FILE__).'/genbarcode-0.4/genbarcode '.str_pad($tombo,6,'0',STR_PAD_LEFT).' 128',"r");
@@ -281,19 +302,19 @@ function gerarParaMuitosExemplaresCapa($x,$y,$width,$data,$lista)
 
          if (preg_match('/^(EAN|ISBN|code 39)/', $encoding)) { $fontscale = 4; } else { $fontscale = 0; }
 
-         $id = $barcode->generate($text, $bars, $x+73, $posicionaLetrasY, 0);
+         $id = $barcode->generate($text, $bars, $x+10, $posicionaLetrasY, 0);
 
          $this->pdf->addObject($id);
 
-          $this->pdf->addText($x+180,$posicionaLetrasY-10,9, 'Tombo '. $tombo,0);
+          $this->pdf->addText($x+85,$posicionaLetrasY-10,9, 'Tombo '. $tombo,0);
 
           $nobra = $objEtiqueta->getNumeroObra($idexemplar[0]);
 
-          $this->pdf->addText($x+180,$posicionaLetrasY-23,9, utf8_decode('Nº da obra '). $nobra,0);
+          $this->pdf->addText($x+85,$posicionaLetrasY-23,9, utf8_decode('Nº da obra '). $nobra,0);
 
-         $un =  $objEtiqueta->getUnidade($idexemplar[0]);
+         //$un =  $objEtiqueta->getUnidade($idexemplar[0]);
 
-         $this->pdf->addText($x,$posicionaLetrasY-45,9, utf8_decode($un),0);  
+         //$this->pdf->addText($x,$posicionaLetrasY-45,9, utf8_decode($un),0);  
 
          $this->etiqueta->next();
       } 

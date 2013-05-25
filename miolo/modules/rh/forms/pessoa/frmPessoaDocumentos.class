@@ -109,15 +109,21 @@ class frmPessoaDocumentos extends Form
 		$this->orgaorg->AddAttribute('maxlength','20');	
 		$this->zonatitulo->AddAttribute('maxlength','3');	
 		$this->tituloeleitor->AddAttribute('maxlength','12');	
-		$this->secaotitulo->AddAttribute('maxlength','4');	
+		$this->secaotitulo->AddAttribute('maxlength','4');
+		$this->numdocmilitar->AddAttribute('maxlength','12');		
 		$this->tipodocmilitar->AddAttribute('maxlength','3');	
 		$this->orgexpdocmilitar->AddAttribute('maxlength','3');	
 		$this->seriedocmilitar->AddAttribute('maxlength','1');	
 		$this->categdocmilitar->AddAttribute('maxlength','1');	
-		$this->numcert->AddAttribute('maxlength','6');	
+		$this->numcert->AddAttribute('maxlength','5');	
 		$this->livrocert->AddAttribute('maxlength','10');	
 		$this->folhacert->AddAttribute('maxlength','3');	
 		$this->cartorio->AddAttribute('maxlength','60');	
+		
+		//Validação do campo dataRG
+   	    $this->datarg->addAttribute('maxlength',10);
+    	$this->datarg->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+    	$this->datarg->addAttribute('onBlur','makeMask(this, \'##/##/####\');');	
 			 
 		
 		$this->defaultButton = false;

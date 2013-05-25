@@ -20,37 +20,79 @@
 ?>
 
 <?php
-class gridUoAlmoxarifadoSaidaMaterialRequisicoesFind extends MObjectGrid
+class gridUoAlmoxarifadoSaidaMaterialRequisicoesFind extends MDataGrid
 {
     protected $uoalmoxarifado;
     function __construct($objUo)
     {
-        global $MIOLO, $page;
+        global $MIOLO, $self;
         $this->uoalmoxarifado = $objUo;
-		$cf = new MCurrencyFormatter();
-        $this->setTitle('Resultados encontrados-');
-        $href = $MIOLO->getActionURL('adm','main:uoalmoxarifado',$this->uoalmoxarifado->idUo,array('form'=>'saidamaterial','idRequisicao'=>'#0#'));
-        $columns = array(
-            new MObjectGridHyperlink('idRequisicao','Número',$href,'8%'),
-			new MObjectGridColumn('dataHora','Data/Hora','center','true','30%'),
-            new MObjectGridHyperlink('usuario->pessoa->nome','Requisitante',$href,'62%'),
-			//new MGridColumn('Valor','center','true','16%'),
-         );
-        $this->setFilter(false);
-        $idRequisicao = Form::getFormValue('idRequisicao');
+		//var_dump($objUo->idUo); //Id da UO de almoxarifado
+		
+		$this->setTitle('Resultados encontrados-');
+        $href = $MIOLO->getActionURL('adm','main:uoalmoxarifado',
+		            $this->uoalmoxarifado->idUo,array('form'=>'saidamaterial','idRequisicao'=>'#0#'));
+		
+		$idRequisicao = Form::getFormValue('idRequisicao');
         $requisitante = Form::getFormValue('requisitante');
-        $requisicoes = $this->uoalmoxarifado->listRequisicoesForAlmoxarifado($idRequisicao,$requisitante);
-        $cf = new MCurrencyFormatter();
-        /*
-        if ( count($requisicoes) == 1 )
-        {
-            $page->redirect($MIOLO->getActionURL('adm','main:uoalmoxarifado:main',$this->uoalmoxarifado->idUo,array('form'=>'saidamaterial','idRequisicao'=>$requisicoes[0]->idRequisicao)));
-        }
-        */
-        $href_grid = $MIOLO->getActionURL('adm','main:uoalmoxarifado',$this->uoalmoxarifado->idUo,array('form'=>'saidamaterial'));
-        parent::__construct($requisicoes, $columns, $href_grid,25);
-        $this->SetLinkType('hyperlink');
-        $this->with = '100%';
+		$ordenacao    = Form::getFormValue('ordenacao');
+		
+		if (empty($ordenacao)) { $ordenacao = 'data';}
+		
+		if ($ordenacao == 'data') { $ordemBy = 'dataHoraReq, siglaInstituicaoReq, Requisitante, usuarioreq';}
+			else if ($ordenacao == 'setor') { $ordemBy = 'siglaInstituicaoReq, Requisitante, usuarioreq';}
+			else if ($ordenacao == 'id') { $ordemBy = 'idRequisicao';}
+		 
+		//'siglaInstituicaoReq, Requisitante, usuarioreq' //ordenacao
+		
+		/*if (empty($ordenacao)) {$ordenacao = 'data';}		
+				
+		echo('<pre>');
+		var_dump($idRequisicao, $requisitante, $ordenacao);
+		echo('</pre>');*/
+		
+		$columns = array(			
+			new MDataGridHyperlink('idRequisicao'     ,'ID Requisição'          ,$href, '10%'),		
+			new MDataGridColumn('dataHora'            ,'Data/Hora requisição'   ,'center',   false,'25%'),
+			new MDataGridColumn('siglainstituicaoreq' ,'Instituicão'            ,'center',   true, '15%'),
+			new MDataGridColumn('requisitante'        ,'Setor requisitante'     ,'center',   true, '20%'),
+			new MDataGridHyperlink('usuarioreq'       ,'Usuário requisitante'   ,$href, '30%'),			
+		);
+
+		$sql = new sql("idRequisicao, iduoexec, executora, siglainstituicaoreq, requisitante, usuarioreq, DataHora",
+		                'V_AdRequisicoesSaidaMaterial', //$tables
+						'idUoExec = ' . $objUo->idUo, // where 
+						$ordemBy //ordenacao
+						);
+		
+		if (  !empty($idRequisicao) ) { $sql->where .= ' AND idRequisicao = ' . $idRequisicao; }
+		
+		if (  !empty($requisitante) ) { $sql->where .= " AND usuarioreq LIKE '%" . $requisitante . "%'" ;}
+
+		//var_dump($sql->where);		
+
+		$href_grid = $MIOLO->getActionURL('adm','main:uoalmoxarifado',$this->uoalmoxarifado->idUo,array('form'=>'saidamaterial'));
+		
+		/*echo('<pre>');
+		var_dump ($href_grid);
+		echo('</pre>');*/
+		
+		$aux = $MIOLO->getBusiness('adm', 'executoralmox');
+		$query = $aux->Query($sql);	
+		
+		/*echo('<pre>');
+		var_dump($query->result[0][0], $query->result[0][1], $query->result[0][3], $query->result[0][4]);
+		echo('</pre>');*/
+		
+		//$href_grid = $MIOLO->GetActionURL('adm',$self);			
+		
+        parent::__construct($query, $columns, $href_grid, 60, 0, 'gridUoAlmoxarifadoSaidaMaterialRequisicoesFind');
+		//$this->AddActionSelect();
+		//$this->SetLinkType('hyperlink');
         //$href = $this->manager->GetActionURL('adm','main:empenho:new','', array('idEmpenho'=>'$id') );
+		
+		
+		
     }
+	
 }

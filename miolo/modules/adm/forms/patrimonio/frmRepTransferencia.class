@@ -1,0 +1,196 @@
+<?
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+class frmRepTransferencia extends MForm
+{
+    function __construct()
+    {
+        parent::__construct('Relatório de Transferência - OBS: Apenas Origem e Destino obrigatórios!');
+        $this->EventHandler();
+		$this->defaultButton = false;
+    }
+
+	function CreateFields()
+    {
+		global $MIOLO, $action, $module, $item;
+
+        $opcaoOrdenacao = array(
+			"id"			=>"Número do Patrimônio",
+			"nf_id"		    =>"Nota Fiscal + Número do Patrimônio",
+			"nf_desc"		=>"Nota Fiscal + Descrição",
+			"desc"			=>"Descrição",
+		);		
+	
+//		$findButton = new ButtonFind('');
+//		$findButton->SetName('btnFind');
+		
+		$fields = array
+			(
+			
+			array (
+			    new MTextField('setorOrigem','' ,'Setor de Origem',10),
+				new MTextField('setorDestino','','Setor de Destino',10),
+			),			
+			array (
+			    new MCalendarField('dataInicial','','Data Inicial',10),
+			    new MCalendarField('dataFinal',  '','Data Final'  ,10),
+			),
+			array( 
+				//new MTextField('patriInicial','','Patrimônio Inicial',10),
+				//new MTextField('patriFinal','','Patrimônio Final',10),			
+				new MTextField('empenho','','Empenho',20),
+				new MTextField('notafiscal','','Nota Fiscal',10),
+				new MTextField('idClassificador','','ID do classificador',6),
+			),
+			//new MTextField('descricao','','Descrição',54),
+			array (
+				new MSelection('ordenacao','','Ordenação', $opcaoOrdenacao),							
+			),			
+			new MSpacer(1),
+						
+			);
+		
+        $this->SetFields($fields);
+		
+		
+		$buttons = array
+			(
+        	   new MButton('btnPost', 'Gerar Relatório', 'PDF'),
+            );
+		$this->SetButtons($buttons);
+
+		 /*	$validators = array
+			(
+				new MRequiredValidator('idSetor'),
+				new MRequiredValidator('setor'),
+		    );
+		$this->SetValidators($validators);  */
+    }
+
+function btnPost_click()
+    {
+		global $MIOLO, $module, $item;
+		
+		$setorOrigem      = Form::GetFormValue('setorOrigem');
+		$setorDestino     = Form::GetFormValue('setorDestino');
+		$dataInicial     = Form::GetFormValue('dataInicial');
+		$dataFinal       = Form::GetFormValue('dataFinal');
+		$numeroEmpenho   = Form::GetFormValue('empenho');
+		$notaFiscal      = Form::GetFormValue('notafiscal');
+		$idClassificador = Form::GetFormValue('idClassificador');
+			
+		
+		
+		$ordem = Form::GetFormValue('ordenacao');
+		
+		//str_replace("world","Peter","Hello world!"); -- resultado: Hello Peter
+		$setorOrigem = str_replace('-', '%', $setorOrigem);
+		$setorDestino = str_replace('-', '%', $setorDestino);
+		
+		$nomedatainicial = trim($this->getFieldValue('dataInicial'));
+		$nomedatafinal   = trim($this->getFieldValue('dataFinal'));	
+		
+		if (empty($dataInicial)) 
+		{
+		   $dataInicial = '1950/01/01'; 
+		   $nomedatainicial = 'INDIFERENTE';		   
+		}
+		else 
+		{ 
+		   $partesData = explode('/',$dataInicial);
+           $dataInicial =  $partesData[2].'/'.$partesData[1].'/'.$partesData[0];
+		}
+		
+		if (empty($dataFinal)) 
+		{
+		   $dataFinal = '2099/12/31'; 
+		   $nomedatafinal = 'INDIFERENTE';		   
+		}
+		else 
+		{ 
+		   $partesData = explode('/',$dataFinal);
+           $dataFinal =  $partesData[2].'/'.$partesData[1].'/'.$partesData[0];
+		}
+		
+		//if(empty($dataInicial)) { $dataInicial = '01/01/1980'; }
+		//if(empty($dataFinal))   { $dataFinal =   '31/12/2050'; }
+		
+		/*
+		var_dump ($setorOrigem, $setorDestino, 
+		  $dataInicial,
+		$dataFinal ,
+		$numeroEmpenho,
+		$notaFiscal,
+		$idClassificador,
+		$ordem);
+		exit();
+		*/
+		
+		
+		if(empty($setorOrigem)) 
+		{
+			$this->addError('Informe o setor de Origem');
+		}	
+		else if(empty($setorDestino)) 
+		{
+			$this->addError('Informe o setor de Destino');
+		}	
+		else if (empty($ordem))
+		{
+		    $this->AddError('Informe uma opção de ordenação');		
+		}
+		else
+		{
+			
+			$report = new MJasperReport('sigaept'); 
+        	$parameters['SUBREPORT_DIR']	       = $MIOLO->GetConf('home.modules');
+			$parameters['pURL']		               = $MIOLO->GetConf('home.url');
+        	$parameters['int_pIdUsuario']	       = $MIOLO->login->idkey;
+			$parameters['str_porigem']			   = $setorOrigem;
+			$parameters['str_pdestino']			   = $setorDestino;
+			$parameters['pdatainicial']	           = $dataInicial;
+			$parameters['pdatafinal']		       = $dataFinal;
+			if (!empty($numeroEmpenho))            { $parameters['str_pnumeroempenho']     = $numeroEmpenho; }
+			if (!empty($notaFiscal))               { $parameters['str_pnotafiscal']		   = $notaFiscal; }
+			if (!empty($idClassificador))          { $parameters['str_pidclassificador']   = $idClassificador; }
+			
+			$parameters['pnomedatainicial']		    = $nomedatainicial;
+			$parameters['pnomedatafinal']		    = $nomedatafinal;		
+			
+			$parameters['str_pOrdenacao']      	   = $ordem;		
+			
+			
+			/*
+			
+			echo '<pre>';
+			var_dump ($parameters);
+			echo '</pre>';
+			exit();
+			
+*/
+			$report->Execute('adm', 'repTransferenciaPatri', $parameters);	
+			//$report->Execute('adm', 'repEmpenhoConferencia', $parameters);	
+			
+			//$this->addError('FIM');
+       }
+	   
+	
+	}
+}
+?>

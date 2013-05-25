@@ -45,6 +45,7 @@ class frmMotoristaEditar extends Form
             );
 		
         $this->SetFields($fields);
+        $this->carteiraHab->AddAttribute('maxlength',15);
 	   
 	   $this->SetFieldAttr('lkpPessoa','module','common');
        $this->SetFieldAttr('lkpPessoa','item','pessoa');

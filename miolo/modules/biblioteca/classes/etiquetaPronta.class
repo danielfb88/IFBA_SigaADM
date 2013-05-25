@@ -7,7 +7,7 @@
 
 class BusinessBibliotecaEtiquetaPronta extends Business
 {
-	var $pointsConversion = 28.35; /*10mm is 28.35 points*/
+	var $pointsConversion = 2.835; /*1mm is 2.835 points*/
 	var $currentX = 0;
 	var $currentY = 0;
 	var $currentEtiqueta = 1;
@@ -21,6 +21,60 @@ class BusinessBibliotecaEtiquetaPronta extends Business
 	var $pdf = null;
 
 	var $codes = array(
+		'A4255' => array(
+			'margin' => array(
+				'top' => /*25*//*12.54*/3,
+				'bottom' => /*25*//*12.5*/0,
+				'left' => /*20*/11.88,
+				'right' => /*20*//*11.18*/0,
+			),
+			'quantity' => array(
+				'horizontal' => 3,
+				'vertical' => 9,
+			),
+			'dimensions' => array( /*milimeters*/
+				'height' => 32.5,
+				'width' => 66.5,
+			),			
+		),
+		'A4256' => array(
+			'margin' => array(
+				/*'top' => 25,
+				'bottom' => 25,
+				'left' => 20,
+				'right' => 20,*/
+				'top' => 7.2,
+				'bottom' => 7.2,
+				'left' => 8.8,
+				'right' => 8.8,
+			),
+			'quantity' => array(
+				'horizontal' => 3,
+				'vertical' => 11,
+			),
+			'dimensions' => array( /*milimeters*/
+				//Jucele: Alterei as dimensões. Segundo o especificado pelo fabricante PIMACO
+				//deveria ser 'height' => 25.4, mas não estava ficando bom.
+				'height' => 26.4,
+				'width' => 66.1,
+			),			
+		),
+		6080 => array(
+			'margin' => array(
+				'top' => /*36*/11.34,
+				'bottom' => /*36*/11.34,
+				'left' => 14,
+				'right' => 14,
+			),
+			'quantity' => array(
+				'horizontal' => 3,
+				'vertical' => 10,
+			),
+			'dimensions' => array( /*milimeters*/
+				'height' => 25.40,
+				'width' => 66.70,
+			),
+		),
 		6180 => array(
 			'margin' => array(
 				'top' => 36,
@@ -33,7 +87,7 @@ class BusinessBibliotecaEtiquetaPronta extends Business
 				'vertical' => 10,
 			),
 			'dimensions' => array( /*milimeters*/
-				'height' => 22.40,
+				'height' => 25.40,
 				'width' => 66.70,
 			),
 		),
@@ -61,14 +115,14 @@ class BusinessBibliotecaEtiquetaPronta extends Business
 			'height' => 297,
 		),
 		'Letter' => array(
-			'width' => 215,
-			'height' => 279,
+			'width' => 215.9,
+			'height' => 279.4,
 		),
 	);
 
 	private function mmtoPoints($value)
 	{
-		return $value * $this->pointsConversion / 10;
+		return $value * $this->pointsConversion;
 	}
 
 	function SetData($code,$paper,$pdf)
@@ -85,11 +139,7 @@ class BusinessBibliotecaEtiquetaPronta extends Business
 		$this->dimensions = $this->codes[$code]['dimensions'];
 
 		foreach ($this->dimensions as $key => $value)
-			$this->dimensions[$key] = $this->mmtoPoints($value);
-
-      	$this->pdf->ezSetMargins($this->margin['top'],$this->margin['bottom']
-                              ,$this->margin['left'],$this->margin['right']);
-			
+			$this->dimensions[$key] = $this->mmtoPoints($value);		
 
 		$this->horizontalPadding = ($this->paper['width'] - 
 									($this->margin['left'] + $this->margin['right'] + 
@@ -100,6 +150,8 @@ class BusinessBibliotecaEtiquetaPronta extends Business
 							($this->margin['top'] + $this->margin['bottom'] + 
 							$this->quantity['vertical'] * $this->dimensions['height'])) 
 							/ ($this->quantity['vertical'] - 1);
+							
+		$this->verticalPadding = 0;
 
 		$this->currentX = $this->margin['left'];
 		$this->currentY =  $this->paper['height'] - $this->margin['top'];

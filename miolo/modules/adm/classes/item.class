@@ -331,7 +331,7 @@ class BusinessAdmItem extends Business
 		   $this->idrubrica,	
 	    );
 	  $ok = $this->Execute($sql->Update($values));
-	  var_dump($sql->command);
+	  //var_dump($sql->command);
 	  return $ok;
    	}
 

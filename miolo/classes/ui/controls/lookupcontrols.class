@@ -16,8 +16,10 @@ class MLookupField extends MTextField
     function __construct($name='',$value='',$label='',$hint='', 
                  $related='',$module='',$item='', $event='filler', $filter='')
     {   
-        parent::__construct($name,$value,$label,0,$hint);
-        $page = $this->page;
+		//var_dump($filter);
+	    parent::__construct($name,$value,$label,0,$hint);
+		
+		$page = $this->page;
         $page->AddScript('m_lookup.js');
         $baseModule = MUtil::NVL($this->manager->GetConf("mad.module"),"admin");
         $event = MUtil::NVL($event,'filler');
@@ -26,7 +28,12 @@ class MLookupField extends MTextField
         $page = $this->page;
         $form = ($this->form == NULL) ? $page->name : $this->form->name;
         $this->lookup_name = $lookup_name = "lookup_{$form}_{$this->name}";
+		//var_dump($baseModule,$module,$item,$event,$related,$filter, $this->lookup_name);
+		//exit();
+		
+		//var_dump ($filter);
     }
+	
     
     function setContext($baseModule='admin',$module='admin',$item='',$event='',$related='',$filter='')
     {
@@ -89,7 +96,6 @@ HERE;
 class MLookupTextField extends MLookupField
 {
     var $autocomplete;
-    
     function __construct($name='',$value='',$label='', 
                  $size=10,$hint='',$validator=null,$related='',
 	             $module='',$item='', $event='filler', $filter='', $autocomplete=true)
@@ -101,6 +107,25 @@ class MLookupTextField extends MLookupField
         $this->validator = is_string($validator) ? 
                                Validator::MASKValidator($validator) : $validator;
     }
+	
+	function setFieldsIni (&$form, $module , $item, $related)
+	{
+		//var_dump ($this->name);
+		//exit();
+		
+		$form->SetFieldAttr($this->name,'module', $module);
+		$form->SetFieldAttr($this->name,'item', $item); 
+		$form->SetFieldAttr($this->name,'related', $related.','.$this->name);
+		
+		//$this->grid->setFilter(true);
+		
+		//var_dump($related.','.$this->name);
+		//exit();
+		
+		if($filtro)
+			$form->SetFieldAttr($item,'filter',$filtro);			
+
+	}
     
    function GenerateInner()
    {

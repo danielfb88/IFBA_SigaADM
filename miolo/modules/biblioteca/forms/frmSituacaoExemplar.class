@@ -96,8 +96,8 @@ class frmSituacaoExemplar extends Form
 		}
 
 		$fields = Array (
-			new TextField('edtExemplar',$tombo,'Exemplar',20),
-			new TextField('edtEstado',$estado,'Estado',20),
+			new TextField('edtExemplar',$tombo,'Exemplar',100),
+			new TextField('edtEstado',$estado,'Estado',100),
 		);
 
 		if($estado == 'Emprestado'){
@@ -109,7 +109,8 @@ class frmSituacaoExemplar extends Form
 			if($idemprestimo <> null){
 				$emprestimo = $this->objEmprestimo->GetById($idemprestimo);
 				$usuario = $this->objUsuario->GetById($emprestimo->idusuario);
-				$nome = $usuario[0][2];
+				
+				$nome = $usuario[0][1];
 				
 				//
 				// Verifica se usuário é externo
@@ -128,8 +129,8 @@ class frmSituacaoExemplar extends Form
 				$data = '';
 			}
 
-			$fields[] = new TextField('edtUsuario',$nome,'Usuário',20);
-			$fields[] = new TextField('edtData',$data,'Previsão de Devolução',20);
+			$fields[] = new TextField('edtUsuario',$nome,'Usuário',100);
+			$fields[] = new TextField('edtData',$data,'Previsão de Devolução',100);
 		}
 
 		$this->objReserva = $MIOLO->GetBusiness($module, 'reserva');

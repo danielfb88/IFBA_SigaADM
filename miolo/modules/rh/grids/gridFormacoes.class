@@ -47,7 +47,7 @@ class gridFormacoes extends ObjectGrid
         $columns = array(
             new ObjectGridColumn('idHistFormacao','IdHistFormacao','left', false,'',false),
 			new ObjectGridColumn('formacao->formacao','Formação','left', false,'60%',true),
-            new ObjectGridColumn('dataFim','Data Fim','center', false,'10%',true),
+            new ObjectGridColumn('anoEncerramento','Ano de Encerramento','center', false,'10%',true),
 			new ObjectGridColumn('formacao->escolaridade','Escolaridade','left', false,'30%',true,$query->chunkResult())
         );
 			

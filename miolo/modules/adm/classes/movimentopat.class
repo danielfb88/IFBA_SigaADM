@@ -89,6 +89,17 @@ class BusinessAdmMovimentoPat extends Business
 		$cursor = $criteria->retrieveAsCursor();
 		return $cursor->getObject();
 	}
+
+	function GetMovimentoBaixaByIdItemPatrimonio($id)
+	{
+		$criteria = $this->getCriteria();
+		$criteria->addCriteria('idItemPatrimonio','=', "$id");
+		//$criteria->addCriteria('movimentopat.d','=', "'1'");
+		$criteria->addCriteria('tipoMovimento','=', "'3'");
+		$cursor = $criteria->retrieveAsCursor();
+		return $cursor->getObject();
+	}	
+
 }
 
 ?>

@@ -41,6 +41,10 @@ class frmUoAlmoxarifadoEstornoSaidaRequisicoesFind extends MForm
 			$grid,
 		);
         $this->setFields($fields);
+        $validators = array(
+            new MIntegerValidator('idRequisicao','Número'),
+        );
+        $this->SetValidators($validators);
         $this->defaultButton = false;
     }
  }

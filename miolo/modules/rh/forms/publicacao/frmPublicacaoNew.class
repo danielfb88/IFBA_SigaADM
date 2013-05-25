@@ -25,6 +25,8 @@ class frmPublicacaoNew extends Form
     {
         $this->Form('Incluir Nova Publicação');
         $this->EventHandler();
+        // Adiciona script para criação de máscaras.
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../mask.js'));
     }
 
     function CreateFields()
@@ -49,6 +51,12 @@ class frmPublicacaoNew extends Form
 
         $this->SetFields($fields);
         
+        	$this->numero->AddAttribute('maxlength','20');
+         $this->autoridade->AddAttribute('maxlength','20');
+         $this->obs->AddAttribute('maxlength','500');
+         $this->data->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+         $this->datado->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+        
 		$query = $this->manager->GetBusiness('rh','diplomalegal')->ListAll();
 		
 	    $this->SetFieldAttr('idDiplomaLegal','options',$query->chunkResult()); 
@@ -60,7 +68,7 @@ class frmPublicacaoNew extends Form
 
 		$validators = array(
            new MDateDMYValidator('data','','required'),
-	   new MDateDMYValidator('datado','','required'),
+	   	  new MDateDMYValidator('datado','','required'),
            new MRequiredValidator('numero'),
 		);
        $this->SetValidators($validators);
@@ -68,24 +76,29 @@ class frmPublicacaoNew extends Form
 
     function btnNew_click()
     {
-       global $MIOLO, $module;
-
+        global $MIOLO, $module;
 
         $data = $this->GetData();
-        $publicacao = $this->manager->GetBusiness('rh','publicacao');
-	$data->numero = trim($data->numero);
-	$publicacao->SetData($data);
-	if(!$data->numero)
-	{
-		$this->addError('Informe o número da publicação');
-	}
-	else
-	{
-            		if ( $this->fromLookup )
-            		{
-                		$nameForm = $this->getFormValue('nameForm');
-                		$go = $this->manager->getActionUrl('common','lookup','',array('name'=>$nameForm,'lmodule'=>'rh','item'=>'publicacao','event'=>'filler','fvalue'=>'','filter'=>$publicacao->numero));
-            		}
+		  $publicacao = $this->manager->GetBusiness('rh','publicacao');
+		  $data->numero = trim($data->numero);
+		  $publicacao->SetData($data);
+		  
+		  // Retirando os caracteres especiais. :-)
+		$caracteres = array("#","·","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->autoridade = str_replace($caracteres,"",$data->autoridade);
+		  
+		  
+		  if(!$data->numero)
+			{
+				$this->addError('Informe o número da publicação');
+			}
+			else
+			{
+      		if ( $this->fromLookup )
+      		{
+          		$nameForm = $this->getFormValue('nameForm');
+          		$go = $this->manager->getActionUrl('common','lookup','',array('name'=>$nameForm,'lmodule'=>'rh','item'=>'publicacao','event'=>'filler','fvalue'=>'','filter'=>$publicacao->numero));
+      		}
             		
 			try	
         		{

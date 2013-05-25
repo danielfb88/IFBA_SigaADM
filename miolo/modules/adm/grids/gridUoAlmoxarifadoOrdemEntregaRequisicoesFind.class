@@ -27,9 +27,19 @@ class gridUoAlmoxarifadoOrdemEntregaRequisicoesFind extends MObjectGrid
     {
         global $MIOLO, $page;
         $this->uoalmoxarifado = $objUo;
+		
+		//var_dump ($this->uoalmoxarifado->idUO);
+		
+		
 		$cf = new MCurrencyFormatter();
         $this->setTitle('Resultados encontrados');
         $href = $MIOLO->getActionURL('adm','main:uoalmoxarifado',$this->uoalmoxarifado->idUo,array('form'=>'ordementrega','idOrdemEntrega'=>'#0#'));
+		
+		//var_dump ($href);
+		//var_dump ($this->uoalmoxarifado->idUo);
+		
+		//$idUOExec = $this->uoalmoxarifado->idUo;
+		
         $columns = array(
             new MObjectGridColumn('idOrdemEntrega','Número Ordem','','','',false),
             new MObjectGridHyperlink('numero','Número Ordem',$href,'8%'),

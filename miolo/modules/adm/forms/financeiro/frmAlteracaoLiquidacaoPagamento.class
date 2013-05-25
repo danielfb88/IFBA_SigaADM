@@ -31,6 +31,8 @@ class frmAlteracaoLiquidacaoPagamento extends Form
 		$this->page->SetAction($MIOLO->GetActionURL($module,$action));
 		$this->EventHandler();
 		$this->defaultButton = false;
+		// Adiciona script para criação de máscaras.
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
     }
 
 	function CreateFields()
@@ -331,7 +333,42 @@ class frmAlteracaoLiquidacaoPagamento extends Form
 		$this->AddField(new HiddenField('item_aux',$item_aux));
 		$this->AddField(new HiddenField('notas',substr($notas, 1, -1)));
 		$this->AddField(new HiddenField('idFornecedor', $idFornecedor));
-	}
+		
+		$this->dataLiquidacao->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+		$this->dataOB->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+		$this->dataGPS->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+		$this->valorIRRF->addAttribute('onKeyUp','makeMask(this, \'#####\');');
+
+		$this->valorIRRF->AddAttribute('maxlength',14);
+		$this->valorINSS->AddAttribute('maxlength',14);	
+		$this->valorISS->AddAttribute('maxlength',14);	
+		$this->dataLiquidacao->AddAttribute('maxlength',14);	
+		$this->DARF->AddAttribute('maxlength',14);	
+		$this->dataOB->AddAttribute('maxlength',14);
+		$this->dataGPS->AddAttribute('maxlength',14);
+		$this->GPS->AddAttribute('maxlength',14);
+		$this->valor->AddAttribute('maxlength',10);
+		$this->obs->AddAttribute('maxlength',200);
+		    
+		$validators = array(
+			new RequiredValidator('valorIRRF'),
+			new RequiredValidator('valorINSS'),
+		  	new RequiredValidator('valorISS'),
+		  	new RequiredValidator('ordemBancaria'),
+		  	new RequiredValidator('DARF'),
+		  	new RequiredValidator('GPS'),
+		  	new RequiredValidator('valor'),
+		  	new RequiredValidator('dataLiquidacao'),
+		  	new RequiredValidator('dataOB'),
+		  	new RequiredValidator('dataGPS'),
+	
+		  	new MDATEDMYValidator('dataOB'),
+		  	new MDATEDMYValidator('dataGPS'),
+		  	new MDATEDMYValidator('dataLiquidacao'),
+		);	
+		
+		$this->SetValidators($validators);
+    }
 
 	function btnLiquidacaoPagamentoConfirmar_click()
 	{
@@ -382,12 +419,7 @@ class frmAlteracaoLiquidacaoPagamento extends Form
 					}
 				}
 			}
-            /*
-        	$liquidacao = $MIOLO->GetBusiness($module, 'liquidacao');
-			$objLiquidacao = $liquidacao->getById($idLiquidacao);
-			$pagamento = $MIOLO->GetBusiness($module, 'ordembancaria');
-		    $objPagamento = $pagamento->getById($idOrdemBancaria);
-              */
+			
             $objEmpenho->alteraLiquidacaoPagamento($idLiquidacao,$idOrdemBancaria, $notas, $valorIRRF, $valorINSS, $valorISS, $dataLiquidacao, $obs, $numeroOrdemBancaria, $dataOrdemBancaria, $valorOB, $descontos, $DARF, $GPS, $dataGPS);
 
    			$action_ok = $MIOLO->GetActionURL($module, $action);
@@ -395,9 +427,9 @@ class frmAlteracaoLiquidacaoPagamento extends Form
  			$MIOLO->Information("Liquidação/Pagamento alterados com sucesso<BR><BR><BR>&nbsp;");
 		}
 		catch (Exception $e)
-		{
-			$MIOLO->Error($e->getMessage(), $MIOLO->GetActionURL($module, $action, '', array()) );
-		}
+			{
+				$this->addError($e->getMessage());
+			}
 
 	}
 

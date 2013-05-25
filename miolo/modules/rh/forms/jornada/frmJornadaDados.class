@@ -53,7 +53,7 @@ class frmJornadaDados extends Form
 		
         $this->SetFields($fields);
 		
-        $idjornada->AddAttribute('maxlength','2');
+        $idjornada->AddAttribute('maxlength','5');
         $descricao->AddAttribute('maxlength','20');
 
         $validators = array(
@@ -91,10 +91,13 @@ class frmJornadaDados extends Form
 
 	public function btnSalvar_click()
 	{
-            global $MIOLO;    
-
-		
+      global $MIOLO;    
 		$data = $this->GetData();
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
 		if(strlen(trim($data->descricao)) < '5')
 		{
 			$this->addError('Informe a Descrição da jornada');

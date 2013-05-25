@@ -43,8 +43,7 @@ class frmMarc extends Form
      
     function CreateFields()
     {
-        global $MIOLO, $module, $item;
-
+        global $MIOLO, $module, $item;		
 
         $this->objObra = $MIOLO->GetBusiness($module,'obra');
         $this->objAutor = $MIOLO->GetBusiness($module,'autor');
@@ -76,8 +75,7 @@ class frmMarc extends Form
         //material[$i] = e.tag, m.ocorrencia, m.subcampo, m.linha, m.conteudo
 
         for($i = 0; $i <= count($material); $i++)
-        {
-             
+        {            
             if( ($material[$i][0] != $material[$i-1][0]) and ($i > 0) )//mudou a tag e ocorrencia e não é a primeira
             {
                  
@@ -119,12 +117,11 @@ class frmMarc extends Form
                     $ind1 = $this->objObra->GetIndicador1($item,97);
                     $texto_ind = "$ind1&nbsp;"."#";
                 }
-
-                 
-                if($material[$i-1][0] == "090")
+	                
+                /*if($material[$i-1][0] == "090")
                 {
                     $texto .= ' $c'." $edicao";
-                }
+                }*/
                 $linhas[] = array($material[$i-1][0], ($texto_ind), ($texto));
                 sort($linhas); //Ordenar o array
                 $texto = '';
@@ -190,6 +187,12 @@ class frmMarc extends Form
             }
              
             //dados dos indicadores
+			
+			/*echo '<pre>';
+			echo 'tag '.$material[$i][0].'<br>';
+			var_dump($indicadores);
+			echo '</pre>';*/
+			
             if($texto_ind == '')
             {
                 $texto_ind = $this->PreparaIndicadores($material[$i][0], $indicadores, $material[$i][1]);
@@ -204,6 +207,13 @@ class frmMarc extends Form
 
              
         }
+		
+		//Arrumando os indicadores
+		foreach($linhas as $lkey => $lvalue)
+		{
+			if($lvalue[0] > 8 && empty($lvalue[1]))
+				$linhas[$lkey][1] = '#&nbsp;#';
+		}
 
         $tabela = new MTableRaw('', $linhas);
         $tabela->SetAlternate(true);
@@ -225,13 +235,14 @@ class frmMarc extends Form
             {
                 if( ($i[0] == $tag) and ($i[1] == $ocorrencia) and ($i[2] == '1') )
                 {
+				
                     if(trim($i[3]) != null) //se indicador for = ' ', transforma para #
                     {
                         $texto_ind = ($i[3]);
                     }
                     else
                     {
-                        $texto_ind = ' ';
+                       $texto_ind = ' ';
                     }
                     break;
                 }
@@ -258,6 +269,11 @@ class frmMarc extends Form
                 }
             }
         }
+		
+		if(strlen($texto_ind) == 1)
+			$texto_ind = $texto_ind . '&nbsp;#';
+		else if(strlen($texto_ind) >= 1 && (!is_numeric($texto_ind[0]) && $texto_ind[0] != '#'))
+			$texto_ind = '#&nbsp;'.$texto_ind;
 
         return $texto_ind;
     }

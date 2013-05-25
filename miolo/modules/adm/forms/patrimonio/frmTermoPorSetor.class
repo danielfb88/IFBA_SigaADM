@@ -32,8 +32,13 @@ class frmTermoPorSetor extends MForm
 	function CreateFields()
     {
 		global $MIOLO, $module, $action, $item, $theme;
+		
+
+		//$lkpsetor = new MLookupTextField('Setor','','Sigla do Setor',10);
+		
 		$fields = array(
 			new MLookupTextField('setor','','Nome Setor',20),
+			$lkpsetor,
 			new MHiddenField('idSetor'),
 			new MHiddenField('flagTermo','frmTermoSetor'),
                         new MSeparator('Relatório por Dependência'),
@@ -43,17 +48,22 @@ class frmTermoPorSetor extends MForm
 		
 
 		$this->SetFields($fields);
+		
+		//$lkpsetor->setFieldsIni ($this, 'common', 'setor_patri', 'idSetor');
+		
 		$this->SetFieldAttr('setor','module','common');
-		$this->SetFieldAttr('setor','item','setor');
+		$this->SetFieldAttr('setor','item','setor_patri');
 		$this->SetFieldAttr('setor','related','idSetor,setor');
-                $this->SetFieldAttr('dependencia','module',$module);
-                $this->SetFieldAttr('dependencia','item','dependencia');
-                $this->SetFieldAttr('dependencia','related','idDependencia,dependencia');
-                $this->SetFieldAttr('dependencia','filter','dependencia,idSetor,setor');
-                $this->SetFieldAttr('dependencia','readonly',true);
+		
+        $this->SetFieldAttr('dependencia','module',$module);
+        $this->SetFieldAttr('dependencia','item','dependencia');
+        $this->SetFieldAttr('dependencia','related','idDependencia,dependencia');
+        $this->SetFieldAttr('dependencia','filter','dependencia,idSetor,setor');
+        $this->SetFieldAttr('dependencia','readonly',true);
+				
 
 		$buttons = array(
-                        new MButton('btnPost','Gerar Termo Por Setor'),
+                        new MButton('btnPost','Gerar Termo Por Setor', 'PDF'),
 			new MButton('btnSelDependencia','Selecionar Dependência'),
 			new MButton('btnGerarRelDependencia','Gerar Termo Por Dependência'),
 		);
@@ -72,17 +82,27 @@ class frmTermoPorSetor extends MForm
 		}
 		else
 		{
-        	$report = new MJasperReport('sigaept'); 
-        	$parameters['SUBREPORT_DIR']	= $MIOLO->GetConf('home.modules');
-        	$parameters['int_pIdUsuario']	= $MIOLO->login->idkey;
-        	$parameters['int_pIdSetor']	= Form::GetFormValue('idSetor'); 
-        	$parameters['pURL']		= $MIOLO->GetConf('home.url');
-        	$report->Execute('adm', 'repTermoPorSetor', $parameters);
+        	$aux = $MIOLO->getBusiness('adm', 'executoralmox');
+			$sql = new sql('idresponsavel', 'cm_setor', 'idsetor = ' . $setor);			
+			$query = $aux->Query($sql);
+			if ( empty($query->result[0][0]) )
+			{
+				$this->AddError('O responsável pelo setor ainda não registrado no sistema!');
+			}
+			else
+			{
+				$report = new MJasperReport('sigaept'); 
+				$parameters['SUBREPORT_DIR']	= $MIOLO->GetConf('home.modules');
+				$parameters['int_pIdUsuario']	= $MIOLO->login->idkey;
+				$parameters['int_pIdSetor']	= Form::GetFormValue('idSetor'); 
+				$parameters['pURL']		= $MIOLO->GetConf('home.url');
+				$report->Execute('adm', 'repTermoPorSetor', $parameters);
+			}
 		}
 	}
 
 	function btnSelDependencia_click()
-    	{	
+    {	
 		if (!Form::GetFormValue('idSetor')){        
 			$this->addInfo("Selecione um setor para selecionar a dependência!");
 		}else{
@@ -93,25 +113,53 @@ class frmTermoPorSetor extends MForm
 	}
 
 	function btnGerarRelDependencia_click()
-    	{
-	if (!Form::GetFormValue('idDependencia')){
-		$this->addInfo("Selecione uma dependência!");
-		$this->setButtonAttr('btnSelDependencia','visible',false);
-		$this->setButtonAttr('btnGerarRelDependencia','visible',true);
-		$this->SetFieldAttr('dependencia','readonly',false);
-	}else{
-        global $MIOLO, $module, $item;
+    {
+			global $MIOLO;
+			$setor = Form::GetFieldValue('idSetor');
+			if (!Form::GetFormValue('idDependencia'))
+			{
+				$this->addInfo("Selecione uma dependência!");
+				$this->setButtonAttr('btnSelDependencia','visible',false);
+				$this->setButtonAttr('btnGerarRelDependencia','visible',true);
+				$this->SetFieldAttr('dependencia','readonly',false);
+			}
+			else
+			{
+				
+				$aux = $MIOLO->getBusiness('adm', 'executoralmox');
+				$sql = new sql('idresponsavel', 'cm_setor', 'idsetor = ' . $setor);			
+				$query = $aux->Query($sql);
+				if ( empty($query->result[0][0]) )
+				{
+					$this->AddError('O responsável pelo setor ainda não registrado no sistema!');
+				}
+				else 
+				{
+					$sql = new sql('count(*) AS NumItens', 'ad_itempatrimonio', 
+					   'idsetor = ' . $setor . ' AND idDependencia = ' . Form::GetFormValue('idDependencia'));			
+					   
+					$query = $aux->Query($sql);
+					var_dump($query->result[0][0]);
+					if ( $query->result[0][0] == 0 )
+					{
+						$this->AddError('Nenhum bem alocado à dependência física escolhida!');
+					}
+					else
+					{				
+						global $MIOLO, $module, $item;
 
-        $report = new MJasperReport('sigaept');
-        $parameters['SUBREPORT_DIR']    = $MIOLO->GetConf('home.modules');
-        $parameters['int_pIdUsuario']   = $MIOLO->login->idkey;
-        $parameters['int_pIdSetor']     = Form::GetFormValue('idSetor');
-	$parameters['int_pIdDependencia']       = Form::GetFormValue('idDependencia');
+						$report = new MJasperReport('sigaept');
+						$parameters['SUBREPORT_DIR']    = $MIOLO->GetConf('home.modules');
+						$parameters['int_pIdUsuario']   = $MIOLO->login->idkey;
+						$parameters['int_pIdSetor']     = Form::GetFormValue('idSetor');
+						$parameters['int_pIdDependencia']       = Form::GetFormValue('idDependencia');
 
-        $parameters['pURL']             = $MIOLO->GetConf('home.url');                        
-	$report->Execute('adm', 'repTermoPorDependencia', $parameters);
-        }
-        }
+						$parameters['pURL']             = $MIOLO->GetConf('home.url');                        
+						$report->Execute('adm', 'repTermoPorDependencia', $parameters);
+					}
+				}				
+			}
+    }
 
 }
 ?>

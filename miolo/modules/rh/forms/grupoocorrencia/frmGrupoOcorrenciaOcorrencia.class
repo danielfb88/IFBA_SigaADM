@@ -62,11 +62,19 @@ class frmGrupoOcorrenciaOcorrencia extends Form
 			new FormButton('btnExcluir','Excluir')
             );
 	$this->SetButtons($buttons);
+	
+	$this->idOcorrencia->AddAttribute('maxlength','4');
+	$this->idSituacao->AddAttribute('maxlength','4');
+	$this->mnemonico->AddAttribute('maxlength','3');
+	$this->prazoMaximo->AddAttribute('maxlength','5');
+	$this->descricao->AddAttribute('maxlength','60');
+	
 	$validators = array(
-           new RequiredValidator('idOcorrencia'),
            new RequiredValidator('mnemonico'),
            new RequiredValidator('descricao'),
-		   new IntegerValidator('prazoMaximo')
+           
+           new IntegerValidator('idOcorrencia'),
+		     new IntegerValidator('prazoMaximo')
 		);
        $this->SetValidators($validators);
 
@@ -96,10 +104,19 @@ class frmGrupoOcorrenciaOcorrencia extends Form
 		$data->idSituacao = $this->GetFormValue('idSituacao');
 		$data->prazoMaximo = $this->GetFormValue('prazoMaximo');
 		$data->mnemonico = $this->GetFormValue('mnemonico');
-		$this->ocorrencia->SetData($data);
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+		$data->mnemonico = str_replace($caracteres,"",$data->mnemonico);
+		
 		if(trim($data->idOcorrencia) == '')
 		{
 			$this->addError('Informe o Código');
+		}
+		elseif(!is_numeric($data->idOcorrencia))
+		{
+			$this->addError('Informe valores numéricos para o campo Código');
 		}
 		elseif(trim($data->descricao) == '')
 		{
@@ -121,6 +138,7 @@ class frmGrupoOcorrenciaOcorrencia extends Form
 		{
 			try 
         		{
+        		$this->ocorrencia->SetData($data);
 				$this->ocorrencia->save();
             			$go = $MIOLO->GetActionURL('rh','main:grupoocorrencia',$this->ocorrencia->idGrupoOcorrencia, array('form'=>'ocorrencia'));
 				if ($update)

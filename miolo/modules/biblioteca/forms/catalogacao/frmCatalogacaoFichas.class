@@ -28,14 +28,17 @@ class frmCatalogacaoFichas extends MTabbedForm
 {
 	function __construct($idObra)
     {
+            
 		parent::__construct('Title: TabbedForm Tutorial');
         $this->SetPainterMethod('javascript'); 
         $this->width = '100%';
         $obra = $this->manager->getBusiness('biblioteca','obra', $idObra);
         //$obra->GetById($idObra);
 		$this->header = '<b>Categoria:&nbsp;</b>' . $obra->GetCategoria() . '&nbsp;&nbsp;&nbsp;' . '<b>Número da Obra:&nbsp;</b>' . $obra->numeroDaObra . '&nbsp;&nbsp;&nbsp;' . '<b>Título:&nbsp;</b>' . $obra->titulo;
-        $this->pagewidth = 140;
-        $this->pageheight = 350;
+        //$this->pagewidth = 140;
+        //$this->pageheight = 350;
+        $this->pagewidth = 200;
+        $this->pageheight = 550;
         
         // Botão 'fechar', direcionando para o handler biblioteca/main/catalogacao
 		$this->SetClose($this->manager->GetActionURL($module, 'main:catalogacao'));
@@ -57,9 +60,16 @@ class frmCatalogacaoFichas extends MTabbedForm
                 case '006'  : $s = '006'; break;
                 case '007'  : $s = '007'; break;
                 case '008'  : $s = '008'; break;
-                case 'Campos Variáveis'  : $s = 'Var'; break;
+                //case 'Campos Variáveis'  : $s = 'Var'; break;
             }
             $data = $fichas->getRowObject();
+            
+            if($subficha == 'Campos Variáveis')
+            {
+               $fichas->moveNext();
+               continue;
+            }
+            
             $data->idobra = $idObra;
             $form[$fichas->fields('idsubficha')] = $ui->getForm('biblioteca',"frmCatalogacaoFicha$s", $data, 'catalogacao');
             $this->AddPage($form[$fichas->fields('idsubficha')]);

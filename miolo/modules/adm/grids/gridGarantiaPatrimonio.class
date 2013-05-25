@@ -1,0 +1,182 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+
+
+<?
+global $MIOLO;
+$MIOLO->Uses('controls/linkpatrimonio.class','adm');
+
+class gridGarantiaPatrimonio extends MDataGrid
+{
+
+    /**
+     * Constructor
+     */
+    function __construct()
+    {
+        global $MIOLO, $self, $page, $state;
+		
+		$linkPatrimonio = new LinkPatrimonio('linkpatrimonio','%0%');
+		
+		//$linkPatrimonio->SetClose($MIOLO->GetActionURL('adm','main:conspatrimoniogarantia:find'));
+		$columns = array(
+		   new MDataGridColumn( 'idItemPatrimonio', 'Número', 'center', true, '5%' ),
+		   //new DataGridControl($linkPatrimonio,'idItemPatrimonio','Número do patrimônio','left', false,'5%'),
+		   new MDataGridColumn( 'numeroempenho', 'Empenho','center', true, '10%' ),
+		   new MDataGridColumn( 'notafiscal', 'Nota Fiscal','center', true, '5%' ),	   
+		  // new MDataGridColumn( 'descricao', 'Descrição', 'center', false, '65%' ),
+		   new DataGridControl($linkPatrimonio,'patrimonio','Descrição','left', false,'65%'),
+		   new MDataGridColumn( 'siglasetor', 'Setor','center', true, '5%' ),
+		   //new MDataGridColumn( 'codtipogarantia', 'Tipo da Garantia','center', true, '10%' ),
+		   new MDataGridColumn( 'garantia', 'Garantia','center', true, '10%' ),
+		);
+	
+		$garantiaIni       = Form::GetFormValue('garantiaIni');
+		$garantiaFim       = Form::GetFormValue('garantiaFim');
+		
+		$siglaSetor        = trim(Form::GetFormValue('siglaSetor')); 
+		$numeroempenho     = trim(Form::GetFormValue('numeroempenho')); 
+		$descricao         = Form::GetFormValue('descricao');
+		$idclassificador   = trim(Form::GetFormValue('idclassificador'));
+	    $patriInicial      = Form::GetFormValue('patriInicial');
+		$patriFinal        = Form::GetFormValue('patriFinal');
+		
+		
+		
+		$tipogarantia      = Form::GetFormValue('tipogarantia');		
+		$ordenacao     	   = Form::GetFormValue('ordenacao');
+		
+		
+		if (empty($ordenacao)) { $ordenacao = 'id'; }
+		
+		if ($ordenacao == 'id') { $ordenacao = 'idItemPatrimonio'; }
+		else if ($ordenacao == 'nf_id') { $ordenacao = 'NotaFiscal, idItemPatrimonio'; }
+		else if ($ordenacao == 'nf_desc') { $ordenacao = 'NotaFiscal, descricao, idItemPatrimonio'; }
+		else if ($ordenacao == 'desc') { $ordenacao = 'descricao, idItemPatrimonio'; }
+		else if ($ordenacao == 'garantia') { $ordenacao = 'OrdGarantia, idItemPatrimonio'; }
+		
+		$sql = new sql("iditempatrimonio, siglasetor, notafiscal, numeroempenho, descricao, codtipogarantia, garantia AS OrdGarantia, " .
+		" CASE WHEN Garantia is null then NULL else TO_CHAR(garantia,'DD/MM/YYYY') END AS garantia ",
+		                'vad_patrimoniogarantia', //$tables
+						'', // where
+						$ordenacao
+						);
+						
+						
+						
+		//($columns,$tables,$where,$orderBy,$groupBy,$having);
+		
+		//echo('<pre>');
+			//var_dump ($sql);  
+		//echo('</pre>');
+						
+		$sql->where .= 'ativo = \'S\'';
+		
+		//var_dump($idclassificador);
+
+		// SE TODOS OS PARÂMETROS FORAM IGNORADOS ...
+		if (  empty($siglaSetor) AND empty($garantiaIni) AND empty($garantiaFim) AND 		
+			  empty($numeroempenho) AND empty($descricao) AND  empty($idclassificador) AND
+	          empty($patriInicial) AND empty($patriFinal) 
+		   )
+		{
+				$sql->where .= ' AND idItemPatrimonio = 0';
+				
+				//echo '<pre>'; var_dump ('TODOS OS PARÂMETROS FORAM IGNORADOS ...'); echo '</pre>'; 
+		        //exit();
+				//return $sql->retrieveAsQuery();
+		}
+		else
+		{
+			if(!empty($siglaSetor)) {
+				$siglaSetor = '\'%' . strtoupper(TRIM($siglaSetor)) . '%\'';
+				$sql->where .= ' AND upper(siglaSetor) iLIKE ' . $siglaSetor;
+			} 		
+		
+			if (!empty($garantiaIni)) { $sql->where .= ' AND Garantia >= \'' . $garantiaIni . '\'';  }
+			
+			if (!empty($garantiaFim)) { $sql->where .= ' AND Garantia <= \'' . $garantiaFim . '\''; }
+			
+			if(!empty($patriInicial)) { $sql->where .= ' AND idItemPatrimonio >= ' . $patriInicial; }
+				
+			if(!empty($patriFinal))   {	$sql->where .= ' AND idItemPatrimonio <= ' . $patriFinal;  }
+			
+			if(!empty($numeroempenho)) {
+				$numeroempenho = '\'' . strtoupper(TRIM($numeroempenho)) . '\''; 
+				$sql->where .= ' AND numeroempenho = ' . $numeroempenho;
+			}
+			
+			if(!empty($descricao)) {
+				$descricao = '\'%' . strtoupper(TRIM($descricao)) . '%\'';
+				$sql->where .= ' AND upper(descricao) iLIKE ' . $descricao;
+			}
+				
+			
+			if(!empty($idclassificador)) {
+				$idclassificador = '\'%' . strtoupper(TRIM($idclassificador)) . '%\'';
+				$sql->where .= ' AND upper(idClassificador) iLIKE ' . $idclassificador;
+			}		
+			
+			
+			if (!empty($tipogarantia)) {
+				if ($tipogarantia == 'UNDEF') { $sql->where .= ' AND IdTipoGarantia = 0'; }
+				else if ($tipogarantia == 'COM_GARANTIA') { $sql->where .= ' AND IdTipoGarantia BETWEEN 1 AND 5'; }
+				else if ($tipogarantia == 'SEM_GARANTIA') { $sql->where .= ' AND IdTipoGarantia = 6'; }
+				else if ($tipogarantia == 'ESPECIFICO') { $sql->where .= ' AND IdTipoGarantia = 4'; }
+				
+			}
+
+		}
+			
+		//echo('<pre>');
+		
+		//var_dump($_POST);
+		///var_dump ($sql->where);  
+		//var_dump ($sql);  
+		//echo('</pre>');
+		//exit();
+		
+		$href_grid = $MIOLO->GetActionURL('adm',$self);	
+	
+		$aux = $MIOLO->getBusiness('adm', 'executoralmox');
+		$query = $aux->Query($sql);	
+		
+        parent::__construct($query, $columns, $href_grid, 30, 0, 'gridGarantiaPatrimonio');
+		//parent::__construct(NULL, $columns, $href, $pageLength, $index, $name, $useSelecteds);
+		
+		//var_dump ('DEPOIS CONSTRUTOR');
+		
+		//var_dump($this->name);
+		
+		$this->SetTitle( 'Patrimônios versus garantias' );
+		$this->SetWidth( '100%' );
+		//$this->SetClose( $MIOLO->GetActionURL('adm','main:itempatrimonio:find') );
+		//$this->AddActionSelect();
+
+		$this->SetLinkType('hyperlink');
+		
+	   //var_dump ('FIM');
+		
+    }
+	
+}
+?>

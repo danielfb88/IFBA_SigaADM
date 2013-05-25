@@ -1,0 +1,100 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+
+
+<?
+$MIOLO->Uses('controls/linkpatrimonio.class','adm');
+
+class gridPatrimonioEspecifico extends MDataGrid
+{
+
+    /**
+     * Constructor
+     */
+    function __construct()
+    {
+        global $MIOLO, $self;
+		
+		$linkPatrimonio = new LinkPatrimonio('linkpatrimonio','%0%');
+		
+		//$linkPatrimonio->SetClose($MIOLO->GetActionURL('adm','main:itempatrimonio:find'));
+		$columns = array(
+		   new MDataGridColumn( 'idItemPatrimonio', 'Número', 'center', true, '8%' ),
+		   new MDataGridColumn( 'numeroempenho', 'Empenho','center', true, '10%' ),
+		   new MDataGridColumn( 'notafiscal', 'Nota Fiscal','center', true, '8%' ),	   
+		   //new MDataGridColumn( 'descricao', 'Descrição', 'center', false, '55%' ),
+		   new DataGridControl($linkPatrimonio,'patrimonio','Descrição completa','left', false,'64%'),
+		   new MDataGridColumn( 'SiglaSetor', 'Setor','center', true, '10%' ),
+		);
+	
+		//$datagrid = new MDataGrid( $query, $columns, $href_datagrid, 20 );
+        
+		//$ = Form::GetFormValue('setores');
+		
+		//echo('<pre>');
+		//var_dump ($_POST);	
+		//var_dump ($sql->where);  
+		//var_dump ($sql);  
+		//echo('</pre>');
+			
+		$idPatrimonioEspecifico = Form::GetFormValue('idPatrimonioEspecifico');
+		
+		$sql = new sql("IdItemPatrimonio, NumeroEmpenho, NotaFiscal, Descricao, SiglaSetor",
+		                'Vad_Patrimonio', //$tables
+						"Ativo = 'S'", // where
+						$ordenacao, //ordenacao
+						'' //group by
+						);
+						
+						
+		// SE idPatrimonioEspecifico IGNORADO ...
+		if  (  empty($idPatrimonioEspecifico) ) { $sql->where .= ' AND idItemPatrimonio = 0'; }
+		else { $sql->where .= ' AND idItemPatrimonio = ' . $idPatrimonioEspecifico; } 
+		  
+		$href_grid = $MIOLO->GetActionURL('adm',$self);	
+	
+		$aux = $MIOLO->getBusiness('adm', 'executoralmox');
+		$query = $aux->Query($sql);	
+		
+        parent::__construct($query, $columns, $href_grid,80, 0, 'gridItensPatrimonioSelection');
+		//parent::__construct(NULL, $columns, $href, $pageLength, $index, $name, $useSelecteds);
+		
+		//var_dump($this->name);
+		$this->SetClose( $MIOLO->GetActionURL('adm','main:itempatrimonio:find') );
+		$this->AddActionSelect();
+
+		$this->SetLinkType('hyperlink');		
+	
+		
+    }
+	
+	/*function GenerateFooter()
+	{
+		if (!$this->data) 
+			$footer[] = $this->GenerateEmptyMsg();
+		$footer[] = new Separator();
+		$footer[] = $this->GenerateControls();
+		return $footer;
+	}*/
+	
+}
+?>

@@ -29,10 +29,11 @@ class frmTipoManutencaoNew extends MForm
     public function CreateFields()
     {
 
-		$fields = new MTextField('tipoManutencao','','Tipo de Manutencao',30);
+		$fields = new MTextField('tipoManutencao','','Tipo de Manutencao',30, 'Máx. 30 caracteres');
 		$buttons = new MButton('btnEnviar');
 		$this->SetFields($fields);
 		$this->SetButtons($buttons);
+		$this->tipoManutencao->addAttribute('maxlength',30);
 		$validators = array (
 			new RequiredValidator('tipoManutencao'),
 		);
@@ -50,9 +51,13 @@ class frmTipoManutencaoNew extends MForm
 		{
 			$this->manager->Error('Favor preencher corretamente o campo Tipo de Manutencao',$this->manager->GetActionURL('adm','main:tipomanutencao:new'));
 		}
-		if ($tipoM->result)	
+		elseif ($tipoM->result)	
 		{
 			$this->addError('Já existe registro de um tipo de manutenção com este mesmo nome');
+		}
+		elseif(!preg_match("/^[A-Z|0-9]/" ,$objTipoManutencao->tipoManutencao))
+		{
+			$this->addError('Campo nome inválido');
 		}
 		else
 		{

@@ -33,10 +33,12 @@ class frmSistemaNew extends MForm
 	{
 		$fields = array(
 			//new MTextField('idSistema','','Código','4','Máx. 4 algarismos'),
-			new MTextField('sistema','','Sistema','50','Máx. 50 caracteres'),
+			new MTextField('sistema','','Sistema','30','Máx. 30 caracteres'),
 		);
 		
 		$this->SetFields($fields);
+
+		$this->sistema->addAttribute('maxlength',30);
 		
 		$buttons = array(
 			new MButton('btnNew', 'Incluir Sistema')
@@ -60,17 +62,18 @@ class frmSistemaNew extends MForm
 		{
 			$this->AddError('Informe um nome válido para o sistema.');
 		}
+
 		else
-		{
+		{			
 			$data = $this->GetData();
 			$sistema = $this->manager->GetBusiness('common','sistema');
 			$sistema->SetData($data);
 
-			$sistema->sistema = trim($sistema->sistema);
-
-			if($sistema->isPersistent())
+			$sistema->sistema = trim($sistema->sistema);	
+			
+			if($sistema->findByNome($sistema->sistema))
 			{
-				$this->addError('Código de sistema já existente.');
+				$this->addError('Sistema já cadastrado.');
 			}
 			else
 			{
@@ -79,7 +82,7 @@ class frmSistemaNew extends MForm
 					$sistema->save();
 					$this->manager->information('Sistema cadastrado com sucesso.',$this->manager->getActionUrl('common','main:sistema:find'));
 				}
-				catch ( Exception $e )
+				catch ( Exeption $e )
 				{
 					$this->addError($e->getMessage());
 				}

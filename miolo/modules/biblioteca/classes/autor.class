@@ -1,38 +1,38 @@
 <?php
 /* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
  *
-* Este arquivo é parte do programa SigaEPT
-*
-* O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
-* termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
-* na versão 2 da Licença.
-*
-* Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
-* uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
-* Pública Geral GNU/GPL em português para maiores detalhes.
-*
-* Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
-* junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
-* www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
-* St, Fifth Floor, Boston, MA 02110-1301, USA
-*/
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
 ?>
 <?php
 /**
- * @package SIGA
- * @subpackage Biblioteca
- * @author SETEC/MEC
- */
+* @package SIGA
+* @subpackage Biblioteca
+* @author SETEC/MEC
+*/
 
 class BusinessBibliotecaAutor extends Business
 {
 	var $idautor;
 	var $nome;
-	var $cutter;
+        var $cutter;
 
 	function BusinessBibliotecaAutor($data = null)
 	{
-		$this->Business('sigaept', $data);
+       $this->Business('sigaept', $data);
 	}
 
 	function GetData()
@@ -40,7 +40,7 @@ class BusinessBibliotecaAutor extends Business
 		$data = new FormData();
 		$data->idautor = $this->idautor;
 		$data->nome = $this->nome;
-		$data->cutter  = $this->cutter;
+	        $data->cutter  = $this->cutter;
 		return $data;
 	}
 
@@ -53,738 +53,697 @@ class BusinessBibliotecaAutor extends Business
 	}
 
 
-
+    
 	function GetByCodigo($idautor)
 	{
-		global $MIOLO,$module;
+        global $MIOLO,$module;
+        
+        $etiqueta = $MIOLO->GetBusiness('biblioteca','etiqueta');
+        $etiqueta->GetByTag('100');
 
-		$etiqueta = $MIOLO->GetBusiness('biblioteca','etiqueta');
-		$etiqueta->GetByTag('100');
+        //Select a.idautor,a.conteudo as sobrenome,b.conteudo as prenome , c.conteudo as cutter from bt_autor a, bt_autor b, bt_autor c WHERE ((a.indicador = 1 and a.subcampo = 'a') OR (b.indicador = 0 and b.subcampo = 'a') OR (c.idetiqueta = 53 and b.subcampo = 'b')) AND a.idautor =1 and b.idautor= 1 And C.idautor  = 1
 
-		//Select a.idautor,a.conteudo as sobrenome,b.conteudo as prenome , c.conteudo as cutter from bt_autor a, bt_autor b, bt_autor c WHERE ((a.indicador = 1 and a.subcampo = 'a') OR (b.indicador = 0 and b.subcampo = 'a') OR (c.idetiqueta = 53 and b.subcampo = 'b')) AND a.idautor =1 and b.idautor= 1 And C.idautor  = 1
+                /*
+                Select   distinct  a.idautor,
+                CASE
+                        WHEN a.subcampo = 'a'  THEN a.conteudo ELSE null END as sobrenome,
+                        case  b.subcampo = 'a' WHEN b.conteudo <> null THEN b.conteudo ELSE null END as prenome,
+                        CASE  WHEN c.idetiqueta = 53 and c.subcampo = 'b'  THEN c.conteudo ELSE null END as cutter
 
-		/*
-		 Select   distinct  a.idautor,
-		CASE
-		WHEN a.subcampo = 'a'  THEN a.conteudo ELSE null END as sobrenome,
-		case  b.subcampo = 'a' WHEN b.conteudo <> null THEN b.conteudo ELSE null END as prenome,
-		CASE  WHEN c.idetiqueta = 53 and c.subcampo = 'b'  THEN c.conteudo ELSE null END as cutter
+                                FROM
+                                bt_autor a, bt_autor b, bt_autor c
+                                WHERE
+                                        a.idautor = 2 and a.idautor =b.idautor   And c.idautor  = b.idautor  LIMIT 1
 
-		FROM
-		bt_autor a, bt_autor b, bt_autor c
-		WHERE
-		a.idautor = 2 and a.idautor =b.idautor   And c.idautor  = b.idautor  LIMIT 1
+                                        --a.indicador = 1 and a.subcampo = 'a' , (b.indicador = 0 and b.subcampo = 'a'), c.idetiqueta = 53 and c.subcampo = 'b'
+                                        */
+       //$sql = new sql("a.idautor,a.conteudo ,b.conteudo as cutter, ","bt_autor a, bt_autor b","(a.idetiqueta = $etiqueta->idEtiqueta and a.subcampo = 'a') AND (b.idetiqueta = $etiqueta->idEtiqueta and b.subcampo = 'b') AND a.idautor = b.idautor" );
 
-		--a.indicador = 1 and a.subcampo = 'a' , (b.indicador = 0 and b.subcampo = 'a'), c.idetiqueta = 53 and c.subcampo = 'b'
-		*/
-		//$sql = new sql("a.idautor,a.conteudo ,b.conteudo as cutter, ","bt_autor a, bt_autor b","(a.idetiqueta = $etiqueta->idEtiqueta and a.subcampo = 'a') AND (b.idetiqueta = $etiqueta->idEtiqueta and b.subcampo = 'b') AND a.idautor = b.idautor" );
+        //CredinCruis!!!  Usado em Detalhes em pesquisa simples quando se pesquisa por periódicos
+                //Consertar isso!
+        $sql = new sql("distinct  a.idautor,
+                       CASE
+                WHEN a.subcampo = 'a'  THEN a.conteudo ELSE null END as sobrenome,
+                case  b.subcampo = 'a' WHEN b.conteudo <> null THEN b.conteudo ELSE null END as prenome,
+                CASE  WHEN c.idetiqueta = 53 and c.subcampo = 'b'  THEN c.conteudo ELSE null END as cutter","bt_autor a, bt_autor b, bt_autor c","a.idautor = $idautor and a.idautor =b.idautor   And c.idautor  = b.idautor  LIMIT 1" );
+        
+      // $sql = new sql('idautor,sobrenome,prenome,cutter ','bt_autor','idautor = ?');
 
-		//CredinCruis!!!  Usado em Detalhes em pesquisa simples quando se pesquisa por periódicos
-		//Consertar isso!
-		$sql = new sql("distinct  a.idautor,
-		 		CASE
-		 		WHEN a.subcampo = 'a'  THEN a.conteudo ELSE null END as sobrenome,
-		 		case  b.subcampo = 'a' WHEN b.conteudo <> null THEN b.conteudo ELSE null END as prenome,
-		 		CASE  WHEN c.idetiqueta = 53 and c.subcampo = 'b'  THEN c.conteudo ELSE null END as cutter","bt_autor a, bt_autor b, bt_autor c","a.idautor = $idautor and a.idautor =b.idautor   And c.idautor  = b.idautor  LIMIT 1" );
-
-		// $sql = new sql('idautor,sobrenome,prenome,cutter ','bt_autor','idautor = ?');
-
-		//descomente e veja o  que vem ai:
-		//var_dump($query->GetRowObject());
-
+      //descomente e veja o  que vem ai:
+              //var_dump($query->GetRowObject());
+      
 		$query = $this->Query($sql);
-		$this->nome = $query->result[0][1];
-
+      $this->nome = $query->result[0][1];
+      
 		//if ( !$query->eof() )
-		//  $this->SetData($query->GetRowObject());
+          //  $this->SetData($query->GetRowObject());
 
-		return $this;
+	   return $this;
 	}
-	//essa funcao devera verificar se um autor que sera atribuido como secundaria a uma obra se já eh autor
-	//secundário(ou seja, esteja catalogado com tag setessentos e alguma coisa, 700, 710, ...) se não
-	//tiver uma dessas tag ele devera ter um registro com a tag de acordo com a que possui, por exemplo,
-	//se for 100 deverá ser 700, se for 110 devera ser tambem 710. Contato:leunovais@gmail.com
-	function TransformaAutorEmSecundario($idautor, $idetiqueta){
-		global $MIOLO,$module ;
-		$sql = new sql('a.idautor,a.idetiqueta,a.subcampo,a.conteudo,a.indicador,a.linha,a.ocorrencia,a.classificacao', 'bt_autor a, bt_etiqueta e', "e.idetiqueta=a.idetiqueta AND e.idetiqueta= $idetiqueta  AND a.idautor = $idautor");
-		$query = $this->Query($sql);
+    //essa funcao devera verificar se um autor que sera atribuido como secundaria a uma obra se já eh autor
+    //secundário(ou seja, esteja catalogado com tag setessentos e alguma coisa, 700, 710, ...) se não
+    //tiver uma dessas tag ele devera ter um registro com a tag de acordo com a que possui, por exemplo,
+    //se for 100 deverá ser 700, se for 110 devera ser tambem 710. Contato:leunovais@gmail.com
+    function TransformaAutorEmSecundario($idautor, $idetiqueta){
+        global $MIOLO,$module ;
+        $sql = new sql('a.idautor,a.idetiqueta,a.subcampo,a.conteudo,a.indicador,a.linha,a.ocorrencia,a.classificacao', 'bt_autor a, bt_etiqueta e', "e.idetiqueta=a.idetiqueta AND e.idetiqueta= $idetiqueta  AND a.idautor = $idautor");
+        $query = $this->Query($sql);
+        
+        if($query->result[0][0] != null){    //se realmente existe o autor com id e idetiqueta passados entao:
+            
+            $etiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+            $etiqueta->GetByCodigo($idetiqueta);
+            
+            $novaTag = 0;
+            switch ($etiqueta->tag) {
+                case 100:
+                    $novaTag = 700;
+                    break;
+                case 110:
+                    $novaTag = 710;
+                    break;
+                case 130:
+                    $novaTag = 730;
+                    break;
+            }
+            
+            if($novaTag != 0){
+                $etiqueta->GetByTag($novaTag);//pra pegar o id da nova tag
 
-		if($query->result[0][0] != null){    //se realmente existe o autor com id e idetiqueta passados entao:
+                //aqui vejo se já existe um registro com a nova tag
+                $sql3 = new sql('idautor','bt_autor',"idetiqueta=$etiqueta->idEtiqueta AND idautor = $idautor");
+                $query2 = $this->Query($sql3);
+                //se já esistir a tag então não precisa 
+               if(!$query2->result){
+                    foreach($query->result as $q){//aqui são os registros da tag escolhida
+                        //$idautor = $this->_db->GetNewId('seq_bt_autor');
+                        
+                        //$sql1 = new sql('idautor,idetiqueta,subcampo,conteudo,indicador,linha,ocorrencia,classificacao','bt_autor');
+                        //$values =  array($idautor,$etiqueta->idEtiqueta,$query->result[0][2],$query->result[0][3],$query->result[0][4],$query->result[0][5],$query->result[0][6],null);
+                        $sql1 = new sql('idautor,idetiqueta,subcampo,conteudo,indicador,linha,ocorrencia,classificacao','bt_autor');
+                        $cmd[] = $sql1->insert(array($idautor,$etiqueta->idEtiqueta,$q[2], $q[3], $q[4], $q[5], $q[6],null));
+                    //  var_dump($values);
+                    }
+//                    $this->Execute($sql1->Insert($values));
+                    if($cmd)
+                    {
+                        $this->Execute($cmd);
+                    }
+                }
+            }
+            
+            return $etiqueta->idEtiqueta;
+            
+        }else{
+            $MIOLO->Error("Os parametros de Autor ou da Etiqueta foram passados errados para a função autor->TransformaAutorEmSecundario. Entre em contato com a instituição desenvolvedora do software.",$MIOLO->GetActionURL($module, $action,null ));
+        }
+    }
 
-			$etiqueta = $MIOLO->GetBusiness($module,'etiqueta');
-			$etiqueta->GetByCodigo($idetiqueta);
-
-			$novaTag = 0;
-			switch ($etiqueta->tag) {
-				case 100:
-					$novaTag = 700;
-					break;
-				case 110:
-					$novaTag = 710;
-					break;
-				case 130:
-					$novaTag = 730;
-					break;
-			}
-
-			if($novaTag != 0){
-				$etiqueta->GetByTag($novaTag);//pra pegar o id da nova tag
-
-				//aqui vejo se já existe um registro com a nova tag
-				$sql3 = new sql('idautor','bt_autor',"idetiqueta=$etiqueta->idEtiqueta AND idautor = $idautor");
-				$query2 = $this->Query($sql3);
-				//se já esistir a tag então não precisa
-				if(!$query2->result){
-					foreach($query->result as $q){//aqui são os registros da tag escolhida
-						//$idautor = $this->_db->GetNewId('seq_bt_autor');
-
-						//$sql1 = new sql('idautor,idetiqueta,subcampo,conteudo,indicador,linha,ocorrencia,classificacao','bt_autor');
-						//$values =  array($idautor,$etiqueta->idEtiqueta,$query->result[0][2],$query->result[0][3],$query->result[0][4],$query->result[0][5],$query->result[0][6],null);
-						$sql1 = new sql('idautor,idetiqueta,subcampo,conteudo,indicador,linha,ocorrencia,classificacao','bt_autor');
-						$cmd[] = $sql1->insert(array($idautor,$etiqueta->idEtiqueta,$q[2], $q[3], $q[4], $q[5], $q[6],null));
-						//  var_dump($values);
-					}
-					//                    $this->Execute($sql1->Insert($values));
-					if($cmd)
-					{
-						$this->Execute($cmd);
-					}
-				}
-			}
-
-			return $etiqueta->idEtiqueta;
-
-		}else{
-			$MIOLO->Error("Os parametros de Autor ou da Etiqueta foram passados errados para a função autor->TransformaAutorEmSecundario. Entre em contato com a instituição desenvolvedora do software.",$MIOLO->GetActionURL($module, $action,null ));
-		}
-	}
-
-
-	function GetAutorSecundarioByObra($idobra)
+    
+   function GetAutorSecundarioByObra($idobra)
 	{
-		//era m.idobra, mudei para m.idmaterial
-		$sql = new sql('m.idmaterial,m.conteudo,m.ocorrencia','bt_material m,bt_etiqueta e',"e.idetiqueta=m.idetiqueta and e.tag LIKE '7%' and m.subcampo='a' and m.idobra = ?");
+        //era m.idobra, mudei para m.idmaterial
+		$sql = new sql('m.idmaterial,m.conteudo,m.ocorrencia','bt_material m,bt_etiqueta e',"e.idetiqueta=m.idetiqueta and e.tag LIKE '7%' and m.subcampo='a' and m.idobra = ?",'m.idetiqueta,m.subcampo,m.ocorrencia,m.linha');
 
 		$query = $this->Query($sql,$idobra);
-		return $query;
+	   return $query;
 	}
 
-	function GetAutorSecundarioByObra2($idobra)
-	{
+    function GetAutorSecundarioByObra2($idobra)
+    {
 
-		$sql = new sql('m.idmaterial,m.conteudo,m.ocorrencia','bt_material m,bt_etiqueta e',"e.idetiqueta=m.idetiqueta and  e.tag LIKE '7%' and m.subcampo='a' and m.idobra = ?");
+        $sql = new sql('m.idmaterial,m.conteudo,m.ocorrencia','bt_material m,bt_etiqueta e',"e.idetiqueta=m.idetiqueta and  e.tag LIKE '7%' and m.subcampo='a' and m.idobra = ?",'m.idetiqueta,m.subcampo,m.ocorrencia,m.linha');
 
-		$query = $this->Query($sql,$idobra);
-		return $query;
-	}
-	//autor de artigo(periodicos)
-	function GetAutorSecundarioByArtigo($idartigo)
-	{
+        $query = $this->Query($sql,$idobra);
+        return $query;
+    }
+    //autor de artigo(periodicos)
+    function GetAutorSecundarioByArtigo($idartigo)
+    {
 
-		$sql = new sql('m.idmaterial,m.conteudo,m.ocorrencia','bt_materialartigo m,bt_etiqueta e',"e.idetiqueta=m.idetiqueta and e.tag like '7%' and m.subcampo='a' and m.idartigo= ?");
-		$query = $this->Query($sql,$idartigo);
-		return $query;
-	}
+            $sql = new sql('m.idmaterial,m.conteudo,m.ocorrencia','bt_materialartigo m,bt_etiqueta e',"e.idetiqueta=m.idetiqueta and e.tag like '7%' and m.subcampo='a' and m.idartigo= ?");
+            $query = $this->Query($sql,$idartigo);
+            return $query;
+    }
 
 	function LastNumeroAutor()
-	{
-		$sql = new sql("nextval('seq_bt_autor')");
-		$query = $this->Query($sql);
-		return $query->result[0][0];
+	{    
+	  $sql = new sql("nextval('seq_bt_autor')");
+      $query = $this->Query($sql);
+	  return $query->result[0][0];
 	}
 
 
 
 	function Update($data)
 	{
-		global $MIOLO,$module;
+        global $MIOLO,$module;
 
-		// UPDATE  Tabela  bt_material   06/06/2009
+        // UPDATE  Tabela  bt_material   06/06/2009
 
-		$sql = new sql('conteudo','bt_material',"idobra = ? AND idetiqueta = 53 AND subcampo = 'a'");
-		$values = array($data->nome);
-		$ok = $this->Execute($sql->Update($values));
-			
-		$sql = new sql('conteudo', 'bt_material',"idobra = ? AND idetiqueta=53 AND subcampo = 'b' ");
-		$values = array($data->cutter);
-		$ok = $this->Execute($sql->Update($values));
-		return $ok;
+             $sql = new sql('conteudo','bt_material',"idobra = ? AND idetiqueta = 53 AND subcampo = 'a'");
+             $values = array($data->nome);
+	    	 $ok = $this->Execute($sql->Update($values));
+             
+             $sql = new sql('conteudo', 'bt_material',"idobra = ? AND idetiqueta=53 AND subcampo = 'b' ");
+		     $values = array($data->cutter);
+		     $ok = $this->Execute($sql->Update($values));
+             return $ok;
 
-		// UPDATE  tabela Autor
-
-		$sql = new sql('conteudo','bt_autor',"idautor = ? AND idetiqueta = 53 AND subcampo = 'a'");
-		$values = array($data->nome);
-		$ok = $this->Execute($sql->Update($values));
-			
-		$sql = new sql('conteudo', 'bt_autor',"idautor = ? AND idetiqueta=53 AND subcampo = 'b' ");
-		$values = array($data->cutter);
-		$ok = $this->Execute($sql->Update($values));
-		return $ok;
+        // UPDATE  tabela Autor
+      
+             $sql = new sql('conteudo','bt_autor',"idautor = ? AND idetiqueta = 53 AND subcampo = 'a'");
+             $values = array($data->nome);
+	     $ok = $this->Execute($sql->Update($values));
+             
+             $sql = new sql('conteudo', 'bt_autor',"idautor = ? AND idetiqueta=53 AND subcampo = 'b' ");
+	     $values = array($data->cutter);
+	     $ok = $this->Execute($sql->Update($values));
+             return $ok;
 
 
 	}
 
-
+	
 	function Insert($idAutor,$idEtiqueta,$subcampo,$conteudo,$linha,$ocorrencia,$classificacao,$cutter = null)
 	{
-			
-		$sql = new sql('idautor,idetiqueta,subcampo,conteudo,linha,ocorrencia,classificacao,cutter','bt_autor');
-		$values = array($idAutor,$idEtiqueta,$subcampo,$conteudo,$linha,$ocorrencia,$classificacao,$cutter);
-		$ok = $this->Execute($sql->Insert($values));
-		if($ok){
-			$ok = $idAutor;
-		}
+	    
+	            $sql = new sql('idautor,idetiqueta,subcampo,conteudo,linha,ocorrencia,classificacao,cutter','bt_autor');
+        $values = array($idAutor,$idEtiqueta,$subcampo,$conteudo,$linha,$ocorrencia,$classificacao,$cutter);
+        $ok = $this->Execute($sql->Insert($values));
+        if($ok){
+            $ok = $idAutor;
+        }	        
 
 
-		return $ok;
+        return $ok;
 	}
 
-
+	
 	function Delete($idautor)
 	{
-		$sql = new sql('idobra, idmaterial', 'bt_autorobra',"idautor = $idautor");
-		$query = $this->Query($sql)->result;
+        $sql = new sql('idobra, idmaterial', 'bt_autorobra',"idautor = $idautor");
+        $query = $this->Query($sql)->result;
+        
+        if ($query!=NULL)
+        {
+            /*Consulta para ter o idEtiqueta e a ocorrência do Assunto em bt_autor*/
+            $sql1 = new sql('idetiqueta, ocorrencia', 'bt_autor',"idautor= $idautor");
+            $query1 = $this->Query($sql1)->result;
+            for ($y=0 ; $y<$query1[$y] ; $y++)
+            {
+                $idetiqueta = $query1[0][0];
+                $ocorrencia = $query1[0][1];
 
-		if ($query!=NULL)
-		{
-			/*Consulta para ter o idEtiqueta e a ocorrência do Assunto em bt_autor*/
-			$sql1 = new sql('idetiqueta, ocorrencia', 'bt_autor',"idautor= $idautor");
-			$query1 = $this->Query($sql1)->result;
-			for ($y=0 ; $y<$query1[$y] ; $y++)
-			{
-				$idetiqueta = $query1[0][0];
-				$ocorrencia = $query1[0][1];
+                /*Criado o for, pois pode haver mais de uma obra vinculada ao autor*/
+                for ($x=0 ; $x<$query[$x] ; $x++)
+                {
+                    $idobra = $query[$x][0];
+                    $idmaterial = $query[$x][1];
+    
+                    /*Consulta para ter a ocorrência do assunto em bt_material*/
+                            $sql3 = new sql('ocorrencia','bt_material',"idmaterial = $idmaterial");
+                    $query3 = $this->Query($sql3)->result;
+                    $ocorrenciaMaterial = $query3[0][0];
+                    /*Apagando o assunto de bt_assuntoobra*/
+                            $sql4 = new sql('','bt_autorobra',"idautor = $idautor and idobra= $idobra and idmaterial = $idmaterial");
+                    $ok4 = $this->Execute($sql4->Delete());
 
-				/*Criado o for, pois pode haver mais de uma obra vinculada ao autor*/
-				for ($x=0 ; $x<$query[$x] ; $x++)
-				{
-					$idobra = $query[$x][0];
-					$idmaterial = $query[$x][1];
+                    /*Apagando o assunto de bt_material*/
+                            $sql5 = new sql('','bt_material',"idetiqueta = $idetiqueta and ocorrencia = $ocorrenciaMaterial and idobra= $idobra");
+                    $ok5 = $this->Execute($sql5->Delete());
 
-					/*Consulta para ter a ocorrência do assunto em bt_material*/
-					$sql3 = new sql('ocorrencia','bt_material',"idmaterial = $idmaterial");
-					$query3 = $this->Query($sql3)->result;
-					$ocorrenciaMaterial = $query3[0][0];
-					/*Apagando o assunto de bt_assuntoobra*/
-					$sql4 = new sql('','bt_autorobra',"idautor = $idautor and idobra= $idobra and idmaterial = $idmaterial");
-					$ok4 = $this->Execute($sql4->Delete());
+                    /*Apagando o assunto de bt_indicador*/
+                            $sql6 = new sql('','bt_indicadores',"idetiqueta = $idetiqueta and ocorrencia = $ocorrenciaMaterial and idobra= $idobra");
+                    $ok6 = $this->Execute($sql6->Delete());
 
-					/*Apagando o assunto de bt_material*/
-					$sql5 = new sql('','bt_material',"idetiqueta = $idetiqueta and ocorrencia = $ocorrenciaMaterial and idobra= $idobra");
-					$ok5 = $this->Execute($sql5->Delete());
+                    
+                }
 
-					/*Apagando o assunto de bt_indicador*/
-					$sql6 = new sql('','bt_indicadores',"idetiqueta = $idetiqueta and ocorrencia = $ocorrenciaMaterial and idobra= $idobra");
-					$ok6 = $this->Execute($sql6->Delete());
+                /*Apagando o assunto de bt_autor*/
+                $sql2 = new sql('','bt_autor',"idautor = $idautor AND idetiqueta = $idetiqueta AND ocorrencia = $ocorrencia");
+                $ok = $this->Execute($sql2->Delete());
+            }
 
+        }
+        else
+        {           
+            /*Consulta para ter o idEtiqueta e a ocorrência do Autor em bt_autor*/
+            $sql1 = new sql('idetiqueta, ocorrencia', 'bt_autor',"idautor = $idautor");
+            $query1 = $this->Query($sql1)->result;
+            for ($y=0 ; $y<$query1[$y] ; $y++)
+            {
+                $idetiqueta = $query1[0][0];
+                $ocorrencia = $query1[0][1];
 
-				}
-
-				/*Apagando o assunto de bt_autor*/
-				$sql2 = new sql('','bt_autor',"idautor = $idautor AND idetiqueta = $idetiqueta AND ocorrencia = $ocorrencia");
-				$ok = $this->Execute($sql2->Delete());
-			}
-
-		}
-		else
-		{
-			/*Consulta para ter o idEtiqueta e a ocorrência do Autor em bt_autor*/
-			$sql1 = new sql('idetiqueta, ocorrencia', 'bt_autor',"idautor = $idautor");
-			$query1 = $this->Query($sql1)->result;
-			for ($y=0 ; $y<$query1[$y] ; $y++)
-			{
-				$idetiqueta = $query1[0][0];
-				$ocorrencia = $query1[0][1];
-
-				/*Se não há vínculo com obras, apaga as informações só de bt_autor*/
-				$sql = new sql('','bt_autor',"idautor = $idautor AND idetiqueta = $idetiqueta and ocorrencia = $ocorrencia");
-				$ok = $this->Execute($sql->Delete());
-			}
-		}
-		return $ok;
-	}
+                /*Se não há vínculo com obras, apaga as informações só de bt_autor*/
+                $sql = new sql('','bt_autor',"idautor = $idautor AND idetiqueta = $idetiqueta and ocorrencia = $ocorrencia");
+                $ok = $this->Execute($sql->Delete());
+            }
+        }
+        return $ok;
+    }
 
 	function ListAutor()
 	{
-		global $MIOLO, $module, $action;
-
+        global $MIOLO, $module, $action;
+        
 		$sql = new sql('idautor,prenome,sobrenome,cutter','bt_autor','','idautor');
 
-		/*
-		 $etiqueta = $MIOLO->GetBusiness('biblioteca','etiqueta');
-		$etiqueta->GetByTag('100');
-		$id1 = $etiqueta->idEtiqueta;
-
-		$sql = new sql('a.idautor,a.conteudo as prenome,a.conteudo as sobrenome,b.conteudo as cutter','bt_autor a, bt_autor b',"(b.idetiqueta=$id1 and b.subcampo = 'b' and b.idautor =a a.idautor) Or a.idautor<>null ",'idautor');
-		*/
-		$query = $this->Query($sql);
-		return $query;
+        /*
+        $etiqueta = $MIOLO->GetBusiness('biblioteca','etiqueta');
+        $etiqueta->GetByTag('100');
+        $id1 = $etiqueta->idEtiqueta;
+        
+        $sql = new sql('a.idautor,a.conteudo as prenome,a.conteudo as sobrenome,b.conteudo as cutter','bt_autor a, bt_autor b',"(b.idetiqueta=$id1 and b.subcampo = 'b' and b.idautor =a a.idautor) Or a.idautor<>null ",'idautor');
+        */
+        $query = $this->Query($sql);
+        return $query;
 	}
-
+	
 	function GetidautorByNome($mne)
 	{
-		$criteria =  $this->getCriteria();
-		$criteria->addCriteria('conteudo','=', "'$mne'");
-		$cursor = $criteria->retrieveAsCursor();
-		return $cursor->getObject();
-	}
+        $criteria =  $this->getCriteria();
+        $criteria->addCriteria('conteudo','=', "'$mne'");
+        $cursor = $criteria->retrieveAsCursor();
+        return $cursor->getObject();
+ 	 }
+  
+  function Getidautor()
+  {
+     return $this->idautor;
+  }
 
-	function Getidautor()
+	function GetIdAutorImportacao($nome,$idetiqueta,$subcampo)
 	{
-		return $this->idautor;
-	}
-
-	function GetIdAutorImportacao($nome)
-	{
-		$sql = new sql('idautor','bt_autor',"conteudo =? and idetiqueta = 53 AND subcampo = 'a'");
+		$sql = new sql('idautor','bt_autor',"conteudo =? and idetiqueta = $idetiqueta AND subcampo = '$subcampo'");
 		$query = $this->Query($sql,array($nome));
 		return $query->result[0][0];
 	}
 
-	function InsertImportacao($nome)
+	function InsertImportacao($nome,$idetiqueta,$subcampo)
 	{
-
-		$sql = new sql('idautor,conteudo,idetiqueta,subcampo,ocorrencia','bt_autor');
+		
+		$sql = new sql('idautor,conteudo,idetiqueta,subcampo,ocorrencia,linha','bt_autor');
 		$idautor = $this->LastNumeroAutor();
-
-		$values = array($idautor,$nome,53,'a',1);
-
+		
+		$values = array($idautor,$nome,$idetiqueta,$subcampo,1,1);
+		
 		$ok = $this->Execute($sql->Insert($values));
-		if($ok) return $idautor;
+		if($ok) return $idautor; 
 		else return NULL;
 	}
 
-	/**
-	 * @author Daniel Bonfim
-	 * @since 15-10-2012
-	 *
-	 * @param unknown $nome
-	 * @return unknown|NULL
-	 */
-	function insertImportacao2($idEtiqueta, $subcampo, $conteudo) {
-		$sql = new sql('idautor, idetiqueta, subcampo, conteudo, linha','bt_autor');
-		$idautor = $this->LastNumeroAutor();
+    function getFieldsForm($item, $subcampo, $idEtiqueta){
+        $sql = new sql('idautor,linha,conteudo,cutter,subcampo','bt_autor',"(idautor = $item) and (subcampo = '$subcampo') and (idetiqueta = $idEtiqueta)",'linha');
+        $query = $this->Query($sql);
+        return $query;
+    }
 
-		$values = array(
-				$idautor,
-				$idEtiqueta,
-				$subcampo,
-				$conteudo,
-				1
-		);
+    function GetLastNumAutor($idEtiqueta)
+    {
+        $sql = new sql("max(ocorrencia) from bt_autor where idetiqueta = $idEtiqueta");
+            $query = $this->Query($sql);
+        $result = $query->result[0][0];
+        $result++;
+            return $result;
+    }
+    
+    function GetNumAutor($idautor)
+    {
+        $sql = new sql("ocorrencia from bt_autor where idautor = $idautor");
+        $query = $this->Query($sql);
+        $result = $query->result[0][0];
+        return $result;
+    }
+    
+    function GetEtiquetaById($idAutor)
+    {
+        $sql = new sql("idetiqueta from bt_autor where idautor = $idAutor");
+            $query = $this->Query($sql);
+        $result = $query->result[0][0];
+            return $result;
+    }
 
-		$ok = $this->Execute($sql->Insert($values));
+    function getClassificacao($idEtiqueta,$ocorrencia)
+    {
+        $sql = new sql('distinct(classificacao)','bt_autor',"(idetiqueta = $idEtiqueta) and (ocorrencia = $ocorrencia)");
+        $query = $this->Query($sql);
+        return $query->result[0][0];
+    }
+    
+    function getIndicador($idEtiqueta, $indicador, $ocorrencia)
+    {
+        $sql = new sql('conteudo','bt_autor',"(idetiqueta = $idEtiqueta) and (indicador = '$indicador') and (ocorrencia = $ocorrencia)");
+        $query = $this->Query($sql);
+        return $query;
+    }
 
-		if ($ok)
-			$ok = $idautor;
-		
-		return $ok;
-	}
+    function RetirarCaracteresEspeciais($string)
+    {
+        // as linhas abaixo retiram os ç,ã,ú, ETC !
 
-	/**
-	 * @author Daniel Bonfim
-	 * @since 15-10-2012
-	 *
-	 * @param unknown $nome
-	 * @return unknown|NULL
-		*/
-	function getIdAutorByNomeAndIdEtiqueta($nome, $idEtiqueta) {
-		$sql = new sql('idautor', 'bt_autor', "conteudo = '$nome' AND idetiqueta = '$idEtiqueta'");
+        // $string = eregi_replace("[áàâãä]","a",$string);
+        $a = array("á","à","â","ã","ä");
+        $newstring = str_replace($a,"a",$string);
 
-		$query = $this->Query($sql);
-		return $query->result[0][0];
-	}
+        // $string = eregi_replace("[éèêë]","e",$string);
+        $e = array("é","è","ê","ë");
+        $newstring = str_replace($e,"e",$string);
 
-	function getFieldsForm($item, $subcampo, $idEtiqueta){
-		$sql = new sql('idautor,linha,conteudo,cutter,subcampo','bt_autor',"(idautor = $item) and (subcampo = '$subcampo') and (idetiqueta = $idEtiqueta)",'linha');
-		$query = $this->Query($sql);
-		return $query;
-	}
+        // $string = eregi_replace("[íìîï]","i",$string);
+        $i = array("í","ì","î","ï");
+        $newstring = str_replace($i,"i",$string);
 
-	function GetLastNumAutor($idEtiqueta)
-	{
-		$sql = new sql("max(ocorrencia) from bt_autor where idetiqueta = $idEtiqueta");
-		$query = $this->Query($sql);
-		$result = $query->result[0][0];
-		$result++;
-		return $result;
-	}
+        // $string = eregi_replace("[óòôõö]","o",$string);
+        $o = array("ó","ò","ô","õ","ö");
+        $newstring = str_replace($o,"o",$string);
 
-	function GetNumAutor($idautor)
-	{
-		$sql = new sql("ocorrencia from bt_autor where idautor = $idautor");
-		$query = $this->Query($sql);
-		$result = $query->result[0][0];
-		return $result;
-	}
+        // $string = eregi_replace("[úùûü]","u",$string);
+        $u = array('ú','ù','û','ü');
+        $newstring = str_replace($u,"u",$string);
 
-	function GetEtiquetaById($idAutor)
-	{
-		$sql = new sql("idetiqueta from bt_autor where idautor = $idAutor");
-		$query = $this->Query($sql);
-		$result = $query->result[0][0];
-		return $result;
-	}
+        // $string = eregi_replace("[ñ]","n",$string);
+        $newstring = str_replace("ñ","n",$string);
 
-	function getClassificacao($idEtiqueta,$ocorrencia)
-	{
-		$sql = new sql('distinct(classificacao)','bt_autor',"(idetiqueta = $idEtiqueta) and (ocorrencia = $ocorrencia)");
-		$query = $this->Query($sql);
-		return $query->result[0][0];
-	}
+        // $string = eregi_replace("[ç]","c",$string);
+        $newstring = str_replace("ç","c",$string);
 
-	function getIndicador($idEtiqueta, $indicador, $ocorrencia)
-	{
-		$sql = new sql('conteudo','bt_autor',"(idetiqueta = $idEtiqueta) and (indicador = '$indicador') and (ocorrencia = $ocorrencia)");
-		$query = $this->Query($sql);
-		return $query;
-	}
+        // $string = eregi_replace("[ÁÀÂÃÄ]","A",$string);
+        $amasc = array("Á","À","Â","Ã","Ä");
+        $newstring = str_replace($amasc,"A",$string);
 
-	function RetirarCaracteresEspeciais($string)
-	{
-		// as linhas abaixo retiram os ç,ã,ú, ETC !
+        // $string = eregi_replace("[ÉÈÊË]","E",$string);
+        $emasc = array("É","È","Ê","Ë");
+        $newstring = str_replace($emasc,"E",$string);
 
-		// $string = eregi_replace("[áàâãä]","a",$string);
-		$a = array("á","à","â","ã","ä");
-		$newstring = str_replace($a,"a",$string);
+        // $string = eregi_replace("[ÍÌÎÏ]","I",$string);
+        $imasc = array("Í","Ì","Î","Ï");
+        $newstring = str_replace($imasc,"I",$string);
 
-		// $string = eregi_replace("[éèêë]","e",$string);
-		$e = array("é","è","ê","ë");
-		$newstring = str_replace($e,"e",$string);
+        // $string = eregi_replace("[ÓÒÔÕÖ]","O",$string);
+        $omasc = array("Ó","Ò","Ô","Õ","Ö");
+        $newstring = str_replace($omasc,"O",$string);
 
-		// $string = eregi_replace("[íìîï]","i",$string);
-		$i = array("í","ì","î","ï");
-		$newstring = str_replace($i,"i",$string);
+        // $string = eregi_replace("[ÚÙÛÜ]","U",$string);
+        $umasc = array("Ú","Ù","Û","Ü");
+        $newstring = str_replace($umasc,"U",$string);
 
-		// $string = eregi_replace("[óòôõö]","o",$string);
-		$o = array("ó","ò","ô","õ","ö");
-		$newstring = str_replace($o,"o",$string);
+        // $string = eregi_replace("[Ñ]","N",$string);
+        $newstring = str_replace("Ñ","N",$string);
 
-		// $string = eregi_replace("[úùûü]","u",$string);
-		$u = array('ú','ù','û','ü');
-		$newstring = str_replace($u,"u",$string);
+        // $string = eregi_replace("[Ç]","C",$string);
+        $newstring = str_replace("Ç","C",$string);
 
-		// $string = eregi_replace("[ñ]","n",$string);
-		$newstring = str_replace("ñ","n",$string);
+        return $newstring;
 
-		// $string = eregi_replace("[ç]","c",$string);
-		$newstring = str_replace("ç","c",$string);
+    }
 
-		// $string = eregi_replace("[ÁÀÂÃÄ]","A",$string);
-		$amasc = array("Á","À","Â","Ã","Ä");
-		$newstring = str_replace($amasc,"A",$string);
+    function saveIndicador($idAutor,$idEtiqueta, $subcampo,$conteudo,$linha,$ocorrencia, $classificacao,$indicador)
+    {
+        $sql = new sql('idautor,idetiqueta,subcampo,conteudo,linha,ocorrencia,classificacao,indicador','bt_autor');
+        $values = array($idAutor,$idEtiqueta,$subcampo,$conteudo,$linha,$ocorrencia,$classificacao,$indicador);
+        $result = $this->Execute($sql->Insert($values));
+        return $result;
+    }
 
-		// $string = eregi_replace("[ÉÈÊË]","E",$string);
-		$emasc = array("É","È","Ê","Ë");
-		$newstring = str_replace($emasc,"E",$string);
+    function ListAutores()
+    {
+        $sql = new sql('a.idautor,a.idetiqueta,a.conteudo,e.tag,a.classificacao','bt_autor a, bt_etiqueta e',"(a.subcampo = 'a') AND (a.idetiqueta = e.idetiqueta)",'a.conteudo');
+        $query = $this->Query($sql);
+        return $query;
+    }
 
-		// $string = eregi_replace("[ÍÌÎÏ]","I",$string);
-		$imasc = array("Í","Ì","Î","Ï");
-		$newstring = str_replace($imasc,"I",$string);
+    function getObrasDoAutor($idAutor)
+    {
+        $sql = new sql('idmaterial, idobra, ocorrencia','bt_autorobra',"(idautor = $idAutor)");
+        $query = $this->Query($sql);
+        return $query->result;
+    }
 
-		// $string = eregi_replace("[ÓÒÔÕÖ]","O",$string);
-		$omasc = array("Ó","Ò","Ô","Õ","Ö");
-		$newstring = str_replace($omasc,"O",$string);
+    function getIdAutorAtualizado($idetiqueta, $ocorrencia)
+    {
+        $sql =  new sql('idautor','bt_autor',"idetiqueta=$idetiqueta and ocorrencia=$ocorrencia and subcampo='a'");
+        $query = $this->Query($sql)->result;
+        return $query[0][0];
+    }
 
-		// $string = eregi_replace("[ÚÙÛÜ]","U",$string);
-		$umasc = array("Ú","Ù","Û","Ü");
-		$newstring = str_replace($umasc,"U",$string);
+    function getAutorCompleto($idetiqueta,$ocorrencia)
+    {
+        $sql = new sql('subcampo, conteudo, linha','bt_autor',"(idetiqueta = $idetiqueta) and (ocorrencia = $ocorrencia) and indicador is null");
+        $query = $this->Query($sql);
+        return $query->result;
+    }
 
-		// $string = eregi_replace("[Ñ]","N",$string);
-		$newstring = str_replace("Ñ","N",$string);
+    function getIndicadorAutor($idetiqueta,$ocorrencia)
+    {
+        $sql = new sql('indicador, conteudo','bt_autor',"(idetiqueta = $idetiqueta) and (ocorrencia = $ocorrencia) and indicador is not null");
+        $query = $this->Query($sql);
+        return $query->result;
+    }
 
-		// $string = eregi_replace("[Ç]","C",$string);
-		$newstring = str_replace("Ç","C",$string);
-
-		return $newstring;
-
-	}
-
-	function saveIndicador($idAutor,$idEtiqueta, $subcampo,$conteudo,$linha,$ocorrencia, $classificacao,$indicador)
-	{
-		$sql = new sql('idautor,idetiqueta,subcampo,conteudo,linha,ocorrencia,classificacao,indicador','bt_autor');
-		$values = array($idAutor,$idEtiqueta,$subcampo,$conteudo,$linha,$ocorrencia,$classificacao,$indicador);
-		$result = $this->Execute($sql->Insert($values));
-		return $result;
-	}
-
-	function ListAutores()
-	{
-		$sql = new sql('a.idautor,a.idetiqueta,a.conteudo,e.tag,a.classificacao','bt_autor a, bt_etiqueta e',"(a.subcampo = 'a') AND (a.idetiqueta = e.idetiqueta)",'a.conteudo');
-		$query = $this->Query($sql);
-		return $query;
-	}
-
-	function getObrasDoAutor($idAutor)
-	{
-		$sql = new sql('idmaterial, idobra, ocorrencia','bt_autorobra',"(idautor = $idAutor)");
-		$query = $this->Query($sql);
-		return $query->result;
-	}
-
-	function getIdAutorAtualizado($idetiqueta, $ocorrencia)
-	{
-		$sql =  new sql('idautor','bt_autor',"idetiqueta=$idetiqueta and ocorrencia=$ocorrencia and subcampo='a'");
-		$query = $this->Query($sql)->result;
-		return $query[0][0];
-	}
-
-	function getAutorCompleto($idetiqueta,$ocorrencia)
-	{
-		$sql = new sql('subcampo, conteudo, linha','bt_autor',"(idetiqueta = $idetiqueta) and (ocorrencia = $ocorrencia) and indicador is null");
-		$query = $this->Query($sql);
-		return $query->result;
-	}
-
-	function getIndicadorAutor($idetiqueta,$ocorrencia)
-	{
-		$sql = new sql('indicador, conteudo','bt_autor',"(idetiqueta = $idetiqueta) and (ocorrencia = $ocorrencia) and indicador is not null");
-		$query = $this->Query($sql);
-		return $query->result;
-	}
-
-	function saveAutorObra($idAutor,$idobra,$ocorrencia,$idetiqueta)
-	{
-		$sql1 = new sql('idmaterial','bt_material', "idobra=$idobra and ocorrencia=$ocorrencia and idetiqueta=$idetiqueta and subcampo='a'");
-		$query1 = $this->Query($sql1);
-		$idmaterial = $query1->result[0][0];
-		$sql2 = new sql('idautor','bt_obra',"idobra = $idobra");
-		$values2 = array($idAutor);
-		$commands[] = $sql2->update($values2);
-		$this->Execute($commands);
-		$sql = new sql('idautor,idobra,ocorrencia,idmaterial,idetiqueta','bt_autorobra');
-		$values = array($idAutor,$idobra,$ocorrencia,$idmaterial,$idetiqueta);
-		$result = $this->Execute($sql->Insert($values));
-		return $result;
-	}
+    function saveAutorObra($idAutor,$idobra,$ocorrencia,$idetiqueta)
+    {
+        $sql1 = new sql('idmaterial','bt_material', "idobra=$idobra and ocorrencia=$ocorrencia and idetiqueta=$idetiqueta and subcampo='a'");
+        $query1 = $this->Query($sql1);
+        $idmaterial = $query1->result[0][0];
+        $sql2 = new sql('idautor','bt_obra',"idobra = $idobra");
+        $values2 = array($idAutor);
+        $commands[] = $sql2->update($values2);
+        $this->Execute($commands);
+        $sql = new sql('idautor,idobra,ocorrencia,idmaterial,idetiqueta','bt_autorobra');
+        $values = array($idAutor,$idobra,$ocorrencia,$idmaterial,$idetiqueta);
+        $result = $this->Execute($sql->Insert($values));
+        return $result;
+    }
 
 
-	function saveAutorObraCutter($idAutor,$idobra,$ocorrencia,$conteudo)
-	{
-
-		$ocorrencia =1;
-		$sql1 = new sql('idmaterial','bt_material', "idobra=$idobra and ocorrencia=$ocorrencia and idetiqueta=52 and subcampo='b'");
-
-		//   var_dump($sql1);
-		$query1 = $this->Query($sql1);
-		$idmaterial = $query1->result[0][0];
-		$idetiqueta =52;
-		$subcampo='b';
-		$linha=1;
-
-		$idmaterial = $query1->result[0][0];
-		$etiqueta_temp =1;
-		$obra_temp=1;
-
-		$values = array($idAutor,$idobra,$ocorrencia,$idmaterial,$idetiqueta,$linha,$conteudo,$etiqueta_temp,$obra_temp);
-		//         var_dump($values);
-		$result = $this->Execute($sql1->Insert($values));
-		return $result;
-	}
-
-
-	function verificar($idobra, $idautor)
-	{
-		$sql =  new sql('idautor','bt_autorobra',"idobra=$idobra and idautor=$idautor");
-		$query = $this->Query($sql)->result;
-		return $query;
-	}
-
-	function desvinculaObra($idmaterial)
-	{
-		/*Consulta para ter o idEtiqueta e a ocorrência do Assunto em bt_assunto*/
-		$sql1 = new sql('idobra, ocorrencia, idetiqueta', 'bt_material',"idmaterial = $idmaterial");
-		$query1 = $this->Query($sql1)->result;
-		$sql2 = new sql('idautor','bt_autorobra',"idmaterial = $idmaterial");
-		$query2 = $this->Query($sql2)->result;
-		$idobra = $query1[0][0];
-		$ocorrencia = $query1[0][1];
-		$idetiqueta = $query1[0][2];
-		$idautor = $query2;
-
-		/*Apagando o autor de bt_assuntoobra*/
-		$sql6 = new sql('','bt_autorobra',"idmaterial = $idmaterial");
-		$ok = $this->Execute($sql6->Delete());
-
-		/*Apagando o autor de bt_material*/
-		$sql4 = new sql('','bt_material',"idetiqueta = $idetiqueta and ocorrencia = $ocorrencia and idobra= $idobra");
-		$ok4 = $this->Execute($sql4->Delete());
-
-		/*Apagando o assunto de bt_indicador*/
-		$sql5 = new sql('','bt_indicadores',"idetiqueta = $idetiqueta and ocorrencia = $ocorrencia and idobra= $idobra");
-		$ok5 = $this->Execute($sql5->Delete());
-
-		$sql = new sql('idautor','bt_obra','(idobra = ?)');
-		$values = array($idautor,$idobra);
-		$commands[] = $sql->update($values);
-		$this->Execute($commands);
+function saveAutorObraCutter($idAutor,$idobra,$ocorrencia,$conteudo)
+    {
+    
+    $ocorrencia =1;
+        $sql1 = new sql('idmaterial','bt_material', "idobra=$idobra and ocorrencia=$ocorrencia and idetiqueta=52 and subcampo='b'");
+        
+     //   var_dump($sql1);
+        $query1 = $this->Query($sql1);
+        $idmaterial = $query1->result[0][0];
+        $idetiqueta =52;
+        $subcampo='b';
+        $linha=1;
+         
+        $idmaterial = $query1->result[0][0];
+        $etiqueta_temp =1;
+        $obra_temp=1;
+        
+        $values = array($idAutor,$idobra,$ocorrencia,$idmaterial,$idetiqueta,$linha,$conteudo,$etiqueta_temp,$obra_temp);
+       //         var_dump($values);
+        $result = $this->Execute($sql1->Insert($values));
+        return $result;
+    }
 
 
-		return $ok;
-	}
+    function verificar($idobra, $idautor)
+    {
+        $sql =  new sql('idautor','bt_autorobra',"idobra=$idobra and idautor=$idautor");
+        $query = $this->Query($sql)->result;
+        return $query;
+    }
 
-	function GetCutterByIdAutor($idAutor){
-		// $sql = new sql('a.conteudo','bt_autor a',"(a.idautor = ?) AND a.idetiqueta =  53 AND a.subcampo =  'b' ");
+    function desvinculaObra($idmaterial)
+    {
+        /*Consulta para ter o idEtiqueta e a ocorrência do Assunto em bt_assunto*/
+        $sql1 = new sql('idobra, ocorrencia, idetiqueta', 'bt_material',"idmaterial = $idmaterial");
+        $query1 = $this->Query($sql1)->result;
+        $sql2 = new sql('idautor','bt_autorobra',"idmaterial = $idmaterial");
+        $query2 = $this->Query($sql2)->result;
+        $idobra = $query1[0][0];
+        $ocorrencia = $query1[0][1];
+        $idetiqueta = $query1[0][2];
+        $idautor = $query2;
 
-		$sql = new sql('a.cutter','bt_autor a',"(a.idautor = ?) AND a.subcampo =  'a' ");
-		$query = $this->Query($sql,$idAutor);
-		return $query->result[0][0];
-	}
+        /*Apagando o autor de bt_assuntoobra*/
+        $sql6 = new sql('','bt_autorobra',"idmaterial = $idmaterial");
+        $ok = $this->Execute($sql6->Delete());
 
-	function GetEti53ById($idautor)
-	{
-		$sql =  new sql('idetiqueta,ocorrencia,subcampo,linha,conteudo','bt_autor',"(idautor = ?) AND idetiqueta = 53 AND indicador is null");
-		$query = $this->Query($sql,$idautor);
-		return $query->result;
+        /*Apagando o autor de bt_material*/
+        $sql4 = new sql('','bt_material',"idetiqueta = $idetiqueta and ocorrencia = $ocorrencia and idobra= $idobra");
+        $ok4 = $this->Execute($sql4->Delete());
 
-	}
+        /*Apagando o assunto de bt_indicador*/
+        $sql5 = new sql('','bt_indicadores',"idetiqueta = $idetiqueta and ocorrencia = $ocorrencia and idobra= $idobra");
+        $ok5 = $this->Execute($sql5->Delete());
 
-	function GetEti54ById($idautor)
-	{
-		$sql =  new sql('idetiqueta,ocorrencia,subcampo,linha,conteudo','bt_autor',"(idautor = ?) AND idetiqueta = 54 AND indicador is null");
-		$query = $this->Query($sql,$idautor);
-		return $query->result;
+        $sql = new sql('idautor','bt_obra','(idobra = ?)');
+        $values = array($idautor,$idobra);
+        $commands[] = $sql->update($values);
+        $this->Execute($commands);
 
-	}
 
-	function GetEti55ById($idautor)
-	{
-		$sql =  new sql('idetiqueta,ocorrencia,subcampo,linha,conteudo','bt_autor',"(idautor = ?) AND idetiqueta = 55 AND indicador is null");
-		$query = $this->Query($sql,$idautor);
-		return $query->result;
+        return $ok;
+    }
 
-	}
+    function GetCutterByIdAutor($idAutor){
+       // $sql = new sql('a.conteudo','bt_autor a',"(a.idautor = ?) AND a.idetiqueta =  53 AND a.subcampo =  'b' ");
+       
+        $sql = new sql('a.cutter','bt_autor a',"(a.idautor = ?) AND a.subcampo =  'a' ");
+        $query = $this->Query($sql,$idAutor);
+        return $query->result[0][0];
+    }
 
-	function GetEti56ById($idautor)
-	{
-		$sql =  new sql('idetiqueta,ocorrencia,subcampo,linha,conteudo','bt_autor',"(idautor = ?) AND idetiqueta = 56 AND indicador is null");
-		$query = $this->Query($sql,$idautor);
-		return $query->result;
+    function GetEti53ById($idautor)
+    {
+        $sql =  new sql('idetiqueta,ocorrencia,subcampo,linha,conteudo','bt_autor',"(idautor = ?) AND idetiqueta = 53 AND indicador is null");
+        $query = $this->Query($sql,$idautor);
+        return $query->result;
+         
+    }
 
-	}
+    function GetEti54ById($idautor)
+    {
+        $sql =  new sql('idetiqueta,ocorrencia,subcampo,linha,conteudo','bt_autor',"(idautor = ?) AND idetiqueta = 54 AND indicador is null");
+        $query = $this->Query($sql,$idautor);
+        return $query->result;
+         
+    }
 
-	function getByIdSubcampo($item,$subcampo)
-	{
-		$sql = new sql('conteudo,linha','bt_autor',"idautor = $item AND (subcampo = ?)");
-		$query = $this->Query($sql,$subcampo);
-		return $query->result;
-	}
+    function GetEti55ById($idautor)
+    {
+        $sql =  new sql('idetiqueta,ocorrencia,subcampo,linha,conteudo','bt_autor',"(idautor = ?) AND idetiqueta = 55 AND indicador is null");
+        $query = $this->Query($sql,$idautor);
+        return $query->result;
+         
+    }
 
-	function getIndicadorById($item)
-	{
-		$sql = new sql('conteudo','bt_autor',"(idautor = $item) and indicador is not null");
-		$query = $this->Query($sql);
-		return $query;
-	}
+    function GetEti56ById($idautor)
+    {
+        $sql =  new sql('idetiqueta,ocorrencia,subcampo,linha,conteudo','bt_autor',"(idautor = ?) AND idetiqueta = 56 AND indicador is null");
+        $query = $this->Query($sql,$idautor);
+        return $query->result;
+         
+    }
 
-	function getIdAutorByObra($idObra)
-	{
-		$sql = new sql ('idautor','bt_obra',"(idobra = $idObra)");
-		$query = $this->Query($sql);
-		return $query->result;
-	}
+    function getByIdSubcampo($item,$subcampo)
+    {
+        $sql = new sql('conteudo,linha','bt_autor',"idautor = $item AND (subcampo = ?)");
+        $query = $this->Query($sql,$subcampo);
+        return $query->result;
+    }
+
+    function getIndicadorById($item)
+    {
+        $sql = new sql('conteudo','bt_autor',"(idautor = $item) and indicador is not null");
+        $query = $this->Query($sql);
+        return $query;
+    }
+    
+    function getIdAutorByObra($idObra)
+    {
+      $sql = new sql ('idautor','bt_obra',"(idobra = $idObra)");
+      $query = $this->Query($sql);
+      return $query->result;
+    }
 	function getIndicadorByIdEtiqueta($idobra,$idetiqueta)
 	{
-		$sql = new sql('conteudo','bt_material',"(idobra = $idobra) and (idetiqueta = $idetiqueta) and subcampo is NULL  ORDER BY idmaterial ");
-		$query = $this->Query($sql);
-		return $query->result;
+	$sql = new sql('conteudo','bt_material',"(idobra = $idobra) and (idetiqueta = $idetiqueta) and subcampo is NULL  ORDER BY idmaterial ");
+        $query = $this->Query($sql);
+        return $query->result;
 	}
-
+	
 	function GetCutterMarcById($idautor)
 	{
 		$sql = new sql('cutter','bt_autor',"(idautor = $idautor) and cutter is not null");
 		$query = $this->Query($sql);
 		return $query->result[0][0];
 	}
+	
+     /**
+     * 
+     * Metodo responsavel por incluir os valores dos fields
+     * @param $fields
+     * @param $idAutor
+     * @param $idEtiqueta
+     * @param $ocorrencia
+     * @param $classificacao
+     * @param $idSubficha
+     */
+    function insereFields($fields,$idAutor,$idEtiqueta,$ocorrencia,$classificacao,$idSubficha,$transactionLocal = true)
+    {
+        global $MIOLO,$module;
+        if ($transactionLocal) {
+             $this->BeginTransaction();;
+        }
+       
+        foreach($fields as $campoArray)
+        {
+            $campo = explode('_',$campoArray[0]);
+            $value = $campoArray[1];
+            if ($campo[0] == $idSubficha)
+            {
+                if (is_array($value))
+                {
+                    foreach($value as $i=>$v)
+                    {
+                        $t = explode('] [',$v);
+                        $linha = substr($t[0],1);
+                        $conteudo = substr($t[1],0,strlen($t[1])-1);
+                        $conteudo = trim($this->RetirarCaracteresEspeciais($conteudo));
+                        if($conteudo != null)
+                        {
+                            $this->Insert($idAutor,$idEtiqueta, $campo[2],$conteudo,$linha,$ocorrencia, $classificacao);
+                            $etiqueta_vazia = false;
+                        }
+                    }
+                }
+                else
+                {
+                    if ($campo[1] == "IND")
+                    {
+                        $this->saveIndicador($idAutor,$idEtiqueta, $campo[2],$value,1,$ocorrencia,$classificacao,$campo[2]);
+                    }
+                    else
+                    {
+                        if($value != null)
+                        {
+                            $value = trim($this->RetirarCaracteresEspeciais($value));                           
+                            $this->Insert($idAutor, $idEtiqueta, $campo[2],$value,1,$ocorrencia, $classificacao);
+                            $etiqueta_vazia = false;
+                        }
+                    }
+                }
+            }
+        }
+        if ( $transactionLocal) {
+            try 
+            {
+                $this->EndTransaction();
+            } 
+            catch (EDatabaseTransactionException $e) 
+            {
+                $msg = $e->getMessage();
+                $MIOLO->logMessage('[ERROR]' . $msg);
+                $MIOLO->error($msg, $MIOLO->GetActionURL($module, $action,null ), 'Fatal Error');            
+            }
+        }
 
-	/**
-	 *
-	 * Metodo responsavel por incluir os valores dos fields
-	 * @param $fields
-	 * @param $idAutor
-	 * @param $idEtiqueta
-	 * @param $ocorrencia
-	 * @param $classificacao
-	 * @param $idSubficha
-	 */
-	function insereFields($fields,$idAutor,$idEtiqueta,$ocorrencia,$classificacao,$idSubficha,$transactionLocal = true)
-	{
-		global $MIOLO,$module;
-		if ($transactionLocal) {
-			$this->BeginTransaction();;
-		}
-
-		foreach($fields as $campoArray)
-		{
-			$campo = explode('_',$campoArray[0]);
-			$value = $campoArray[1];
-			if ($campo[0] == $idSubficha)
-			{
-				if (is_array($value))
-				{
-					foreach($value as $i=>$v)
-					{
-						$t = explode('] [',$v);
-						$linha = substr($t[0],1);
-						$conteudo = substr($t[1],0,strlen($t[1])-1);
-						$conteudo = trim($this->RetirarCaracteresEspeciais($conteudo));
-						if($conteudo != null)
-						{
-							$this->Insert($idAutor,$idEtiqueta, $campo[2],$conteudo,$linha,$ocorrencia, $classificacao);
-							$etiqueta_vazia = false;
-						}
-					}
-				}
-				else
-				{
-					if ($campo[1] == "IND")
-					{
-						$this->saveIndicador($idAutor,$idEtiqueta, $campo[2],$value,1,$ocorrencia,$classificacao,$campo[2]);
-					}
-					else
-					{
-						if($value != null)
-						{
-							$value = trim($this->RetirarCaracteresEspeciais($value));
-							$this->Insert($idAutor, $idEtiqueta, $campo[2],$value,1,$ocorrencia, $classificacao);
-							$etiqueta_vazia = false;
-						}
-					}
-				}
-			}
-		}
-		if ( $transactionLocal) {
-			try
-			{
-				$this->EndTransaction();
-			}
-			catch (EDatabaseTransactionException $e)
-			{
-				$msg = $e->getMessage();
-				$MIOLO->logMessage('[ERROR]' . $msg);
-				$MIOLO->error($msg, $MIOLO->GetActionURL($module, $action,null ), 'Fatal Error');
-			}
-		}
-
-
-		$ok = ( ! $this->checkError() );
-		return $ok;
-	}
-
-	/**
-	 *
-	 * Busca as obras de um autor
-	 * @param $idAutor
-	 */
+        
+        $ok = ( ! $this->checkError() );
+        return $ok;
+    }
+    
+    /**
+     * 
+     * Busca as obras de um autor
+     * @param $idAutor
+     */
 	function ListObraByAutor($idAutor)
 	{
 		$sql = new sql('titulo','bt_obra','(idautor= ?)');
 		$query = $this->Query($sql,$idAutor);
 		return $query->result[0][0];
-	}
-
+	}    
+	
 	/**
-	 *
+	 * 
 	 * Metodo responsavel por atualizar os valores dos fields
 	 * @param $fields
 	 * @param $idAutor
@@ -792,60 +751,60 @@ class BusinessBibliotecaAutor extends Business
 	 * @param $ocorrencia
 	 * @param $idSubficha
 	 */
-	function updateFields($fields,$idAutor,$idEtiqueta,$ocorrencia,$classificacao,$idSubficha)
-	{
-		global $MIOLO,$module;
-
-		$y=0;
-		$ObrasAutor = $this->getObrasDoAutor($idAutor);
-		$this->BeginTransaction();
-		$this->Delete($idAutor);
-		$this->insereFields($fields,$idAutor,$idEtiqueta,$ocorrencia,$classificacao,$idSubficha,false);
-		$obra = $MIOLO->GetBusiness($module,'obra');
-		while ($ObrasAutor[$y]!=NULL)
-		{
-			$idobra = $ObrasAutor[$y][1];
-			$y++;
-			$ocorrencia = $temp;
-			$idAutor = $this->getIdAutorAtualizado($idEtiqueta,$ocorrencia);
-			$arrayAutores = $this->GetAutorCompleto($idEtiqueta,$ocorrencia);
-			$arrayIndicadores = $this->GetIndicadorAutor($idEtiqueta,$ocorrencia);
-			$ocorrencia = $obra->GetNextOcorrencia($idobra,$idEtiqueta);
-			for ($x=0;$x<sizeof($arrayAutores);$x++)
-			{
-				$idmaterial = $obra->saveMaterialAutor($idobra,$idEtiqueta,$arrayAutores[$x][0],$arrayAutores[$x][1],$arrayAutores[$x][2],$ocorrencia+1);
-			}
-			for ($x=0;$x<sizeof($arrayIndicadores);$x++)
-			{
-				$obra->saveIndicadorObra($idobra,$idEtiqueta,$ocorrencia+1,$arrayIndicadores[$x][0],$arrayIndicadores[$x][1],0);
-			}
-			$this->saveAutorObra($idAutor,$idobra,$ocorrencia+1,$idEtiqueta);
-		}
-
-		try {
+    function updateFields($fields,$idAutor,$idEtiqueta,$ocorrencia,$classificacao,$idSubficha)
+    {
+        global $MIOLO,$module;
+   
+        $y=0;
+        $ObrasAutor = $this->getObrasDoAutor($idAutor);        
+        $this->BeginTransaction();
+        $this->Delete($idAutor);
+        $this->insereFields($fields,$idAutor,$idEtiqueta,$ocorrencia,$classificacao,$idSubficha,false);
+        $obra = $MIOLO->GetBusiness($module,'obra');
+        while ($ObrasAutor[$y]!=NULL)
+        {
+            $idobra = $ObrasAutor[$y][1];
+            $y++;
+            $ocorrencia = $temp;
+            $idAutor = $this->getIdAutorAtualizado($idEtiqueta,$ocorrencia);
+            $arrayAutores = $this->GetAutorCompleto($idEtiqueta,$ocorrencia);
+            $arrayIndicadores = $this->GetIndicadorAutor($idEtiqueta,$ocorrencia);
+            $ocorrencia = $obra->GetNextOcorrencia($idobra,$idEtiqueta);
+            for ($x=0;$x<sizeof($arrayAutores);$x++)
+            {
+                $idmaterial = $obra->saveMaterialAutor($idobra,$idEtiqueta,$arrayAutores[$x][0],$arrayAutores[$x][1],$arrayAutores[$x][2],$ocorrencia+1);
+            }
+            for ($x=0;$x<sizeof($arrayIndicadores);$x++)
+            {
+                $obra->saveIndicadorObra($idobra,$idEtiqueta,$ocorrencia+1,$arrayIndicadores[$x][0],$arrayIndicadores[$x][1],0);
+            }
+            $this->saveAutorObra($idAutor,$idobra,$ocorrencia+1,$idEtiqueta);             
+        }
+       
+        try {
             $this->EndTransaction();
         } catch (EDatabaseTransactionException $e) {
             $msg = $e->getMessage();
             $MIOLO->logMessage('[ERROR]' . $msg);
-            $MIOLO->error($msg, $MIOLO->GetActionURL($module, $action,null ), 'Fatal Error');
+            $MIOLO->error($msg, $MIOLO->GetActionURL($module, $action,null ), 'Fatal Error');            
         }
-
+        
         $ok = ( ! $this->checkError() );
         return $ok;
-	}
+    }		
 
-	function getOcorrenciaAutorSecByObra($idobra)
-	{
-		$sql = new sql('a.ocorrencia','bt_autor a, bt_material b',"b.idobra = $idobra and a.idetiqueta = b.idetiqueta and a.subcampo is null");
-		$query = $this->Query($sql);
-		return $query->result;
-	}
-
-	function getIndicadorByOcorrencia($ocorrencia)
-	{
-		$sql = new sql('indicador','bt_autor',"ocorrencia = $ocorrencia and subcampo is null");
-		$query = $this->Query($sql);
-		return $query->result;
-	}
+    function getOcorrenciaAutorSecByObra($idobra) 
+    {
+    	$sql = new sql('a.ocorrencia','bt_autor a, bt_material b',"b.idobra = $idobra and a.idetiqueta = b.idetiqueta and a.subcampo is null");
+    	$query = $this->Query($sql);
+    	return $query->result;
+    }
+    
+    function getIndicadorByOcorrencia($ocorrencia)
+    {
+    	$sql = new sql('indicador','bt_autor',"ocorrencia = $ocorrencia and subcampo is null");
+    	$query = $this->Query($sql);
+    	return $query->result;
+    }
 }
 ?>

@@ -678,6 +678,12 @@ function listLicitacaoByCampusAndAno($Campus,$Ano)
 		$criteria->addCriteria('idlicitacao','=',$IdLicitacao);	
 		return $criteria->retrieveAsQuery();
 		}		
+		
+	function findByDataLimite($idlicitacao,$item)
+    {
+		$busca = "select datalimite from ad_orcamentotermo where idlicitacao = '$idlicitacao' and item = '$item' order by datalimite desc limit 1";					
+		return pg_fetch_result( pg_query($busca) ,0, 'datalimite' );
+    }
 
-	}
-	?>
+}
+?>

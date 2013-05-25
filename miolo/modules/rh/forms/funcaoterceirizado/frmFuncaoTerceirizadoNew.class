@@ -34,8 +34,8 @@ class frmFuncaoTerceirizadoNew extends MForm
        global $MIOLO;
 	   
 		$fields = array(
-            new MTextField('idFuncaoTerceirizado','','Código','2','Máx. 2 dígitos'),
-            new MTextField('descricao','','Descrição','20','Máx. 20 caracteres'),
+            new MTextField('idFuncaoTerceirizado','','Código','4'),
+            new MTextField('descricao','','Descrição','40'),
         );
 		
         $this->SetFields($fields);
@@ -44,10 +44,15 @@ class frmFuncaoTerceirizadoNew extends MForm
         	new MButton('btnNew', 'Incluir Função Terceirizado')
             );
 		$this->SetButtons($buttons);
+		
+		$this->idFuncaoTerceirizado->AddAttribute('maxlength','4');
+      $this->descricao->AddAttribute('maxlength','40');
 
 		$validators = array(
            new MRequiredValidator('idFuncaoTerceirizado'),
            new MRequiredValidator('descricao'),
+           
+           new IntegerValidator('idFuncaoTerceirizado'),
 		);
        $this->SetValidators($validators);
 
@@ -61,10 +66,15 @@ class frmFuncaoTerceirizadoNew extends MForm
 	        $data = $this->GetData();
 		$data->descricao = strtoupper($data->descricao);
 		$id = $data->idFuncaoTerceirizado;
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
 		if(is_numeric($id))
 		{
-	        	$funcaoTerceirizado = $MIOLO->GetBusiness($module,'funcaoterceirizado',$id);
-			if (strlen(trim($id)) < '1')
+	      $funcaoTerceirizado = $MIOLO->GetBusiness($module,'funcaoterceirizado',$id);
+			if (strlen(trim($id)) < '1' || $id == 0 )
 			{
 				$this->addError('Informe o id da Função Terceirizados');
 			}

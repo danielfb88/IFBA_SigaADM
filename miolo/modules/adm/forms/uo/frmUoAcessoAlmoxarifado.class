@@ -19,54 +19,71 @@
  */
 ?>
 
-<?
+<?php
 class frmUoAcessoAlmoxarifado extends Form
 {
     protected $objUoAlmoxarifado;
 
     function __construct($objUoAlmoxarifado)
     {
-        $this->objUoAlmoxarifado = $objUoAlmoxarifado;
-        $this->Form('Novo Acesso a Almoxarifado');
-        $this->EventHandler();
+	    $this->objUoAlmoxarifado = $objUoAlmoxarifado;
+	    $this->Form('Novo Acesso a Almoxarifado');
+	    $this->EventHandler();
     }
 
     function CreateFields()
     {
-        $fields = array(
-            new MSelection('idUoExecutante','','Almoxarifado',$this->objUoAlmoxarifado->listByTipoReq(8)->result)
-        );
+    	$resultadoPesquisaUOAlmoxarifado = $this->objUoAlmoxarifado->listByTipoReq(8)->result;
+    	if (!$resultadoPesquisaUOAlmoxarifado)
+    	{
+    		$this->addError('Não há Unidade Orçamentária com Tipo da Execução de Almoxarifado.');
+        	$this->GenerateErrors();
+    	}
+    	else
+    	{
+		    $fields = array(
+		        new MSelection('idUoExecutante','','Almoxarifado',$resultadoPesquisaUOAlmoxarifado)
+		    );
 		
-        $this->SetFields($fields);
-		
-		$buttons = array(
-        	new FormButton('btnPost', 'Gravar'),
-            );
-		$this->SetButtons($buttons);
+		    $this->SetFields($fields);
+        
+			$buttons = array(
+		    	new FormButton('btnPost', 'Gravar'),
+		        );
+			$this->SetButtons($buttons);
+		}
     }
 
     function btnPost_click()
     {
-        $data = $this->getData();
-        try
-        {
-            $acesso = $this->objUoAlmoxarifado->getAcessoAlmoxarifado('new');
-            $acesso->idUoExecutante = $data->idUoExecutante;
-            $acesso->save();
-            $go = $this->manager->GetActionURL('adm','main:uo',$this->objUoAlmoxarifado->idUo, array('form'=>'acessoalmox'));
-			if ($update)
-			{
-	            $this->manager->Information('Acesso atualizado com sucesso.', $go );
-			}
-			else
-			{
-	            $this->manager->Information('Acesso inserido com sucesso.', $go );
-			}
-        }
-        catch ( Exception $e )
-        {
-            $this->AddError($e->getMessage());
-        }
+    	if(!Form::getFormValue('idUoExecutante')){
+    		$this->addError('Informe uma UO executante.');
+    	}
+
+    	if ($this->errors != '') //Caso haja algum erro, exibe na tela.
+	            $this->GenerateErrors();
+        else{
+		    $data = $this->getData();
+		    try
+		    {
+		        $acesso = $this->objUoAlmoxarifado->getAcessoAlmoxarifado('new');
+		        $acesso->idUoExecutante = $data->idUoExecutante;
+		        $acesso->save();
+		        $go = $this->manager->GetActionURL('adm','main:uo',$this->objUoAlmoxarifado->idUo, array('form'=>'acessoalmox'));
+				if ($update)
+				{
+			        $this->manager->Information('Acesso atualizado com sucesso.', $go );
+				}
+				else
+				{
+			        $this->manager->Information('Acesso inserido com sucesso.', $go );
+				}
+		    }
+		    catch ( Exception $e )
+		    {
+		        $this->AddError($e->getMessage());
+		    }
+	    }
     }
 
 	function btnDel_click()

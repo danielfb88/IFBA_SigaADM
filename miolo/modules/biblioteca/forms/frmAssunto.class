@@ -109,6 +109,11 @@ class frmAssunto extends MForm
         new MButton('btnEdit','Inserir'),
         new MLink('btnLinkAssunto','Relação de Assuntos',$this->manager->getActionURL($module,$self,'',array('event'=>'btnList:click'))),
         );
+		
+		$this->setFieldAttr('selEtiqueta','visible',false);
+		$this->setFieldAttr('btnEdit','visible',false);
+		$this->setFieldAttr('btnLinkAssunto','visible',false);
+		
 
         $this->setFieldAttr('btnChoose','visible',false);
         $this->setFieldAttr('txtTag','visible',false);
@@ -237,7 +242,7 @@ class frmAssunto extends MForm
         {
             $ok = $this->getFormValue('selEtiqueta');
         }
-         
+		
         if (($item == NULL) && ($ok == $item))
         {
             $MIOLO->Prompt(Prompt::Error("Por favor, selecione uma etiqueta.",$MIOLO->GetActionURL($module,$action)));
@@ -257,11 +262,11 @@ class frmAssunto extends MForm
         }elseif($ok == $item)
         {
             $pos = (int)$this->getFormValue('selEtiqueta');
-            $tag = $this->selEtiqueta->getOption($pos);
+            //$tag = $this->selEtiqueta->getOption($pos);
             $idEtiqueta = $this->assunto->GetEtiquetaById($item);
             $etiqueta = $this->etiqueta->getById($idEtiqueta);
+			$tag = $etiqueta->tag;
             $ocorrencia = $this->assunto->GetLastNumAssunto($idEtiqueta);
-
         }
         elseif($item == NULL)
         {
@@ -332,7 +337,7 @@ class frmAssunto extends MForm
 
     function btnChoose_click()
     {
-        $go = $this->manager->getActionURL('biblioteca','main:admin:assunto');
+        $go = $this->manager->getActionURL('biblioteca','main:catalogacao:assunto');
         $this->page->redirect($go);
     }
 
@@ -361,7 +366,7 @@ class frmAssunto extends MForm
 
         if ($ok)
         {
-            $MIOLO->Information("Assunto inserido com sucesso na base de dados",$MIOLO->GetActionURL('biblioteca',"main:admin:assunto"));
+            $MIOLO->Information("Assunto inserido com sucesso na base de dados",$MIOLO->GetActionURL('biblioteca',"main:catalogacao:assunto"));
         }     
         
     }
@@ -370,19 +375,20 @@ class frmAssunto extends MForm
 
     function btnList_click()
     {
-        global $MIOLO, $module, $self, $theme, $action, $page;
+        global $MIOLO, $module, $self, $theme, $action, $page, $object;
 
         $this->assunto = $MIOLO->GetBusiness('biblioteca','assunto');
 
         $columns = array(
         new DataGridColumn('idassunto','Código','left',true, '10%',true, null, true,true),
+		new DataGridColumn('tag','Etiqueta','left',true, '10%',true, null, true,true),
         new DataGridColumn('conteudo','Conteúdo','left',true, '80%',true, null, true,true),
-        new DataGridColumn('classificacao','Classificação','center',true, '10%',true, null, true,true),
+        //new DataGridColumn('classificacao','Classificação','center',true, '10%',true, null, true,true),
         );
 
         $href_datagrid = $MIOLO->GetActionURL($module,$self,'', Array('event'=>'btnList_click'));
         $page->SetAction($href_datagrid);
-        $query = $this->assunto->ListAssunto();
+        $query = $this->assunto->ListAssuntoWithLink();
 
         $datagrid = new DataGrid2($query, $columns, $href_datagrid,20);
         $datagrid->SetTitle('Relação de assuntos');
@@ -391,9 +397,9 @@ class frmAssunto extends MForm
         $href_edit = $MIOLO->GetActionURL($module,$self,'%0%',Array('event'=>'btnEdit:click'));
         $href_dele = $MIOLO->GetActionURL($module,$self,'%0%',Array('event'=>'btnExcluir:click'));
 
-        $datagrid->AddActionIcon('Editar', 'edit', $href_edit);
-        $datagrid->AddActionIcon('Excluir', 'delete.gif', $href_dele);
-        $datagrid->HeaderLink('new', 'Novo Registro', $MIOLO->GetActionURL($module,$self,'',Array('event'=>'')));
+        //$datagrid->AddActionIcon('Editar', 'edit', $href_edit);
+        //$datagrid->AddActionIcon('Excluir', 'delete.gif', $href_dele);
+        //$datagrid->HeaderLink('new', 'Novo Registro', $MIOLO->GetActionURL($module,$self,'',Array('event'=>'')));
 
         $theme->InsertContent($datagrid);
     }
@@ -408,10 +414,10 @@ class frmAssunto extends MForm
 	
 		if($obraAssunto)
 		{
-		  $MIOLO->Error("Este assunto não pode ser apagado porque existe(m) obra(s) relacionada(s) com a mesma.", $MIOLO->GetActionURL($module,'main:admin:assunto&event=btnList:click'));
+		  $MIOLO->Error("Este assunto não pode ser apagado porque existe(m) obra(s) relacionada(s) com a mesma.", $MIOLO->GetActionURL($module,'main:catalogacao:assunto&event=btnList:click'));
 		}
-        $action_sim = $MIOLO->GetActionURL('biblioteca','main:admin:assunto&event',$item,array('conf'=>'sim'));
-        $action_nao = $MIOLO->GetActionURL('biblioteca','main:admin:assunto&event=btnList:click',$item,array('conf'=>'nao'));
+        $action_sim = $MIOLO->GetActionURL('biblioteca','main:catalogacao:assunto&event',$item,array('conf'=>'sim'));
+        $action_nao = $MIOLO->GetActionURL('biblioteca','main:catalogacao:assunto&event=btnList:click',$item,array('conf'=>'nao'));
         $MIOLO->Question("Tem certeza que deseja excluir o assunto? <i><font color=red>O assunto será excluído mesmo que haja vínculo com alguma obra.</font></i>",$action_sim,$action_nao);
     }
 
@@ -437,10 +443,92 @@ class frmAssunto extends MForm
 
         if ($ok)
         {
-            $MIOLO->Information("Assunto atualizado com sucesso na base de dados",$MIOLO->GetActionURL('biblioteca','main:admin:assunto&event=btnList:click'));
+            $MIOLO->Information("Assunto atualizado com sucesso na base de dados",$MIOLO->GetActionURL('biblioteca','main:catalogacao:assunto&event=btnList:click'));
         } 
                 
     }
+	
+	function btnDetails_click()
+	{
+		global $MIOLO, $module, $item;
+		
+		$this->setFieldAttr('selEtiqueta','visible',false);
+		$this->setFieldAttr('btnEdit','visible',false);
+		$this->setFieldAttr('btnLinkAssunto','visible',false);		
+		
+		$assunto = $MIOLO->GetBusiness($module,'assunto');
+		
+		$isobra = MIOLO::_REQUEST('object');
+		
+		if($isobra)
+			$items = $assunto->getIdAssuntoByObra($item);
+		else
+			$items[0][0] = $item;
+			
+		$relacao = array();
+		
+		foreach($items as $itemkey => $item)
+		{
+			$item = $item[0];
+		
+			$obras = $assunto->getObrasDoAssunto($item);		
+		
+			$idetiqueta = $assunto->GetEtiquetaById($item);			
+			
+			/*echo 'obra: <br>';
+			echo '<pre>';
+			var_dump($obras);
+			echo '</pre>';*/
+			
+			foreach($obras as $obra => $value)
+			{
+				//echo 'entrou '.$value[1].' '.$value[2].' '.$idetiqueta.' <br>';
+			
+				$sql = new sql('m.conteudo,m.subcampo,m.linha','bt_material m','m.idobra = '.$value[1].' AND m.idetiqueta = '.$idetiqueta.' AND m.ocorrencia = '.$value[2],'m.subcampo,m.linha');
+				
+				$query = $assunto->Query($sql);
+				
+				/*echo 'materiais: <br>';
+				echo '<pre>';
+				print_r($query->result);
+				echo '</pre>';*/
+
+				$ass = '';
+				foreach($query->result as $k => $v)
+				{
+					$ass .= $v[0];
+					
+					if(isset($query->result[$k+1]))
+						$ass .= ' -- ';
+				}
+					
+				if(!isset($relacao[$ass]))
+					$relacao[$ass]['obras'] = array();
+					
+				array_push($relacao[$ass]['obras'],array('idobra' => $value[1], 'numerodaobra' => $value[3]));
+			}
+		}
+		
+		foreach($relacao as $k => $v)
+		{
+			$this->addField(new MTextLabel('lblAss',$k,'Assunto'));
+			$this->addField(new MTextLabel('lblQtde',count($v['obras']),'Quantidade de obras'));
+			
+			$obras = '';
+			foreach($v['obras'] as $k1 => $v1)
+			{
+				$obras .= '<a href="'.
+					$MIOLO->GetActionURL('biblioteca','main:catalogacao:catalogacao&item='.$v1['idobra'])
+					.'">'.$v1['numerodaobra'].'</a>';				
+				if(isset($v['obras'][$k1+1]))
+					$obras .= ', ';
+			}
+			
+			$this->addField(new MTextLabel('lblAssObras',$obras,'Obras'));
+			$this->addField(new MHr());
+		}		
+		
+	}
 
 }
 ?>

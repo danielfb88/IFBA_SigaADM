@@ -101,10 +101,10 @@ class BusinessCommonObra extends Business
 
 	function GetByNumero($numero)
 	{
- 
 		$sql = new sql($this->allFields,'bt_obra','numerodaobra = ?');
  
 		$query = $this->Query($sql,$numero);
+		
 		
 		if ( !$query->eof() )
 			$this->SetData($query->GetRowObject());
@@ -469,7 +469,7 @@ class BusinessCommonObra extends Business
     function formatarABNT($data,$idobra,$autorSecundario)
     {
         if($this->consultaTipo('LIVRO',$idobra)){
-                $Resultado = $this->formatarAutorABNT($data,$autorSecundario).'. '. "<b>$data[1]</b>". ($data[2]?': '.$data[2].'. ':'') .$data[4].'. '. $data[8].': '.$data[9].'. '.$data[10].'.';
+                $Resultado = $this->formatarAutorABNTNew($data,$autorSecundario,$idobra).'. '. "<b>$data[1]</b>". ($data[2]?' '.$data[2].' ':'') .$data[4].' '.$data[8].' '. $data[9].' '.$data[10].' '/*.$data[11].'.'*/;
                 return $Resultado;
         }
     }
@@ -484,7 +484,63 @@ class BusinessCommonObra extends Business
             case 3: return $autor.'; '.$autorSecundario->result[0][1].'; '.$autorSecundario->result[1][1];
             default: return $autor.' et al';
          }
-     } 
+     }
+
+    function formatarAutorABNTNew($data,$autorSecundario,$idOBra)
+    {
+		global $MIOLO, $module;
+	
+		$autor = $MIOLO->GetBusiness($module,'autor');
+		
+		$autores = array();
+		
+		if($this->getEntradaPrincipal($idOBra,false))
+			array_push($autores,$this->getEntradaPrincipal($idOBra,false));
+			
+		foreach($autor->GetAutorSecundarioByObra($idOBra)->result as $k => $v)
+		{
+			if(!in_array($v[1],$autores))
+				array_push($autores,$v[1]);
+		}
+		
+	
+        $autor = $autores[0];
+		if(!empty($autor))
+		{
+			$autor = explode(',',$autor);
+			$autor[0] = strtoupper($autor[0]);
+			$autor = implode(', ',$autor);
+		}
+		
+		if(!empty($autores[1]))
+		{
+			$autores[1] = explode(',',$autores[1]);
+			$autores[1][0] = strtoupper($autores[1][0]);
+			$autores[1] = implode(', ',$autores[1]);
+		}
+
+		if(!empty($autores[2]))
+		{
+			$autores[2] = explode(',',$autores[2]);
+			$autores[2][0] = strtoupper($autores[2][0]);
+			$autores[2] = implode(', ',$autores[2]);
+		}
+
+		$etAl = preg_match('/et al/i',$data[21],$matches);
+		if(empty($etAl))
+			$etAl = preg_match('/et. al/i',$data[21],$matches);
+		
+		if(!empty($etAl))
+			return $autor.' et al';
+		
+        $contAutores = count($autores);
+        switch($contAutores){
+            case 1: return $autor;
+            case 2: return $autor.'; '.$autores[1];
+            case 3: return $autor.'; '.$autores[1].'; '.$autores[2];
+            default: return $autor.' et al';
+        }
+    }	 
     
     function deleteMaterialCategoria($idObra,$ocorrencia)
     {
@@ -1246,7 +1302,7 @@ $sqlc = new sql('titulo,  edicao, localpublicacao, datapublicacao, idgenero, sub
 				$result[2] = ($result[2] == null) ? "<b><a href='index.php?module=$module&action=main:pesquisasimples&event=PesquisaDetalhada&item=$q[0]&campo=Titulo&tipo=detalhe'>$q[0]</a></b>" : $result[2] . ', ' . "<b><a href='index.php?module=$module&action=main:pesquisasimples&event=PesquisaDetalhada&item=$q[0]&campo=Titulo&tipo=detalhe'>$q[0]</a></b>";
 			}
 		//autor
-		$sql = new sql('m.conteudo', 'bt_material m, bt_etiqueta e', "(e.idetiqueta = m.idetiqueta) and (m.idobra = ?) and (e.tag = '100') and (subcampo = 'a')");
+		$sql = new sql('m.conteudo', 'bt_material m, bt_etiqueta e', "(e.idetiqueta = m.idetiqueta) and (m.idobra = ?) and (e.tag >= '100' and e.tag < '130') and (subcampo = 'a')");
 		$query = $this->Query($sql,$idobra);
 		if($query->result)
 			foreach($query->result as $q)
@@ -1310,7 +1366,7 @@ $sqlc = new sql('titulo,  edicao, localpublicacao, datapublicacao, idgenero, sub
 				$result[10] = ($result[10] == null) ? "<b><a href='index.php?module=$module&action=main:pesquisasimples&event=PesquisaDetalhada&item=$q[0]&campo=Ano&tipo=detalhe'>$q[0]</a></b>" : $result[10] . ', ' . "<b><a href='index.php?module=$module&action=main:pesquisasimples&event=PesquisaDetalhada&item=$q[0]&campo=Ano&tipo=detalhe'>$q[0]</a></b>";
 			}
 		//descrição física
-		$sql = new sql('m.conteudo', 'bt_material m, bt_etiqueta e', "(e.idetiqueta = m.idetiqueta) and (m.idobra = ?) and (e.tag = '300') and (subcampo = 'a')");
+		$sql = new sql('m.conteudo,m.subcampo', 'bt_material m, bt_etiqueta e', "(e.idetiqueta = m.idetiqueta) and (m.idobra = ?) and (e.tag = '300')",'m.subcampo');
 		$query = $this->Query($sql,$idobra);
 		if($query->result)
 			foreach($query->result as $q)
@@ -1373,7 +1429,7 @@ $sqlc = new sql('titulo,  edicao, localpublicacao, datapublicacao, idgenero, sub
 		if($query->result)
 			foreach($query->result as $q)
 			{
-				$result[16] = ($result[16] == null) ? "<b><a href='index.php?module=$module&action=main:pesquisasimples&event=PesquisaDetalhada&item=$q[0]&campo=Entrada Secundaria&tipo=detalhe'>$q[0]</a></b>" : $result[16] . ', ' . "<b><a href='index.php?module=$module&action=main:pesquisasimples&event=PesquisaDetalhada&item=$q[0]&campo=Entrada Secundaria&tipo=detalhe'>$q[0]</a></b>";
+				$result[16] = ($result[16] == null) ? "<b><a href='index.php?module=$module&action=main:pesquisasimples&event=PesquisaDetalhada&item=$q[0]&campo=Entrada Secundaria&tipo=detalhe'>$q[0]</a></b>" : $result[16] . '<br> ' . "<b><a href='index.php?module=$module&action=main:pesquisasimples&event=PesquisaDetalhada&item=$q[0]&campo=Entrada Secundaria&tipo=detalhe'>$q[0]</a></b>";
 			}
 
 		//endereco eletronico (campo 856$u
@@ -1383,6 +1439,17 @@ $sqlc = new sql('titulo,  edicao, localpublicacao, datapublicacao, idgenero, sub
 		foreach($query->result as $q)
 		{
 			$result[17] = ($result[17] == null) ? "<b><a href='$q[0]' target='blank'>$q[0]</a></b>" : $result[17] . ', ' . "<b><a href='$q[0]' target='blank'>$q[0]</a></b>";
+		}
+		
+		//Indicação de responsabilidade (Tag 245 subcampo c)
+        $sql = new sql('m.conteudo', 'bt_material m, bt_etiqueta e', "(e.idetiqueta = m.idetiqueta) and (m.idobra = ?) and (e.tag = '245')  and (m.subcampo = 'c')");
+        $query = $this->Query($sql,$idobra);
+        if($query->result)
+		{
+			foreach($query->result as $q)
+			{
+				$result[21] = ($result[21] == null) ? '<b>' . $q[0] . '</b>' : $result[21] . ' ; ' . '<b>' . $q[0] . '</b>';
+			}
 		}
 
 		return $result;
@@ -1621,6 +1688,199 @@ $sqlc = new sql('titulo,  edicao, localpublicacao, datapublicacao, idgenero, sub
 		$commands[] = $sql->Insert($values);
 
 		$this->Execute($commands);
+	}
+	
+	function getTituloPontuado($idobra)
+	{
+        global $module, $MIOLO;
+        $objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+		
+		$idetiqueta = $objEtiqueta->GetIdByTag('245')->result[0][0];
+		
+    	$sql = new sql('m.subcampo,m.conteudo','bt_material m',"m.idetiqueta = $idetiqueta and m.idobra = $idobra and (m.subcampo = 'a' or m.subcampo = 'b' or m.subcampo = 'c')",'m.subcampo');
+        $query = $this->Query($sql);
+		
+		$retorno = '';
+		foreach($query->result as $key => $value)
+		{
+			$conteudo = trim($value[1]);
+			$ultimoCaracter = $conteudo[strlen($conteudo)-1];			
+		
+			if($value[0] == 'a')
+			{
+				if(($ultimoCaracter == ':' || $ultimoCaracter == '.') && (isset($query->result[1]) || isset($query->result[2])))
+					$retorno .= substr($conteudo,0,strlen($conteudo)-1);
+				else
+					$retorno .= $conteudo;
+			}
+			else if($value[0] == 'b')
+			{
+				$retorno .= ' : ';
+				if(($ultimoCaracter == '/' || $ultimoCaracter == '.') && (isset($query->result[2])))
+					$retorno .= substr($conteudo,0,strlen($conteudo)-1);
+				else
+					$retorno .= $conteudo;
+			}
+			else if($value[0] == 'c')
+					$retorno .= ' / ' .$conteudo;		
+		}
+		
+		return $retorno;
+	}
+	
+	function getEntradaPrincipal($idobra, $all = true)
+	{
+        global $module, $MIOLO;
+        $objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+		
+		$idetiqueta100 = $objEtiqueta->GetIdByTag('100')->result[0][0];
+		$idetiqueta110 = $objEtiqueta->GetIdByTag('110')->result[0][0];		
+		$idetiqueta111 = $objEtiqueta->GetIdByTag('111')->result[0][0];
+		$idetiqueta130 = $objEtiqueta->GetIdByTag('130')->result[0][0];
+		
+		if($all)
+			$sql = new sql('m.idetiqueta, m.conteudo','bt_material m',"(m.idetiqueta = $idetiqueta100 or m.idetiqueta = $idetiqueta110 or m.idetiqueta = $idetiqueta111 or m.idetiqueta = $idetiqueta130) and m.idobra = $idobra and m.subcampo = 'a'",'m.idetiqueta');
+		else
+			$sql = new sql('m.idetiqueta, m.conteudo','bt_material m',"(m.idetiqueta = $idetiqueta100 or m.idetiqueta = $idetiqueta110 or m.idetiqueta = $idetiqueta111) and m.idobra = $idobra and m.subcampo = 'a'",'m.idetiqueta');
+			
+        $query = $this->Query($sql);
+		
+		return $query->result[0][1];		
+	}
+	
+	function getImprentaPontuado($idobra)
+	{
+        global $module, $MIOLO;
+        $objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+		
+		$idetiqueta = $objEtiqueta->GetIdByTag('260')->result[0][0];
+		
+    	$sql = new sql('m.subcampo,m.conteudo,m.ocorrencia,m.linha','bt_material m',"m.idetiqueta = $idetiqueta and m.idobra = $idobra and (m.subcampo = 'a' or m.subcampo = 'b' or m.subcampo = 'c')",'m.subcampo,m.ocorrencia,m.linha');
+        $query = $this->Query($sql);
+		
+		$retorno = '';
+		
+		$valores = array();
+		
+		foreach($query->result as $key => $value)
+		{
+			if(!isset($valores[$value[0]]))
+			{
+				$valores[$value[0]]['valores'] = array();
+				$valores[$value[0]]['contagem'] = 0;
+			}
+			
+			$conteudo = trim($value[1]);
+			$ultimoCaracter = $conteudo[strlen($conteudo)-1];
+
+			if($ultimoCaracter == ':' || $ultimoCaracter == ';' || $ultimoCaracter == ',' || $ultimoCaracter == '.')
+				$conteudo = substr($conteudo,0,strlen($conteudo)-1);
+			
+			array_push($valores[$value[0]]['valores'],$conteudo);
+			$valores[$value[0]]['contagem']++;
+		}
+		
+		
+		$retorno = '';
+		
+		if($valores['a']['contagem'] == $valores['b']['contagem'])
+		{
+			for($i = 0; $i < $valores['a']['contagem']; $i++)
+			{
+				$retorno .= $valores['a']['valores'][$i] . ' : ';
+				$retorno .= $valores['b']['valores'][$i];
+				
+				if(isset($valores['b']['valores'][$i+1]))
+					$retorno .= ' ; ';
+				else
+					$retorno .= ', ';
+			}
+		}
+		else
+		{
+			for($i = 0; $i < $valores['a']['contagem']; $i++)
+			{
+				$retorno .= $valores['a']['valores'][$i];
+				
+				if(isset($valores['a']['valores'][$i+1]))
+					$retorno .= ' ; ';
+				else
+					$retorno .= ' : ';
+			}
+			for($i = 0; $i < $valores['b']['contagem']; $i++)
+			{
+				$retorno .= $valores['b']['valores'][$i];
+				
+				if(isset($valores['b']['valores'][$i+1]))
+					$retorno .= ' : ';
+				else
+					$retorno .= ', ';
+			}			
+		}
+		
+		if(isset($valores['c']['valores'][0]))
+			$retorno .= $valores['c']['valores'][0] .'.';
+		
+		return $retorno;
+	}
+	
+	function getDescricaoFisicaPontuado($idobra)
+	{
+        global $module, $MIOLO;
+        $objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+		
+		$idetiqueta = $objEtiqueta->GetIdByTag('300')->result[0][0];
+		
+    	$sql = new sql('m.subcampo,m.conteudo,m.ocorrencia,m.linha','bt_material m',"m.idetiqueta = $idetiqueta and m.idobra = $idobra and (m.subcampo = 'a' or m.subcampo = 'b')",'m.subcampo,m.ocorrencia,m.linha');
+        $query = $this->Query($sql);
+		
+		$retorno = '';
+		
+		$valores = array();
+		
+		foreach($query->result as $key => $value)
+		{
+			$conteudo = trim($value[1]);
+			$ultimoCaracter = $conteudo[strlen($conteudo)-1];			
+		
+			if($value[0] == 'a')
+			{
+				if($ultimoCaracter == ':' && (isset($query->result[1])))
+					$retorno .= substr($conteudo,0,strlen($conteudo)-1);
+				else
+					$retorno .= $conteudo;
+			}
+			else if($value[0] == 'b')
+			{
+				$retorno .= ' : ';
+				if($ultimoCaracter == ';')
+					$retorno .= substr($conteudo,0,strlen($conteudo)-1);
+				else
+					$retorno .= $conteudo;
+			}
+		}
+		
+		return $retorno;
+	}
+	
+	function getDescricaoFisica($idobra)
+	{
+        global $module, $MIOLO;
+        $objEtiqueta = $MIOLO->GetBusiness($module,'etiqueta');
+		
+		$idetiqueta = $objEtiqueta->GetIdByTag('300')->result[0][0];
+		
+    	$sql = new sql('m.subcampo,m.conteudo,m.ocorrencia,m.linha','bt_material m',"m.idetiqueta = $idetiqueta and m.idobra = $idobra and (m.subcampo >= 'a' and m.subcampo <= 'e')",'m.subcampo,m.ocorrencia,m.linha');
+        $query = $this->Query($sql);
+		
+		$retorno = '';
+		
+		$valores = array();
+		
+		foreach($query->result as $key => $value)
+			$retorno .= $value[1] . ' ';
+		
+		return $retorno;
 	}
 
 }

@@ -339,5 +339,11 @@ class BusinessAdmMaterial extends Business
 		$query = $this->Query($sql);
 		return $query;
 	}
+
+	function findBySubID($idelemento, $subelemento)
+	{
+		$busca = "select count(*) as total from ad_subelemento where idelemento = $idelemento and idsubelemento = $subelemento";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+	}
 }
 ?>

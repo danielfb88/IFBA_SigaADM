@@ -31,23 +31,34 @@ $theme->ClearContent();
 //$theme->InsertContent(new ContentHeader('Módulo','Biblioteca'));
 $close = $MIOLO->GetActionURL('biblioteca','main');
 $Panel = new ActionPanel('pnlCatalogacao','Catalogação','',$close);
-$Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Pré - Catalogação',$ui->GetImage($module,'pre_catalogacao.png'),$module,'main:catalogacao:precatalogacao');
+//$Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Pré - Catalogação',$ui->GetImage($module,'pre_catalogacao.png'),$module,'main:catalogacao:precatalogacao');
 $Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Catalogação',$ui->GetImage($module,'catalogacao.png'),$module,'main:catalogacao:catalogacao');
-$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Catalogação Simplificada',$ui->GetImage($module,'catalogacao.png'),$module,'main:catalogacao:catalogacaodireta');
+
+$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Catalogação IFMS',$ui->GetImage($module,'catalogacao.png'),$module,'main:catalogacao:catalogacaoifms');
+
+//$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Catalogação Simplificada',$ui->GetImage($module,'catalogacao.png'),$module,'main:catalogacao:catalogacaodireta');
 //$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Catalogação 2',$ui->GetImage($module,'catalogacao.png'),$module,'main:catalogacao:catalogacaoPergamum');
 //testes
 //$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Catalogação',$ui->GetImage($module,'catalogacao.png'),$module,'main:catalogacao:catalogacaoaltercao');
 
 
-$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Assuntos da Obra',$ui->GetImage($module,'assunto_da_obra.png'),$module,'main:catalogacao:assunto');
+//$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Assuntos da Obra',$ui->GetImage($module,'assunto_da_obra.png'),$module,'main:catalogacao:assunto');
+
+//$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Assuntos',$ui->GetImage($module,'assuntos.png'),$module,'main:admin:assunto&event=btnList:click');
+
+$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Assuntos',$ui->GetImage($module,'assuntos.png'),$module,'main:catalogacao:assunto&event=btnList:click');
+
 $Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Autores da Obra',$ui->GetImage($module,'autor.png'),$module,'main:catalogacao:autor');
 $Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Exemplares',$ui->GetImage($module,'exemplares.png'),$module,'main:catalogacao:exemplar');
 
 //ALterado, adicionado
-$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Periódicos',$ui->GetImage($module,'periodicos.png'),$module,'main:catalogacao:periodicos');
-$Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Importação MARC',$ui->GetImage($module,'importacao_marc.png'),$module,'main:catalogacao:importacaoMARC');
-$Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Importacao na Tela',$ui->GetImage($module,'importacao_marc.png'),$module,'main:catalogacao:importacao');
-$Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Exportacao MARC',$ui->GetImage($module,'exportacao_marc.png'),$module,'main:catalogacao:exportacaoMARC');
+//$Panel->AddUserAction('BIB_CATALOGACAO',A_ACCESS,'Periódicos',$ui->GetImage($module,'periodicos.png'),$module,'main:catalogacao:periodicos');
+//$Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Importação MARC',$ui->GetImage($module,'importacao_marc.png'),$module,'main:catalogacao:importacaoMARC');
+
+$Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Importação IFMS',$ui->GetImage($module,'importacao_marc.png'),$module,'main:catalogacao:importacaonovo');
+
+//$Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Importacao na Tela',$ui->GetImage($module,'importacao_marc.png'),$module,'main:catalogacao:importacao');
+//$Panel->AddUserAction('BIB_PRECATALOGACAO',A_ACCESS,'Exportacao MARC',$ui->GetImage($module,'exportacao_marc.png'),$module,'main:catalogacao:exportacaoMARC');
 
 
 $theme->AppendContent($Panel);

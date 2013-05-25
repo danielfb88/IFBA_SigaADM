@@ -50,18 +50,24 @@ class frmFuncionarioForcarEscolaridade extends MForm
 		$criteria->addCriteria('item1','>',$this->funcionario->escolaridade);
 		$criteria->addCriteria('item3','=',"'I'");//SOMENTE PARA NÍVEIS DE ESCOLARIDADE INCOMPLETOS
 		$criteria->addOrderAttribute("item1");//$criteria->addOrderAttribute("ABS(item1)");				
-		$query=$criteria->retrieveAsQuery();
+		//$query=$criteria->retrieveAsQuery();
 		
-		$escolaridades = $query->chunkResult();
+		/*$escolaridades = $query->chunkResult();*/
+		
+		$query = $this->pesquisa_sql('item1',$this->funcionario->escolaridade);
+
+		$escolaridades = $this->getEscolaridades($query);
+
+		
 		ksort($escolaridades);
 		    
 		$fields = array(
 		    new Label('ATENÇÃO: Utilize essa opção caso deseje escolher a escolaridade independente da formação!','red'),
             new Separator(),	
 			new MHiddenField('idFuncionario',$this->funcionario->idFuncionario, 'Funcionario'),
-			new MHiddenField('ufEmpregoAnterior',$this->funcionario->ufEmpregoAnterior, ''),
-			new MHiddenField('dataPrimeiroEmprego',$this->funcionario->dataPrimeiroEmprego, ''),
-			new MHiddenField('idPessoa',$this->funcionario->idPessoa, ''),
+			new MHiddenField('ufEmpregoAnterior',$this->funcionario->ufEmpregoAnterior, 'uf empregado anterior'),
+			new MHiddenField('dataPrimeiroEmprego',$this->funcionario->dataPrimeiroEmprego, 'data primeiro emprego'),
+			new MHiddenField('idPessoa',$this->funcionario->idPessoa, 'id pessoa'),
 			new MSelection('escolaridade','','Níveis de escolaridade',$escolaridades)
         );
         
@@ -78,23 +84,44 @@ class frmFuncionarioForcarEscolaridade extends MForm
                    
 	    $this->SetValidators($validators);
 	}
-	
-    
-
-	
 
 	function btnPost_click()
     {
 	    global $MIOLO, $module, $self, $action;
         
-	    $data = $this->GetData();
-	    $this->funcionario->SetData($data);
-	    $this->funcionario->save();	
 
-	    
-        $go = $MIOLO->GetActionURL('rh','main:funcionario',$this->funcionario->idFuncionario, array('form'=>'formacoes'));
-        $MIOLO->Information('Dados de Escolaridade atualizados com sucesso.', $go );
-	    
+	    $data = $this->GetData();
+		try{
+			$this->funcionario->SetData($data);
+					
+			$this->funcionario->save();	
+			
+		    $go = $MIOLO->GetActionURL('rh','main:funcionario',$this->funcionario->idFuncionario, array('form'=>'formacoes'));
+		    $MIOLO->Information('Dados de Escolaridade atualizados com sucesso.', $go );                
+		}catch (Exception $e)
+		{
+		    $this->AddError($e->getMessage());
+		}
+	}
+	
+	function pesquisa_sql($item,$valor)
+	{
+		$busca = pg_query("select item2 from cm_tabelageral where CHAR_LENGTH($item) = 1 AND $item < CAST (8 AS varchar) AND tabela = 'RH_ESCOLARIDADE' ORDER BY item1");
+		return pg_fetch_all($busca);
+	}
+	
+	function getEscolaridades($resultado)
+	{
+		$newResult = array();
+		$i = 0;
+		if($resultado)
+		{
+			foreach($resultado as $escolaridade)
+			{
+				$newResult[$i++] = $escolaridade["item2"];
+			}
+		}
+		return $newResult;
 	}
 }
 ?>

@@ -47,7 +47,7 @@ class frmExemplar extends Form
 		$this->objObra = $MIOLO->GetBusiness($module,'obra');
 		
 		// TÃ­tulo do FormulÃ¡rio
-		$this->Form('Catalogacao de Exemplares');
+		$this->Form('Catalogação de Exemplares');
 
 		//Chama o CreateFileds, etc.
 		$this->EventHandler();
@@ -81,6 +81,8 @@ class frmExemplar extends Form
       //$optCodigo['7'] = 'Free 3 of 9 Extended';
       //$optCodigo['8'] = 'Id Automation 3 of 9'; 
 
+      
+      
       $ui = $MIOLO->getUI();
  //     $href_mais = $MIOLO->GetActionURL($module,$action,'',Array('event'=>'btnMais:click')); 
 		// Campos que aparecem no formulÃ¡rio
@@ -89,34 +91,34 @@ class frmExemplar extends Form
 			array(
 			
 			//	new TextField('edtObraIni','','Numero da Obra',16),
-				new MLookupTextField('edtObraIni','','Numero da Obra',16),
+				new MLookupTextField('edtObraIni','','Número da Obra',16),
 			
                 new MTextLabel('ou','&nbsp;&nbsp;&nbsp; -OU- &nbsp;&nbsp;&nbsp;','&nbsp;'),
-				new TextField('edtExemplarIni','','Numero do tombo do Exemplar',16),
+				new TextField('edtExemplarIni','','Número do tombo do Exemplar',16),
 			),
 
-			new TextField('edtNumerodaObra','','Numero da Obra',10),				
-			new TextField('edtTitulo','','Ti­tulo',60),
+			new TextField('edtNumerodaObra','','Número da Obra',10),				
+			new TextField('edtTitulo','','Tí­tulo',60),
 			new HiddenField('hidKeyObra'),
 			new HiddenField('hidKeyExemplar'), // controla incluir/editar
 
 			new TextField('edtAutor','','Autor',60),
-			new TextField('edtNumerodoTombo','','Numero do Tombo',20),
-            new FormButton('btnProximoTombo', 'Gerar Tombo'),
+			new TextField('edtNumerodoTombo','','Número do Tombo',20),
+            //new FormButton('btnProximoTombo', 'Gerar Tombo'),
 
 			new TextField('edtVolume','','Volume',20),
 			new TextField('edtPreco','','Preço',20),
 			new TextField('edtNotaInterna','','Nota Interna',60),
 			new TextField('edtNotaOPAC','','Nota OPAC',60),
-			new TextField('edtNotaCirculacao','','Nota de Circula��o',60),
-			new TextField('edtNumeroInventario','','Numero do Invent�rio',20),
+			new TextField('edtNotaCirculacao','','Nota de Circulação',60),
+			new TextField('edtNumeroInventario','','Número do Inventário',20),
 			
-			new Selection('selEstado','Disponi�vel','Estado',$optEstado),
-			new Selection('selRegraCirculacao','','Regra de Circula��o',$optRegra),
+			new Selection('selEstado','Disponível','Estado',$optEstado),
+			new Selection('selRegraCirculacao','','Regra de Circulação',$optRegra),
 			new Selection('selUnidade','','Unidade',$optUnidade),
- 		    new Selection('selColecao','','Areas de conhecimento',$optColecao),
-            new TextField('edtQtdExemplar','','Quantidade',10,'Digite a quatidade de exemplares'),
-            new Selection('codigo','','Codigo de Barra',$optCodigo),         
+ 		    new Selection('selColecao','','Áreas de conhecimento',$optColecao),
+            new TextField('edtQtdExemplar','','Quantidade',10,'Digite a quantidade de exemplares'),
+            new Selection('codigo','','Código de Barra',$optCodigo),         
             new MTextLabel('espaco1','&nbsp;' , '&nbsp;','&nbsp;'),
             new MTextLabel('dica','&nbsp; -Selecione um código de barra e clique em imprimir- &nbsp;','&nbsp;'),
             new MTextLabel('espaco2','&nbsp;' , '&nbsp;','&nbsp;'),
@@ -248,12 +250,13 @@ class frmExemplar extends Form
         $this->SetFieldValue('edtAutor',$data->autor);
 
        if ($data->numerodotombo == null)
-        {
+       {
             $this->SetFieldValue('edtNumerodoTombo',$this->objExemplar->Ultimotombo() + 1);
-        }else
-        {
+       }
+       else
+       {
             $this->SetFieldValue('edtNumerodoTombo',$data->numerodotombo);
-        }
+       }
 
         $this->SetFieldValue('edtVolume',$data->volume);
 		$this->SetFieldValue('edtPreco',$data->preco);
@@ -387,6 +390,7 @@ class frmExemplar extends Form
 				   $this->SetFieldAttr('edtAutor','readonly',true);
 				   $this->SetFieldAttr('edtNumerodaObra','readonly',true);
 				   $this->SetFieldAttr('edtTitulo','readonly',true);
+                                   $this->SetFieldAttr('edtNumerodoTombo','readonly',true);
 	
 				   // Atributos dos botÃµes
 				   $this->SetbuttonAttr('btnEnviar','visible',true);
@@ -554,7 +558,7 @@ class frmExemplar extends Form
 							
 							if ($this->objExemplar->thisTomboExists($tombo))
 							{
-							 	$MIOLO->Information("Numero do Tombo  $data->numerodotombo já existente no sistema! ");					
+							 	$MIOLO->Information("Número do Tombo  $data->numerodotombo já existente no sistema! ");					
 							}
 							else
 							{
@@ -605,11 +609,11 @@ class frmExemplar extends Form
      
 
 		$columns = array(
-			new DataGridColumn('numerodotombo','Numero do Tombo','center', true, '20%'),
-			new DataGridColumn('descregra','Regra de Circula��o','center', true, '20%'),
+			new DataGridColumn('numerodotombo','Número do Tombo','center', true, '20%'),
+			new DataGridColumn('descregra','Regra de Circulação','center', true, '20%'),
 			new DataGridColumn('descunidade','Unidade','center', true, '25%'),
 			new DataGridColumn('descestado','Estado','center', true, '25%'),
-		       new DataGridColumn('numeroexemplar','Numero do Exemplar','center', true, '10%'),
+		       new DataGridColumn('numeroexemplar','Número do Exemplar','center', true, '10%'),
 
 
 		);
@@ -621,7 +625,7 @@ class frmExemplar extends Form
 
 	
 		$datagrid = new DataGrid2($query, $columns, $href_datagrid,0);
-		$datagrid->SetTitle('Relacao de exemplares da obra ' . $this->numerodaobra);
+		$datagrid->SetTitle('Relação de exemplares da obra ' . $this->numerodaobra);
 		$datagrid->SetLinkType('linkbutton');
 		$datagrid->SetWidth('99%');
 

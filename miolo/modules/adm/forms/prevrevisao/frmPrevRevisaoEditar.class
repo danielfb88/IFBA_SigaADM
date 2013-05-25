@@ -51,6 +51,9 @@ class frmPrevRevisaoEditar extends Form
 	$buttons = new MButton('btnEnviar');
 	$this->SetFields($fields);
 	$this->SetButtons($buttons);
+	
+	$this->lkpVeiculo->addAttribute('readonly', true);
+	$this->obs->addAttribute('maxlength', 100);
 
 	$this->SetFieldAttr('lkpVeiculo','module','adm');
 	$this->SetFieldAttr('lkpVeiculo','item','veiculo');
@@ -67,18 +70,43 @@ class frmPrevRevisaoEditar extends Form
     function btnEnviar_click()
     {
 		global $MIOLO;
-		$data = $this->getData();
-		$this->objPR->setData($data);
-		try
-		{
-			$this->objPR->Save();
-			$msg = "Previsão Editada com sucesso";
-			$this->manager->Information($msg,$this->manager->GetActionURL('adm','prevrevisao:find'));
+		if(Form::GetFormValue('situacao') == 1){ //prevista
+			if( ($this->invertDate(Form::GetFormValue('dataPrevista'))) < (date("Ymd")) ) //verifica se a data da previsao é posterior a data atual
+			{
+				$this->AddError('Data inválida, a data deve ser posterior ou igual a data de hoje.');
+			}
 		}
-		catch(Exception $e)
+		elseif(Form::GetFormValue('situacao') == "")
 		{
-			$this->manager->Error($e->getMessage());
+			$this->AddError('Informe a situação da previsão.');
+		}
+		else
+		{
+			$data = $this->getData();
+			$this->objPR->setData($data);
+			try
+			{
+				$this->objPR->Save();
+				$msg = "Previsão Editada com sucesso";
+				$this->manager->Information($msg,$this->manager->GetActionURL('adm','prevrevisao:find'));
+			}
+			catch(Exception $e)
+			{
+				$this->manager->Error($e->getMessage());
+			}
 		}
    }
+   
+   function invertDate($datainv)
+	{//recebe a data e o separador
+
+		$ano	=substr("$datainv",6, 4);
+		$mes	=substr("$datainv",3, 2);
+		$dia	=substr("$datainv",0, 2);
+		$datainv="$ano$mes$dia";
+		
+		return $datainv;
+	}
+   
 }
 ?>

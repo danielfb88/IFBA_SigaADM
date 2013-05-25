@@ -49,7 +49,7 @@ class BusinessAdmAbastecimento extends Business
 
     function GetById($id)
     {
-      $this->idAbastecimento = $idAbastecimento;
+      $this->idAbastecimento = $id;
       $this->retrieve();
       return $this;
     }

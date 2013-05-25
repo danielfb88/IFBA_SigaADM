@@ -33,6 +33,16 @@ class frmUoAlmoxarifadoRepListaMateriais extends MForm
 
 	function CreateFields()
 	{
+		$fields = array(
+			array( 
+				new MCheckBox('listarZerados','S','Listar estoques zerados?', true,''),
+				new MCheckBox('listarElemPoucaMov','S','Listar elementos com pouca movimentação?', true,''),
+				new MCheckBox('naolistarEstoque','S','Lista simplificada - sem informação de estoque', false,''),
+				),
+
+		);
+		$this->SetFields($fields);
+	
 		$buttons = Array
 		(
 			new FormButton('btnGerarRelatorio', 'Gerar Relatório','pdf')
@@ -47,8 +57,25 @@ class frmUoAlmoxarifadoRepListaMateriais extends MForm
 		$report = new MJasperReport('sigaept');
         $parameters['SUBREPORT_DIR']    = $MIOLO->GetConf('home.modules');
         $parameters['pURL']             = $MIOLO->GetConf('home.url');
-        $parameters['int_pIdUsuario']       = $MIOLO->login->idkey;                       
-        $parameters['int_pIdUo']         = $item;    		
+        $parameters['int_pIdUsuario']   = $MIOLO->login->idkey;                       
+        $parameters['int_pIdUo']        = $item; 
+		
+		$listarZerados =  Form::GetFormValue('listarZerados');		
+		$listarElemPoucaMov =  Form::GetFormValue('listarElemPoucaMov');	
+		$naolistarEstoque = Form::GetFormValue('naolistarEstoque');
+		
+		
+	
+		if ($listarZerados == '') 			{ $listarZerados = 'N';}
+		if ($listarElemPoucaMov == '') 		{ $listarElemPoucaMov = 'N';}
+		if (empty($naolistarEstoque)) 		{ $naolistarEstoque = 'N';}
+		
+		$parameters['plistarZerados']   	= $listarZerados; 
+		$parameters['plistarElemPoucaMov']  = $listarElemPoucaMov; 
+		$parameters['pnaolistarEstoque']  = $naolistarEstoque;
+		
+		//var_dump($parameters['pnaolistarEstoque']);
+   		
 		$report->Execute('adm', 'repListagemMateriais', $parameters);
 	}
 

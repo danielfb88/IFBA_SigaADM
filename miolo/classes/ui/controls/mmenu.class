@@ -19,7 +19,8 @@ class MMenu extends MOptionList
 
     function SetTitle($title)
     {
-        $this->caption = $title;
+        
+		$this->caption = $title;
     }
 
     function GetHome()

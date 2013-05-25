@@ -42,6 +42,10 @@ class MSimpleTable extends MControl
       else
          $attrs = str_replace("\"",'',$attrs);
       $this->SetAttributes($attrs); 
+	  /*echo('<pre>');	  
+	  var_dump($attrs);
+	  echo('</pre>');*/
+	  
       $this->SetClass($this->attrs->items['class']);
       for($i=0; $i < $row; $i++)
       {

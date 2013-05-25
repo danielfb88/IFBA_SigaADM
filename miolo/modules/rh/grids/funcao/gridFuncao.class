@@ -20,7 +20,7 @@
 /*tvz a forma de permitir ao usuario reniciar a pesquisa 
 (contornando aquele erro de nao achar apos ter ja feito uma outra procura)
 seja criar uma ligacao no menu horizontal -ou qualquer botao- 'Reiniciar pesquisa'*/
-
+MIOLO::Import('modules::rh::controls::linkfuncao');
 
 class gridFuncao extends MDataGrid2
 {
@@ -30,12 +30,24 @@ class gridFuncao extends MDataGrid2
 	{
         global $module;
         $MIOLO = MIOLO::getInstance();
-
+		
+	
         $obj = $MIOLO->GetBusiness($module,'funcao');
-        $qy = $obj->ListAll( Form::getFormValue('pesquisadescricao' ),
-                             Form::getFormValue('pesquisasiglasetor'),
-                             Form::getFormValue('pesquisasiglanivel'),
-							 Form::getFormValue('pesquisatipo' 		));
+	if( (Form::getFormValue('pesquisasiglasetor')) == NULL && (Form::getFormValue('pesquisadescricao' )) == NULL && (Form::getFormValue('pesquisasiglanivel')) == NULL && (Form::getFormValue('pesquisatipo')) == NULL)
+	{
+
+		$qy = $obj->ListAll( '%',
+		                     Form::getFormValue('pesquisasiglasetor'),
+		                     Form::getFormValue('pesquisasiglanivel'),
+								 Form::getFormValue('pesquisatipo' 		));
+	}
+	else
+	{
+			$qy = $obj->ListAll( Form::getFormValue('pesquisadescricao' ),
+		                     Form::getFormValue('pesquisasiglasetor'),
+		                     Form::getFormValue('pesquisasiglanivel'),
+								 Form::getFormValue('pesquisatipo' 		));
+	}
         if ($qy->eof())
         {
     		parent::__construct($qy,null,null);
@@ -108,6 +120,7 @@ class gridFuncao extends MDataGrid2
               $columns['idvinculo'       ]->control[$indrow]->addStyle('color', 'blue');
               $columns['datafimidvinculo']->control[$indrow]->addStyle('color', 'blue');
           }
+
     } // myRowMethod
 
 

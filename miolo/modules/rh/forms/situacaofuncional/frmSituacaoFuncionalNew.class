@@ -47,7 +47,7 @@ class frmSituacaoFuncionalNew extends Form
 
         $this->SetFields($fields);
 
-        $fldidsituacao->AddAttribute('maxlength','2');
+        $fldidsituacao->AddAttribute('maxlength','5');
         $flddescricao->AddAttribute('maxlength','20');
 
         $tabelaGeral = $MIOLO->GetBusiness('common','tabelageral');
@@ -57,6 +57,8 @@ class frmSituacaoFuncionalNew extends Form
         $validators = array(
             new RequiredValidator('idSituacao'),
             new RequiredValidator('descricao'),
+            
+            new IntegerValidator('idSituacao'),
         );
         
         $this->SetValidators($validators);
@@ -81,37 +83,44 @@ class frmSituacaoFuncionalNew extends Form
     {
 		global $MIOLO, $page, $module, $action, $item;
 
-        	$data = $this->GetData();
+      $data = $this->GetData();
 		$id = $data->idSituacao;
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
 		if(is_numeric($id))
 		{
-	        	$situacao = $MIOLO->GetBusiness($module,'situacaofuncional',$id);
-			if (strlen(trim($id)) < '1')
+	      $situacao = $MIOLO->GetBusiness($module,'situacaofuncional',$id);
+	      if ($id <= 0)
 			{
-				$this->addError('Informe o id da Situação Funcional');
+				$this->addError('Informe um id valido a Situação Funcional.');
+			}
+			else if (strlen(trim($id)) < '1')
+			{
+				$this->addError('Informe o id da Situação Funcional.');
 			}
 			elseif($situacao->isPersistent())
 			{
-				$this->addError('Já existe um registro de Situação Funcional com esse ID. Favor digite outro ID');
+				$this->addError('Já existe um registro de Situação Funcional com esse ID. Favor digite outro ID.');
 			}
 			elseif(strlen(trim($data->descricao)) < '5')
 			{
-				$this->addError('Informe a Descrição da Situação Funcional');
+				$this->addError('Informe a Descrição da Situação Funcional.');
 			}
 			else
 			{
 		        	$situacao->SetData($data);
 		        	$situacao->save();
-		                $go = $MIOLO->GetActionURL('rh','main:situacaofuncional',$situacao->idSituacao);
-			        $MIOLO->Information('Dados da Situação Funcional inseridos com sucesso.', $go );
+		         $go = $MIOLO->GetActionURL('rh','main:situacaofuncional',$situacao->idSituacao);
+			      $MIOLO->Information('Dados da Situação Funcional inseridos com sucesso.', $go );
 			}
 		}
 		else
 		{
 			$this->addError('Informe o id Situação Funcional no padrão numérico');
 		}
-
-
  
     }
 

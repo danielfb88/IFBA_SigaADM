@@ -22,11 +22,11 @@
 <?
 class frmRubricaTipoReqs extends Form
 {
-	protected $objRubrica;
+    protected $objRubrica;
 	
     function __construct($objRubrica)
     {
-		$this->objRubrica = $objRubrica;
+	$this->objRubrica = $objRubrica;
         $this->Form('Tipo Reqs.');
         $this->EventHandler();
     }
@@ -37,35 +37,44 @@ class frmRubricaTipoReqs extends Form
        
        $objTipoReq = $MIOLO->GetBusiness('adm','tiporeq');
        $tipoReqs = $objTipoReq->ListAll();
-       $fields = array
-			(
+       $fields = array(
 	           new MSelection('tipoReqs','','Tipo da Requisição',$tipoReqs->result),
 	           $grid,
-	        );
-		
+		);
         $this->SetFields($fields);
 		
-		$buttons = array
-			(
+	$buttons = array(
         	   new FormButton('btnSalvar', 'Salvar')
-            );
-		$this->SetButtons($buttons);
+            	);
+	$this->SetButtons($buttons);
 
-		$validators = array
-			(
-			   new RequiredValidator('idRubrica'),
-			   new RequiredValidator('descricao'),
-		    );
-		$this->SetValidators($validators);
+	$validators = array(
+		   new RequiredValidator('idRubrica'),
+		   new RequiredValidator('descricao'),
+		);
+	$this->SetValidators($validators);
+	
     }
-	public function btnSalvar_click()
+    public function btnSalvar_click()
+    {	
+	// Caso não seja selecionado nenhum tipo de requisição
+	if($this->GetFormValue('tipoReqs') == NULL) 
+	{
+		$this->addError('Selecione um Tipo da Requisição');	
+	}
+	// Caso já exista a tipo de requisição cadastrado
+	elseif($this->objRubrica->findByTipoReq( $this->objRubrica->idRubrica , $this->GetFormValue('tipoReqs') )) 
+	{
+		$this->addError('Tipo de Requisição já cadastrada');
+	}
+	else
 	{
 		global $MIOLO;
 		$idTipoReq = $this->GetFormValue('tipoReqs');
 		$objReqRubrica = $MIOLO->GetBusiness('adm','reqrubrica');
 		$objReqRubrica->idRubrica = $this->objRubrica->idRubrica;
 		$objReqRubrica->idTipoReq = $idTipoReq;
-		
+
 		try
 		{
 			$objReqRubrica->save();
@@ -78,5 +87,6 @@ class frmRubricaTipoReqs extends Form
 			$this->addError($e->getMessage());
 		}
 	}
+    }
  }
 ?>

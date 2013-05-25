@@ -36,16 +36,17 @@ class frmUoAcesso extends Form
     {
 		$fields = array(
 			new LookupTextField('lkpUsuario','','Login'),
-			new TextField('nome','','Nome',50),
+			new MTextField('nome','','Nome',50),
 			new HiddenField('idUsuario','')
-        );
+		);
+		$this->SetFields($fields);
 		
-        $this->SetFields($fields);
+		$this->nome->addAttribute('readonly', TRUE);
 		
-	   $this->SetFieldAttr('lkpUsuario','module','common');
-	   $this->SetFieldAttr('lkpUsuario','item','usuario');
-	   $this->SetFieldAttr('lkpUsuario','event','filler');
-	   $this->SetFieldAttr('lkpUsuario','related','idUsuario,lkpUsuario,NULL,NULL,NULL,NULL,nome');
+		$this->SetFieldAttr('lkpUsuario','module','common');
+		$this->SetFieldAttr('lkpUsuario','item','usuario');
+		$this->SetFieldAttr('lkpUsuario','event','filler');
+		$this->SetFieldAttr('lkpUsuario','related','idUsuario,lkpUsuario,NULL,NULL,NULL,NULL,nome');
 		
 		$buttons = array(
         	new FormButton('btnSalvar', 'Incluir')
@@ -56,26 +57,40 @@ class frmUoAcesso extends Form
 	
 	public function btnSalvar_click()
 	{
-		$idUsuario = $this->GetFormValue('idUsuario');
-		$usuario = $this->manager->GetBusiness('common','usuario');
-		$usuario->GetById($idUsuario);
-		$usuario->retrieveAssociation('pessoa');
-		
-		$this->objUo->getUsuarios();
-		$this->objUo->AddUsuario($usuario);
-		
-		try
+		$idUsuario = $this->GetFormValue('idUsuario');		
+		if($idUsuario == NULL || trim($idUsuario) == "")
 		{
-			$this->objUo->saveAssociation('usuarios');
-			$this->objUo->Log(OP_INS,"Novo acesso relacionado à UO");
+			$this->addError('Informe um Login.');
 		}
-		catch (Exception $e)
+		else
 		{
-			$this->addError($e->getMessage());
-		}
+			if( !isset($idUsuario) )
+		    {
+		        $this->manager->Error('Usuário requisitante não informado corretamente.',false);
+		        return;
+		    }
+			$idUsuario = $this->GetFormValue('idUsuario');
+			$usuario = $this->manager->GetBusiness('common','usuario');
+			$usuario->GetById($idUsuario);
+			$usuario->retrieveAssociation('pessoa');
 
-		$this->SetFieldValue('lkpUsuario','');
-		$this->SetFieldValue('nome','');
+			$this->objUo->getUsuarios();
+			$this->objUo->AddUsuario($usuario);
+		
+			try
+			{
+				$this->objUo->saveAssociation('usuarios');
+				$this->objUo->Log(OP_INS,"Novo acesso relacionado à UO");
+			}
+			catch (Exception $e)
+			{
+				$this->addError($e->getMessage());
+			}
+
+			$this->SetFieldValue('lkpUsuario','');
+			$this->SetFieldValue('nome','');
+			$this->setFieldValue('idUsuario', '');
+		}
 	}
  }
 ?>

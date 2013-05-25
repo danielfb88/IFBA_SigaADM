@@ -45,15 +45,19 @@ class frmContratoTerceirizadoDados extends Form
             $dataProrrogacao = new MCalendarField('dataProrrogacao',$this->objContrato->dataProrrogacao,'Data de Prorrogação',10),
             new MMultiLineField('justificativaPror',$this->objContrato->justificativaPror,'Justificativa da Prorrogação',60,4,60,'Máx. 500'),
             new MHiddenField('idInstituicao', $this->objContrato->idInstituicao),             
-            new MLookupFieldValue('instituicao','','Instituição',55), 
+            new MLookupFieldValue('instituicao','','Instituição',60), 
             new MHiddenField('idSetor', $this->objContrato->idSetor),
-			new MLookupFieldValue('lkpSetor','','Setor',70),
+			new MLookupFieldValue('lkpSetor','','Setor',60),
 			new MMultiLineField('objeto',$this->objContrato->objeto,'Descrição',60,4,60,'Máx. 200'),
 			new MMultiLineField('obs',$this->objContrato->obs,'Observação',60,4,60,'Máx. 500'),
         );
-
-        	$this->SetFields($fields);
+        $this->SetFields($fields);
+		
 		$this->SetFieldAttr('numContrato','readonly',true);
+		
+		$this->justificativaPror->addAttribute('maxlength',500);
+		$this->objeto->addAttribute('maxlength',200);
+		$this->obs->addAttribute('maxlength',500);
 		
 		//lookup setor
 		$this->SetFieldAttr('lkpSetor','module','common');
@@ -72,7 +76,13 @@ class frmContratoTerceirizadoDados extends Form
             	);
 		$this->SetButtons($buttons);
 		$validators = array(
-           		new RequiredValidator('numContrato'),
+		       //new MMaskValidator('numContrato','','99999999','required'),
+		       new MRequiredValidator('numContrato'),
+		       //new MRequiredValidator('instituicao'),
+		       new MRequiredValidator('lkpSetor'),   
+		  	   new MRequiredValidator('dataInicio'),
+			   new MRequiredValidator('dataFim'),
+		   	   //new MRequiredValidator('dataProrrogacao'), 
 		);
 		$numero->addAttribute('maxlength',8);
 		$dataInicio->addAttribute('maxlength',10);
@@ -90,8 +100,15 @@ class frmContratoTerceirizadoDados extends Form
 		$this->SetFieldValue('numContrato',$data->numContrato);
 		$this->SetFieldValue('dataInicio',$data->dataInicio);
 		$this->SetFieldValue('dataFim',$data->dataFim);
-		$this->SetFieldValue('dataProrrogacao',$data->dataProrrogacao);
-	    	$this->SetFieldValue('idInstituicao',$data->idInstituicao);
+		if(!strcmp($data->dataProrrogacao,"01/01/0001"))
+		{
+			$this->SetFieldValue('dataProrrogacao',null);
+		}
+		else
+		{
+			$this->SetFieldValue('dataProrrogacao',$data->dataProrrogacao);
+	    }
+	    $this->SetFieldValue('idInstituicao',$data->idInstituicao);
 		$instituicao = $this->manager->getBusiness('common','instituicao', $data->idInstituicao);
 		$this->SetFieldValue('instituicao',$instituicao->nome);		
 		$this->SetFieldValue('idSetor',$data->idSetor);
@@ -116,16 +133,18 @@ class frmContratoTerceirizadoDados extends Form
 		$dataInicio = substr($dataInicio,6,4).substr($dataInicio,3,2).substr($dataInicio,0,2);
 		$dataFim = substr($dataFim,6,4).substr($dataFim,3,2).substr($dataFim,0,2);
 		$dataProrrogacao = substr($dataProrrogacao,6,4).substr($dataProrrogacao,3,2).substr($dataProrrogacao,0,2);
-		if ($dataInicio > $dataFim)
+		
+		if(Form::getFormValue('instituicao') == null)
+		{
+			$this->addError('Informe uma instituição');
+		}
+		elseif ($dataInicio > $dataFim)
 		{
 			$this->addError('Data Fim precisa ser maior que data início');
 		}
-		elseif($dataProrrogacao)
+		elseif($dataProrrogacao && $dataFim > $dataProrrogacao)
 		{
-			if($dataFim > $dataProrrogacao)
-			{
-				$this->addError('Data Prorrogação precisa ser maior que data fim');
-			}
+			$this->addError('Data Prorrogação precisa ser maior que data fim');
 		}
 		else
 		{

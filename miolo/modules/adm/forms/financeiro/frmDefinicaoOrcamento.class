@@ -37,8 +37,6 @@ class frmDefinicaoOrcamento extends Form
     {
 		global $MIOLO, $module;
 
-
-
 		$this->objLicitacao = $MIOLO->GetBusiness($module, 'licitacao');
 
 		$options = array(
@@ -61,6 +59,7 @@ class frmDefinicaoOrcamento extends Form
 		$this->SetFieldAttr('licitacao','event','filler');
 		$this->SetFieldAttr('licitacao','related', '"",licitacao');
 		$this->SetFieldAttr('licitacao','filter', 'licitacao,selLicitacao');
+		$this->licitacao->addAttribute('readonly', true);
 
 		$button = array(
 			new FormButton('btnEnviar','Enviar'),
@@ -552,6 +551,10 @@ class frmDefinicaoOrcamento extends Form
 				),
 			);
 			$this->SetFields($fields);
+			$this->ano->addAttribute('maxlength', 4);
+			$this->esfera->addAttribute('maxlength', 1);
+			$this->idptr->addAttribute('readonly', true);
+			$this->idfonte->addAttribute('readonly', true);
 //Takanori 
 $this->SetFieldAttr('idptr','module',$module);
 		$this->SetFieldAttr('idptr','item','Ptr');
@@ -572,6 +575,16 @@ $this->SetFieldAttr('idfonte','module',$module);
 		}
 		$this->SetButtonAttr('btnConfirmar','visible',true);
 		$this->SetButtonAttr('btnEnviar','visible',false);
+		
+		$validators = array(
+		new RequiredValidator('ano'),
+		new RequiredValidator('esfera'),
+       	new RequiredValidator('idptr'),
+		new RequiredValidator('idfonte'),
+	);
+	
+	$this->SetValidators($validators);
+		
 	}
 
 	function btnConfirmar_click()
@@ -590,6 +603,19 @@ $this->SetFieldAttr('idfonte','module',$module);
 		$rubrica = substr($this->GetFormValue('idrubrica'),0,6);
 		$esfera = $this->GetFormValue('esfera');
 		$ug = $this->GetFormValue('ug');
+		
+		//verifica erro nos campos
+		if ($ug == '')
+		{
+			$this->AddError('Selecione a UG.');
+		}
+		if (strlen($ano) != 4 || !is_numeric($ano)){
+			$this->AddError('Informe um ano válido.');
+		}
+		if ($this->errors != ''){ //Caso haja algum erro, exibe na tela todos os erros
+       		$this->GenerateErrors();
+       		return;
+        }
 		
 		$this->objLicitacao = $MIOLO->GetBusiness($module,'licitacao',$idLicitacao);
 		$itensDaLicitacao = $this->objLicitacao->getItens();

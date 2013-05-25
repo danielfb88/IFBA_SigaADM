@@ -342,6 +342,13 @@ class BusinessCommonUsuario extends MBusiness implements IUser
 	$criteria->addOrderAttribute('login');
 	return $criteria->retrieveAsQuery();
    }
+   
+   //Retorna quantidade de Logins na tabela cm_usuarios iguais do banco de dados.
+	function countByLogin($login)
+    {
+		$busca = "select count(*) as total from cm_usuario where login = '$login'";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
 
 }
 

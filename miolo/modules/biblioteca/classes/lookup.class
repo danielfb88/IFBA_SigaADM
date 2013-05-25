@@ -95,7 +95,7 @@ class BusinessBibliotecaLookup
     //
 	// Obra
             //
-            function LookupObra(&$lookup)
+    function LookupObra(&$lookup)
     {
         $filterTitulo = $lookup->GetFilterValue('filterTitulo');
         if (!$filterTitulo)
@@ -103,8 +103,8 @@ class BusinessBibliotecaLookup
 
         $filterAutor = $lookup->GetFilterValue('filterAutor');
 
-        $clause = $lookup->GetFilterValue('clause');
-
+        $clause = $lookup->GetFilterValue('clause');        
+        
         //codificacao UTF8
         $filterAutor = utf8_encode( $filterAutor );
         $filterTitulo = utf8_encode( $filterTitulo );
@@ -130,16 +130,21 @@ class BusinessBibliotecaLookup
                     $sql->where .= " (";
                     if ( $filterTitulo )
                     {                        
-                        $sql->where .= "( upper(titulo) like upper('%{$filterTitulo}%')  )";
+                        $sql->where .= "( sem_acentos(titulo) ilike sem_acentos('%".utf8_decode($filterTitulo)."%')  )";
                     }
                     if ( $filterAutor )
                     {
                         if ($filterTitulo)
                         {
-                            $sql->where .= $clause;
+                            if (empty($clause))
+                            {
+                                $clause = "OR";
+                            }
+                            $sql->where .= $clause;                          
+                            
                         }
                                                    
-                        $sql->where .= "( upper(a.conteudo) like upper('%{$filterAutor}%')  )";
+                        $sql->where .= "( sem_acentos(a.conteudo) ilike sem_acentos('%".utf8_decode($filterAutor)."%')  )";
                                                    
                     }
                     $sql->where .= " ) ";
@@ -1505,7 +1510,42 @@ class BusinessBibliotecaLookup
         
         
 	}
+	
+    function LookupBuscar(&$lookup)
+    {
+		global $MIOLO;
+		
+		$filterRadio = $lookup->GetFilterValue('filter0');		
+        $filterNome = $lookup->GetFilterValue('filter1');
 
+		//var_dump($filterRadio);
+		//exit();
+			
+		$lookup->AddFilterField( new HiddenField('filter0', $filterRadio));
+        $lookup->AddFilterField( new TextField('filter1', $filterNome ,'Nome', 40));
+		
+        $columns = array(
+                         new DataGridColumn('nome','Nome','left', true, '70%',true),
+                         new DataGridColumn('cartao','Cartão','left', true, '30%',true)
+                        );
+						
+		if($filterRadio == 'servidor')
+		{
+			$sql = new sql('p.nome, v.codigoacesso as cartao','cm_pessoa p, cm_usuario u, bt_validacao v',"p.nome ILIKE '$filterNome%' AND v.idusuario = u.idusuario AND u.idpessoa = p.idpessoa",'p.nome');
+			
+			$db = 'sigaept';
+		}
+		else
+		{
+			$sql = new sql('p.nome, p.id AS cartao','pessoa_fisica p',"p.nome ILIKE '$filterNome%' AND p.id IN (SELECT a.pessoa_fisica_id FROM aluno a)",'p.nome');
+		
+			$sql->SetDb($MIOLO->GetDatabase('sigaedu'));
+
+			$db = 'sigaedu';
+		}
+
+        $lookup->SetGrid($db,$sql,$columns,'Pesquisa Exemplares',20,0);
+    }
 
 
 

@@ -359,154 +359,166 @@ class frmAnulaLicitacao extends Form
 			$data2[$i][6] = $quant[$i] * floatval(str_replace(',','.',$data2[$i][4]));
 		}
 
-		try
-		{
-			$this->objLicitacao->BeginTransaction();
-
-			$arrayOrcamentos = array();//guarda operações relativas a orcamento interno: array[idUo][idRubrica][ano]['tipoOperacao'][i] = $valor
-			foreach($data2 as $d)
+			try
 			{
-				//atualiza mapa
-				$mapaLicitacao = $MIOLO->GetBusiness('adm','mapalicitacao');
-				$mapaLicitacao->GetById($idLicitacao,$d[0],$d[10]);
-				$mapaLicitacao->quantidade = $cf->toDecimal($mapaLicitacao->quantidade) - $cf->toDecimal($d[2]);
-				$mapaLicitacao->setTransaction($this->objLicitacao->getTransaction());
-				$mapaLicitacao->save();
+				$this->objLicitacao->BeginTransaction();
 
-				//insere registro em anulação
-				$anulacaoItem = $MIOLO->GetBusiness('adm','anulacaoitem');
-				$anulacaoItem->idLicitacao = $idLicitacao;
-				$anulacaoItem->item = $d[0];
-				$anulacaoItem->data = date('d/m/Y');
-				$anulacaoItem->valorUnitarioAnulado = $cf->toDecimal($d[4]);
-				$anulacaoItem->quantidadeAnulada = $cf->toDecimal($d[2]);
-				$anulacaoItem->setTransaction($this->objLicitacao->getTransaction());
-				$anulacaoItem->save();
-				$anulacaoItem->Log(OP_INS,"Anulacao de Item de Licitacao: " . $anulacaoItem->idAnulacaoItem);
-
-				//atualiza os itemreqs correspondentes ao item de licitacao e os orçamentos, além dos respectivos lançamentos internos
-				$mapaLicitacao->retrieveAssociation('itemlicitacao');
-				$licitacao = $MIOLO->GetBusiness('adm','licitacao',$idLicitacao);
-				if(($licitacao->idTipoLicitacao == '1') or ($licitacao->idTipoLicitacao == '4'))//COMPRA
+				$arrayOrcamentos = array();//guarda operações relativas a orcamento interno: array[idUo][idRubrica][ano]['tipoOperacao'][i] = $valor
+				foreach($data2 as $d)
 				{
-					$mapaLicitacao->itemlicitacao->getItemReq();
-					$itemReqs = $mapaLicitacao->itemlicitacao->itemreq;
-				}
-				elseif($licitacao->idTipoLicitacao == '2')//SERVICO
-				{
-					$mapaLicitacao->itemlicitacao->getItemServExt();
-					$itemReqs = $mapaLicitacao->itemlicitacao->itemservext;
-				}
-				elseif($licitacao->idTipoLicitacao == '3')//LIVRO
-				{
-					$mapaLicitacao->itemlicitacao->getItemReqBib();
-					$itemReqs = $mapaLicitacao->itemlicitacao->itemreqbib;
-				}
-				foreach($itemReqs as $i)
-				{
-					if(($licitacao->idTipoLicitacao == '1') or ($licitacao->idTipoLicitacao == '4'))//COMPRA
+					//atualiza mapa
+					$mapaLicitacao = $MIOLO->GetBusiness('adm','mapalicitacao');
+					$mapaLicitacao->GetById($idLicitacao,$d[0],$d[10]);
+					if(($cf->toDecimal($d[2]) < 0) || ($cf->toDecimal($d[2]) > $mapaLicitacao->quantidade))
 					{
-						$precoUnitario = $i->precoEstimado;
-						$quantPedida = $i->quantPedida;
-					}
-					elseif($licitacao->idTipoLicitacao == '2')//SERVICO
-					{
-						$precoUnitario = $i->valorEst;
-						$quantPedida = $i->quantidade;
-					}
-					elseif($licitacao->idTipoLicitacao == '3')//LIVRO
-					{
-						$precoUnitario = $i->precoEstimado;
-						$quantPedida = $i->quantPedida;
-					}
-
-					if($cf->toDecimal($quantDevolvida) + $cf->toDecimal($d[2]) == $cf->toDecimal($quantPedida))
-					{
-						$i->status = 'C';//RECUSADO UO EXEC
+						$MIOLO->Error('Forneça um valor válido para o campo "Quantidade".', $MIOLO->GetActionURL($module, $action, '', array('event'=>'btnEnviar_click', 'idLicitacao'=>$idLicitacao)));
 					}
 					else
 					{
-						$i->status = '9';//ENTREGA REDUZIDA
+						$mapaLicitacao->quantidade = $cf->toDecimal($mapaLicitacao->quantidade) - $cf->toDecimal($d[2]);
 					}
-					$i->quantDevolvida = $cf->toDecimal($quantDevolvida) + $cf->toDecimal($d[2]);
-					$i->setTransaction($this->objLicitacao->getTransaction());
-					$i->save();
-					$i->Log(OP_UPD, "Status Item Req: Anulacao de Licitacao idLicitacao $i->idLicitacao item $i->item idRequisicao $i->idRequisicao status $i->status");
+					$mapaLicitacao->setTransaction($this->objLicitacao->getTransaction());
+					$mapaLicitacao->save();
 
-					$requisicao = $MIOLO->GetBusiness('adm', 'requisicao', $i->idRequisicao);
-					$requisita = $MIOLO->getBusiness('adm','requisita');
-					$requisita->GetById($requisicao->idTipoReq, $requisicao->idUoRequisitante, $requisicao->getAno());
+					//insere registro em anulação
+					$anulacaoItem = $MIOLO->GetBusiness('adm','anulacaoitem');
+					$anulacaoItem->idLicitacao = $idLicitacao;
+					$anulacaoItem->item = $d[0];
+					$anulacaoItem->data = date('d/m/Y');
+					$anulacaoItem->valorUnitarioAnulado = $cf->toDecimal($d[4]);
+					$anulacaoItem->quantidadeAnulada = $cf->toDecimal($d[2]);
+					$anulacaoItem->setTransaction($this->objLicitacao->getTransaction());
+					$anulacaoItem->save();
+					$anulacaoItem->Log(OP_INS,"Anulacao de Item de Licitacao: " . $anulacaoItem->idAnulacaoItem);
+				
 
-					$totalPrevisao = $cf->toDecimal($d[2]) * $cf->toDecimal($precoUnitario);
-					$idUo = $requisicao->idUoRequisitante;
-					$idRubrica = $requisita->idRubrica;
-					$ano = substr($requisicao->dataHoraAut,6,4);
-					if(!$ano)
+					//atualiza os itemreqs correspondentes ao item de licitacao e os orçamentos, além dos respectivos lançamentos internos
+					$mapaLicitacao->retrieveAssociation('itemlicitacao');
+					$licitacao = $MIOLO->GetBusiness('adm','licitacao',$idLicitacao);
+					if ($anulacaoItem->quantidadeAnulada == 0 ) 
 					{
-						$ano = substr($requisicao->dataHora,6,4);
+						$MIOLO->Error('Por favor, Insira apenas numeros inteiros no campo quantidade.', $MIOLO->GetActionURL($module, $action, '', array('event'=>'btnEnviar_click', 'idLicitacao'=>$idLicitacao)) );
 					}
-					$arrayOrcamentos[$idUo][$idRubrica][$ano]['removePrevisao'][] = $totalPrevisao;
-
-					$requisicao->Log(OP_UPD,"Requisicao ".$requisicao->idRequisicao.": anulacao de previsao de ".$totalPrevisao." na UO ".$requisicao->idUoRequisitante);
-
-					// Lançamento interno da previsão de débito
-					$lancamentoInt = $MIOLO->getBusiness('adm','lancamentoint');
-					$lancamentoInt->tipoLancamento = '7'; //retorno da previsão de débito
-					$lancamentoInt->data = date("d/m/Y");                
-					$lancamentoInt->valor = $totalPrevisao;
-					$lancamentoInt->ano = date("Y");
-					$lancamentoInt->idUoRequisitante = $requisicao->idUoRequisitante;       
-					$lancamentoInt->idUoExecutante = $requisicao->idUoExecutante;
-					$lancamentoInt->idRubrica = $requisita->idRubrica;           
-					$lancamentoInt->idRequisicao = $requisicao->idRequisicao;
-					$lancamentoInt->idUsuario = $MIOLO->GetLogin()->idkey;
-					$lancamentoInt->obs = "Anulacao de Licitacao " . $anulacaoItem->idAnulacaoItem;
-					$lancamentoInt->setTransaction($this->objLicitacao->getTransaction());
-					$lancamentoInt->save();
-					$lancamentoInt->Log(OP_INS,"Lançamento Interno numero ".$lancamentoInt->idLancamentoInt." gerado com sucesso para a Requisicao ".$requisicao->idRequisicao.".");
-				}
-			}
-			//updates nos orçamentos internos -> array[idUo][idRubrica][ano]['tipoOperacao'][i] = $valor
-			foreach($arrayOrcamentos as $uo=>$rubricas)
-			{
-				foreach($rubricas as $rubrica=>$anos)
-				{
-					foreach($anos as $ano=>$tipos)
+					else if(($licitacao->idTipoLicitacao == '1') or ($licitacao->idTipoLicitacao == '4'))//COMPRA
 					{
-						$orcamento = $MIOLO->GetBusiness('adm','orcamentointerno');
-						$orcamento->GetById($uo,$rubrica,$ano);
-						foreach($tipos as $tipo=>$valores)
+						$mapaLicitacao->itemlicitacao->getItemReq();
+						$itemReqs = $mapaLicitacao->itemlicitacao->itemreq;
+					}
+					elseif($licitacao->idTipoLicitacao == '2')//SERVICO
+					{
+						$mapaLicitacao->itemlicitacao->getItemServExt();
+						$itemReqs = $mapaLicitacao->itemlicitacao->itemservext;
+					}
+					elseif($licitacao->idTipoLicitacao == '3')//LIVRO
+					{
+						$mapaLicitacao->itemlicitacao->getItemReqBib();
+						$itemReqs = $mapaLicitacao->itemlicitacao->itemreqbib;
+					}
+					foreach($itemReqs as $i)
+					{
+						if(($licitacao->idTipoLicitacao == '1') or ($licitacao->idTipoLicitacao == '4'))//COMPRA
 						{
-							foreach($valores as $valor)
+							$precoUnitario = $i->precoEstimado;
+							$quantPedida = $i->quantPedida;
+						}
+						elseif($licitacao->idTipoLicitacao == '2')//SERVICO
+						{
+							$precoUnitario = $i->valorEst;
+							$quantPedida = $i->quantidade;
+						}
+						elseif($licitacao->idTipoLicitacao == '3')//LIVRO
+						{
+							$precoUnitario = $i->precoEstimado;
+							$quantPedida = $i->quantPedida;
+						}
+
+						if($cf->toDecimal($quantDevolvida) + $cf->toDecimal($d[2]) == $cf->toDecimal($quantPedida))
+						{
+							$i->status = 'C';//RECUSADO UO EXEC
+						}
+						else
+						{
+							$i->status = '9';//ENTREGA REDUZIDA
+						}
+						$i->quantDevolvida = $cf->toDecimal($quantDevolvida) + $cf->toDecimal($d[2]);
+						$i->setTransaction($this->objLicitacao->getTransaction());
+						$i->save();
+						$i->Log(OP_UPD, "Status Item Req: Anulacao de Licitacao idLicitacao $i->idLicitacao item $i->item idRequisicao $i->idRequisicao status $i->status");
+
+						$requisicao = $MIOLO->GetBusiness('adm', 'requisicao', $i->idRequisicao);
+						$requisita = $MIOLO->getBusiness('adm','requisita');
+						$requisita->GetById($requisicao->idTipoReq, $requisicao->idUoRequisitante, $requisicao->getAno());
+
+						$totalPrevisao = $cf->toDecimal($d[2]) * $cf->toDecimal($precoUnitario);
+						$idUo = $requisicao->idUoRequisitante;
+						$idRubrica = $requisita->idRubrica;
+						$ano = substr($requisicao->dataHoraAut,6,4);
+						if(!$ano)
+						{
+							$ano = substr($requisicao->dataHora,6,4);
+						}
+						$arrayOrcamentos[$idUo][$idRubrica][$ano]['removePrevisao'][] = $totalPrevisao;
+
+						$requisicao->Log(OP_UPD,"Requisicao ".$requisicao->idRequisicao.": anulacao de previsao de ".$totalPrevisao." na UO ".$requisicao->idUoRequisitante);
+
+						// Lançamento interno da previsão de débito
+						$lancamentoInt = $MIOLO->getBusiness('adm','lancamentoint');
+						$lancamentoInt->tipoLancamento = '7'; //retorno da previsão de débito
+						$lancamentoInt->data = date("d/m/Y");                
+						$lancamentoInt->valor = $totalPrevisao;
+						$lancamentoInt->ano = date("Y");
+						$lancamentoInt->idUoRequisitante = $requisicao->idUoRequisitante;       
+						$lancamentoInt->idUoExecutante = $requisicao->idUoExecutante;
+						$lancamentoInt->idRubrica = $requisita->idRubrica;           
+						$lancamentoInt->idRequisicao = $requisicao->idRequisicao;
+						$lancamentoInt->idUsuario = $MIOLO->GetLogin()->idkey;
+						$lancamentoInt->obs = "Anulacao de Licitacao " . $anulacaoItem->idAnulacaoItem;
+						$lancamentoInt->setTransaction($this->objLicitacao->getTransaction());
+						$lancamentoInt->save();
+						$lancamentoInt->Log(OP_INS,"Lançamento Interno numero ".$lancamentoInt->idLancamentoInt." gerado com sucesso para a Requisicao ".$requisicao->idRequisicao.".");
+					}
+				}
+				//updates nos orçamentos internos -> array[idUo][idRubrica][ano]['tipoOperacao'][i] = $valor
+				foreach($arrayOrcamentos as $uo=>$rubricas)
+				{
+					foreach($rubricas as $rubrica=>$anos)
+					{
+						foreach($anos as $ano=>$tipos)
+						{
+							$orcamento = $MIOLO->GetBusiness('adm','orcamentointerno');
+							$orcamento->GetById($uo,$rubrica,$ano);
+							foreach($tipos as $tipo=>$valores)
 							{
-								if($tipo == 'removePrevisao')
+								foreach($valores as $valor)
 								{
-									$orcamento->previsaoDebito = $cf->toDecimal($orcamento->previsaoDebito) - $cf->toDecimal($valor);
+									if($tipo == 'removePrevisao')
+									{
+										$orcamento->previsaoDebito = $cf->toDecimal($orcamento->previsaoDebito) - $cf->toDecimal($valor);
+									}
 								}
 							}
+							$orcamento->setTransaction($this->objLicitacao->getTransaction());
+							$orcamento->save();
 						}
-						$orcamento->setTransaction($this->objLicitacao->getTransaction());
-						$orcamento->save();
 					}
 				}
-			}
 
-			//se não existe mais itens a empenhar, troca status da licitação
-			$quantidadeAEmpenhar = $this->objLicitacao->GetQuantidadeAEmpenhar($idLicitacao);
-			if($quantidadeAEmpenhar == 0)
+				//se não existe mais itens a empenhar, troca status da licitação
+				$quantidadeAEmpenhar = $this->objLicitacao->GetQuantidadeAEmpenhar($idLicitacao);
+				if($quantidadeAEmpenhar == 0)
+				{
+					$this->objLicitacao->status = '5';
+					$this->objLicitacao->save();
+				}
+
+				$this->objLicitacao->EndTransaction();
+
+				$MIOLO->Information("Item(ns) anulado(s) com sucesso.",$MIOLO->GetActionURL($module, $action,''));
+			}
+			catch (Exception $e)
 			{
-				$this->objLicitacao->status = '5';
-				$this->objLicitacao->save();
+				$MIOLO->Error($e->getMessage(), $MIOLO->GetActionURL($module, $action, '', array('event'=>'btnDefinir_click', 'idLicitacao'=>$idLicitacao, 'selected'=>$selected)) );
 			}
-
-			$this->objLicitacao->EndTransaction();
-
-			$MIOLO->Information("Item(ns) anulado(s) com sucesso.",$MIOLO->GetActionURL($module, $action,''));
-		}
-		catch (Exception $e)
-		{
-			$MIOLO->Error($e->getMessage(), $MIOLO->GetActionURL($module, $action, '', array('event'=>'btnDefinir_click', 'idLicitacao'=>$idLicitacao, 'selected'=>$selected)) );
-		}
 	}
 
 	// Método a ser executado antes de renderizar cada linha

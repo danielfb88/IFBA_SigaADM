@@ -33,7 +33,6 @@ class frmModuloDados extends MForm
         	global $MIOLO;
 
         	$aStatus = array("A"=>"Aberto","F"=>"Fechado");	   
-        	//$aTurno = array("M"=>"Manhã","T"=>"Tarde","N"=>"Noite");
    		$aTurno = array("I"=>"Integral","D"=>"Diurno","N"=>"Noturno");		
         	$curso = $this->manager->getBusiness('rh','capacitacaocurso');
         	$query = $curso->listAll();
@@ -46,8 +45,8 @@ class frmModuloDados extends MForm
             	new MCalendarField('datafim',$this->objModulo->datafim,'Data Fim'),
             	new MTextField('horainicio',$this->objModulo->horainicio,'Hora Início','5'),
             	new MTextField('horafim',$this->objModulo->horafim,'Hora Fim','5'),
-            	new MTextField('cargahoraria',$this->objModulo->cargahoraria,'Carga Horária'),
-            	new MTextField('vagas',$this->objModulo->vagas,'Vagas','3'),
+            	new MTextField('cargahoraria',trim($this->objModulo->cargahoraria),'Carga Horária'),
+            	new MTextField('vagas',trim($this->objModulo->vagas),'Vagas','3'),
             	new MSelection('turno',$this->objModulo->turno,'Turno',$aTurno),
             	new MTextField('local',$this->objModulo->local,'Local',30),
             	new MTextField('diasemana',$this->objModulo->diasemana,'Dias da Semana',40),
@@ -57,14 +56,16 @@ class frmModuloDados extends MForm
         			);
 		
         	$this->SetFields($fields);
+        	$this->datainicio->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+        	$this->datafim->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+        	$this->horainicio->addAttribute('onKeyUp','makeMask(this, \'##:##\');');
+        	$this->horafim->addAttribute('onKeyUp','makeMask(this, \'##:##\');');
         	$this->nome->addAttribute('maxlength','100');
         	$this->modulo->addAttribute('maxlength','3');
+        	$this->vagas->addAttribute('maxlength','3');
         	$this->local->addAttribute('maxlength','100');
-        	//$this->horainicio->addAttribute('maxlength','5');
-        	//$this->horafim->addAttribute('maxlength','5');
         	$this->datainicio->addAttribute('maxlength','10');
         	$this->datafim->addAttribute('maxlength','10');
-        	//$this->vagas->addAttribute('maxlength','3');
         	$this->cargahoraria->addAttribute('maxlength','5');
         	$this->cargahoraria->addAttribute('maxlength','5');
         	$this->anosemestre->addAttribute('maxlength','6');
@@ -77,9 +78,12 @@ class frmModuloDados extends MForm
 		
 		$validators = array(
 			new MCompareValidator('idcurso','','!=','','s','required',"Campo \"Curso\" deve ser informado."),
-//			new MRequiredValidator('nome'),
+			new MRequiredValidator('nome'),
 			new MRequiredValidator('datainicio'),
 			new MRequiredValidator('datafim'),
+			
+			new IntegerValidator('vagas'),
+			new IntegerValidator('cargahoraria'),
 		);
 
 		$this->SetValidators($validators);
@@ -88,21 +92,35 @@ class frmModuloDados extends MForm
 	public function btnPost_click()
 	{
 		$k = new MKrono();
-        	$data = $this->getData();
+      $data = $this->getData();
 		$data->nome = strToUpper($data->nome);
 		$dataFim = $this->GetFormValue('datafim');
-	        $dataInicio = $this->GetFormValue('datainicio');
+	   $dataInicio = $this->GetFormValue('datainicio');
 		$horaInicio = $this->getFormValue('horainicio');
 		$hInicio = explode(':',$horaInicio);
 		$horaFim = $this->getFormValue('horafim');
 		$hFim = explode(':',$horaFim);
-		if (strlen(trim($data->nome)) < '5')
+		$codModulo = $this->getFormValue('modulo');
+		
+	   // Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->nome = str_replace($caracteres,"",$data->nome);
+		$data->local = str_replace($caracteres,"",$data->local);
+		$data->observacoes = str_replace($caracteres,"",$data->observacoes);
+		$data->anosemestre = str_replace($caracteres,"",$data->anosemestre);
+		$data->diasemana = str_replace($caracteres,"",$data->diasemana);
+		
+		if(strlen(trim($codModulo)) < '1')
+		{
+			$this->addError('Informe o código do módulo');
+		}
+		elseif (strlen(trim($data->nome)) < '5')
 		{
 			$this->addError('Informe o nome do Módulo');
 		}
 		elseif ( $k->compareDate($dataInicio,">",$dataFim) )
 		{
-                    $this->addError("Data início não pode ser maior que a Data Fim.");
+          $this->addError("Data início não pode ser maior que a Data Fim.");
 		}
 		elseif(trim(strlen($horaInicio)) != '5')
 		{
@@ -137,7 +155,7 @@ class frmModuloDados extends MForm
 		{
 			$this->addError('Informe a Hora Fim Corretamente');
 		}
-		elseif(! is_numeric($this->getFormValue('vagas')))
+		elseif(! is_numeric(trim($this->getFormValue('vagas'))))
 		{
 			$this->addError('Informe a quantidade de Vagas');
 		}

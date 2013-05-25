@@ -19,7 +19,7 @@
  */
 ?>
 
-<?
+<?php
 class frmEmpenhoNumerar extends MForm
 {
     protected $empenho;
@@ -211,6 +211,12 @@ class frmEmpenhoNumerar extends MForm
 	
 		$this->setFieldValue('ug',$objEmpenho->empenhado[0]->orcamento->ug);
 		
+		$validators = array(
+		   	new MDATEDMYValidator('dataEmpenho'),
+		);
+	
+		$this->SetValidators($validators);
+		
 	}
 	
 	}
@@ -219,7 +225,8 @@ class frmEmpenhoNumerar extends MForm
 		global $MIOLO, $module, $action, $item;
 
         $objEmpenho = $this->empenho;        
-		$objEmpenho->SetData($this->GetData());		
+		$objEmpenho->SetData($this->GetData());
+		$data = $this->GetData();
 		
 		$objEmpenhoRef = $MIOLO->GetBusiness('adm','empenho');
         $objEmpenhoRef->getByNumero($this->getFormValue('numeroEmpenhoRef'));
@@ -230,8 +237,30 @@ class frmEmpenhoNumerar extends MForm
         //Se for de serviço não precisa selecionar o local de entrega
 		if ((($this->getData()->idUoEntrega)=="")&&($objEmpenho->empenhado[0]->licitacao->idTipoLicitacao!='2'))
 		{
-           $this->addError('Local de Entrega deve ser selecionado');
+            $this->addError('Local de Entrega deve ser selecionado');
         }
+        elseif($data->tipoEmpenho == '')
+        {
+        	$this->addError('Tipo de Empenho deve ser selecionado');
+        }
+        elseif($data->tipoEntrega == '')
+        {
+        	$this->addError('Tipo de Entrega deve ser selecionado');
+        }
+        elseif($data->modalidadeEmp == '')
+        {
+        	$this->addError('Modalidade de Empenho deve ser selecionado');
+        }
+        elseif($data->processo == '')
+        {
+        	$this->addError('Processo deve ser selecionado');
+        }
+        elseif( $objEmpenhoRef->findByNumero($data->numero) )
+        {
+	        $this->addError('Numero de Empenho já cadastrado');
+        }
+        
+        
 		$escolhaProcesso=$this->getFormValue('processo');
 		$numProcesso = $objEmpenho->numPro;
 		$numeroProcessoDigitado = $this->getFormValue('numeroProcesso');

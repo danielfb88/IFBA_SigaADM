@@ -207,8 +207,22 @@ class BusinessCommonPesquisaSimples extends Pesquisa
 
 				foreach($termos as $termo)
 				{
-					$termo = addslashes($termo);
-					$conteudo .= "(upper(conteudo) LIKE '%$termo%') AND ";
+					if($termo != '%')
+					{
+						$termo = addslashes($termo);
+						$conteudo .= "(sem_acentos(conteudo) ILIKE sem_acentos('%_".$termo."_%') OR
+						sem_acentos(conteudo) ILIKE sem_acentos('_".$termo."_%') OR
+						sem_acentos(conteudo) ILIKE sem_acentos('%_".$termo."_') OR
+						sem_acentos(conteudo) ILIKE sem_acentos('_".$termo."_') OR
+						sem_acentos(conteudo) ILIKE sem_acentos('% ".$termo." %') OR
+						sem_acentos(conteudo) ILIKE sem_acentos('% ".$termo."_') OR
+						sem_acentos(conteudo) ILIKE sem_acentos('_".$termo." %') OR
+						sem_acentos(conteudo) ILIKE sem_acentos('% ".$termo."') OR
+						sem_acentos(conteudo) ILIKE sem_acentos('".$termo." %') OR
+						sem_acentos(conteudo) ILIKE sem_acentos('".$termo."')) AND ";
+					}
+					else
+						$conteudo .= "(conteudo ilike '%') AND ";
 				}
 				$conteudo = substr($conteudo, 0, -5);
 
@@ -216,8 +230,22 @@ class BusinessCommonPesquisaSimples extends Pesquisa
 				{
 					foreach($termos2 as $termo2)
 					{
-						$termo2 = addslashes($termo2);
-						$conteudo2 .= "(upper(conteudo) LIKE '%$termo2%') AND ";
+						if($termo2 != '%')
+						{
+							$termo2 = addslashes($termo2);
+							$conteudo2 .= "(sem_acentos(conteudo) ILIKE sem_acentos('%_".$termo2."_%') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('_".$termo2."_%') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('%_".$termo2."_') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('_".$termo2."_') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('% ".$termo2." %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('% ".$termo2."_') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('_".$termo2." %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('% ".$termo2."') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('".$termo2." %') OR
+							sem_acentos(conteudo) ILIKE sem_acentos('".$termo2."')) AND ";
+						}
+						else
+							$conteudo2 .= "(conteudo ilike '%') AND ";
 					}
 					$conteudo2 = substr($conteudo2, 0, -5);
 					$conteudo = $conteudo . ') OR (' . $conteudo2;
@@ -512,7 +540,7 @@ class BusinessCommonPesquisaSimples extends Pesquisa
 
 	function ListExemplaresByIdObra($idobra)
 	{
-		$sql = new sql('distinct(e.idexemplar),o.numerodaobra as obra, e.numerodotombo as exemplar,r.descricao as tipo,es.descricao as estado,u.descricao as unidade, volume, volume as prevdev','bt_exemplar e,bt_regracirculacao r,bt_estado es,bt_unidade u, bt_obra o',"e.idobra=$idobra and e.idregracirculacao = r.idregracirculacao and e.idestado = es.idestado and e.idunidade = u.idunidade and e.idobra = o.idobra",'unidade, e.numerodotombo, volume');
+		$sql = new sql('distinct(e.idexemplar),o.numerodaobra as obra, cast(e.numerodotombo as integer) as exemplar,r.descricao as tipo,es.descricao as estado,u.descricao as unidade, volume, volume as prevdev','bt_exemplar e,bt_regracirculacao r,bt_estado es,bt_unidade u, bt_obra o',"e.idobra=$idobra and e.idregracirculacao = r.idregracirculacao and e.idestado = es.idestado and e.idunidade = u.idunidade and e.idobra = o.idobra",'unidade, exemplar, volume');
         $query = $this->Query($sql);
 
 		for($i=0; $i<count($query->result); $i++)

@@ -34,6 +34,9 @@ class frmTipoLicAfastNew extends Form
         );
 		
         $this->SetFields($fields);
+        
+        $this->tipoLicAfast->AddAttribute('maxlength',25);
+         $this->descricao->AddAttribute('maxlength',50);
 		
 		$buttons = array(
         	new FormButton('btnNew', 'Incluir Tipo LicAfast')
@@ -55,11 +58,17 @@ class frmTipoLicAfastNew extends Form
 
 		$data = $this->GetData();
 		$tipolicAfast = $MIOLO->GetBusiness($module,'tipolicafast');
+
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->tipoLicAfast = str_replace($caracteres,"",$data->tipoLicAfast);
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
 		if(strlen(trim($data->tipoLicAfast)) < '5')
 		{
 			$this->addError('Informe o Tipo Licafast');
 		}
-		elseif(strlen(trim($data->descricao)) < '5')
+		else if(strlen(trim($data->descricao)) < '5')
 		{
 			$this->addError('Informe a Descrição');
 		}

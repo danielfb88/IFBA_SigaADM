@@ -134,6 +134,12 @@ class BusinessCommonPais extends MBusiness
         if ($ok) {$this->Log(OP_UPD,"idpais = $idPais");} 
         return $ok;
     }
+    
+    function findByNome($pais)
+    {
+		$busca = "select count(*) as total from cm_pais where pais = '$pais'";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
 
 }
 ?>

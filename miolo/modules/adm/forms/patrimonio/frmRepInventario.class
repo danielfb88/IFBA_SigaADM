@@ -22,6 +22,7 @@
 class frmRepInventario extends MForm
 {
 	var $objInsti;
+	var $opcaoOrdenacao;
 
 
 	function __construct()
@@ -29,6 +30,7 @@ class frmRepInventario extends MForm
 		parent::__construct('Inventário');
 		$this->EventHandler();
 		$this->defaultButton = false;
+
 	}
 
 	function CreateFields()
@@ -38,14 +40,28 @@ class frmRepInventario extends MForm
 		$instituicao = $MIOLO->GetBusiness('common','instituicao');
 		$idinstituicao = $this->manager->GetBusiness('common','instituicao');
 		$instituicao = $idinstituicao->listAll();
-		
+				
+		$opcaoOrdenacao = array(
+			"id"				=>"Número do Patrimônio",
+			"cc_id"				=>"Conta Contábil + Número do Patrimônio",
+			"cc_desc"			=>"Conta Contábil + Descrição",
+			"cc_emp_id"			=>"Conta Contábil + Empenho + Número do Patrimônio",
+			"cc_emp_desc"		=>"Conta Contábil + Empenho + Descrição",
+			"set_cc_desc"		=>"Setor + Conta Contábil + Descrição",
+			"set_cc_emp_desc"	=>"Setor + Conta Contábil + Empenho + Descrição",
+		);	
+
 		$fields = array(
 			//new MText('','Clique no botão para gerar o inventário'),
 			new MSelection ('idinstituicao','','Instituição'),
-		);
+			//new MText('','Ordenação'),
+			//new MSelection('lista','',$opcaoOrdenacao)
+			new MSelection('ordenacao','','Ordenação', $opcaoOrdenacao),
+			new MCalendarField('dataFinal','','Aquisição ATÉ',20, 'Ex: 31/12/2012 - NÃO OBRIGATÓRIO!'),
+		);		
 		
 		$this->SetFields($fields);
-
+		
 		$buttons = array(
 			new MButton('btnPost','Gerar Inventário','PDF'),
 		);
@@ -71,25 +87,76 @@ class frmRepInventario extends MForm
 	{
 		global $MIOLO, $module, $item;
 		$instituicao = Form::GetFormValue('idinstituicao');
-        if( $instituicao == '')
+		
+		$final = trim($this->getFieldValue('dataFinal'));
+		
+		if (empty($final)) 
+		{
+		   $datafinal = '2099/12/31'; 
+		   $final = 'INDIFERENTE';		   
+		}
+		else 
+		{ 
+		   $partesDataFinal = explode('/',$final);
+           $datafinal =  $partesDataFinal[2].'/'.$partesDataFinal[1].'/'.$partesDataFinal[0];
+		}
+		
+
+		/*
+		var_dump($final);
+		var_dump($datafinal);
+		exit();
+		*/
+		
+		$ordem = Form::GetFormValue('ordenacao');
+		
+		$opcaoOrdenacao = array(
+			"id"				=>"Número do Patrimônio",
+			"cc_id"				=>"Conta Contábil + Número do Patrimônio",
+			"cc_desc"			=>"Conta Contábil + Descrição",
+			"cc_emp_id"			=>"Conta Contábil + Empenho + Número do Patrimônio",
+			"cc_emp_desc"		=>"Conta Contábil + Empenho + Descrição",
+			"set_cc_desc"		=>"Setor + Conta Contábil + Descrição",
+			"set_cc_emp_desc"	=>"Setor + Conta Contábil + Empenho + Descrição",
+		);
+		
+		if (empty($ordem))
+		{
+		    $this->AddError('Você deve selecionar uma opção de ordenação');
+		
+		}
+		else if( $instituicao == '')
 		{
 			$this->AddError('Você deve selecionar uma Instituição');
         }
         else
         {
+		    //var_dump($this->$fields);
+			//exit();
 			$report = new MJasperReport('sigaept');
-			$parameters['SUBREPORT_DIR']    = $MIOLO->GetConf('home.modules');
-			$parameters['int_pIdUsuario']   = $MIOLO->login->idkey;
+			$parameters['SUBREPORT_DIR']      = $MIOLO->GetConf('home.modules');
+			$parameters['int_pIdUsuario']     = $MIOLO->login->idkey;
 			$parameters['int_pIdInstituicao'] = $instituicao;
-			$parameters['pURL']             = $MIOLO->GetConf('home.url');
-			if( $parameters['int_pIdInstituicao'] == 0 )
+			$parameters['str_pOrdenacao']     = $ordem;
+			$parameters['pDataFim']	          = $datafinal;
+			$parameters['str_pNomeDataFim']	  = $final;
+			
+			//$parameters['str_pNomeOrdenacao'] = utf8_decode($opcaoOrdenacao[$ordem]);//$opcaoOrdenacao[$ordem];
+			   //htmlspecialchars($opcaoOrdenacao[$ordem], ENT_QUOTES,'ISO8859-5',true  );  //utf8_encode($opcaoOrdenacao[$ordem]);
+			//var_dump ($parameters['str_pNomeOrdenacao']);
+			//exit();
+			$parameters['pURL']               = $MIOLO->GetConf('home.url');
+			
+			$report->Execute($module, 'repInventario', $parameters);
+			
+			/*if( $parameters['int_pIdInstituicao'] == 0 )
 			{
 				$report->Execute($module, 'repInventarioTodas', $parameters);
 			}
 			else
 			{
 				$report->Execute($module, 'repInventario', $parameters);
-            }
+            }*/
 			
 		}
 		

@@ -183,7 +183,8 @@ class BusinessRhFuncionario extends MBusiness
         if ( ! is_null($idSetores) )
         {
             // somente os que não são excluídos aparecerão.
-            $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
+         //   $criteria->addCriteria('vinculo.provimentos.anoEncerramento','is', "NULL");
+ $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
             $criteria->addCriteria('vinculo.provimentos.idSetor','IN', $idSetores);
             // colocar para procurar no idsetor do usuario tambem (se realmente for necessário).
         }
@@ -368,7 +369,7 @@ class BusinessRhFuncionario extends MBusiness
             $criteria->addColumnAttribute('idHistFormacao');
             $criteria->addCriteria('idFuncionario', '=', $this->idFuncionario);
             $criteria->addOrderAttribute('idEscolaridadePCCTAE', false);
-            $criteria->addOrderAttribute('dataFim', false);
+            $criteria->addOrderAttribute('anoEncerramento', false);
         $idHistFormacao = $criteria->retrieveAsQuery()->getRowValues();        
         $histFormacao->idHistFormacao = $idHistFormacao[0];
         $histFormacao->retrieve();
@@ -409,10 +410,11 @@ class BusinessRhFuncionario extends MBusiness
         $criteria->addColumnAttribute('idFuncionario');
         $criteria->addColumnAttribute('vinculo.idVinculo');
         $criteria->addColumnAttribute('vinculo.provimentos.situacaofuncional.descricao');
-        //$criteria->addColumnAttribute('pessoa.nome');
-        $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
+        $criteria->addColumnAttribute('pessoa.nome');
+  //      $criteria->addCriteria('vinculo.provimentos.anoEncerramento','is', "NULL");
+	$criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
         $criteria->addCriteria('idFuncionario','=',"'$this->idFuncionario'");
-        //$criteria->addOrderAttribute('pessoa.nome');
+        $criteria->addOrderAttribute('pessoa.nome');
         return $criteria->retrieveAsQuery();
     }
 
@@ -427,7 +429,8 @@ class BusinessRhFuncionario extends MBusiness
         $criteria->addColumnAttribute('vinculo.provimentos.cargo.descricao','cargo');
         $criteria->addColumnAttribute('vinculo.provimentos.cargo.jornada.descricao','jornada');
         $criteria->addColumnAttribute('vinculo.provimentos.setor.nome','setor');
-        $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
+      //  $criteria->addCriteria('vinculo.provimentos.anoEncerramento','is', "NULL");
+	 $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
         //$criteria->addCriteria('pessoa.nome','like', "'B%'");
         if ( $grouped )
         {
@@ -538,7 +541,8 @@ class BusinessRhFuncionario extends MBusiness
         $criteria->addColumnAttribute('pessoa.nome');
         $criteria->addColumnAttribute('vinculo.provimentos.setor.nome','setor');
 
-        $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
+//        $criteria->addCriteria('vinculo.provimentos.anoEncerramento','is', "NULL");
+	 $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
         $criteria->addCriteria('vinculo.provimentos.dataInicio','<=',"'$doisAnosAtras'");
         if ($idSetor) 
         {
@@ -589,13 +593,16 @@ class BusinessRhFuncionario extends MBusiness
             $dataRef = $k->invertDate($dataRef);
             $criteria->addCriteria('vinculo.provimentos.dataInicio','<', "'$dataRef'");
             $cc = new CriteriaCondition();
-            $cc->addCriteria($criteria->getCriteria('vinculo.provimentos.dataFim','>', "'$dataRef'"));
+//            $cc->addCriteria($criteria->getCriteria('vinculo.provimentos.anoEncerramento','>', "'$dataRef'"));
+//            $cc->addOrCriteria($criteria->getCriteria('vinculo.provimentos.anoEncerramento','is','NULL'));
+	    $cc->addCriteria($criteria->getCriteria('vinculo.provimentos.dataFim','>', "'$dataRef'"));
             $cc->addOrCriteria($criteria->getCriteria('vinculo.provimentos.dataFim','is','NULL'));
             $criteria->addCriteria($cc);
             
         }
         else
         {
+//	    $criteria->addCriteria('vinculo.provimentos.anoEncerramento','is', "NULL");
             $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
         }
         $operador = (is_array($idSetor)) ? 'IN' : '=';
@@ -615,14 +622,17 @@ class BusinessRhFuncionario extends MBusiness
             $dataRef = $k->invertDate($dataRef);
             $criteria->addCriteria('vinculo.provimentos.dataInicio','<', "'$dataRef'");
             $cc = new CriteriaCondition();
-            $cc->addCriteria($criteria->getCriteria('vinculo.provimentos.dataFim','>', "'$dataRef'"));
+//            $cc->addCriteria($criteria->getCriteria('vinculo.provimentos.anoEncerramento','>', "'$dataRef'"));
+  //          $cc->addOrCriteria($criteria->getCriteria('vinculo.provimentos.anoEncerramento','is','NULL'));
+	    $cc->addCriteria($criteria->getCriteria('vinculo.provimentos.dataFim','>', "'$dataRef'"));
             $cc->addOrCriteria($criteria->getCriteria('vinculo.provimentos.dataFim','is','NULL'));
             $criteria->addCriteria($cc);
 
         }
         else
         {
-            $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
+//            $criteria->addCriteria('vinculo.provimentos.anoEncerramento','is', "NULL");
+	       $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
         }
         $operador = (is_array($idSetor)) ? 'IN' : '=';
         $criteria->addCriteria('vinculo.provimentos.idSetor',$operador, $idSetor);
@@ -643,14 +653,17 @@ class BusinessRhFuncionario extends MBusiness
             $dataRef = $k->invertDate($dataRef);
             $criteria->addCriteria('vinculo.provimentos.dataInicio','<', "'$dataRef'");
             $cc = new CriteriaCondition();
-            $cc->addCriteria($criteria->getCriteria('vinculo.provimentos.dataFim','>', "'$dataRef'"));
+            //$cc->addCriteria($criteria->getCriteria('vinculo.provimentos.anoEncerramento','>', "'$dataRef'"));
+            //$cc->addOrCriteria($criteria->getCriteria('vinculo.provimentos.anoEncerramento','is','NULL'));
+	    $cc->addCriteria($criteria->getCriteria('vinculo.provimentos.dataFim','>', "'$dataRef'"));
             $cc->addOrCriteria($criteria->getCriteria('vinculo.provimentos.dataFim','is','NULL'));
             $criteria->addCriteria($cc);
             
         }
         else
         {
-            $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
+          //  $criteria->addCriteria('vinculo.provimentos.anoEncerramento','is', "NULL");
+		$criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
         }
         $operador = (is_array($idSetor)) ? 'IN' : '=';
         $criteria->addCriteria('vinculo.provimentos.idSetor',$operador, $idSetor);
@@ -747,7 +760,8 @@ class BusinessRhFuncionario extends MBusiness
         $criteria->addColumnAttribute('vinculo.idVinculo');
         $criteria->addColumnAttribute('pessoa.nome');
         $criteria->addColumnAttribute('vinculo.provimentos.idSetor');
-        $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
+//        $criteria->addCriteria('vinculo.provimentos.anoEncerramento','is', "NULL");
+	$criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
         $criteria->addCriteria('vinculo.provimentos.idSituacao','IN',array(1,8,12,20));
         if ( $setor )
         {
@@ -777,7 +791,8 @@ class BusinessRhFuncionario extends MBusiness
         //$criteria->addColumnAttribute('pessoa.nome');
         $criteria->addColumnAttribute('idPessoa');
         $criteria->addColumnAttribute('vinculo.provimentos.idSetor');
-        $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
+//        $criteria->addCriteria('vinculo.provimentos.anoEncerramento','is', "NULL");
+	$criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
         $criteria->addCriteria('vinculo.provimentos.idSituacao','IN',array(1,8));  //estatutários ativos
 
 //        $criteria->addGroupAttribute('vinculo.idVinculo');
@@ -798,7 +813,8 @@ class BusinessRhFuncionario extends MBusiness
         $criteria->addColumnAttribute('vinculo.idVinculo');
         $criteria->addColumnAttribute('pessoa.nome');
         $criteria->addColumnAttribute('vinculo.provimentos.idSetor');
-        $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
+//        $criteria->addCriteria('vinculo.provimentos.anoEncerramento','is', "NULL");
+	$criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
         $criteria->addCriteria('vinculo.provimentos.idSituacao','IN',array(1,8,12,20));
         if ( $setor )
         {
@@ -836,11 +852,13 @@ class BusinessRhFuncionario extends MBusiness
         }
         
         if (!is_null($idSetores)) {
-            $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
+  //          $criteria->addCriteria('vinculo.provimentos.anoEncerramento','is', "NULL");
+	 $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
             $criteria->addCriteria('vinculo.provimentos.idSetor','IN', $idSetores);           
         }
         
-        $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
+//        $criteria->addCriteria('vinculo.provimentos.anoEncerramento','is', "NULL");
+	 $criteria->addCriteria('vinculo.provimentos.dataFim','is', "NULL");
         $criteria->addCriteria('vinculo.provimentos.idSituacao','IN',array(1,8));  //estatutários ativos
 
         $criteria->addGroupAttribute('idFuncionario');

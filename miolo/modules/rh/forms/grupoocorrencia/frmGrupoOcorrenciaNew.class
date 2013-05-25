@@ -32,8 +32,8 @@ class frmGrupoOcorrenciaNew extends Form
        
         $grupoocorrencia = $MIOLO->GetBusiness('rh','grupoocorrencia');
         $fields = array(
-            new TextField('idGrupoOcorrencia','','Código','2'),
-            new TextField('descricao','','Descrição','60'),
+            new TextField('idGrupoOcorrencia','','Código','4'),
+            new TextField('descricao','','Descrição','30'),
 	);
 		
         $this->SetFields($fields);
@@ -41,9 +41,15 @@ class frmGrupoOcorrenciaNew extends Form
         	new FormButton('btnNew', 'Incluir Grupo Ocorrência')
             );
 	$this->SetButtons($buttons);
+	
+		  $this->idGrupoOcorrencia->AddAttribute('maxlength','4');
+        $this->descricao->AddAttribute('maxlength','30');
+        
 	$validators = array(
            new RequiredValidator('idGrupoOcorrencia'),
-           new RequiredValidator('descricao')
+           new RequiredValidator('descricao'),
+           
+           new IntegerValidator('idGrupoOcorrencia'),
 		);
         $this->SetValidators($validators);
 
@@ -55,20 +61,25 @@ class frmGrupoOcorrenciaNew extends Form
 
 		$data = $this->GetData();
 		$id = $data->idGrupoOcorrencia;
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
 		if(is_numeric($id))
 		{
 	        	$grupoOcorrencia = $MIOLO->GetBusiness($module,'grupoocorrencia',$id);
 			if (strlen(trim($id)) < '1')
 			{
-				$this->addError('Informe o id do Grupo Ocorrência');
+				$this->addError('Informe o id do Grupo Ocorrência.');
 			}
 			elseif($grupoOcorrencia->isPersistent())
 			{
-				$this->addError('Já existe um registro de Grupo Ocorrência com esse ID. Favor digite outro ID');
+				$this->addError('Já existe um registro de Grupo Ocorrência com esse ID. Favor digite outro ID.');
 			}
 			elseif(strlen(trim($data->descricao)) < '5')
 			{
-				$this->addError('Informe a Descrição');
+				$this->addError('Informe a Descrição.');
 			}
 			else
 			{

@@ -71,6 +71,11 @@ class frmUoAlmoxarifadoEstornoEntrada extends MCompoundForm
 		$empenho = $MIOLO->GetBusiness($module, 'empenho');
 		$ordemEntrega = $MIOLO->GetBusiness($module, 'ordementrega');
 		$cf = new MCurrencyFormatter();
+		
+		if($this->GetFormValue('select') == null)
+		{
+			$this->addError("Nenhum material selecionado");
+		}
 
 		if($select = $this->GetFormValue('select'))
 		{

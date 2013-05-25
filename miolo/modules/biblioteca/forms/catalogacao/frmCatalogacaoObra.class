@@ -63,32 +63,29 @@ class frmCatalogacaoObra extends MForm
 
     function btnPost_click()
     {
-    
-    if   (( strlen(trim(Form::GetFormValue('numero'))) == 0)  && ( strlen(trim(Form::GetFormValue('titulo'))) == 0))
-		{
-		
-		
+		if(( strlen(trim(Form::GetFormValue('numero'))) == 0)  && ( strlen(trim(Form::GetFormValue('titulo'))) == 0))
 			$this->AddError('Informe o campo "numero da obra" ou pesquise o Titulo.');
-		
-		}
-		
+		else	
+		{
 
-	else
-	
-{
-        $item = $this->getFieldValue('idobra');
-        if ($item == NULL)
-        {
-            $obra = $this->manager->getBusiness('biblioteca','obra');
-            $obra->getByNumero($this->getFieldValue('numero'));
-            $item = $obra->idObra;
-        } 
-        if ($item != NULL)
-        {
-            $go = $this->manager->getActionURL('biblioteca','main:catalogacao:catalogacao',$item);
-            $this->page->redirect($go);
-        }
-    }
-}
+			$item = $this->getFieldValue('idobra');
+			$numero = $this->getFieldValue('numero');
+			
+			if (empty($item) && !empty($numero))
+			{
+				$obra = $this->manager->getBusiness('biblioteca','obra');
+				$obra->getByNumero($numero);
+				$item = $obra->idObra;
+			}
+			else
+				$this->AddError('Para buscar a obra por título, é necessário clicar no botão de busca e selecionar uma obra.');
+			
+			if(!empty($item))
+			{
+				$go = $this->manager->getActionURL('biblioteca','main:catalogacao:catalogacao',$item);
+				$this->page->redirect($go);
+			}
+		}
+	}
  }
 ?>

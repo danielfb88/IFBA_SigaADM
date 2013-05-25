@@ -36,7 +36,12 @@ class frmFichaClinicaOcupacionalUpdate extends MForm
 
         $ficha = $MIOLO->GetBusiness('rh','fichaclinica');        
         $ficha->idfichaclinica = MForm::getFormValue('ficha');
-        $ficha->retrieve();        
+        $ficha->retrieve();  
+       
+        if ( strcmp($ficha->dataferias,'01/01/0001') == 0)
+        {
+        	$ficha->dataferias = null;
+        }              
 
         $vinculo = $MIOLO->GetBusiness('rh','vinculo', MForm::getFormValue('item'));
         $funcionario = $MIOLO->GetBusiness('rh','funcionario',$vinculo->idFuncionario);
@@ -495,6 +500,13 @@ class frmFichaClinicaOcupacionalUpdate extends MForm
         $this->SetFields(array_merge($fieldsA,$funcionario->pessoa->sexo=="M"?$homem:$mulher,$fieldsB));
         $this->defaultButton = false;
         $this->SetButtons(array(new MButton('btnSalvar','Enviar')));
+        
+        $this->dataferias->addAttribute('maxlength',10);
+        $this->jornadatotal->addAttribute('maxlength',3);
+        $validators = array(
+			new MDateDMYValidator('dataferias','Data das ultimas férias','')
+		);
+		$this->SetValidators($validators);
     }
 
     function btnSalvar_click() {
@@ -622,9 +634,24 @@ class frmFichaClinicaOcupacionalUpdate extends MForm
         $f->fager4 = $this->GetFormValue('fager4');
         $f->fager5 = $this->GetFormValue('fager5');
         $f->fager6 = $this->GetFormValue('fager6');
-        $f->save();
-        $f->log(OP_UPD,"O usuário $usuario->login alterou a ficha do servidor ".MForm::getFormValue('item'));
-        $this->manager->Information("Ficha Clínica Alterada com Sucesso",$this->manager->GetActionURL("rh",'main:saude:fichas',$f->idvinculo));
+        
+        $partes_da_data = explode('/',$f->dataferias);
+        $f->dataferias =  $partes_da_data[2].$partes_da_data[1].$partes_da_data[0];
+        
+        if( $f->dataferias > date("Ymd") && $f->dataferias != NULL )
+        {
+        	$this->addError('Data das ultimas férias invalida');
+        }
+        if(preg_match("/\D/", $f->jornadatotal ) )
+        {
+        	$this->addError('Jornada de trabalho deve conter somente números');
+        }
+        else
+        {  
+		    $f->save();
+		    $f->log(OP_UPD,"O usuário $usuario->login alterou a ficha do servidor ".MForm::getFormValue('item'));
+		    $this->manager->Information("Ficha Clínica Alterada com Sucesso",$this->manager->GetActionURL("rh",'main:saude:fichas',$f->idvinculo));
+        }
     }
 
     /*function selCidcategoria($args)

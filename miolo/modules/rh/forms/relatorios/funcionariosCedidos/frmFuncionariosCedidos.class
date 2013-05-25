@@ -81,8 +81,12 @@ class frmFuncionariosCedidos extends MForm
        		$report = new MJasperReport('sigaept'); 
 		$data = $this->GetData();
 		$dtReferencia = new InvertDate($data->dtReferencia);
-		$parameters['pData'] = $dtReferencia->date;
+		$parameters['str_data'] = $dtReferencia->date;
+		$parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
+		$parameters['int_pIdUsuario']= $MIOLO->login->idkey;
+		$parameters['pURL']=$MIOLO->GetConf('home.url');
 		$report->Execute('rh', 'funcionariosCedidos', $parameters);
+		
 	}
     	/*function btnReport_click()
     	{

@@ -115,50 +115,62 @@ function btnExibir_click()
 	$OrcamentoTermo = $MIOLO->GetBusiness('adm','orcamentotermo');
 	$Inst = $MIOLO->GetBusiness('common','instituicao');
 	
-	
 	$Campus 	= 	$this->GetFieldValue('campus');
 	$Ano = $this->GetFieldValue('ano');
-	//$Campus = $Inst->GetInstByUG($UG);
-	//var_dump($Campus);
-	if ($Ano != null)
+	
+	
+	if($this->GetFormValue('campus') == null)
 	{
-	$Licita = $OrcamentoTermo->listLicitacaoByCampusAndAno(trim($Campus),trim($Ano));
-	}else
-	{
-	$Licita = $OrcamentoTermo->listLicitacaoByCampus(trim($Campus));
+		$this->addError("Selecione um Campus.");
 	}
-//	$UoDestino 	= 	$this->GetFieldValue('uodestino');
-/*	$RubricaOrigem 	=	trim($this->GetFieldValue('lkpRubricaOrigem'));
-	$RubricaDestino =	trim($this->GetFieldValue('lkpRubricaDestino'));
-*/
+	elseif($this->GetFormValue('ano') == null)
+	{
+		$this->addError("Forneça um Ano.");
+	}
+	else
+	{
+		//$Campus = $Inst->GetInstByUG($UG);
+		//var_dump($Campus);
+		if ($Ano != null)
+		{
+			$Licita = $OrcamentoTermo->listLicitacaoByCampusAndAno(trim($Campus),trim($Ano));
+		}else
+		{
+			$Licita = $OrcamentoTermo->listLicitacaoByCampus(trim($Campus));
+		}
+	//	$UoDestino 	= 	$this->GetFieldValue('uodestino');
+	/*	$RubricaOrigem 	=	trim($this->GetFieldValue('lkpRubricaOrigem'));
+		$RubricaDestino =	trim($this->GetFieldValue('lkpRubricaDestino'));
+	*/
 
-	//var_dump($Licita);
-/*	$this->exibirSaldo($UoOrigem,'UO de Origem');
-	new MSeparator('-');	
-	$this->exibirSaldo($UoDestino,'UO de Destino');
-*/	$OrcamentoInterno = $MIOLO->GetBusiness('adm','orcamentointerno');
-	//var_dump('UO',$UoOrigem,'ANO',$AnoOrigem,'RUB',$RubricaOrigem);
-//	$saldo = $OrcamentoInterno->getSaldo();
+		//var_dump($Licita);
+	/*	$this->exibirSaldo($UoOrigem,'UO de Origem');
+		new MSeparator('-');	
+		$this->exibirSaldo($UoDestino,'UO de Destino');
+	*/	$OrcamentoInterno = $MIOLO->GetBusiness('adm','orcamentointerno');
+		//var_dump('UO',$UoOrigem,'ANO',$AnoOrigem,'RUB',$RubricaOrigem);
+	//	$saldo = $OrcamentoInterno->getSaldo();
 	
-	//var_dump($Licita->result[0]);
+		//var_dump($Licita->result[0]);
 	
-	//$this->SetFieldAttr('saldoorigem','label',);
-	//$OrcamentoInterno->getSaldoRubrica(
-	if ($Licita->result != null)
-	{
-	$this->SetFieldAttr('licitacao','options',$Licita->result);
-	$this->SetButtonAttr('btnExibirItem','visible',true);
-	$this->SetButtonAttr('btnExibir','visible',false);
-	$this->SetFieldAttr('ano','visible',false);
+		//$this->SetFieldAttr('saldoorigem','label',);
+		//$OrcamentoInterno->getSaldoRubrica(
+		if ($Licita->result != null)
+		{
+			$this->SetFieldAttr('licitacao','options',$Licita->result);
+			$this->SetButtonAttr('btnExibirItem','visible',true);
+			$this->SetButtonAttr('btnExibir','visible',false);
+			$this->SetFieldAttr('ano','visible',false);
+		}
+		//$this->SetFieldAttr('lkpRubricaOrigem','readonly',true);
+		//$this->SetFieldAttr('uodestino','readonly',true);
+		//$this->SetFieldAttr('lkpRubricaDestino','readonly',true);
+	
+	//	$this->SetFieldAttr('valor','visible',true);
+	 
+	 
+	//var_dump($this->GetFieldValue('lkpRubricaOrigem'));
 	}
-	//$this->SetFieldAttr('lkpRubricaOrigem','readonly',true);
-	//$this->SetFieldAttr('uodestino','readonly',true);
-	//$this->SetFieldAttr('lkpRubricaDestino','readonly',true);
-	
-//	$this->SetFieldAttr('valor','visible',true);
- 
- 
-//var_dump($this->GetFieldValue('lkpRubricaOrigem'));
  }
 
  
@@ -238,97 +250,117 @@ function btnExibir_click()
 	}
  
  
-  function btnAlterar_click()
-  
-  
+  function btnAlterar_click() 
   {
-  global $MIOLO, $module, $item, $action, $theme;
-  
-  $OrcamentoTermo = $MIOLO->GetBusiness('adm','orcamentotermo');
-  $tabelageral = $MIOLO->GetBusiness('common','tabelageral');
-  
-  $selected = $this->GetFormValue('select');
-  $IdLicitacao = $this->idlicitacao->value;
-  
-  $DataLimite = $this->GetFormValue('datalimite');
-  $IdUsuario = $this->GetFormValue('idusuario');
-  
-	if ($IdUsuario == null and $DataLimite == null)
-	{
-	}else
-	{
-    if ($selected != null)
-	{
-		$contItens = 0;
-		foreach ($selected as $key => $rs)
-        {				//Item            	//$selected[$key][0]); 
-        	$contItens += 1;
-            $OrcamentoTermo->LiberarOrcTerm($IdLicitacao,$selected[$key],$DataLimite,$IdUsuario);
-			//var_dump('Item OK',$selected[$key]);
-        }
-        $query = $OrcamentoTermo->listItensByLibLicitacao($IdLicitacao,$IdInstituicao);
-        $dadosItens = "<table border='1'><tr><td>Item</td><td>Descrição</td><td>Status</td></tr>";
-        foreach ($query->result as $item)
-        {
-        	foreach ($selected as $key)
-		    {
-		    	if($item[0] == $key)
-		    	{
-					$dadosStatus = $tabelageral->GetDescricao('AD_STATUSORCTERM',$item[3]);
-					$status = $dadosStatus->result[0][0];
-					$dadosItens .= "<tr><td>$item[0]</td><td>$item[4]</td><td>$status</td></tr>";
-		    	}
-		    }
-        }
-        $dadosItens .= "</table>";
-        //Envio de e-mail avisando ao usuário responsável
-	    $dataMail = date("d/m/y");
-		$horaMail = date("H:i");
-		$user = $this->manager->getBusiness('common','usuario');				
-		$user->getById($IdUsuario);					
-		$setor = $this->manager->getBusiness('common','setor');
-		$setor->getById($user->idSetor);
-		$instituicao = $this->manager->getBusiness('common','instituicao');
-		$instituicao->getById($setor->idinstituicao);
-		$objLicitacao = $MIOLO->GetBusiness('adm','licitacao');
-	  	$licitacao = $objLicitacao->getById($IdLicitacao);
-		$email = $user->email;
-		$nome = $user->nome;
-		$mail = new PHPMailer();
-		$mail->IsSMTP(); // send via SMTP
-		$mail->Host = $MIOLO->getConf('mail.host');
-		$mail->SMTPAuth = $MIOLO->getConf('mail.auth');
-		$mail->Username = $MIOLO->getConf('mail.user');
-		$mail->Password = $MIOLO->getConf('mail.pass');
-		$mail->From = $MIOLO->getConf('mail.from');
-		$mail->FromName = "SIGA - Sistema Integrado de Gestão Acadêmica";
-		$mail->AddAddress($email);
-		$mail->Port = $MIOLO->getConf('mail.port');
-		$mail->WordWrap = 50;
-		$mail->IsHTML(true);
-		$mail->Subject = "SIGA-ADM(6) - LIBERAÇÃO DE ORÇAMENTO TERMO";
-	    $mail->ssl = $MIOLO->getConf('mail.ssl');
-	
-		$mail->Body = "
-				<center><h1>LIBERAÇÃO DE ORÇAMENTO TERMO</h1></center>
-				<br /><br />Prezado(a) Sr(a) {$nome},
-				<br /><br />Existem {$contItens} itens da Licitação {$licitacao->numero} aguardando a liberação de orçamento até a data {$DataLimite}, os quais são apresentados na tabela a seguir:
-				<br /><br />$dadosItens
-				<br /><br /><b>Data: </b>{$dataMail}										
-				<br /><b>Hora: </b>{$horaMail}						
-				<br /><br /><b>Para maiores informações acesse: </b>{$MIOLO->getConf('home.url')}
-				<br /><br />Atenciosamente,
-				<br /><br />{$instituicao->nome} - {$instituicao->instituicao}						
-				<br /><br /><b><font color=\"RED\"> Observação: Este email foi enviado automaticamente, não é necessário responder. </font></b>
-		";								
-		$mail->Send();	
-				
-		$MIOLO->Information("Itens Alterados com Sucesso");	
-	}
-  }
-  //var_dump($IdLicitacao);
-  //var_dump($selected);
-  }
+	  global $MIOLO, $module, $item, $action, $theme;
+	  $datasOk = true;
+	  
+	  $OrcamentoTermo = $MIOLO->GetBusiness('adm','orcamentotermo');
+	  $tabelageral = $MIOLO->GetBusiness('common','tabelageral');
+	  
+	  $selected = $this->GetFormValue('select');
+	  $IdLicitacao = $this->idlicitacao->value;
+	  
+	  $DataLimite = $this->GetFormValue('datalimite');
+	  $IdUsuario = $this->GetFormValue('idusuario');  
+	  $login = $this->GetFormValue('lkpLogin');
+	  
+	  $ano = substr($DataLimite, 6, 4);
+	  $mes = substr($DataLimite, 3, 2);
+	  $dia = substr($DataLimite, 0, 2);
+
+	  $DataLimite = $ano.$mes.$dia;
+	  
+	  
+	  if ($IdUsuario == null || $DataLimite == null || $login == null)
+	  {
+			// Somente volta na tela anterior caso os campos estejam vazios.
+	  }
+	  else
+	  {
+		foreach ($selected as $item) // Para cada item selecionado
+		{
+			$busca = $OrcamentoTermo->findByDataLimite($IdLicitacao,$item);
+			$busca = str_replace("-", "", $busca);
+
+			if( $DataLimite < $busca )
+			{
+			  	$this->addError("O campo Data-Limite deve ser maior ou igual a Data-Limite do item ".$item);
+			  	$datasOk = false;
+			}
+		}
+		
+	 	// Se há itens selecionados e se todas as datas estão acima do limite.
+		if ($selected != null && $datasOk)
+		{
+			$contItens = 0;
+			foreach ($selected as $key => $rs)
+			{
+				$contItens += 1;
+				$OrcamentoTermo->LiberarOrcTerm($IdLicitacao,$selected[$key],$DataLimite,$IdUsuario);
+			}
+			$query = $OrcamentoTermo->listItensByLibLicitacao($IdLicitacao,$IdInstituicao);
+			$dadosItens = "<table border='1'><tr><td>Item</td><td>Descrição</td><td>Status</td></tr>";
+			foreach ($query->result as $item)
+			{
+				foreach ($selected as $key)
+				{
+					if($item[0] == $key)
+					{
+						$dadosStatus = $tabelageral->GetDescricao('AD_STATUSORCTERM',$item[3]);
+						$status = $dadosStatus->result[0][0];
+						$dadosItens .= "<tr><td>$item[0]</td><td>$item[4]</td><td>$status</td></tr>";
+					}
+				}
+			}
+			$dadosItens .= "</table>";
+			//Envio de e-mail avisando ao usuário responsável
+			$dataMail = date("d/m/y");
+			$horaMail = date("H:i");
+			$user = $this->manager->getBusiness('common','usuario');				
+			$user->getById($IdUsuario);					
+			$setor = $this->manager->getBusiness('common','setor');
+			$setor->getById($user->idSetor);
+			$instituicao = $this->manager->getBusiness('common','instituicao');
+			$instituicao->getById($setor->idinstituicao);
+			$objLicitacao = $MIOLO->GetBusiness('adm','licitacao');
+		  	$licitacao = $objLicitacao->getById($IdLicitacao);
+			$email = $user->email;
+			$nome = $user->nome;
+			$mail = new PHPMailer();
+			$mail->IsSMTP(); // send via SMTP
+			$mail->Host = $MIOLO->getConf('mail.host');
+			$mail->SMTPAuth = $MIOLO->getConf('mail.auth');
+			$mail->Username = $MIOLO->getConf('mail.user');
+			$mail->Password = $MIOLO->getConf('mail.pass');
+			$mail->From = $MIOLO->getConf('mail.from');
+			$mail->FromName = "SIGA - Sistema Integrado de Gestão Acadêmica";
+			$mail->AddAddress($email);
+			$mail->Port = $MIOLO->getConf('mail.port');
+			$mail->WordWrap = 50;
+			$mail->IsHTML(true);
+			$mail->Subject = "SIGA-ADM(6) - LIBERAÇÃO DE ORÇAMENTO TERMO";
+			$mail->ssl = $MIOLO->getConf('mail.ssl');
+
+			$mail->Body = "
+					<center><h1>LIBERAÇÃO DE ORÇAMENTO TERMO</h1></center>
+					<br /><br />Prezado(a) Sr(a) {$nome},
+					<br /><br />Existem {$contItens} itens da Licitação {$licitacao->numero} aguardando a liberação de orçamento até a data {$DataLimite}, os quais são apresentados na tabela a seguir:
+					<br /><br />$dadosItens
+					<br /><br /><b>Data: </b>{$dataMail}										
+					<br /><b>Hora: </b>{$horaMail}						
+					<br /><br /><b>Para maiores informações acesse: </b>{$MIOLO->getConf('home.url')}
+					<br /><br />Atenciosamente,
+					<br /><br />{$instituicao->nome} - {$instituicao->instituicao}						
+					<br /><br /><b><font color=\"RED\"> Observação: Este email foi enviado automaticamente, não é necessário responder. </font></b>
+			";								
+			$mail->Send();	
+
+			$MIOLO->Information("Itens Alterados com Sucesso");	
+		} // If de inserção	
+	} // else
+ } // Função alterar.
+ 
  function btnSalvar_click()
 { 
 	global $MIOLO;

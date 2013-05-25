@@ -40,6 +40,11 @@ class gridPatrimonio extends DataGrid2
 	function __construct()
 	{
 		global $MIOLO, $self;
+		
+		
+		//echo '<pre>'; print_r ('gridPatrimonio'); echo '</pre>'; 
+		//exit();
+	
 
 		$linkPatrimonio = new LinkPatrimonio('linkpatrimonio','%0%');
 		$columns = array(
@@ -50,6 +55,7 @@ class gridPatrimonio extends DataGrid2
 		);
 
 		$this->SetFilter(false);
+		
 		$idItemPatrimonio = MForm::GetFormValue('idItemPatrimonio');
 		$descricao = strtoupper(MForm::GetFormValue('patrimonio'));
 		$classificador = strtoupper(MForm::GetFormValue('classificador'));
@@ -59,11 +65,7 @@ class gridPatrimonio extends DataGrid2
 		$this->SetIndex(1);
 		$objPatrimonio = $MIOLO->GetBusiness('adm','itempatrimonio');
 		$href_grid = $MIOLO->GetActionURL('adm',$self);
-		/*if(($classificador) or ($empenho) or ($descricao) or ($idItemPatrimonio))
-		{
-			$query = $objPatrimonio->ListByClassificadorOuEmpenho($classificador, $empenho, $descricao, $idItemPatrimonio);
-		    parent::__construct($query, $columns, $href_grid,25);
-		}*/
+
 		if (($idItemPatrimonio>0) and is_numeric($idItemPatrimonio))
 		{
 			    $query = $objPatrimonio->ListById($idItemPatrimonio);
@@ -98,15 +100,5 @@ class gridPatrimonio extends DataGrid2
 			}
 		}
 		$this->SetLinkType('hyperlink');
-	}
-
-
-	function GenerateFooter()
-	{
-		if (!$this->data) 
-			$footer[] = $this->GenerateEmptyMsg();
-		$footer[] = new Separator();
-		$footer[] = $this->GenerateControls();
-		return $footer;
 	}
 }

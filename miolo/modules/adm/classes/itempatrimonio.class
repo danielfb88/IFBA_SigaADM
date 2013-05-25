@@ -50,16 +50,19 @@ class BusinessAdmItemPatrimonio extends Business
     public $datainiciouso;
 	public $valorReavaliado;
 	public $dataReavaliacao;
+	public $garantia;
 
 	function __construct($data = null)
 	{
 		parent::__construct('sigaept',$data);
+		//var_dump('__construct::AdmItemPatrimonio');
 	}
 
 	function GetById($idItemPatrimonio)
 	{
 		$this->idItemPatrimonio = $idItemPatrimonio;
 		$this->retrieve();
+		//echo($this->garantia);
 		return $this;
 	}
 	function OnCreate($data)
@@ -107,13 +110,133 @@ class BusinessAdmItemPatrimonio extends Business
         	$criteria->addColumnAttribute('descricao');
         	$criteria->addColumnAttribute('setor.sigla', 'sigla');
         	$criteria->addColumnAttribute('numeroempenho');
+			$criteria->addColumnAttribute('notafiscal');
 		if($setor != '%'){
         	$criteria->addCriteria('setor.idSetor','=',"'$setor'");
 		}
         	$criteria->addCriteria('ativo','=',"'S'");
+			$criteria->addOrderAttribute('numeroEmpenho');
+			$criteria->addOrderAttribute('notaFiscal');
         	$criteria->addOrderAttribute('descricao');
+			$criteria->addOrderAttribute('idItemPatrimonio');			
         	return $criteria->retrieveAsQuery();
 	}
+	
+	function ListPesquisaPatrimonio
+	  ($patriInicial = null, $patriFinal = null, $nempenho = null, 
+	   $notafiscal = null, $descricao = null, $siglaSetor = null, $idClassificador = null, 
+	   $tipoIngresso = NULL, $order = null)
+	{
+	
+			if ($tipoIngresso == 'TODOS') { $tipoIngresso = ''; }
+			
+        	$criteria = $this->getCriteria();
+        	$criteria->addColumnAttribute('idItemPatrimonio');
+        	$criteria->addColumnAttribute('descricao');
+        	$criteria->addColumnAttribute('setor.sigla', 'sigla');
+        	$criteria->addColumnAttribute('numeroempenho');
+			$criteria->addColumnAttribute('notafiscal');
+						
+			// SE TODOS OS PARÂMETROS FORAM IGNORADOS ...
+			if (empty($patriInicial) AND empty($patriFinal) AND  empty($nempenho) AND
+	            empty($notafiscal) AND empty($descricao) AND empty($siglaSetor) AND 
+				empty($idClassificador) AND empty($tipoIngresso) )
+			{
+				$criteria->addCriteria('idItemPatrimonio','=','0');
+				
+				//echo '<pre>'; var_dump ('TODOS OS PARÂMETROS FORAM IGNORADOS ...'); echo '</pre>';
+		        //exit();
+				return $criteria->retrieveAsQuery();
+			}
+			
+			$criteria->addCriteria('ativo','=',"'S'"); 
+			
+			if(!empty($patriInicial))
+			{
+				$criteria->addCriteria('idItemPatrimonio','>=',"'".$patriInicial."'");
+			}
+			
+			if(!empty($patriFinal))
+			{
+				$criteria->addCriteria('idItemPatrimonio','<=',"'".$patriFinal."'");
+			}			
+			
+			if(!empty($nempenho))
+			{
+			    $nempenho = strtoupper(TRIM($nempenho)); 
+				$criteria->addCriteria('numeroempenho','=',"'".$nempenho."'");
+				$criteria->addOrderAttribute('numeroEmpenho');
+			}
+
+			if(!empty($notafiscal))
+			{
+				$criteria->addCriteria('notaFiscal','=',"'".$notafiscal."'");
+			}
+			
+			if(!empty($descricao))
+			{
+			    $descricao = str_replace(' ','%',$descricao);
+				$descricao = strtoupper(TRIM($descricao));
+			    $criteria->addCriteria('upper(descricao)','ILIKE', "'%".$descricao."%'");
+			}
+			
+			if(!empty($siglaSetor))
+			{
+				$criteria->addCriteria('setor.sigla','ILIKE',"'%".$siglaSetor."%'");
+			}
+			
+			if(!empty($idClassificador))
+			{
+			    $idClassificador = strtoupper(TRIM($idClassificador));
+				$criteria->addCriteria('idClassificador','=',"'".$idClassificador."'");
+			}	
+			if (!empty($tipoIngresso))
+			{
+				if ($tipoIngresso == 'COMPRA') { $tipos = "('1', '8', '9')";}
+				else if ($tipoIngresso == 'DOACAO') { $tipos = "('2')";}
+				else if ($tipoIngresso == 'OUTROS') { $tipos = "('3', '4', '5', '6','7')";}			
+				
+				$criteria->addCriteria('tipoIngresso','IN', $tipos);				
+			}
+			
+			
+			if(!empty($order))
+			{
+				if($order == 'id')
+					$criteria->addOrderAttribute('idItemPatrimonio');
+				else if($order == 'nf_id')
+				{
+					$criteria->addOrderAttribute('notaFiscal');
+					$criteria->addOrderAttribute('idItemPatrimonio');
+				}
+				else if($order == 'nf_desc')
+				{
+					$criteria->addOrderAttribute('notaFiscal');
+					$criteria->addOrderAttribute('descricao');		
+					$criteria->addOrderAttribute('idItemPatrimonio');
+					
+				}
+				else if($order == 'desc')
+				{
+					$criteria->addOrderAttribute('descricao');	
+					$criteria->addOrderAttribute('idItemPatrimonio');
+				}
+				
+					
+			}	
+            else 
+			{
+				$criteria->addOrderAttribute('idItemPatrimonio');			
+			}	
+
+			
+			//echo '<pre>';		    
+			//var_dump ($criteria->getSqlStatement());
+			//echo '</pre>';
+			
+			
+        	return $criteria->retrieveAsQuery();
+	}	
 
 	function ListByDesc($desc)
 	{

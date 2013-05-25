@@ -40,6 +40,11 @@ class frmFonteNew extends Form
         );
 		
         $this->SetFields($fields);
+
+	$this->idFonte->addAttribute('maxlength',10);
+	$this->descricao->addAttribute('maxlength',50);
+	$this->fontecompleta->addAttribute('maxlength',10);
+	$this->fonteresumida->addAttribute('maxlength',3);
 	      
         $buttons = array (
             new FormButton('btnNew', 'Cadastrar Fonte')
@@ -75,7 +80,7 @@ class frmFonteNew extends Form
 			$this->AddError("Descreva melhor a fonte criada.");
 		}
 		//VALIDACAO FONTE COMPLETA
-		ELSEif(!is_numeric($fontcom)){
+		elseif(!is_numeric($fontcom)){
 			$this->AddError("A fonte completa deve ser composta apenas por números.");
 		}
 		elseif( (strlen(trim($fontcom)) < 5) or (strlen($fontcom)>10)){

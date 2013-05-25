@@ -40,7 +40,6 @@ class frmCatalogacaoAlteracao extends MFormAjax
     {
         global $MIOLO,$module;
 
-
         $this->idObra = $data->idobra;
         //Instancia os objetos
         $this->objObra = $MIOLO->GetBusiness($module,'obra');
@@ -109,6 +108,7 @@ class frmCatalogacaoAlteracao extends MFormAjax
         $valorcducdd = '';
 
         $aa =0;
+		
         if ($cdu != NULL  )
         {
             $cducdd = "CDU";
@@ -136,13 +136,15 @@ class frmCatalogacaoAlteracao extends MFormAjax
         new TextField('edtTitulo',$titulo , 'Título',60),
         new TextField('edtSubtitulo', $subtitulo , 'Subtítulo',60),
         new TextField('edtCutter',$cutter,'Cutter',6),
+		new TextField('edtSkip','0','Desprezar caracteres do título',1),
         new MButton('bntGeraCutter','Gerar Cutter',"buscaCutter('$url','lkpautor','edtTitulo','idobra');"),
-        new TextField('edtISBN',$isbn,'ISBN',20),
+        new TextField('edtISBN',$isbn,'ISBN',30),
         new LookupTextField('lkpautor',$autor,'Autor',45,'Pesquisar ou inserir novo autor'),
         new HiddenField('idautor'),
         new TextField('edtEdicao',$edicao,'Edição',20),
         new MlookupFieldValue('lkpEditora',$editora,'Editora',58,''),        
-        new LookupTextField('lkpLocalDePublicacao',$localpublicacao,'Local de Publicação',50,'Pesquisar'),        
+        //new LookupTextField('lkpLocalDePublicacao',$localpublicacao,'Local de Publicação',50,'Pesquisar'),        
+		new TextField('edtLocalDePublicacao',$localpublicacao,'Local de Publicação',50),
         new TextField('edtDataDePublicacao',$dataPublicacao,'Data de Publicação',10,'Somente o ano. Ex.: 2012'),
         new TextField('edtDescFisica',$descFisica,'Descrição Física',20),
         new HiddenField('ideditora'),
@@ -162,6 +164,7 @@ class frmCatalogacaoAlteracao extends MFormAjax
         $this->SetFieldValue('idautor',$this->obra->idautor);
         $this->SetFieldValue('ideditora',$ideditora);
         $this->SetFieldValue('edtTipo',$aa);
+		
         //As 4 propriedades de um lookup
         // module = módulo usado
         // item = A funcao que chama no arquivo classes/lookup.class
@@ -174,17 +177,17 @@ class frmCatalogacaoAlteracao extends MFormAjax
         $this->SetFieldAttr('lkpautor','related','idautor,lkpautor');
 
         //Lookup Local de publicacao de obra
-        $this->SetFieldAttr('lkpLocalDePublicacao','module','common');
-        $this->SetFieldAttr('lkpLocalDePublicacao','item','municipio');
-        $this->SetFieldAttr('lkpLocalDePublicacao','event','filler');
-        $this->SetFieldAttr('lkpLocalDePublicacao','related','idMunicipio,lkpLocalDePublicacao');
+        //$this->SetFieldAttr('lkpLocalDePublicacao','module','common');
+        //$this->SetFieldAttr('lkpLocalDePublicacao','item','municipio');
+        //$this->SetFieldAttr('lkpLocalDePublicacao','event','filler');
+        //$this->SetFieldAttr('lkpLocalDePublicacao','related','idMunicipio,lkpLocalDePublicacao');
 
 
         // 4 propiedades do lookup
         $this->SetFieldAttr('lkpEditora','module','biblioteca');
         $this->SetFieldAttr('lkpEditora','item','editora');
         $this->SetFieldAttr('lkpEditora','event','filler');
-        $this->SetFieldAttr('lkpEditora','related', 'ideditora,lkpEditora');
+        $this->SetFieldAttr('lkpEditora','related', 'ideditora,lkpEditora,edtLocalDePublicacao');
 
         //Prorpiedades Lookup Assunto
         $this->SetFieldAttr('lkpassunto','module','biblioteca');
@@ -200,9 +203,10 @@ class frmCatalogacaoAlteracao extends MFormAjax
 
         $validators = array(
         new MRequiredValidator('edtISBN'),
-        new MRequiredValidator('edtTitulo'),
+        //new MRequiredValidator('edtTitulo'),
         new MRequiredValidator('lkpEditora'),
-        new MRequiredValidator('lkpLocalDePublicacao'),
+        //new MRequiredValidator('lkpLocalDePublicacao'),
+		new MRequiredValidator('edtLocalDePublicacao'),
         new MRequiredValidator('edtDataDePublicacao'),
         new MRequiredValidator('edtDescFisica'),
         new RequiredValidator('edtTipo','Tipo de classificação',15),
@@ -236,7 +240,8 @@ class frmCatalogacaoAlteracao extends MFormAjax
         $data->subtitulo = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtSubtitulo')));
         $data->edicao = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtEdicao')));
 
-        $data->localdepublicacao = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('lkpLocalDePublicacao')));
+        //$data->localdepublicacao = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('lkpLocalDePublicacao')));
+		$data->localdepublicacao = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtLocalDePublicacao')));
         $data->datadepublicacao = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtDataDePublicacao')));
 
         $data->descfisica = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtDescFisica')));
@@ -273,9 +278,11 @@ class frmCatalogacaoAlteracao extends MFormAjax
         global $MIOLO,$module;
 
         $data = $this->GetData();
+		
         $this->obra = $this->manager->getBusiness('biblioteca','obra',$item);
         //já grava o 008 na pré-catalogação
-        $ficha008 = date('ymd') . '                 r               d';
+        //$ficha008 = date('ymd') . '                 r               d';
+		
         try
         {
             $this->objObra->updateObra($data);

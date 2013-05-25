@@ -52,6 +52,8 @@ class frmUoAlmoxarifadoEntradaMaterial2 extends MForm
         $this->setButtonAttr('btnAdicionar','visible',false);
         $this->setButtonAttr('btnAlterarValor','visible',false);
         $this->setButtonAttr('btnSaida','visible',false);
+        
+        $this->notaFiscal->addAttribute('maxlength', 16);
     }
     function btnItens_click()
     {
@@ -102,6 +104,7 @@ class frmUoAlmoxarifadoEntradaMaterial2 extends MForm
         $this->setButtonAttr('btnAdicionar','visible',true);
         $this->setButtonAttr('btnAlterarValor','visible',true);
         $this->setButtonAttr('btnItens','visible',false);
+        
     }
     function btnAdicionar_click()
     {

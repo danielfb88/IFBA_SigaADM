@@ -160,6 +160,11 @@ class frmPesquisa extends Form
 			$parametros1 = null;
 			$parametros2 = null;
 		}
+		
+		//Trocando a coluna autor e titulo
+		$temp = $columns[2];
+		$columns[2] = $columns[3];
+		$columns[3] = $temp;
 
 		$href_datagrid = $MIOLO->GetActionURL($module,$self,$data->busca, $parametros1);
 		$datagrid = new DataGrid2($query, $columns, $href_datagrid,20);

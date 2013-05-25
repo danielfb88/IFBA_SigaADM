@@ -257,7 +257,7 @@ class frmFichaClinicaOcupacional extends MForm
                 new MLabel('Jornada de trabalho semanal na UFJF:'),new MTextField('jornadaufjf','','',20)                
             ),700), f2(),*/
             container(array(
-                new MLabel('Jornada de trabalho semanal total:'),new MTextField('jornadatotal','','',20)                
+                new MLabel('Jornada de trabalho semanal total:'),new MTextField('jornadatotal','','',5)                
             ),700), f2(),
             container(array(            
                 new MLabel('Trabalho em turnos'),
@@ -495,9 +495,16 @@ class frmFichaClinicaOcupacional extends MForm
             new MHiddenField('idvinculo',$vinculo->idVinculo)
         );
         $this->SetFields(array_merge($fieldsA,$funcionario->pessoa->sexo=="M"?$homem:$mulher,$fieldsB));
-	$this->setFieldAttr('cidantecedenteclinico','visible',false);
+		$this->setFieldAttr('cidantecedenteclinico','visible',false);
         $this->defaultButton = false;
         $this->SetButtons(array(new MButton('btnSalvar','Enviar')));
+        
+        $this->dataferias->addAttribute('maxlength',10);
+        $this->jornadatotal->addAttribute('maxlength',3);
+        $validators = array(
+			new MDateDMYValidator('dataferias','Data das ultimas férias','')
+		);
+		$this->SetValidators($validators);
     }
 
     function btnSalvar_click() {
@@ -622,9 +629,24 @@ class frmFichaClinicaOcupacional extends MForm
         $f->fager4 = $this->GetFormValue('fager4');
         $f->fager5 = $this->GetFormValue('fager5');
         $f->fager6 = $this->GetFormValue('fager6');        
-        $f->save();
-        $f->log(OP_INS,"O usuário $usuario->login cadastrou uma ficha para o servidor ".MForm::getFormValue('item'));
-        $this->manager->Information("Ficha Clínica Adicionada com Sucesso",$this->manager->GetActionURL("rh",'main:saude:fichas',$f->idvinculo));
+              
+        $partes_da_data = explode('/',$f->dataferias);
+        $f->dataferias =  $partes_da_data[2].$partes_da_data[1].$partes_da_data[0];
+        
+        if( $f->dataferias > date("Ymd") && $f->dataferias != NULL )
+        {
+        	$this->addError('Data das ultimas férias invalida');
+        }
+        if(preg_match("/\D/", $f->jornadatotal ) )
+        {
+        	$this->addError('Jornada de trabalho deve conter somente números');
+        }
+        else
+        {    
+    	    $f->save();
+    	    $f->log(OP_INS,"O usuário $usuario->login cadastrou uma ficha para o servidor ".MForm::getFormValue('item'));
+    	    $this->manager->Information("Ficha Clínica Adicionada com Sucesso",$this->manager->GetActionURL("rh",'main:saude:fichas',$f->idvinculo));
+    	}
     }
 
     /*function selCidcategoria($args)

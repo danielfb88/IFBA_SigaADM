@@ -32,6 +32,7 @@ class frmSetorDados extends MForm
 		$this->EventHandler();
 
 		$this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/select.js'));
+		$this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
 	}
 
 
@@ -48,6 +49,7 @@ class frmSetorDados extends MForm
 		$qryTipoOrganograma = $tipoOrganograma->ListAll();
 
 		$lkpSetorId = new MTextField('lkpSetorId','','Id Setor Pai',5);
+		$lkpSetorId->addAttribute('readonly', true);
 
 		// $lkpSetorId->readonly = true;
 		$lkpSetor = new MLookupTextField('lkpSetor','','Setor Pai',15);
@@ -57,6 +59,7 @@ class frmSetorDados extends MForm
 		$lkpSetor->related = 'lkpSetorId, lkpSetor, none, none';
 		$siglainst = $this->manager->GetBusiness('common','instituicao');
 		$qryinst = $siglainst->ListAllSetor();
+		$lkpSetor->addAttribute('readonly', true);
 		
 		$hierarquia = array(
 		new MSelection('selHierarquia','','Tipo',$qryTipoOrganograma->chunkResult()),
@@ -68,6 +71,7 @@ class frmSetorDados extends MForm
         $lkpPessoa->item = 'pessoa';
         $lkpPessoa->event = 'filler';
         $lkpPessoa->related = 'idPessoa,lkpPessoa,none,none';
+        $lkpPessoa->addAttribute('readonly', true);
 
 		$fields = array(
 			new MHiddenField('key',''),
@@ -90,8 +94,7 @@ class frmSetorDados extends MForm
 				new MTextField('fax','','Fax',15),
 				new MTextField('centrocusto','','Centro de Custo',20),
 				new MTextField('localizacao','','Localização',15),
-				$lkpPessoa,
-              			new MHiddenField('idPessoa',''),
+				$lkpPessoa, new MHiddenField('idPessoa',''),
 			),
 			array(
 				new MTextField('idsetorsiape','','Código Siape',15),
@@ -101,13 +104,28 @@ class frmSetorDados extends MForm
 				new MultiTextField3('mtHierarquia',null,'Organogramas',$hierarquia,150,true,'horizontal'),
 			),
 		);
-
-
 		$this->SetFields($fields);
 
 		//faz a seleção automática da sigla ao selecionar a instituição
 		$this->idinstituicao->addAttribute('onChange','getItemFromSelect(this, \'sigla\');');
 		$this->sigla->addAttribute('onChange','getItemFromSelect(this, \'idinstituicao\');');
+		
+		//valores maxlength iguais aos do banco de dados
+		$this->siglas->addAttribute('maxlength',15);
+		$this->nomesetor->addAttribute('maxlength',100);
+		$this->tiposetor->addAttribute('maxlength',20);
+		$this->fone->addAttribute('maxlength',13); //15 no BD, 13 por causa da mascara
+		$this->fax->addAttribute('maxlength',13); //15 no BD
+		$this->centrocusto->addAttribute('maxlength',20);
+		$this->localizacao->addAttribute('maxlength',15);
+		$this->obs->addAttribute('maxlength',255);
+		$this->idsetorsiape->addAttribute('maxlength',7);
+		
+		$this->fone->addAttribute('onKeyUp','makeMask(this, \'(##)####-####\');');
+		$this->fone->addAttribute('onBlur','makeMask(this, \'(##)####-####\');');
+		$this->fax->addAttribute('onKeyUp','makeMask(this, \'(##)####-####\');');
+		$this->fax->addAttribute('onBlur','makeMask(this, \'(##)####-####\');');
+		
 
 		$buttons = array(
 		new MButton('btnPost',  'Gravar'),
@@ -140,8 +158,9 @@ class frmSetorDados extends MForm
 
 		//Alterado por mim
 		$pessoas = $objPessoa->GetById($this->objSetor->idResponsavel);
-		
+
 		$this->setData($this->objSetor,$pessoas);
+		
 	}
 
 	function SetData($data,$pessoa)
@@ -153,13 +172,16 @@ class frmSetorDados extends MForm
  		$this->SetFieldValue('datafim',      $data->dataFim     );
 		$this->SetFieldValue('nomesetor',    $data->nome        );
 		$this->SetFieldValue('tiposetor',    $data->tipo        );
-		$this->SetFieldValue('fone',         $data->fone        );
-		$this->SetFieldValue('fax',          $data->fax         );
+		
+		//$this->SetFieldValue('fone',         $data->fone        );
+		$this->SetFieldValue('fone',         $this->insertMask($data->fone[0] == "0" ? str_replace("0", "", $data->fone) : $data->fone, '(##)####-####'));
+		//$this->SetFieldValue('fax',          $data->fax         );
+		$this->SetFieldValue('fax',          $this->insertMask($data->fax[0] == "0" ? str_replace("0", "", $data->fax) : $data->fax, '(##)####-####'));
 		$this->SetFieldValue('centrocusto',  $data->centroCusto );
 		$this->SetFieldValue('obs',          $data->obs         );
 		$this->SetFieldValue('localizacao',  $data->localizacao );
 		$this->SetFieldValue('lkpPessoa',    $pessoa->nome );
-                $this->SetFieldValue('idPessoa',     $pessoa->idpessoa);
+        $this->SetFieldValue('idPessoa',     $pessoa->idpessoa);
 		$this->SetFieldValue('idsetorsiape', $data->idSetorSiape );//var_dump($this->rstrstr($data->sigla, '-') );
 		$this->SetFieldValue('sigla',        $this->rstrstr($data->sigla, '-'));
 		$this->mtHierarquia->setCodeValue($data->getOrganogramas());
@@ -169,33 +191,47 @@ class frmSetorDados extends MForm
 	function GetData()
 	{
 		$data = new FormData();
-		$data->sigla       = $this->getFieldValue('sigla').'-'.$this->getFieldValue('siglas');
-		$data->idinstituicao = $this->getFieldValue('idinstituicao');
-		$data->dataInicio  = $this->getFieldValue('dataini');
-		$data->dataFim     = $this->getFieldValue('datafim');
-		$data->nome        = $this->getFieldValue('nomesetor');
-		$data->tipo        = $this->getFieldValue('tiposetor');
-		$data->fone        = $this->getFieldValue('fone');
-		$data->fax         = $this->getFieldValue('fax');
-		$data->centroCusto = $this->getFieldValue('centrocusto');
-		$data->obs         = $this->getFieldValue('obs');
-		$data->localizacao = $this->getFieldValue('localizacao');
-		$data->idResponsavel   = $this->getFieldValue('idPessoa');
-		$data->idSetorSiape= $this->getFieldValue('idsetorsiape');
+		$data->sigla       		= $this->getFieldValue('sigla').'-'.$this->getFieldValue('siglas');
+		$data->idinstituicao 	= $this->getFieldValue('idinstituicao');
+		$data->dataInicio  		= $this->getFieldValue('dataini');
+		$data->dataFim    		= $this->getFieldValue('datafim');
+		$data->nome       		= $this->getFieldValue('nomesetor');
+		$data->tipo        		= $this->getFieldValue('tiposetor');
+		//$data->fone        		= $this->getFieldValue('fone');
+		//$data->fax         		= $this->getFieldValue('fax');
+		$data->fone        		= $this->removeMask($this->getFieldValue('fone'), '(##)####-####');
+		$data->fax         		= $this->removeMask($this->getFieldValue('fax'), '(##)####-####');
+		$data->centroCusto 		= $this->getFieldValue('centrocusto');
+		$data->obs         		= $this->getFieldValue('obs');
+		$data->localizacao 		= $this->getFieldValue('localizacao');
+		$data->idResponsavel    = $this->getFieldValue('idPessoa');
+		$data->idSetorSiape		= $this->getFieldValue('idsetorsiape');
 		//$data->idPaiSetor  = $this->getFieldValue('idPaiSetor');
 
 		$data->organograma = $this->mtHierarquia->getCodeValue();
+		//var_dump($data);
 		return $data;
 	}
 
-
 	function btnPost_click($sender, $item=NULL)
-	{		
-		$siglas = $this->getFieldValue('siglas');
-		$dataInicio = $this->getFieldValue('dataini');
-		$nome = $this->getFieldValue('nomesetor');
+	{
+		$siglas 	 = $this->getFieldValue('siglas');
+		$dataInicio  = $this->getFieldValue('dataini');
+		$dataFim 	 = $this->getFieldValue('datafim');
+		$nome 		 = $this->getFieldValue('nomesetor');
 		$responsavel = $this->getFieldValue('idPessoa');
+		//var_dump(Form::GetFormValue('mtHierarquia'));
 		
+		
+		if (strpos($dataInicio, "-") == 4) //formato aaaa-mm-dd para aaaammdd
+		{
+			$dataInicioInvertida = str_replace("-", "", $dataInicio);
+		}
+		else //formato dd/mm/aaaa para aaaammdd
+		{
+			$dataInicioInvertida = $this->invert($dataInicio);
+		}
+
 		if(!$siglas)
 		{
 			$this->AddError('Favor preencher o campo "Sigla Setor"');
@@ -204,6 +240,10 @@ class frmSetorDados extends MForm
 		{
 			$this->AddError('Favor preencher o campo "Data Inicio"');
 		}
+		elseif($dataFim && $dataInicioInvertida > $this->invert($dataFim)) //verifica se data inicio é anterior ou igual a data fim
+		{
+			$this->AddError('A data de início deve ser anterior ou igual a data de fim');
+		}
 		elseif(!$nome)
 		{
 			$this->AddError('Favor preencher o campo "Nome"');
@@ -211,6 +251,36 @@ class frmSetorDados extends MForm
 		elseif(!$responsavel)
 		{
 			$this->AddError('Favor escolher o responsável pelo setor clicando no ícone de busca ao lado do campo "Responsável"');
+		}
+		elseif( (Form::GetFormValue('fone')!='') && preg_match("/\D/", Form::GetFormValue('fone')) && 
+			strlen(trim(Form::GetFormValue('fone'))) < 13 )
+		{
+			$this->AddError('Informe um valor válido para o campo "Telefone".');
+		}
+		elseif( (Form::GetFormValue('fax')!='') && preg_match("/\D/", Form::GetFormValue('fax')) && 
+			strlen(trim(Form::GetFormValue('fax'))) < 13 )
+		{
+			$this->AddError('Informe um valor válido para o campo "Fax".');
+		}
+		elseif( Form::GetFormValue('tiposetor') == "")
+		{
+			$this->AddError('Informe o tipo do setor.');
+		}
+		elseif( (Form::GetFormValue('selHierarquia') == "") && (Form::GetFormValue('mtHierarquia') == ""))
+		{
+			$this->AddError('Informe o Organograma no campo Tipo.');
+		}
+		elseif( (Form::GetFormValue('selHierarquia') != "") && (Form::GetFormValue('lkpSetorId') == "") && (Form::GetFormValue('mtHierarquia') == ""))
+		{
+			$this->AddError('Escolha um setor.');
+		}
+		elseif(Form::GetFormValue('mtHierarquia') == "")
+		{
+			$this->AddError('Adicione um Organograma e um Setor pai.');
+		}
+		elseif(!$this->verificaCampoMTHierarquia(Form::GetFormValue('mtHierarquia'))) // verifica se foi adicionado um organograma/setor correto
+		{
+			$this->AddError('Organograma e/ou setor inexistente.');
 		}
 		else
 		{
@@ -223,7 +293,7 @@ class frmSetorDados extends MForm
 			}
 			catch (EMioloException $e)
 			{
-				$this->AddError('Erro no cadastramento/alteração das informações do setor');
+				$this->AddError('Erro no cadastramento/alteração das informações do setor '.$e->getMessage());
 			}
 		}
 	}
@@ -271,9 +341,69 @@ class frmSetorDados extends MForm
 		$this->manager->Information('Operação cancelada com Sucesso.'  , $action );
 	}
 	
+	function invert($datainv)
+	{//recebe a data e o separador
+
+		$ano	=substr("$datainv",6, 4);
+		$mes	=substr("$datainv",3, 2);
+		$dia	=substr("$datainv",0, 2);
+		$datainv="$ano$mes$dia";
+		
+		return $datainv;
+	}
+	
+	function removeMask($string, $mascara) //ex: (32), (##)
+	{
+		if (strlen($string) == 0){
+			return $string;
+		}
+		$mascara = str_replace("#", "", $mascara);
+		for ($i = 0; $i < strlen($mascara); $i++)
+		{
+			$string = str_replace($mascara[$i], "", $string);
+		}
+		return $string;
+	}
+	
+	function insertMask($string, $mascara) //ex: (32), (##)
+	{
+		if (strlen($string) == 0)
+			return $string;
+		$stringComMascara = "";
+		for ($i = 0, $j = 0; $i < strlen($mascara); $i++)
+		{
+			if ($mascara[$i] != "#" && $mascara[$i] != $string[$j])
+			{
+				$stringComMascara = $stringComMascara.$mascara[$i];
+			}
+			else
+			{
+				$stringComMascara = $stringComMascara.$string[$j++];
+			}
+		}
+		return $stringComMascara;
+	}
+	
 	function rstrstr($haystack, $needle)
-{
-    return substr(strrev(strstr(strrev($haystack), strrev($needle))), 0, -strlen($needle));
-} 
+	{
+	    return substr(strrev(strstr(strrev($haystack), strrev($needle))), 0, -strlen($needle));
+	}
+	
+	function verificaCampoMTHierarquia($hierarquia)
+	{
+		foreach($hierarquia as $campoHierarquia){
+			if (substr($campoHierarquia, 1, strlen('--Selecione--')) == '--Selecione--'){
+				return false;
+			}
+			for($i = 0; $i < strlen($campoHierarquia)-1; $i++)
+			{
+				if (($campoHierarquia[$i] == '[') && ($campoHierarquia[$i+1] == ']'))
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 }
 ?>

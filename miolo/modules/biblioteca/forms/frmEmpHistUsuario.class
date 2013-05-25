@@ -60,9 +60,10 @@ class frmEmpHistUsuario extends MFormAJAX
                                                           new MText('txtRG', '<b>> o número do RG para usuário pertencente à comunidade, sem vínculo com a Instituição</b>'),
 				new MSpacer(1),
 				array(
-					new MLookupTextField('usuario','','Login do Usuário',20),
-					new MTextLabel('txtOu','&nbsp;&nbsp;&nbsp;-OU-&nbsp;&nbsp;&nbsp;','&nbsp;'),
-					new MLookupTextField('rg','','Número do RG',20),
+					//new MLookupTextField('usuario','','Login do Usuário',20),
+					new MTextField('usuario','','Cartão de Acesso',20),
+					//new MTextLabel('txtOu','&nbsp;&nbsp;&nbsp;-OU-&nbsp;&nbsp;&nbsp;','&nbsp;'),
+					//new MLookupTextField('rg','','Número do RG',20),
 				),
 			);
 			$this->SetFields($fields);
@@ -72,15 +73,15 @@ class frmEmpHistUsuario extends MFormAJAX
 			// item = A funcao que chama no arquivo classes/lookup.class
 			// event = O evento relacionado quando o usuário clica em "acao"
 			// related = Os campos retornados após a ação
-			$this->SetFieldAttr('usuario','module',$module);
-			$this->SetFieldAttr('usuario','item','Usuario');
-			$this->SetFieldAttr('usuario','event','filler');
-			$this->SetFieldAttr('usuario','related','usuario,"",""');
+			//$this->SetFieldAttr('usuario','module',$module);
+			//$this->SetFieldAttr('usuario','item','Usuario');
+			//$this->SetFieldAttr('usuario','event','filler');
+			//$this->SetFieldAttr('usuario','related','usuario,"",""');
 
-			$this->SetFieldAttr('rg','module',$module);
-			$this->SetFieldAttr('rg','item','rg');
-			$this->SetFieldAttr('rg','event','filler');
-			$this->SetFieldAttr('rg','related', 'rg,""');
+			//$this->SetFieldAttr('rg','module',$module);
+			//$this->SetFieldAttr('rg','item','rg');
+			//$this->SetFieldAttr('rg','event','filler');
+			//$this->SetFieldAttr('rg','related', 'rg,""');
 
 			$buttons = Array(
 				new MButton('btnProcurar', 'Procurar'),
@@ -102,10 +103,10 @@ class frmEmpHistUsuario extends MFormAJAX
 		if($item == null)
 		{
 			$this->login = $this->getFormValue('usuario');
-			if($this->login == null)
-			{
-				$this->login = $this->getFormValue('rg');
-			}
+			//if($this->login == null)
+			//{
+				//$this->login = $this->getFormValue('rg');
+			//}
 
 			if($this->login == null)
 			{
@@ -116,8 +117,13 @@ class frmEmpHistUsuario extends MFormAJAX
 		{
 			$this->login = $item;
 		}
+		
+		if(!is_numeric($this->login))
+		{
+			$MIOLO->Prompt(Prompt::Error("<font color=red>Cartão de Acesso inválido.</font>",$MIOLO->GetActionURL($module,$self)));
+		}
 
-		$this->user = $this->objUsuario->GetUsuarioByLogin($this->login);
+		$this->user = $this->objUsuario->GetUsuarioById($this->objUsuario->GetByCartao($this->login));
 
 		if (!$this->user)
 		{

@@ -615,6 +615,25 @@ echo get_class($query);
 		return FALSE;
 		}
   }
+  
+    /*Função para pesquisar pela transação, retorna numero de ocorrências do mesmo*/
+    function findByCPF($cpf)
+    {
+		$busca = "select count(*) as total from cm_pessoa where cpf = '$cpf'";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
+    
+    function findByNomeCPF($nome, $cpf)
+    {
+    	$busca = "select count(*) as total from cm_pessoa where cpf = '$cpf' and nome = '$nome'";
+    	return pg_fetch_result( pg_query($busca) ,0, 'total' );	
+    }
+    
+    function findByNome($nome)
+    {
+		$busca = "select count(*) as total from cm_pessoa where nome = '$nome'";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
  
 }   
 

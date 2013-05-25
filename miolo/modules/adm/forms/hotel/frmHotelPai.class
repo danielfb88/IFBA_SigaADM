@@ -32,8 +32,7 @@ class frmHotelPai extends Form
 	{
 		$this->AddField(new HiddenField('idHotel'));
 		$this->AddField(new TextField('nome','','Nome','30','Máx. 30 caracteres'));
-		$this->AddField(new MCurrencyField('valorDiaria','','Valor da Diária',5));
-		//$this->AddField(new TextField('valorDiaria','','Valor da Diária','5',''));
+		$this->AddField(new MCurrencyField('valorDiaria','','Valor da Diária',8,'Máx. 8 caracteres'));
 		$this->AddField(new Selection('ativo','','Ativo'));
 	} 
 

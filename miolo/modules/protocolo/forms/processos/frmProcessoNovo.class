@@ -50,10 +50,10 @@ class frmProcessoNovo extends MFormAjax
 		if ($this->perms->checkAccess('PROT_ANO', A_ACCESS))
 		{
 			$ano = array('last'=>date('Y')-1,'this'=>date('Y'));
-			$value = ($this->session->isRegistered('sAno')) ? $this->session->getValue('sAno') : $ano['this'];
+//			$value = ($this->session->isRegistered('sAno')) ? $this->session->getValue('sAno') : $ano['this'];
 			$opt1 = new MOption( 'opt1', $ano['last'],$ano['last'].'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', false, 'id1' );
-			$opt2 = new MOption( 'opt2', $ano['this'],$ano['this'].'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', false, 'id2' );
-			$groupAno = new MRadioButtonGroup('anoCorrente','Ano do processo',array($opt1,$opt2),$value,'','horizontal','css');
+			$opt2 = new MOption( 'opt2', $ano['this'],$ano['this'].'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', true, 'id2' );
+			$groupAno = new MRadioButtonGroup('anoCorrente','Ano do processo',array($opt1,$opt2),false,'','horizontal','css');
 			$groupAno->addAttribute('style','padding:10px');
 		}
 		else
@@ -76,15 +76,13 @@ class frmProcessoNovo extends MFormAjax
 		//      dados do processo
 		$url = $this->manager->getActionUrl('protocolo','ajaxhandler');		
 
-//IFRJ
-
-if (($this->perms->checkAccess('PROT_ADMIN', A_EXECUTE)) || (($this->perms->checkAccess('PROT_PC',A_EXECUTE)) && ($this->perms->checkAccess('PROT_PT',A_EXECUTE)))){
-	$tipo = new Mselection('tipo',$this->session->getValue('sTipo'),'Tipo:',array('P'=>'Processo','A'=>'Protocolado'));
-}elseif ($this->perms->checkAccess('PROT_PC',A_EXECUTE)){
-	$tipo = new Mselection('tipo',$this->session->getValue('sTipo'),'Tipo:',array('P'=>'Processo'));
-}elseif ($this->perms->checkAccess('PROT_PT',A_EXECUTE)){
-	$tipo = new Mselection('tipo',$this->session->getValue('sTipo'),'Tipo:',array('A'=>'Protocolado'));
-}
+		if (($this->perms->checkAccess('PROT_ADMIN', A_EXECUTE)) || (($this->perms->checkAccess('PROT_PC',A_EXECUTE)) && ($this->perms->checkAccess('PROT_PT',A_EXECUTE)))){
+			$tipo = new Mselection('tipo',$this->session->getValue('sTipo'),'Tipo:',array('P'=>'Processo','A'=>'Protocolado'));
+		}elseif ($this->perms->checkAccess('PROT_PC',A_EXECUTE)){
+			$tipo = new Mselection('tipo',$this->session->getValue('sTipo'),'Tipo:',array('P'=>'Processo'));
+		}elseif ($this->perms->checkAccess('PROT_PT',A_EXECUTE)){
+			$tipo = new Mselection('tipo',$this->session->getValue('sTipo'),'Tipo:',array('A'=>'Protocolado'));
+		}
 
 		//$tipo = new MSelection('tipo',$this->session->getValue('sTipo'),'Tipo:',array('P'=>'Processo','A'=>'Protocolado'));
 		//  IFRJ   $tipo = new MSelection('tipo','','Tipo:',array('P'=>'Processo','A'=>'Protocolado'));
@@ -94,34 +92,36 @@ if (($this->perms->checkAccess('PROT_ADMIN', A_EXECUTE)) || (($this->perms->chec
 		//$titulo = new MTextField('titulo',$this->session->getValue('sTitulo'),'Titulo:',90);
 		$titulo = new MTextField('titulo','','Titulo',90);
 		$titulo->addAttribute('maxlength','80');
-		
-		//$solicitante = new MTextField('solicitante',$this->session->getValue('sSolicitante'),'Solicitante:',90);
-		$solicitante = new MTextField('solicitante','','<br>Solicitante:',70);
-		$solicitante->addAttribute('maxlength','70');
+	
+		$solicitante = new MTextField('solicitante','','Solicitante:',80);
+		$solicitante->addAttribute('maxlength','80');
 
 		$receberEmail = new Selection('receberEmail','','<br>Deseja receber informações sobre o processo por e-mail?',array('S'=>'Sim','N'=>'Não'));
 		$email = new TextField('email','','<br>Informe o e-mail do interessado apenas se não for o autor do processo. Caso seja autor do processo, utilize o campo abaixo para informar se deseja ou não acompanhar o processo por e-mail.',70, '');
+		$email->addAttribute('maxlength','50');
 
 		//$assunto = new MMultiLineField('assunto',$this->session->getValue('sAssunto'),'Assunto:',240,5,88);
-		$assunto = new MMultiLineField('assunto','','<br>Assunto:',240,5,69);
+		$assunto = new MMultiLineField('assunto','','Assunto:',240,5,69);
+		$assunto->addAttribute('maxlength','240');
 		
 		$publico = new Selection('publico','','<br>Tornar processo público:',array('S'=>'Sim','N'=>'Não'));
 		$espaco = new MSpacer(2);
+		$espaco1 = new MSpacer(1);
 		//$clearProcesso = ($this->session->IsRegistered('sTitulo') && $this->session->IsRegistered('sSolicitante') && $this->session->IsRegistered('sAssunto')) ? new MButton('limparProcesso','Limpar',"javascript:doLimparDadosProcesso('$url')") : null;
 		$clearProcesso = new MButton('limparProcesso','Limpar',"javascript:doLimparDadosProcesso('$url')");
 		
-		$groupDadosProcesso = new MBaseGroup( 'groupTipoProcesso', 'Dados do processo',array($tipo,$titulo,$solicitante,$email, $assunto,$receberEmail,$espaco,$publico,$espaco,$clearProcesso),'horizontal','css');
+		$groupDadosProcesso = new MBaseGroup( 'groupTipoProcesso', 'Dados do processo',array($tipo,$titulo,$espaco1,$espaco1,$solicitante,$email, $espaco1,$espaco1, $assunto,$receberEmail,$espaco,$publico,$espaco,$clearProcesso),'horizontal','css');
 		$groupDadosProcesso->addAttribute('style','padding:10px');
 
 		//      origem do processo
 
 		//IFSP
 		$msg_tst = $MIOLO->login->idkey;
-		$uasg = $this->processo->getUASG($msg_tst);
-		$value = ($this->session->IsRegistered('sInstituicao')) ? $this->session->getValue('sInstituicao') : $uasg->fields('uasg');
+		$uasg 	 = $this->processo->getUASG($msg_tst);
+		$value   = ($this->session->IsRegistered('sInstituicao')) ? $this->session->getValue('sInstituicao') : $uasg->fields('uasg');
 
-		$instituicao =  new MTextField('instituicao',$value,'Instituição (UP):',15);
-		$instituicao->addAttribute('maxlength','5');
+		$instituicao =  new MTextField('instituicao',$value,'Instituição:',15);
+		$instituicao->addAttribute('maxlength','6');
 		$numProcesso = new MDiv('m_numProcesso','');
 
 		if (!$this->perms->checkAccess('PROT_ADMIN', A_ACCESS))
@@ -130,7 +130,7 @@ if (($this->perms->checkAccess('PROT_ADMIN', A_EXECUTE)) || (($this->perms->chec
 		}
 		else
 		{
-			$url = $this->manager->getActionUrl('protocolo','ajaxhandler');
+			$url 			= $this->manager->getActionUrl('protocolo','ajaxhandler');
 			$origemExterna  = new MCheckBox( 'origemExterna','value','&nbsp;',false, _M('externo') );
 			$origemExterna->addAttribute("onchange","doTextInstituicao('$url');doTextOrigem('$url');");
 			$destinoExterno  = new MCheckBox( 'destinoExterno','value','&nbsp;',false, _M('externo') );
@@ -186,15 +186,16 @@ $teste = $setorOrigem;
 		//      saída do processo
 		//$setorDestino = new MComboBox('setorDestino',$this->session->getValue('sSetorDestino'),'Setor de Destino:',$this->setor->selAll(),'','',15);
 		$setorDestino = new MComboBox('setorDestino','','Setor de Destino:',$this->setor->selAll(),'','',15);
+		$setorDestino->addAttribute('readonly',true);
 		$setorDestino->addAttribute("onkeyup","toUpperCase('setorDestino')");
 		$setorDestino->addAttribute('style','text-transform:uppercase');
 
 		//$decisao = new MMultiLineField('decisao',$this->session->getValue('sDecisao'),'Decisão:',400,5,88);
 		$decisao = new MMultiLineField('decisao','','<br>Decisão:',1000,8,69);
 		//$autor = new MTextField('autor',$this->session->getValue('sAutor'),'Autor:',40);
-		//$autor = new MTextField('autor','','<br>Autor:',40);
+		$autor = new MTextField('autor','','Autor:',40);
 		
-		//$autor->addAttribute('maxlength','40');
+		$autor->addAttribute('maxlength','40');
 		//$clearSaida = ($this->session->IsRegistered('sSetorDestino') && $this->session->IsRegistered('sDecisao') && $this->session->IsRegistered('sAutor')) ? new MButton('limparSaida','Limpar',"javascript:doLimparSaida()") : null;
 		$clearSaida = new MButton('limparSaida','Limpar',"javascript:doLimparSaida()");		
 		$groupSaida = new MBaseGroup('groupSaida', 'Saída do processo (opcional)',array($setorDestino,$destinoExterno,$decisao,$autor,$tornaPublico,$clearSaida),'horizontal','css');
@@ -218,6 +219,8 @@ $teste = $setorOrigem;
 			new MRequiredValidator('solicitante'),
 			new EMAILValidator('email','','','E-mail inválido'),
 			new MRequiredValidator('assunto'),
+			new MRequiredValidator('setorOrigem'),
+			new MRequiredValidator('autor'),
 		);
 		$this->setValidators($validators);
 
@@ -251,12 +254,13 @@ $teste = $setorOrigem;
         $data->solicitante = trim($data->solicitante);
         $data->assunto = trim($data->assunto);
 		
-		if ($data->setorOrigem == NULL){
-        	$this->addError('Selecione o Setor de Origem.');
-			return;
-		}
 		if (strlen($data->titulo) == 0){
-        	 $this->addError('O campo "Título" deve ser preenchido.');
+			if ($data->tipo == ""){
+				$this->addError('Selecione o tipo do processo.');
+			}
+			else{
+        	 	$this->addError('O campo "Título" deve ser preenchido.');
+        	}
             return;
         }
         if (strlen($data->solicitante) == 0){
@@ -267,7 +271,7 @@ $teste = $setorOrigem;
         	 $this->addError('O campo "Assunto" deve ser preenchido.');
             return;
         }
-	if(strlen(trim($data->decisao)) > 1000)
+		if(strlen(trim($data->decisao)) > 1000)
         {
 	        $this->AddError('O campo decisão deve conter, no máximo, 1000 caracteres.');
                 return;
@@ -287,6 +291,14 @@ $teste = $setorOrigem;
 		elseif(!$data->publico)
 		{
 			$this->addError('Você deve escolher se quer tornar o processo público ou não.');
+			return;
+		}
+		elseif(strlen(trim($data->instituicao)) == 0){
+			$this->addError('Você deve fornecer o UP da Instituição.');
+			return;
+		}
+		elseif(!is_numeric($data->instituicao)){
+			$this->addError('O UP da Instituição deve conter apenas números.');
 			return;
 		}
 		
@@ -360,7 +372,8 @@ $teste = $setorOrigem;
 
 			$user = $MIOLO->getBusiness('common', 'usuario');
 			$result = $user->GetById($login->idkey);		
-			$andamento->autor = $result->nome; 
+			//$andamento->autor = $result->nome; 
+			$andamento->autor = $data->autor;
 			$andamento->status = 'N';
 			$andamento->setor = $setorOrig;
 			$andamento->dataEntrada = $data->dataAbertura;

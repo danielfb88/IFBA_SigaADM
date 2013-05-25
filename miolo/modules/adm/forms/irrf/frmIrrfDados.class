@@ -48,6 +48,7 @@ class frmIrrfDados extends MForm
 		
         $this->setFields($fields);
 		$this->setFieldAttr('idIrrf', 'readonly', true);
+		$this->aliquota->addAttribute('maxlength',1);
 		
 		$buttons = array(new MButton('btnSalvar', 'Salvar'));
 		$this->setButtons($buttons);
@@ -94,28 +95,32 @@ class frmIrrfDados extends MForm
 		$this->objIrrf->deducao = str_replace(".","",$this->objIrrf->deducao);
 		
 		$this->objIrrf->ate = str_replace(",",".",$this->objIrrf->ate);
-		$this->objIrrf->deducao = str_replace(",",".",$this->objIrrf->deducao);		
+		$this->objIrrf->deducao = str_replace(",",".",$this->objIrrf->deducao);
 		
 		$inicio = $this->objIrrf->dataIni;
-                $final = $this->objIrrf->dataFim;
+        $final = $this->objIrrf->dataFim;
 
-                $partes_da_data = explode('/',$inicio);
-                $datainicial =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
-                $partes_da_data = explode('/',$final);
-                $datafinal =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+        $partes_da_data = explode('/',$inicio);
+        $datainicial =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
+        $partes_da_data = explode('/',$final);
+        $datafinal =  $partes_da_data[2].'/'.$partes_da_data[1].'/'.$partes_da_data[0];
 
-                if ($datainicial >= $datafinal)
-                {
-                        $this->addError('É necessário que a data inicial seja inferior a data final!');
-                }		
+        if ($datainicial >= $datafinal)
+        {
+        	$this->addError('É necessário que a data inicial seja inferior a data final!');
+        }		
+        elseif(!preg_match("/^[0-9]/" ,$this->objIrrf->aliquota))
+        {
+        	$this->AddError('O campo "Alíquota" deve conter no máximo 1 caracter.');
+        }
 		elseif( Form::GetFormValue('percentual') <= 0 )
-                {
-                        $this->AddError('Informe um percentual válido.');
-                }
-                elseif( Form::GetFormValue('deducao') <= 0 )
-                {
-                        $this->AddError('Informe uma dedução válida.');
-                }
+        {
+            $this->AddError('Informe um percentual válido.');
+        }
+       	elseif( $this->objIrrf->deducao <= 0 )
+        {
+        	$this->AddError('Informe uma dedução válida.');
+        }
 		else
 		{
 			try {

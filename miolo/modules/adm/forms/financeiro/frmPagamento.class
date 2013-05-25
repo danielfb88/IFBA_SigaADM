@@ -94,6 +94,8 @@ class frmPagamento extends Form
 		}
 		if( ($fornecedor == null) and ($numero == null) ) //não foi definido critério para o filtro
 		{
+			$MIOLO->Error('Por favor, selecione o fornecedor pelo botão lookup.', $MIOLO->GetActionURL($module, $action) );
+			return;
 		}
 		else
 		{
@@ -101,6 +103,11 @@ class frmPagamento extends Form
 			{
 				$empenho = $MIOLO->GetBusiness($module, 'empenho');
 				$dados = $empenho->ListByNumero($numero);
+				if($dados->result[0][5] == NULL) 
+				{
+					$MIOLO->Error('Por favor, especifique um empenho válido.', $MIOLO->GetActionURL($module, $action) );
+					return;				
+				}
 				$idFornecedor = $dados->result[0][5];
 				$fornecedor = $dados->result[0][11];
 			}
@@ -108,10 +115,13 @@ class frmPagamento extends Form
 			{
 				if($idFornecedor == null) //nao foi usado o lookup
 				{
+					/*
 					$objFornecedor = $MIOLO->GetBusiness($module, 'fornecedor');
 					$dados = $objFornecedor->GetByDocumentoOuNome($fornecedor);
 					$idFornecedor = $dados[0];
-					$fornecedor = $dados[1];
+					$fornecedor = $dados[1];*/
+					$MIOLO->Error('Por favor, selecione o fornecedor pelo botão lookup.', $MIOLO->GetActionURL($module, $action) );
+					return;
 				}
 			}
 		}

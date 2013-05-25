@@ -43,9 +43,9 @@ class frmTipoReqDados extends Form
 		
         $this->SetFields($fields);
 
-	    $this->SetFieldAttr('lkpDescRubrica','module','adm');
-	    $this->SetFieldAttr('lkpDescRubrica','item','descrubrica');
-	    $this->SetFieldAttr('lkpDescRubrica','event','btnReadOnly:click');
+	$this->SetFieldAttr('lkpDescRubrica','module','adm');
+	$this->SetFieldAttr('lkpDescRubrica','item','descrubrica');
+	$this->SetFieldAttr('lkpDescRubrica','event','btnReadOnly:click');
 
         $this->descricao->AddAttribute('maxlength','30');
 
@@ -87,30 +87,33 @@ class frmTipoReqDados extends Form
 		
 		$this->objTipoReq->SetData($this->GetData());
 		
-		
-
 		$objReqRubrica->GetById($this->objTipoReq->idTipoReq);
 	
-		
+		//var_dump($objReqRubrica);
 
-//var_dump($objReqRubrica);
-
-		try
+		if(strlen(trim(Form::GetFormValue('descricao'))) < 1)
 		{
-			$this->objTipoReq->save();
-			
-			$objReqRubrica->deleteTipo($this->objTipoReq->idTipoReq);
-			
-			$objReqRubrica->idRubrica = $this->GetData()->idRubrica;
-			
-			$objReqRubrica->save();
-			
-			$this->objTipoReq->Log(OP_UPD,"Dados de tipo de requisição modificados");
-			$this->manager->information("Dados alterados com sucesso.",$this->manager->getActionUrl('adm','main:tiporeq:find') );
+			$this->AddError('Campo Descrição inválido.');
 		}
-		catch (Exception $e)
+		else
 		{
-			$this->addError($e->getMessage());
+			try
+			{
+				$this->objTipoReq->save();
+			
+				$objReqRubrica->deleteTipo($this->objTipoReq->idTipoReq);
+			
+				$objReqRubrica->idRubrica = $this->GetData()->idRubrica;
+			
+				$objReqRubrica->save();
+			
+				$this->objTipoReq->Log(OP_UPD,"Dados de tipo de requisição modificados");
+				$this->manager->information("Dados alterados com sucesso.",$this->manager->getActionUrl('adm','main:tiporeq:find') );
+			}
+			catch (Exception $e)
+			{
+				$this->addError($e->getMessage());
+			}
 		}
 	}
 

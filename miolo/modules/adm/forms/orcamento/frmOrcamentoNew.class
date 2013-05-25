@@ -40,16 +40,19 @@ class frmOrcamentoNew extends Form
 		
 		$fields = array
 		(
-			new TextField('ano',date("Y"),'Ano','10'),
+			new TextField('ano',date("Y"),'Ano','4'),
 			new TextField('esfera','','Esfera','1'),
 			new LookupTextField('idptr','','PTR',20),
 			new LookupTextField('idfonte','','Fonte',20),
 			new LookupTextField('idrubrica','','Rubrica',20),
 			new Selection('tipoorc','','Tipo',$options->result,false),
 			new Selection('ug','','UG',$optionsUG->result,false),			
-			new MCurrencyField('valor','','Valor','10')
+			new MCurrencyField('valor','','Valor','12')
 		);
 		$this->SetFields($fields);
+		$this->ano->AddAttribute('maxlength',4);
+		$this->esfera->AddAttribute('maxlength',1);
+		$this->valor->AddAttribute('maxlength',12);
 		$this->SetFieldAttr('idptr','module',$module);
 		$this->SetFieldAttr('idptr','item','Ptr');
 		$this->SetFieldAttr('idptr','event','filler');
@@ -80,6 +83,7 @@ class frmOrcamentoNew extends Form
         	$this->addError("O valor fornecido no campo esfera está incorreto, este campo deve conter um único digito!");
         }
         else{
+        		$auxValor = $data->valor;
 				$cf = new MCurrencyFormatter();
 				if (substr_count($data->valor, ",") == 0)
 		        {
@@ -113,8 +117,13 @@ class frmOrcamentoNew extends Form
 					$this->AddError("Campo TIPO deve ser informado");
 				}elseif($data->ug == NULL){
 					$this->AddError("Campo UG deve ser informado");
+				}else if ($data->valor < 0) {
+					$this->AddError("O valor do Orçamento não pode ser negativo.");
 				}
-				else{
+				else if ($data->valor == 0) {
+					$this->AddError("Forneça um valor válido.");
+				}
+				else {
 					$data->data = $orcamento->_db->CharToTimestamp(date('d/m/Y H:i:s'));
 					$orcExiste = $orcamento->GetByClassOrcamentaria($data->ano, $data->idptr, $data->idfonte, $data->idrubrica, $data->esfera,$data->ug);
 					
@@ -144,7 +153,6 @@ class frmOrcamentoNew extends Form
 				        
 						$orcamento->SetData($data);
 						$orcamento->ug = $data->ug;
-						//var_dump($orcamento->ug);		
 									
 						try
 						{
@@ -167,7 +175,6 @@ class frmOrcamentoNew extends Form
 						$orcamento->Log(OP_INS,"Novo orcamentohist criado");
 						$go = $this->manager->GetActionURL('adm','main:orcamento:find',$orcamentoHist->idOrcamento);
 						$this->manager->information("Novo Orcamento Criado.",$go);
-						//$this->page->Redirect($go);
 					}
 					catch (Exception $e)
 					{

@@ -84,13 +84,13 @@ class frmExemplarItem extends Form
         //$optCodigo['8'] = 'Id Automation 3 of 9';
          
         //Obtendo o id da obra atraves do idexemplar
-        $data = $this->objExemplar->GetAllByCodigo($item);
+        //$data = $this->objExemplar->GetAllByCodigo($item);
 
         //Na exclusão o $item é o numerodaobra
-        if ( $data == NULL )
-        {
+       // if ( $data == NULL )
+       // {
             $data = $this->objExemplar->GetObraByCodigo($item);
-        }
+       // }
         $idobra = $data->idobra;
         $obraIni = $data->numerodaobra;
         $this->numerodaobra = $obraIni;

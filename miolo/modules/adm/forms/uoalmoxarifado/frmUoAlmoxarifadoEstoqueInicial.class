@@ -36,10 +36,13 @@ class frmUoAlmoxarifadoEstoqueInicial extends Form
         $valorTotal = $cf->formatWithSymbol($this->objEstoque->valorTotal);
         
         $fields = array(            
-            new MTextField('idMaterial',$this->objEstoque->idMaterial,'Idmaterial'),
-            new MTextField('lkpMaterial',$this->objEstoque->material->descricao,'Material',40),
+            array( new MTextField('idMaterial',$this->objEstoque->idMaterial,'ID'), 
+			       new MTextField('catmat',$this->objEstoque->material->codmaterial,'CATMAT'),			
+				 ),
+            new MTextField('lkpMaterial',$this->objEstoque->material->descricao,'Material',80), 
             new MTextField('estoque',$this->objEstoque->estoque,'Quantidade',10,'Ex: 1000'),
             new MTextField('valorTotal',$valorTotal,'Valor Total',10,'Ex: 45,00'),
+			new MTextField('unidade', $this->objEstoque->material->unidade,'Unidade de medida',10), 
             new MTextField('estoqueMin',$this->objEstoque->estoqueMin,'Estoque Mínimo',10,'Ex: 500'),
         );
 		
@@ -49,10 +52,13 @@ class frmUoAlmoxarifadoEstoqueInicial extends Form
         $this->SetFieldAttr('lkpMaterial','event','filler');
         $this->SetFieldAttr('lkpMaterial','related','idMaterial,lkpMaterial');
         
-        $this->SetFieldAttr('idMaterial','visible',false);
+        $this->SetFieldAttr('idMaterial','readonly',true);
+		$this->SetFieldAttr('catmat','readonly',true);
         $this->SetFieldAttr('estoque','readonly',true);
         $this->SetFieldAttr('valorTotal','readonly',true);
+		$this->SetFieldAttr('unidade','readonly',true);
         $this->SetFieldAttr('lkpMaterial','readonly',true);
+		
         
         $validators = array(
           new MRequiredValidator('idMaterial'),

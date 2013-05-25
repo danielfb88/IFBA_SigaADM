@@ -12392,42 +12392,60 @@ var $table = array(
    'Zy' => '99',
 ));
 
-	function getCutter($string,$concat = '')
+	function retira_acentos( $texto )
+	{
+	  $array1 = array(   "á", "à", "â", "ã", "ä", "é", "è", "ê", "ë", "í", "ì", "î", "ï", "ó", "ò", "ô", "õ", "ö", "ú", "ù", "û", "ü", "ç"
+						 , "Á", "À", "Â", "Ã", "Ä", "É", "È", "Ê", "Ë", "Í", "Ì", "Î", "Ï", "Ó", "Ò", "Ô", "Õ", "Ö", "Ú", "Ù", "Û", "Ü", "Ç" );
+	  $array2 = array(   "a", "a", "a", "a", "a", "e", "e", "e", "e", "i", "i", "i", "i", "o", "o", "o", "o", "o", "u", "u", "u", "u", "c"
+						 , "A", "A", "A", "A", "A", "E", "E", "E", "E", "I", "I", "I", "I", "O", "O", "O", "O", "O", "U", "U", "U", "U", "C" );
+	  return str_replace( $array1, $array2, $texto );
+	}
+
+	function getCutter($string,$concat = '',$skip = '#')
 	{
 		if(!empty($string))
 		{
-			$name = strtolower($string);
+			$name = $this->retira_acentos(strtolower($string));
 			$name[0] = strtoupper($name[0]);
 			
 			if(isset($this->table[$name[0]]))
 			{
 				$vec = $this->table[$name[0]];
-				$end = strlen($name);
 				
-				while(!isset($vec[substr($name,0,$end--)]) && ($end >= 0));
+				$number = current($vec);
 				
-				if($end >= 0)
-        {
-          $cutt = $name[0].$vec[substr($name,0,$end+1)];
+				while(isset($number) && $name > key($vec))
+					$number = next($vec);
+					
+				$number = prev($vec);
+				
+				if($number >= 0)
+				{
+				  $cutt = $name[0].$number;
 
-          $artigos = array('o','a','os','as','um','uma','uns','umas');
+				  if(!is_numeric($skip))
+				  {
+					  $artigos = array('o','a','os','as','um','uma','uns','umas');
 
-          $tok = strtok($concat,' ');
+					  $tok = strtok($concat,' ');
 
-          if($tok !== false)
-          {
-            if(in_array($tok,$artigos))
-               $temp = str_replace($tok.' ', '', $concat);
-            else
-               $temp = $concat;
-         }
-         else
-            $temp = $concat;
+					  if($tok !== false)
+					  {
+						if(in_array($tok,$artigos))
+						   $temp = str_replace($tok.' ', '', $concat);
+						else
+						   $temp = $concat;
+					 }
+					 else
+						$temp = $concat;
+				  }
+				  else
+					$temp = $concat[$skip];
 
-          $temp = strToLower($temp[0]);
+				  $temp = strToLower($temp[0]) == 'l' ? 'L' : strToLower($temp[0]);
 
-					return $name[0].$vec[substr($name,0,$end+1)].$temp;
-        }
+							return $name[0].$number.$temp;
+				}
 				else
 					return null;
 			}

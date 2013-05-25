@@ -1,0 +1,220 @@
+
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+<?
+global $MIOLO;
+/**
+ * Use Module Control
+ */
+$MIOLO->Uses('controls/linkpatrimonio.class','adm');
+
+class frmPatrimonioID extends MFormAjax
+{
+	function __construct()
+	{
+		global $MIOLO, $module, $action;
+		parent::__construct('Consulta por número patrimonial');
+		$this->SetClose($MIOLO->GetActionURL($module,'main:patrimonio'));
+		$this->page->addJsCode(file_get_contents(dirname(__FILE__).'/js/frmPatrimonioID.js'));
+		$this->EventHandler();
+	}
+
+	public function CreateFieldsAuth()
+	{
+		global $MIOLO, $action, $module, $item;
+	
+		$ui = $MIOLO->GetUI();
+        $grid = $ui->GetGrid( 'adm', 'gridPatrimonioEspecifico' );
+        $grid->SetTitle('Bens Patrimoniais');
+		
+		$lnkNew = new LinkPatrimonio('lnkNew', FALSE);
+		$lnkNew->setNew();
+
+		$findButton = new ButtonFind('');
+		$findButton->SetName('btnFind');
+		
+		$idPatrimonioEspecifico = $this->GetFormValue('idPatrimonioEspecifico');		
+		
+		$numeroserie = '';
+		
+		$setor = $MIOLO->GetBusiness('common','setor');
+		$user  = $MIOLO->GetBusiness('common','usuario');   		
+		$usuario = $user->GetByLogin($MIOLO->login->id);
+		//var_dump($setor->getById($usuario->idSetor)->idinstituicao);
+		$instituicao_usuario = $setor->getById($usuario->idSetor)->idinstituicao;
+		$instituicao_patrimonio = 0;
+		$livro = false;
+		
+		if ( (!empty($idPatrimonioEspecifico)) )		{ 
+			$aux = $MIOLO->getBusiness('adm', 'executoralmox');
+			$sql = new sql('numeroserie, idinstituicao, IdClassificador, Ativo', 'vad_Patrimonio', 'idItemPatrimonio = ' . $idPatrimonioEspecifico);
+			$query = $aux->Query($sql);
+			$numeroserie = $query->result[0][0];
+			$instituicao_patrimonio = $query->result[0][1];
+			$livro = $query->result[0][2] == '5L024';			
+			$ativo = $query->result[0][3];
+			
+			//var_dump($ativo);
+		}
+		
+		if ( empty($numeroserie)) { $numeroserie = 'ainda não cadastrado';}
+		
+		$acessopatri = (  $instituicao_usuario == $instituicao_patrimonio || 
+		                  $MIOLO->getPerms()->isMemberOf($login,'ADM_PATRIMONIOADMIN')
+					   );
+
+		
+		$fields = array
+			(
+				array ( new MTextField('idPatrimonioEspecifico','','Nº Patrimonial',10), 
+					$findButton,
+				),
+			new MSpacer(1),
+			$grid,
+			new MSpacer(1),			
+			
+			);
+			
+		
+		
+		//var_dump($numeroserie);	
+			
+        $this->SetFields($fields);
+		$this->defaultButton = false;	
+		
+		if ($ativo == 'N') {
+			var_dump ('não ativo');
+			//exit();
+			
+			$fieldsComplem = array ( new MTextLabel ('nAtivo', 'OBS: Esse patrimônio não está ativo!', '', 'red') );
+				$this->AddFields($fieldsComplem);
+		}
+		
+		//var_dump ($instituicao_usuario, $instituicao_patrimonio, $MIOLO->getPerms()->isMemberOf($login,'ADM_PATRIMONIOADMIN') );
+		if ((!empty($idPatrimonioEspecifico)) AND ($livro == false))
+		{
+			
+			
+			if  ($acessopatri == true)
+			{
+				$fNumserie = new MTextField('numeroSerie', '', 'Número de Série',25, 'Informe o número de série (SE POSSUIR)');
+				$fieldsComplem = array ( new MTextLabel ('nserie', $numeroserie, 'Nº de série cadastrado', 'blue'), $fNumserie, );
+				$this->AddFields($fieldsComplem);
+				
+				$buttons = array
+					(
+						new MButton('butAlterarNumeroSerie', 'Alterar Número de Série'),
+					);
+				$this->SetButtons($buttons);
+			}
+			else 
+			{
+				$fieldsComplem = array ( new MTextLabel ('nserie', $numeroserie . ' (sem acesso)', 'Nº de série cadastrado', 'red'),);
+				$this->AddFields($fieldsComplem);	
+			}
+			
+			if (empty($idPatrimonioEspecifico)) {$foco = "idPatrimonioEspecifico";} else { $foco = "numeroSerie"; }
+		}
+		
+
+		$this->page->onLoad("javascript:doHabilitarEdicaoNumSerie();MIOLO_GetElementById('$foco').focus();");		
+		 
+		$this->page->onSubmit("doHabilitarEdicaoNumSerie()");	
+
+		$idPatrimonioEspecifico =  Form::GetFormValue('idPatrimonioEspecifico');
+		
+	}
+	
+	public function CreateFields()
+	{
+		global $MIOLO, $action, $module, $item, $perms;
+		
+		$login = $MIOLO->GetLogin();
+		$perm = $MIOLO->getPerms()->isMemberOf($login,'ADM_PATRIMONIO');
+				
+		if ($perm ==false) {
+			$this->AddError('Permissão de patrimônio negada');		
+		}
+		else { $this->CreateFieldsAuth(); }		
+		
+	}
+	
+	public function butAlterarNumeroSerie_click()
+	{
+		global $MIOLO;
+		
+		$numeroSerie  = $this->GetFormValue('numeroSerie');
+		$idPatrimonioEspecifico = $this->GetFormValue('idPatrimonioEspecifico');
+		
+		
+		if (empty($idPatrimonioEspecifico)) { $this->addError("Informe o nº do patrimônio.");}
+		//if (empty($numeroSerie)) { $this->addError("Informe o número de série.");}
+		
+		$numeroSerie = trim(strtoupper($numeroSerie));
+		
+		if( strlen(trim($numeroSerie)) > 25 ) {$this->addError("O número de série deve possuir no máximo 25 caracteres."); }
+				
+		if ($this->errors == '')
+		{
+			$db = $MIOLO->GetDatabase('sigaept');		
+			
+			
+			if (empty($numeroSerie))
+			{
+				$sql = 'UPDATE ad_itemPatrimonio SET ' . chr(13) .
+						'     numeroSerie = NULL ' 		. 
+						' WHERE idItemPatrimonio = '	. "?" . chr(13);			
+				//var_dump('NULO');
+				
+			}
+			else
+			{
+				$sql = 'UPDATE ad_itemPatrimonio SET ' . chr(13) .
+						'     numeroSerie =  ' 		. "'" . $numeroSerie . "'" . chr(13) .
+						' WHERE idItemPatrimonio = '	. "?" . chr(13);
+			}
+			
+			$args = array($idPatrimonioEspecifico);					
+			
+			/*header("Content-Type: text/html; charset=UTF-8");
+			echo('<pre>');
+			var_dump($numeroSerie	, $idPatrimonioEspecifico);
+			var_dump($sql);		
+			echo('</pre>');*/
+					
+			
+			try
+			{
+				$ok = $db->Execute($db->Prepare($sql,$args));				
+				$this->manager->Information('Atualização feita com sucesso!',$this->manager->GetActionURL('adm','main:itempatrimonioid:find'));
+			}	
+			catch (Exception $e)
+			{
+				$this->addError('Não foi possível executar: ' . $e->getMessage());
+			}
+			
+		}
+		else { $this->GenerateErrors(); }
+		
+	}
+
+}
+?>

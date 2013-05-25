@@ -1,0 +1,80 @@
+<?php
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+?>
+
+
+
+<?
+$MIOLO->Uses('controls/linkpatrimonio.class','adm');
+
+class gridPatrimonioInstituicao extends MDataGrid
+{
+
+    /**
+     * Constructor
+     */
+    function __construct()
+    {
+        global $MIOLO, $self, $perms;
+
+		$columns = array(
+		   new MDataGridColumn( 'NomeInstituicao', 'Instituição', 'left', false, '40%' ),
+		   new MDataGridColumn( 'Total', 'Total', 'right', false, '10%' ),
+		   new MDataGridColumn( 'Patrimonio', 'Patrimônio', 'right', false, '10%' ),
+		   new MDataGridColumn( 'Biblioteca', 'Biblioteca Total / Livros', 'right', false, '10%' ),
+		   new MDataGridColumn( 'OutrosSetores', 'Outros Setores', 'right', false, '10%' ),
+		   new MDataGridColumn( 'Carteiras', 'Carteiras Total / NÃO distribuídas', 'right', false, '10%' ),
+		   new MDataGridColumn( 'NumeroSerieInformado', 'Nº série informados', 'right', false, '10%' ),		   
+		);
+		
+		$sql = new sql("IdInstituicao, Total, NomeInstituicao, Patrimonio, Biblioteca, OutrosSetores, NumeroSerieInformado, Carteiras",
+		                'VAD_PatrimonioInstituicao', //$tables
+						'', // where
+						'', //ordenacao
+						'' //group by
+						);						
+
+		
+		if ( !($perms->checkAccess('ADM_PATRIMONIOADMIN', A_EXECUTE)) )
+		{
+			$setor = $MIOLO->GetBusiness('common','setor');
+			$user  = $MIOLO->GetBusiness('common','usuario');
+			$usuario = $user->GetByLogin($MIOLO->login->id);
+			$instituicao_usuario = $setor->getById($usuario->idSetor)->idinstituicao;
+		
+			$sql->where .= 'IdInstituicao = ' . $instituicao_usuario;
+		}		
+		
+						
+		$href_grid = $MIOLO->GetActionURL('adm',$self);	
+	
+		$aux = $MIOLO->getBusiness('adm', 'executoralmox');
+		$query = $aux->Query($sql);	
+		
+        parent::__construct($query, $columns, $href_grid,20, 0, 'gridPatrimonioInstituicao');
+		
+		
+		
+		$this->SetClose( $MIOLO->GetActionURL('adm','main:itempatrimonio:find') );
+		//var_dump('gridPatrimonioInstituicao');
+		//exit();
+		
+    }	
+}
+?>

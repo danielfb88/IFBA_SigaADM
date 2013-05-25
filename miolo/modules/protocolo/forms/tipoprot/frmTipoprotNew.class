@@ -48,16 +48,17 @@ class frmTipoprotNew extends Form
                 	);
 				
 		$fields = array(	
-	        	new MTextField('tipo','','Tipo','25'),
-                	new MCheckBoxGroup('group','Precisa da aprovação do:',$options,'','vertical','css'),
+	        	new TextField('tipo','','Tipo','60','Máx 60 caracteres'),
+                new MCheckBoxGroup('group','Precisa da aprovação do:',$options,'','vertical','css'),
 			);
 
 	        $this->SetFields($fields);
+	        $this->tipo->AddAttribute('maxlength',60);
 				
         	$buttons = array(
 		        new FormButton('btnNew','Salvar'),
-			        );
-		$this->SetButtons($buttons);
+			       );
+			$this->SetButtons($buttons);
 
 	        $validators = array();
 	        
@@ -65,17 +66,22 @@ class frmTipoprotNew extends Form
 	}	
 
 	function btnNew_click()
-        {
-                global $MIOLO,$page,$module;
+    {
+        global $MIOLO,$page,$module;
 
 		$data=$this->GetData();
-
-                $tipoprot=$MIOLO->GetBusiness($module,'tipoprot');
-                $tipoprot->SetData($data);
+		$data->tipo = trim($data->tipo);
+		$data->tipo = trim(implode(' ', preg_split('/\s+/', $data->tipo)));
+		
+        $tipoprot=$MIOLO->GetBusiness($module,'tipoprot');
+        
+        $tipoprot->SetData($data);
+        $tipoprot->tipo = trim(implode(' ', preg_split('/\s+/', $tipoprot->tipo)));
+		
 		if ($data->group_dir == S)
 		{
 			$tipoprot->diretor = 'S';				
-		}else{ 	
+		}else {
 			$tipoprot->diretor = 'N';
 		}
 
@@ -88,10 +94,17 @@ class frmTipoprotNew extends Form
 
 		if ($data->group_coo == S)
 		{
-			$tipoprot->coord = 'S';				
-		}else{ 	
-			$tipoprot->coord = 'N';	
+			$tipoprot->coord = 'S';	
 		}
+		else {
+			$tipoprot->coord = 'N';
+		}
+		
+		if ( strlen($tipoprot->tipo) == 0)
+		{
+			$this->AddError("Especifique um tipo valido.");
+		}
+		else {
 
                 try
                 {
@@ -104,6 +117,8 @@ class frmTipoprotNew extends Form
                 {
                         $this->AddError($e->GetMessage());
                 }
+            }
+                
 	}
 }
 ?>

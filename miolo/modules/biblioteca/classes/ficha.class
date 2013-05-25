@@ -271,11 +271,12 @@ class BusinessBibliotecaFicha extends Business
         // verifica se o campo é repetitivo (MMultiTextField) ou não (MTextField ou MSelection)
         if ($oCampo->temrepeticoes)
         {
-            $fieldLinha = new MTextField('txtLin'.$name,'','Linha',28);
-            $fieldLinha->addAttribute('onKeyUp','makeMask(this, \'##########\');');
-            $fieldLinha->addAttribute('onBlur','makeMask(this, \'##########\');');
-            $f1[0] = $fieldLinha;
-            $f1[1] = new MTextField('txt'.$name,'','Conteúdo',28);
+            //$fieldLinha = new MTextField('txtLin'.$name,'','Linha',28);
+            //$fieldLinha->addAttribute('onKeyUp','makeMask(this, \'##########\');');
+            //$fieldLinha->addAttribute('onBlur','makeMask(this, \'##########\');');
+            //$f1[0] = $fieldLinha;
+            //$f1[1] = new MTextField('txt'.$name,'','Conteúdo',28);
+			$f1[0] = new MTextField('txt'.$name,'','Conteúdo',28);
 
             $f = new MMultiTextField3($name,null,$label,$f1,200,true,'horizontal');
         }

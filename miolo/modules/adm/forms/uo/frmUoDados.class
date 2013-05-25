@@ -38,6 +38,8 @@ class frmUoDados extends Form
        
        $tabelaGeral = $this->manager->getBusiness('common','tabelageral');
 	   $query = $tabelaGeral->listByTabela('AD_TIPOUO');
+	   
+	   $opcoes = array('N'=>'Não','S'=>'Sim');
        
 		$fields = array(
             new MTextField('sigla','','Sigla','30','Máx. 30 caracteres'),
@@ -48,22 +50,28 @@ class frmUoDados extends Form
 			new MLookupTextField('lkpSetor','','Setor',50),
 		//	new MHiddenField('idUsuarioGestor','','Id usuario'),
 			new MHiddenField('idSetor','','Id setor'),
-			new MSelection('saldoPublico','','Saldo Público'),
+			new MSelection('saldoPublico','','Saldo Público', $opcoes),
 			new MSelection('ativo',$this->objUo->ativo,'Ativa', array('S' => 'SIM', 'N' => 'NAO'))
         );
 		
         $this->SetFields($fields);
+        
+        $this->sigla->addAttribute('maxlength', 30);
+        $this->nome->addAttribute('maxlength', 50);
+        $this->documentoRef->addAttribute('maxlength', 200);
+        $this->lkpSetor->addAttribute('readonly', TRUE);
+        
 		
 	  // $this->SetFieldAttr('lkpUsuario','module','common');
 	  // $this->SetFieldAttr('lkpUsuario','item','usuario');
 	  // $this->SetFieldAttr('lkpUsuario','event','filler');
 	  // $this->SetFieldAttr('lkpUsuario','related','idUsuarioGestor,NULL,NULL,NULL,NULL,NULL,lkpUsuario');
 	   
+	   //$this->SetFieldAttr('lkpSetor','readonly',TRUE);
 	   $this->SetFieldAttr('lkpSetor','module','common');
 	   $this->SetFieldAttr('lkpSetor','item','setor');
 	   $this->SetFieldAttr('lkpSetor','event','filler');
 	   $this->SetFieldAttr('lkpSetor','related','idSetor,NULL,lkpSetor');
-	   
 		
 		$buttons = array(
         	new FormButton('btnSalvar', 'Salvar')
@@ -73,6 +81,7 @@ class frmUoDados extends Form
 		$validators = array(
 			new RequiredValidator('sigla'),
 			new RequiredValidator('nome'),
+			//new RequiredValidator('lkpSetor')
 		);
 		$this->SetValidators($validators);
 		$this->SetData();
@@ -107,39 +116,53 @@ class frmUoDados extends Form
 	
 	public function btnSalvar_click()
 	{
-		
-				$sigla = Form::GetFormValue('sigla');
-		$nome = Form::GetFormValue('nome');
-		$setor = Form::GetFormValue('idSetor');
+		$sigla 			= Form::GetFormValue('sigla');
+		$nome 			= Form::GetFormValue('nome');
+		$setor 			= Form::GetFormValue('idSetor');
+		$lkpSetor		= Form::GetFormValue('lkpSetor');
+		$tipo 			= Form::GetFormValue('tipo');
+		$saldoPublico 	= Form::GetFormValue('saldoPublico');
+		$ativo 			= Form::GetFormValue('ativo');
 
-		if( strlen(trim($sigla))<5 )
+		if( strlen(trim($sigla)) < 5 )
 		{
 			$this->AddError("O campo 'sigla' deve conter pelo menos 5 cinco caracteres.");
 		
-		}elseif( strlen(trim($nome))<5 )
+		}elseif( strlen(trim($nome)) < 5 )
 		{
 			$this->AddError("O campo 'nome' deve conter pelo menos 5 cinco caracteres.");
 		}
-		  elseif(!$setor)
+		elseif(!$setor)
 		{
 			$this->AddError("Um setor deve ser definido.");
 		}
-		else
-			{
-			
-		$this->objUo->SetData($this->GetData());
-		try
+		elseif(!$tipo)
 		{
-			$this->objUo->save();
-			$this->objUo->Log(OP_UPD,"Dados de UO modificado");
-			$go = $this->manager->GetActionURL('adm','main:uo',$this->objUo->idUo);
-			$this->manager->Information('Unidade Orçamentária alterada com sucesso.', $go);
+			$this->AddError("Um tipo deve ser definido.");
 		}
-		catch (Exception $e)
+		elseif($saldoPublico == "")
 		{
-			$this->addError($e->getMessage());
-		}	
+			$this->AddError("Saldo Público deve ser definido.");
+		}
+		elseif(!$ativo)
+		{
+			$this->AddError("Deve definir se a UO está ativa ou não.");
+		}
+		else
+		{
+			$this->objUo->SetData($this->GetData());
+			try
+			{
+				$this->objUo->save();
+				$this->objUo->Log(OP_UPD,"Dados de UO modificado");
+				$go = $this->manager->GetActionURL('adm','main:uo',$this->objUo->idUo);
+				$this->manager->Information('Unidade Orçamentária alterada com sucesso.', $go);
 			}
+			catch (Exception $e)
+			{
+				$this->addError($e->getMessage());
+			}	
+		}
 	}
  }
 ?>

@@ -67,5 +67,18 @@ class BusinessAdmDependencia extends Business
 		
 		return $criteria->retrieveAsQuery();
 	}
+	
+	/*Função para pesquisar pela dependência, retorna numero de ocorrências do mesmo*/
+    function findByNome($nome)
+    {
+		$busca = "select count(*) as total from ad_dependencia where dependencia = '$nome'";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
+    /*Função para pesquisar pela dependência e o setor, retorna numero de ocorrências do mesmo*/
+    function findById($nome, $id)
+    {
+		$busca = "select count(*) as total from ad_dependencia where idSetor = '$id' and dependencia = '$nome'";
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
 }
 ?>

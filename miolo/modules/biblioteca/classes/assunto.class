@@ -93,6 +93,23 @@ class BusinessBibliotecaAssunto extends Business
         	$query = $this->Query($sql);
         	return $query;
 	}
+	
+	function ListAssuntoWithLink()
+	{
+		global $MIOLO;
+	
+		$sql = new sql('bt.idassunto,bt.idetiqueta,bt.conteudo,e.tag','bt_assunto bt, bt_etiqueta e',"subcampo= 'a' AND e.idetiqueta = bt.idetiqueta",'conteudo');
+        	$query = $this->Query($sql);
+			
+		foreach($query->result as $k => $v)
+		{	
+			$query->result[$k][2] = '<a href="'.
+			$MIOLO->GetActionURL($module,'main:catalogacao:assunto&event=btnDetails:click&item='.$v[0])
+			.'" target=_blank>'.$v[2].'</a>';
+		}
+			
+        	return $query;
+	}	
 
 	function ListEtiquetaAssunto()
 	{
@@ -303,7 +320,7 @@ class BusinessBibliotecaAssunto extends Business
 
 	function getObrasDoAssunto($idassunto)
     	{
-		$sql = new sql('idmaterial, idobra, ocorrencia','bt_assuntoobra',"(idassunto = $idassunto)");
+		$sql = new sql('ao.idmaterial, ao.idobra, ao.ocorrencia, o.numerodaobra','bt_assuntoobra ao, bt_obra o',"(ao.idassunto = $idassunto) AND o.idobra = ao.idobra");
 		$query = $this->Query($sql);
         	return $query->result;
     	}
@@ -371,6 +388,7 @@ class BusinessBibliotecaAssunto extends Business
 		$principal = $assuntos[$x][1];
 		$sql =  new sql('a.ocorrencia','bt_assunto a, bt_etiqueta e',"conteudo='$principal' and a.subcampo='a' and e.tag='$etiqueta' and a.idetiqueta=a.idetiqueta");
 		$query = $this->Query($sql)->result;
+		
 		$ocorrencia = $query[0][0];
 
 		if ($ocorrencia<>Null)
@@ -418,6 +436,19 @@ class BusinessBibliotecaAssunto extends Business
 		$sql = new sql('conteudo','bt_assunto',"(idassunto = $item) and indicador is not null");
         $query = $this->Query($sql);
         return $query->result;
+	}
+	
+	function locateAssunto($idetiqueta, $subcampo, $conteudo)
+	{
+		$sql = new sql('idassunto','bt_assunto',"idetiqueta = $idetiqueta AND subcampo ilike '$subcampo' AND conteudo = '$conteudo'");
+		$query = $this->Query($sql);
+		return $query->result;
+	}
+	
+	function deleteAssuntoObra($idassunto,$idobra)
+	{
+		$sql = new sql('','bt_assuntoobra',"idassunto = $idassunto AND idobra = $idobra");
+		$this->Execute($sql->Delete());		
 	}
 }
 ?>

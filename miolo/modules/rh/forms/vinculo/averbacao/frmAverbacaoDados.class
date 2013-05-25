@@ -35,17 +35,17 @@ class frmAverbacaoDados extends MForm
         $tabelaGeral = $this->manager->GetBusiness('common','tabelageral');
         $query = $tabelaGeral->listByTabela('RH_TIPOTEMPO');
 		$fields = array(
-            new MTextField('processo','','Processo','21','Máx. 21 caracteres'),
+            new MTextField('processo','','Processo','20','Máx. 20 caracteres'),
             new MCalendarField('dataInicio','','Data Início'),
             new MCalendarField('dataFim','','Data Fim'),
-            new MTextField('totalDias','','Total Dias',5,"Máx. $this->dias"),
+//            new MTextField('totalDias','','Total Dias',5,"Máx. $this->dias"),
             new MSelection('tipoTempo','','Tipo Tempo'),
             new MTextField('instituicao','','Instituição',50)
         );
 		
         $this->setFields($fields);
         $this->setFieldAttr('tipoTempo','options',$query->chunkResult());
-        $this->setFieldAttr('totalDias','readonly',$this->averbacao->temAssociacoes());
+//        $this->setFieldAttr('totalDias','readonly',$this->averbacao->temAssociacoes());
         $this->setFieldAttr('dataInicio','readonly',$this->averbacao->temAssociacoes());
         $this->setFieldAttr('dataFim','readonly',$this->averbacao->temAssociacoes());
 		
@@ -55,7 +55,9 @@ class frmAverbacaoDados extends MForm
 		$this->setButtons($buttons);
 
 		$validators = array(
-		   new MRangeValidator('totalDias','',1,$this->dias,'i','required'),
+                   new MRegExpValidator('processo','processo', $msgerr='(23071)\.?\[0-9]{6}\/?\[0-9]{4}\-?\[0-9]{2}$','','O campo Processo deve ser preenchido seguindo os exemplos: \n    23071.000016/2010-58 \n    23071.000014/2015-69 \n    23071.000000/2011-00  \n  - Caso exista, retire o último caractere em branco do campo Processo'),
+		   new MRequiredValidator('processo',20),
+//		   new MRangeValidator('totalDias','',1,$this->dias,'i','required'),
 		);
 		$this->setValidators($validators);
         $this->setData();
@@ -64,10 +66,10 @@ class frmAverbacaoDados extends MForm
 
     function setData()
     {
-        $this->setFieldValue('processo',$this->averbacao->processo);
+        $this->setFieldValue('processo',trim($this->averbacao->processo));
         $this->setFieldValue('dataInicio',$this->averbacao->dataInicio );
         $this->setFieldValue('dataFim',$this->averbacao->dataFim );
-        $this->setFieldValue('totalDias',$this->averbacao->totalDias );
+//        $this->setFieldValue('totalDias',$this->averbacao->totalDias );
         $this->setFieldValue('tipoTempo',$this->averbacao->tipoTempo );
         $this->setFieldValue('instituicao',$this->averbacao->instituicao );
     }
@@ -76,12 +78,19 @@ class frmAverbacaoDados extends MForm
     {
 	global $MIOLO;    
         $data = $this->getData();
+	$k = new MKrono();
+	$this->averbacao->SetData($data);
+	$di = $this->averbacao->dataInicio;
+	$df = $this->averbacao->dataFim;
+	$somadias = $k->daysDiff("$di","$df");
+	$this->averbacao->totalDias = $somadias;
         $err = FALSE;
         if ( $data->totalDias > $this->dias )
         {
             $this->addError("O total de dias da averbação não pode ultrapassar $this->dias dias.");
             $err = TRUE;
         }
+	
         if ( ! $err )
         {
     		$this->averbacao->SetData($data);

@@ -46,7 +46,17 @@ class LinkPatrimonio extends LinkObject
 
     public function setText()
     {
-        $this->hyperlink->SetText($this->object->descricao);
+        $texto = $this->object->descricao;
+		
+		if (!empty($this->object->marcaModelo)) { $texto .= ' - Marca/Modelo: ' . $this->object->marcaModelo; }
+		if (!empty($this->object->numeroSerie)) { $texto .= ' - Nº de série: ' . $this->object->numeroSerie; }
+		//if (!empty($this->object->tipoIngresso)) 
+		  // { $texto .= ' - Tipo Ingresso: ' . $this->object->tipoIngresso; }
+		if (!empty($this->object->descricaoEstado)) 
+		   { $texto .= ' - Estado: ' . $this->object->descricaoEstado; }
+		
+		
+		$this->hyperlink->SetText($texto);
     }
 
     public function setNew()

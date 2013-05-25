@@ -118,7 +118,6 @@ class gridItensALicitarAjax extends MGridAJAX
     	$objItemReq = $MIOLO->GetBusiness($module,'itemreq');
       
     	$query = $objItemReq->ListItensAtendidosByCosupPorRequisicao($numeroRequisicao);
-    	
     	$totalGeral = 0;
     	
     	$cf = new MCurrencyFormatter();
@@ -139,19 +138,19 @@ class gridItensALicitarAjax extends MGridAJAX
         // define columns for the grid
         $columns2 = array(
         			new MGridColumn('itemreq','left','','0%',false,'',true),
-					new MGridColumn('Material','left','','40%',true,'',true),
-					new MGridColumn('Elem/SubElem','left','','20%',true,'',true),
+					new MGridColumn('Material','left','','40%',true,'',false),
+					new MGridColumn('Elem/SubElem','left','','20%',true,'',false),
 					new MGridColumn('Qtde.','center','','10%'),
 					new MGridColumn('UN','center','','10%'),
 					new MGridColumn('Preco','center','','10%'),
 		            new MGridColumn('Total','center','','10%'),
 		        );
  
-		$myGrid = new MGrid($query->result,$columns2,'',0);
-		
+		$myGrid = new MGrid($query->result,$columns2,'', 0);
+ 		
 		$href_dele = $MIOLO->getActionURL( $module, "main:anularRequisicao", '%0%' );
         $myGrid->addActionDelete( $href_dele );
-		      
+		 
         $myGrid->SetWidth("100%");
         		
         $content = Array(

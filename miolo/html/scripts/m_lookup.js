@@ -44,8 +44,8 @@ Miolo.lookup.prototype = {
        }
        if (escape(this.context.type) == 'window')
        {
-    	   var w = 680;
-	       var h = screen.height * 0.60;
+    	   var w = 1280;
+	       var h = screen.height * 0.85; //* 0.60;
            window.open(url,'lookup',
                 'toolbar=no,width='+w+',height='+h+',scrollbars=yes,' +
                 'top=0,left=0,statusbar=yes,resizeable=yes');

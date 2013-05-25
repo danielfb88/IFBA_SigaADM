@@ -24,6 +24,8 @@ class frmModuloNew extends MForm
     	{
         	parent::__construct('Cadastrar Novo Módulo');
         	$this->EventHandler();
+        	// Adiciona script para criação de máscaras.
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../mask.js'));
     	}
 
     	function CreateFields()
@@ -31,8 +33,7 @@ class frmModuloNew extends MForm
         	global $MIOLO;
 
         	$aStatus = array("A"=>"Aberto","F"=>"Fechado");	   
-        	//$aTurno = array("M"=>"Manhã","T"=>"Tarde","N"=>"Noite");
-		$aTurno = array("I"=>"Integral","D"=>"Diurno","N"=>"Noturno");		
+			$aTurno = array("I"=>"Integral","D"=>"Diurno","N"=>"Noturno");		
         	$curso = $this->manager->getBusiness('rh','capacitacaocurso');
         	$query = $curso->listAll();
    
@@ -55,14 +56,16 @@ class frmModuloNew extends MForm
         			);
 		
         	$this->SetFields($fields);
+        	$this->datainicio->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+        	$this->datafim->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+        	$this->horainicio->addAttribute('onKeyUp','makeMask(this, \'##:##\');');
+        	$this->horafim->addAttribute('onKeyUp','makeMask(this, \'##:##\');');
         	$this->nome->addAttribute('maxlength','100');
         	$this->modulo->addAttribute('maxlength','3');
+        	$this->vagas->addAttribute('maxlength','3');
         	$this->local->addAttribute('maxlength','100');
-        	//$this->horainicio->addAttribute('maxlength','5');
-        	//$this->horafim->addAttribute('maxlength','5');
         	$this->datainicio->addAttribute('maxlength','10');
         	$this->datafim->addAttribute('maxlength','10');
-        	//$this->vagas->addAttribute('maxlength','3');
         	$this->cargahoraria->addAttribute('maxlength','5');
         	$this->anosemestre->addAttribute('maxlength','6');
         	$this->observacoes->addAttribute('maxlength','200');
@@ -77,6 +80,9 @@ class frmModuloNew extends MForm
 			new MRequiredValidator('nome'),
 			new MRequiredValidator('datainicio'),
 			new MRequiredValidator('datafim'),
+			
+			new IntegerValidator('vagas'),
+			new IntegerValidator('cargahoraria'),
 		);
 
 		$this->SetValidators($validators);
@@ -84,83 +90,104 @@ class frmModuloNew extends MForm
 
     	function btnNew_click()
     	{
-		global $MIOLO, $page, $module;
+			global $MIOLO, $page, $module;
 
-		$k = new MKrono();
-        	$data = $this->getData();
-		$data->nome = strToUpper($data->nome);
-		$dataFim = $this->GetFormValue('datafim');
-	        $dataInicio = $this->GetFormValue('datainicio');
-		$horaInicio = $this->getFormValue('horainicio');
-		$hInicio = explode(':',$horaInicio);
-		$horaFim = $this->getFormValue('horafim');
-		$hFim = explode(':',$horaFim);
-		if (strlen(trim($data->nome)) < '5')
-		{
-			$this->addError('Informe o nome do Módulo');
-		}
-            	elseif ( $k->compareDate($dataInicio,">",$dataFim) )
-		{
-                    $this->addError("Data início não pode ser maior que a Data Fim.");
-		}
-		elseif(trim(strlen($horaInicio)) != '5')
-		{
-			$this->addError("Informe a Hora Início no padrão 00:00");
-		}
-		elseif($horaInicio[2] != ":")
-		{
-			$this->addError('Informe a Hora Início no padrão 00:00');
-		}
-		elseif(!is_numeric($hInicio[0]) || !is_numeric($hInicio[1]))
-		{
-			$this->addError('Informe a Hora Início corretamente utilizando números');
-		}
-		elseif($hInicio[0] > '23' || $hInicio[1] >'59')
-		{
-			$this->addError('Informe a Hora Início Corretamente');
-		}
+			$k = new MKrono();
+		   $data = $this->getData();
+			$data->nome = strToUpper($data->nome);
+			$dataFim = $this->GetFormValue('datafim');
+			$dataInicio = $this->GetFormValue('datainicio');
+			$horaInicio = $this->getFormValue('horainicio');
+			$hInicio = explode(':',$horaInicio);
+			$horaFim = $this->getFormValue('horafim');
+			$hFim = explode(':',$horaFim);
+			$codModulo = $this->getFormValue('modulo');
+			
+			// Retirando os caracteres especiais. :-)
+			$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+			$data->nome = str_replace($caracteres,"",$data->nome);
+			$data->local = str_replace($caracteres,"",$data->local);
+			$data->observacoes = str_replace($caracteres,"",$data->observacoes);
+			$data->anosemestre = str_replace($caracteres,"",$data->anosemestre);
+			$data->diasemana = str_replace($caracteres,"",$data->diasemana);
+		
+			if(strlen(trim($codModulo)) < '1')
+			{
+				$this->addError('Informe o código do módulo');
+			}
+			elseif (strlen(trim($data->nome)) < '5')
+			{
+				$this->addError('Informe o nome do Módulo');
+			}
+		   elseif ( $k->compareDate($dataInicio,">",$dataFim) )
+			{
+		      $this->addError("Data início não pode ser maior que a Data Fim.");
+			}
+			elseif(trim(strlen($horaInicio)) != '5')
+			{
+				$this->addError("Informe a Hora Início no padrão 00:00");
+			}
+			elseif($horaInicio[2] != ":")
+			{
+				$this->addError('Informe a Hora Início no padrão 00:00');
+			}
+			elseif(!is_numeric($hInicio[0]) || !is_numeric($hInicio[1]))
+			{
+				$this->addError('Informe a Hora Início corretamente utilizando números');
+			}
+			elseif($hInicio[0] > '23' || $hInicio[1] >'59')
+			{
+				$this->addError('Informe a Hora Início Corretamente');
+			}
+			elseif(trim(strlen($horaFim)) != '5')
+			{
+				$this->addError("Informe a Hora Fim no padrão 00:00");
+			}
+			elseif($horaFim[2] != ":")
+			{
+				$this->addError('Informe a Hora Fim no padrão 00:00');
+			}
+			elseif(!is_numeric($hFim[0]) || !is_numeric($hFim[1]))
+			{
+				$this->addError('Informe a Hora Fim corretamente utilizando números');
+			}
+			elseif($hFim[0] > '23' || $hFim[1] >'59')
+			{
+				$this->addError('Informe a Hora Fim Corretamente');
+			}
+			elseif(!is_numeric($this->getFormValue('cargahoraria')))
+			{	
+				$this->addError('Informe a carga horária no padrão numérico');
+			}
+			elseif($this->getFormValue('cargahoraria') < '0')	
+			{
+				$this->addError('Informe a carga horária corretamente');
+			}
+			elseif(! is_numeric($this->getFormValue('vagas')))
+			{
+				$this->addError('Informe a quantidade de Vagas');
+			}
+			elseif($this->getFormValue('vagas') < 0)
+			{
+				$this->addError('Informe a quantidade de Vagas Corretamente');	
+			}
+			else
+			{
+		     		$modulo = $MIOLO->getBusiness($module,'capacitacaomodulo');
+		     		$modulo->modulo = substr('000' . trim($data->modulo),-3);		
+					$modulo->SetData($data);
 
-		elseif(trim(strlen($horaFim)) != '5')
-		{
-			$this->addError("Informe a Hora Fim no padrão 00:00");
-		}
-		elseif($horaFim[2] != ":")
-		{
-			$this->addError('Informe a Hora Fim no padrão 00:00');
-		}
-		elseif(!is_numeric($hFim[0]) || !is_numeric($hFim[1]))
-		{
-			$this->addError('Informe a Hora Fim corretamente utilizando números');
-		}
-		elseif($hFim[0] > '23' || $hFim[1] >'59')
-		{
-			$this->addError('Informe a Hora Fim Corretamente');
-		}
-		elseif(! is_numeric($this->getFormValue('vagas')))
-		{
-			$this->addError('Informe a quantidade de Vagas');
-		}
-		elseif($this->getFormValue('vagas') < 0)
-		{
-			$this->addError('Informe a quantidade de Vagas Corretamente');	
-		}
-		else
-		{
-        		$modulo = $MIOLO->getBusiness($module,'capacitacaomodulo');
-        		$modulo->modulo = substr('000' . trim($data->modulo),-3);		
-			$modulo->SetData($data);
-
-        		try
-        		{
-            			$modulo->save();
-            			$go = $MIOLO->GetActionURL('rh','main:capacitacao:modulos:main',$modulo->idmodulo);
-            			$page->Redirect($go);
-        		}
-        		catch (Exception $e)
-        		{
-            			$this->AddError($e->GetMessage());
-        		}	 
-		}		
+		     		try
+		     		{
+		         			$modulo->save();
+		         			$go = $MIOLO->GetActionURL('rh','main:capacitacao:modulos:main',$modulo->idmodulo);
+		         			$page->Redirect($go);
+		     		}
+		     		catch (Exception $e)
+		     		{
+		         			$this->AddError($e->GetMessage());
+		     		}	 
+			}		
      	}
  }
 ?>

@@ -228,7 +228,7 @@ class frmPessoas extends Form
 		$data->anochegbrasil = strtoupper($this->GetFieldValue('edtAnoChegBrasil'));	
 		$data->telefone = strtoupper($this->GetFieldValue('edtTelefone'));
 		$data->celular = strtoupper($this->GetFieldValue('edtCelular'));
-		$data->email = strtoupper($this->GetFieldValue('edtEmail'));
+		$data->email = $this->GetFieldValue('edtEmail');
 		$data->gruposanguineo = strtoupper($this->GetFieldValue('selGrupoSanguineo'));
 		$data->cpf = strtoupper($this->GetFieldValue('edtCPF'));
 		$data->numrg = strtoupper($this->GetFieldValue('edtNumRG'));

@@ -20,7 +20,6 @@
 $MIOLO->Uses('ui/controls/lkppublicacao.class','rh');
 
 
-        //$validators[] = new MRequiredValidator('idpublicacaofim','Publicação');
 class frmFuncaoIncluir extends MFormAjax
 {
     protected $objfuncao;
@@ -31,6 +30,8 @@ class frmFuncaoIncluir extends MFormAjax
         parent::__construct('Incluir Nova Função de Confiança');
         $this->registerMethod('onSelectCargo');
         $this->EventHandler();
+        // Adiciona script para criação de máscaras.
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../mask.js'));
     } // __construct
 
 
@@ -75,32 +76,40 @@ class frmFuncaoIncluir extends MFormAjax
         $fields[] = new MDiv('divCurso','');
 
         $fields[] = new MSpacer(1);
-        $fields[] = new MTextField    ('descricao','','Descrição'        ,'100');
+        $fields[] = new MMultiLineField('descricao','','Descrição',70, 2, 70);
         $fields[] = new MTextField    ('mandato'  ,'','Mandato (em anos)', '3');
         $fields[] = new MSpacer(1);
-        $fields[] = new MCalendarField('datainicio','','Início'          ,'10');
-        $fields[] = new MCalendarField('datafim','','Fim'          ,'10');
+        $fields[] = new MCalendarField('datainicio','','Data Início'          ,'10');
+        $fields[] = new MCalendarField('datafim','','Data Fim'          ,'10');
 
         lkppublicacao($fields,'idpublicacaoinicio','Publicação');
 
         $this->SetFields($fields);
 
-        //$this->descricao->addMask('aaaaaallllllllllllllllllllllllllllllllll');
-        $this->mandato->addMask('#');
-        $this->idcargoconfianca->addAttribute('onchange','ajaxCurso.call()'); // set onchange
-        
-        $validators[] = new MRequiredValidator('idnivel','',8);
-        $validators[] = new MRequiredValidator('siglasetor');
-        $validators[] = new MRequiredValidator('descricao');
-        $validators[] = new MRequiredValidator('datainicio');
-        $validators[] = new MRequiredValidator('datafim');
-        //$validators[] = new MRequiredValidator('idpublicacaofim','Publicação');
-        $this->SetValidators($validators);
+        $this->mandato->addMask('###');
+        $this->mandato->AddAttribute('maxlength',3);
+        $this->descricao->AddAttribute('maxlength',100);
+        $this->idcargoconfianca->addAttribute('onchange','ajaxCurso.call()');
 
+   	  $this->datainicio->addAttribute('maxlength',10);
+    	  $this->datainicio->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+    	  $this->datainicio->addAttribute('onBlur','makeMask(this, \'##/##/####\');');
+    	  $this->datafim->addAttribute('maxlength',10);
+    	  $this->datafim->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+    	  $this->datafim->addAttribute('onBlur','makeMask(this, \'##/##/####\');');	
+
+         $validators = array(
+            new MRequiredValidator('idnivel','',8),
+            new MRequiredValidator('siglasetor'),
+            new MRequiredValidator('descricao','',100),
+            new MRequiredValidator('datainicio'),
+            new MRequiredValidator('datafim'),
+        );
+        $this->SetValidators($validators);
+        
         $buttons = array( new MButton('btnSalvar', 'Incluir Função') );
         $this->SetButtons($buttons);
     } // CreateFields
-
 
     function btnSetor_click($sender,$key='')
     {
@@ -111,7 +120,6 @@ class frmFuncaoIncluir extends MFormAjax
         $this->SetFieldAttr('nomesetor'         ,'value',$obj->nome );   //visualização acessória
         $this->SetFieldAttr('idsetor'           ,'value',$item);         //campo invisível, só para gravar
     } // btnSetor_click
-
 
     function Verifica($data)
     {
@@ -144,6 +152,11 @@ class frmFuncaoIncluir extends MFormAjax
         global $module;
         $data = $this->GetData();                    //recupera somente os editáveis
         $data->descricao = trim($data->descricao);   //tira eventuais brancos do início para teste
+        
+       // Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+        
         if ($data->mandato == 0)
         {
             $data->mandato = NULL;   //para manter o conteúdo em branco em vez de 0 nas visualizações
@@ -180,7 +193,7 @@ class frmFuncaoIncluir extends MFormAjax
 	        TRY
 	        {
 		        $this->objfuncao->save();
-			$msg = ' Função incluída: ' . $this->objfuncao->descricao . ', Setor: ' . $data->siglasetor;
+			$msg = ' Função de Confiança incluída com sucesso. <br>Setor: ' . $data->siglasetor;
 			$this->objfuncao->Log(OP_INS,$this->objfuncao->idfuncao . $msg);
 		        $this->objfuncao->EndTransaction();
 		        $go = $this->manager->GetActionURL($module,'main:funcao:find');

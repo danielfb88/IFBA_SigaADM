@@ -56,6 +56,8 @@ class frmLocalTerceirizadoDados extends Form
    	 	$this->SetFieldAttr('lkpSetor','item','setor');
   	 	$this->SetFieldAttr('lkpSetor','event','filler');
     	$this->SetFieldAttr('lkpSetor','related','idsetor,null,lkpSetor,null'); 
+    	
+    	$this->nome->addAttribute('maxlength',40);
 		
 		$buttons = array(
         	new FormButton('btnSalvar', 'Enviar')
@@ -73,7 +75,7 @@ class frmLocalTerceirizadoDados extends Form
 	function SetData()
 	{
 		$data = $this->objLocalTerceirizado;
-		$this->SetFieldValue('idLocalTerceirizado',$data->idLocalTerceirizado);
+		$this->SetFieldValue('idLocalTerceirizado',$data->idLocalTerceirizado);		
 		$this->SetFieldValue('nome',$data->nome);
 		$this->SetFieldValue('idsetor',$data->idsetor);
 		$setor = $this->manager->getBusiness('common','setor', $data->idsetor);
@@ -84,14 +86,20 @@ class frmLocalTerceirizadoDados extends Form
 	public function btnSalvar_click()
 	{
 		global $MIOLO, $page;
-		$nome = strlen(trim($this->getFormValue('nome')));
-		if($nome < '5')
+		
+		$data = $this->GetData();
+		
+		// Retirando os caracteres especiais.	
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->nome = str_replace($caracteres,"",$data->nome);
+			
+		if(strlen(trim($data->nome)) < '5')
 		{
 			$this->addError('Informe o nome do local de trabalho corretamente');
 		}
 		else
 		{
-			$this->objLocalTerceirizado->SetData($this->GetData());
+			$this->objLocalTerceirizado->SetData($data);
 			$this->objLocalTerceirizado->save();
 			$go = $MIOLO->GetActionURL('rh','main:localterceirizado:find');
 			if ( $this->objLocalTerceirizado->CheckError() )

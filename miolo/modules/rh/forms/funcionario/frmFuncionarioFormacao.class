@@ -44,7 +44,7 @@ class frmFuncionarioFormacao extends MForm
 			new MHiddenField('idFormacao','', 'Formacao'),
 			new MLookupFieldValue('lkpFormacao','','Formação',50),
 			new MTextField('nomeCurso','','Nome do curso',50),
-            new MCalendarField('dataFim','','Data Fim',15),
+            new MTextField('anoEncerramento','','Ano de Encerramento',4),
             new MTextField('entidade','','Instituição',50),
             new MSelection('idEscolaridadePCCTAE','','Escolaridade PCCTAE'),
             new MSpacer('1'),
@@ -66,7 +66,7 @@ class frmFuncionarioFormacao extends MForm
 		
 		$validators = array(
 			new MRequiredValidator('idFormacao'),
-			new MDATEDMYValidator('dataFim','','required'),
+			new MRequiredValidator('anoEncerramento','','required'), 
 			new MRequiredValidator('entidade'),
 			
 		);
@@ -92,7 +92,9 @@ class frmFuncionarioFormacao extends MForm
         
         
 	    
-        $this->entidade->AddAttribute('maxlength','50');
+        $this->entidade->AddAttribute('maxlength','100');
+        $this->nomeCurso->AddAttribute('maxlength','100');
+	$this->anoEncerramento->AddAttribute('maxlength','4');
 	    $this->SetData();
         $buttons = Array(
            new MButton('btnPost1', 'Enviar'),
@@ -128,7 +130,7 @@ class frmFuncionarioFormacao extends MForm
 		if ($this->formacao->isPersistent())
 		{
 			$this->SetFieldAttr('lkpFormacao','readonly',true);
-			$this->SetFieldAttr('dataFim','readonly',true);
+			$this->SetFieldAttr('anoEncerramento','readonly',true);
 			$this->SetFieldAttr('entidade','readonly',true);
             $this->SetFieldAttr('idEscolaridadePCCTAE','readonly',true);
             $this->SetFieldAttr('nomeCurso','readonly',true);
@@ -150,7 +152,7 @@ class frmFuncionarioFormacao extends MForm
         if (isset($this->formacao->formacao->formacao))
             $this->SetFieldValue('lkpFormacao', $this->formacao->formacao->formacao . ' - ' . $escolaridades[$this->formacao->formacao->escolaridade]);
 		
-		$this->SetFieldValue('dataFim', $this->formacao->dataFim);
+		$this->SetFieldValue('anoEncerramento', $this->formacao->anoEncerramento);
         $this->SetFieldValue('entidade', $this->formacao->entidade);
         $this->SetFieldValue('nomeCurso', $this->formacao->nomeCurso);
         $this->SetFieldValue('dataAtualizacao', $this->formacao->nomeCurso);
@@ -210,7 +212,7 @@ class frmFuncionarioFormacao extends MForm
             
             $this->formacao->beginTransaction();
 			$this->formacao->delete();
-            $this->formacao->log(OP_DEL,"id funcionario: ".$this->formacao->idFuncionario." id formacao: ".$this->formacao->idFormacao." data fim: ".$this->formacao->dataFim." entidade: ".$this->formacao->entidade);
+            $this->formacao->log(OP_DEL,"id funcionario: ".$this->formacao->idFuncionario." id formacao: ".$this->formacao->idFormacao."Ano de Encerramento: ".$this->formacao->anoEncerramento." entidade: ".$this->formacao->entidade);
             $funcionario->setTransaction($this->formacao->getTransaction());
             $funcionario->setEscolaridade($escolaridade);
             $funcionario->save();
@@ -254,7 +256,7 @@ class frmFuncionarioFormacao extends MForm
 		}
 		elseif($entidade < '10')
 		{
-			$this->addError('O nome da Instituição está muito curto, Favor digite o nome mais completo');
+			$this->addError('Informe corretamente a instituição');
 		}
                
         	elseif ($vinculo->isTA()) 
@@ -262,7 +264,7 @@ class frmFuncionarioFormacao extends MForm
             		$this->SetFieldAttr('btnPost2','visible',true);
             		$this->SetFieldAttr('btnPost1','visible',false);
         		$this->SetFieldAttr('lkpFormacao','readonly',true);
-	    		$this->SetFieldAttr('dataFim','readonly',true);
+	    		$this->SetFieldAttr('anoEncerramento','readonly',true);
 	    		$this->SetFieldAttr('entidade','readonly',true);
 	    		$this->SetFieldAttr('nomeCurso','readonly',true);
           		$this->SetFieldAttr('idEscolaridadePCCTAE','visible',$vinculo->isTA());
@@ -315,11 +317,19 @@ else
         {
             $erro[] = "Escolaridade já registrada para o servidor.";
         }
-        $today = date("d/m/Y");
+        $today = date("Y");
         $k = new MKrono();
-        if ( $k->compareDate($data->dataFim,">",$today) )
+        if(!is_numeric($data->anoEncerramento))
         {
-            $erro[] = "Data fim não pode ser posterior a data atual.";
+        	$erro[] = "Ano de Encerramento inválido.";
+        }
+		elseif ( $k->compareDate($data->anoEncerramento,">",$today) )
+        {
+            $erro[] = "Ano de Encerramento não pode ser posterior a data atual.";
+        }
+	if ( strlen($data->anoEncerramento) != 4)
+        {
+            $erro[] = "Ano de Encerramento deve conter 4 caracteres.";
         }
         if ( ! count($erro) > 0 )
         {
@@ -327,7 +337,7 @@ else
 	        {
                 $this->formacao->beginTransaction();
                 $this->formacao->save();
-                $this->formacao->log(OP_INS,"id funcionario: ".$this->formacao->idFuncionario." id formacao: ".$this->formacao->idFormacao." data fim: ".$this->formacao->dataFim." entidade: ".$this->formacao->entidade);
+                $this->formacao->log(OP_INS,"id funcionario: ".$this->formacao->idFuncionario." id formacao: ".$this->formacao->idFormacao."Ano de Encerramento: ".$this->formacao->anoEncerramento." entidade: ".$this->formacao->entidade);
                 $this->formacao->getFormacao();
 
                 if ( $funcionario->escolaridade < $this->formacao->formacao->escolaridade )

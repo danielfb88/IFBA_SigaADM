@@ -1335,6 +1335,108 @@ $criteria->addCriteria('periodoAquisitivo.vinculo.provimentos.dataFim','is',"nul
         }
 
     }//fim save
+    function edit($verificaAntecedencia=FALSE,$privilegios=false)
+    {
+        global $MIOLO, $perms;
+
+	// liberando para o perfil RH_CADASTRO.
+
+        if ( $this->calendarioFeriasLiberado() || $privilegios || $perms->isMemberOf($login,'RH_CADASTRO') )
+        {
+        	if ($this->ValidaPrescricaoFerias() || $perms->isMemberOf($login,'RH_CADASTRO') )
+            	{
+                	//validacao das RN
+                	if ($this->AnoMarcacao() || $perms->isMemberOf($login,'RH_CADASTRO') )
+                	{
+                	//1º
+                    		if( !$this->Retroativo() || $verificaAntecedencia  || $perms->isMemberOf($login,'RH_CADASTRO') )
+                    		{
+                        		if ( $this->AntecedenciaMinima() || $verificaAntecedencia  || $perms->isMemberOf($login,'RH_CADASTRO') )
+                        		{
+                            			$diasTotais = $this->getTotalDias()-1;
+                            			$diasTotais = $diasTotais.'%D';
+                            			$dataFinalFerias = $this->krono->operation('+',$this->getDataInicio(),$diasTotais);
+                            			$this->setDataFim($dataFinalFerias);
+
+                            			//seta  dataFimPrevista = dataFim
+                            			$this->setDataFimPrevista($this->getDataFim());
+
+                            			//if ($this->TestLicAfast($this->getDataInicio(),$this->getDataFim()))
+                            			//{
+                                		//testa se tentou lançar gratificacao
+                                		if ($this->getAdiantamento13()=='S')
+                                		{
+                                    			//recebe mes de usufruicao para checagem de gratificacao Natalina
+                                    			$mesMarcadoUsufruicao = $this->krono->getMonth($this->getDataInicio());
+                                    			$junho = 6;
+                                    			$gratificacaoNatalina =($mesMarcadoUsufruicao > $junho);
+
+                                		}
+                               			if ( $gratificacaoNatalina )
+                                		{
+                                   			throw new ESimpleRnException("Opção pelo adiantamento da gratificação natalina permitido apenas para férias a serem usufruídas até o mês de junho.");
+                                		}
+                                		else
+                                		{
+                                    			//TRANSACAO 1
+                                    			$this->beginTransaction();
+                                    			$this->CalcDaysToUsufruct();
+
+                                    			//TRANSACAO 2
+                                    			$this->setLicAfastBySituacaoFuncional($this->getSituacaoFuncional());
+
+                                    			//executa teste de abono para primeiras parcelas de ferias
+                                    			if ( ($this->IsFirstParcela()) || ($this->IsRaioXWorker()) )
+                                       				$this->setAbonoConst('S');
+                                    			else
+                                        			$this->setAbonoConst('N');
+
+                                    			if (!$this->GetIsCeletista())
+                                        			$this->setAbono('N');
+
+                                    			//TRANSACAO 3
+                                    			parent::save();
+                                    			$op = $this->isPersistent() ? OP_UPD : OP_INS;
+                                    			$this->log($op,"vinculo: $this->idVinculoPerAq periodo aquisitivo: $this->dataInicioPerAq data inicio: $this->dataInicio data fim: $this->dataFim abono: $this->abono adiantamento salario: $this->adiantamentoSalario adiantamento 13: $this->adiantamento13 abono constituicional: $this->abonoConst total dias: $this->totalDias");
+                                    			$this->endTransaction();
+                                		}// if  gatafiticacao e adiantamento
+
+
+                            			//}// EM LICENCA
+                            			//else
+                            			//{
+                              			//  throw new ESimpleRnException("Não é possível lançar férias nesse período pois o funcionário se encontra em licenca!");
+
+                           			// }
+
+
+                        		}// AntecedenciaMinima
+                        		else
+                        		{
+                            			throw new ESimpleRnException("As férias devem ser marcadas com uma antecedência mínima de 2 meses do mês previsto para usufruição.");
+                        		}
+                    		}// retroativo
+                    		else
+                    		{
+                        		throw new ESimpleRnException("Não é permitida marcação de férias retroativas.");
+                    		}
+                	}
+                	else
+                	{
+                    	throw new ESimpleRnException("Não é permitida marcação de férias para ano(s) anterior(es) ao período aquisitivo.");
+                	}
+           	}
+            	else
+            	{
+                	throw new ESimpleRnException("Não é permitida marcação de férias para uma data posterior à prescrição do período aquisitivo.");
+            	}
+        }
+        else
+        {
+            throw new ESimpleRnException("Não é permitida marcação de férias. Por favor consulte o cronograma de lançamento de férias.");
+        }
+
+    }//fim edit
 
     function adiantou13()
     {

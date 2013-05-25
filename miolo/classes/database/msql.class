@@ -640,12 +640,12 @@ class MSQL
      *
      */
     function Select($parameters = null)
-    {
+    {   
         if ($this->join != NULL)
             $this->getJoin();
 
         $sqlText = 'SELECT ' . ($this->distinct ? 'DISTINCT ' : '') . implode($this->columns, ',');
-
+	
         if ($this->tables != '')
         {
             $sqlText .= ' FROM   ' . implode($this->tables, ',');
@@ -653,6 +653,68 @@ class MSQL
 
         if ($this->where != '')
         {
+        /*
+        	// Valida aspas simples
+			$indiceIni = 0; //Índice do inicio do texto digitado
+			$indiceFin = 0; //Índice do final do texto digitado
+			$likepos = 0;
+			$likepos = stripos($this->where,"like");
+			
+			if($likepos != 0)//Se existe 'like' minusculo
+			{
+				$i = $likepos + 4;
+			
+				while($i < strlen($this->where))
+				{
+					if($this->where[$i] == "'" && $this->where[$i+1] == '%' )
+					{
+						$i+=2;
+						if($indiceIni == 0)
+								$indiceIni = $i;
+						while($i < strlen($this->where))
+						{
+							if($this->where[$i] == "%")
+							{
+								$indiceFin = $i;
+								break;
+							}
+							$i++;
+						}
+					}
+					elseif($this->where[$i] == "'")
+					{
+						$i++;
+						if($indiceIni == 0)
+								$indiceIni = $i;
+						while($i < strlen($this->where))
+						{
+							if($this->where[$i] == "%" && $this->where[$i+1] == "'" )
+							{
+								$indiceFin = $i;
+								break;
+							}
+							$i++;
+						}
+					}
+					$i++;
+				}
+				
+				$texto = substr($this->where, $indiceIni, $indiceFin-$indiceIni);
+				$texto = str_replace("'","''",$texto); // Valida aspas simples.
+				$sub1 = substr($this->where, 0, $indiceIni);
+				$sub2 = substr($this->where, $indiceFin , strlen($this->where));
+			
+				if($indiceFin != 0){
+					$resultado = $sub1 . $texto . $sub2;
+
+				$this->where = $resultado;
+				}
+		
+				//var_dump($resultado); // Verifica o resultado obtido
+				//var_dump($this->where); // Verifica o resultado realmente enviado
+				//-----------
+			}
+		*/				
             $sqlText .= ' WHERE ' . $this->where;
         }
 
@@ -675,13 +737,14 @@ class MSQL
         {
             $sqlText .= ' FOR UPDATE';
         }
-
+				
         $this->command = $sqlText;
 
         if (isset($parameters))
             $this->SetParameters($parameters);
 
         $this->Prepare($this->parameters);
+
         return $this->command;
     }
 

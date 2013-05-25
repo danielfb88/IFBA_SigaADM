@@ -37,64 +37,199 @@ class frmPatrimonioFind extends MForm
 	function __construct()
 	{
 		global $MIOLO, $module, $action;
-		parent::__construct('Pesquisar Itens');
+		parent::__construct('Pesquisar Bens Patrimoniais');
 		$this->SetClose($MIOLO->GetActionURL($module,'main:patrimonio'));
 		$this->EventHandler();
 	}
 
 
-	function CreateFields()
+
+	public function CreateFieldsAuth()
 	{
-		global $MIOLO, $module, $action;
-
+		global $MIOLO, $action, $module, $item;
+	
+        $opcaoOrdenacao = array(
+			"id"			=>"Número do Patrimônio",
+			"nf_id"		    =>"Nota Fiscal + Número do Patrimônio",
+			"nf_desc"		=>"Nota Fiscal + Descrição",
+			"desc"			=>"Descrição",
+		);		
+		
+		$tipoIngresso = array(
+			"TODOS"				=>"TODOS",
+			"COMPRA"			=>"Compras",
+			"DOACAO"		    =>"Doações",
+			"OUTROS"			=>"Outros",			
+		);	
+	
+		$tabelaGeral = $MIOLO->GetBusiness('common', 'tabelageral');
+		$options = $tabelaGeral->ListByTabela('AD_TIPOINGRESSOPAT');
+	
 		$ui = $MIOLO->GetUI();
-		$grid = $ui->GetGrid('adm','gridPatrimonio');
-		$grid->SetTitle(NULL);
-
-
+        $grid = $ui->GetGrid( 'adm', 'gridItensPatrimonioSelection' );
+        $grid->SetTitle('Bens Patrimoniais');		
+		
+		$gridPatrimonioInstituicao = $ui->GetGrid( 'adm', 'gridPatrimonioInstituicao' );
+		$gridPatrimonioInstituicao->SetTitle('Panorama geral');
+	
+	
+		$fields = array ( $grid, new MSpacer(1), );
+		
+		$gridClassif = $ui->GetGrid( 'adm', 'gridPatrimonio_Classificador' );
+        $gridClassif->SetTitle('Totais por classificador');
+		$gridClassif->emptyMsg = 'Nenhum registro com base nos parâmetros!';
+		
+		$gridEmpenho = $ui->GetGrid( 'adm', 'gridPatrimonio_Empenho' );
+        $gridEmpenho->SetTitle('Totais por empenho');
+		$gridEmpenho->emptyMsg = 'Nenhum registro com base nos parâmetros!';
+		
+		$gridNotaFiscal = $ui->GetGrid( 'adm', 'gridPatrimonio_NotaFiscal' );
+        $gridNotaFiscal->SetTitle('Totais por nota fiscal');
+		$gridNotaFiscal->emptyMsg = 'Nenhum registro com base nos parâmetros!';
+		
+		$gridInstituicao = $ui->GetGrid( 'adm', 'gridPatrimonio_Instituicao' );
+        $gridInstituicao->SetTitle('Totais por instituição');
+		$gridInstituicao->emptyMsg = 'Nenhum registro com base nos parâmetros!';		
+		
+		$gridDescricao = $ui->GetGrid( 'adm', 'gridPatrimonio_Descricao' );
+        $gridDescricao->SetTitle('Totais por descrição');
+		$gridDescricao->emptyMsg = 'Nenhum registro com base nos parâmetros!';
+		
 		$lnkNew = new LinkPatrimonio('lnkNew', FALSE);
 		$lnkNew->setNew();
+		
+		$objSetor = $this->manager->GetBusiness( 'common', 'setor' );                
+		$optionSetores= $objSetor->listAll();	
+		
+		$lkclassificador = new MLookupTextField('idclassificador','','Classificador', 6); // Descrição DE UM EMPENHO
+		$lkpsetor = new MLookupTextField('siglaSetor','','Localização',10, 'Informe a SIGLA do setor ou a da instituição (Exemplos: CAMPUS, CAMPUS-PROAD)');
 
 		$findButton = new ButtonFind('');
 		$findButton->SetName('btnFind');
-        
-		$tabelaGeral = $MIOLO->GetBusiness('common', 'tabelageral');
-		$options = $tabelaGeral->ListByTabela('AD_TIPOINGRESSOPAT');
-		$fields = array(
-			array(
-				new MText('','<BR>Nº:'),
-				new MTextField('idItemPatrimonio','',' ',8),
-				new MText('','<BR>Descrição:'),
-				new MTextField('patrimonio','',' ',20),
-				new MText('','<BR>Classificador:'),
-				new MTextField('classificador','',' ',12),
-			),new MText('','<BR>'),
-			array(
-				new MText('','Empenho:'),
-				new MTextField('empenho','','',8),
-				new MText('','Setor:'),
-				new MLookupTextField('setor','','',15),
-				new MHiddenField('idSetor'),
-				$findButton,
-			),
-			new MSpacer(1),
-			new MSeparator('Inserir novo item:'),
-			array(
-				new MText('','<BR>Novo item proveniente de '),
-				new MSelection('tipo1','',' ',$options->result),
-				//                $lnkNew,
-				new MButton('btnInserir','Inserir'),
-			),
-			new MSpacer(1),
-			$grid
-		);
+		
+		$listarTotalizacoes = Form::GetFormValue('listarTotalizacoes');
+		
+		//$admin = $this->perms->checkAccess('ADM_PATRIMONIOADMIN', A_EXECUTE);
+		
+		
+		
+		if (!empty($listarTotalizacoes)) {
+		
+			$fields = array
+				(
+					$gridPatrimonioInstituicao, new MSpacer(1),
+					
+					array( 
+						new MTextField('patriInicial','','Patrimônio Inicial',10),
+						new MTextField('patriFinal','','Patrimônio Final',10),			
+						new MTextField('empenho','','Empenho',20),
+						new MTextField('notafiscal','','Nota Fiscal',10),
+					),
+					new MTextField('descricao','','Descrição',100),
+					array (
+						$lkpsetor,
+						new MHiddenField('idSetor'),		
+						$lkclassificador,
+						new MSelection('tipoIngresso','','Tipo de Ingresso',$tipoIngresso),				
+						new MSelection('ordenacao','','Ordenação', $opcaoOrdenacao),	
+						new MCheckBox('listarTotalizacoes','S','Listar Totalizações?', true,''),
+						$findButton,
+						
+					),	
 
-		$this->SetFields($fields);
+					new MSpacer(1),					
+					$gridInstituicao,
+					$gridClassif,
+					$gridEmpenho,			
+					$gridNotaFiscal,
+					$gridDescricao,
+					$grid,
+							
+					array(
+						new MText('','<BR>Novo item proveniente de'),
+						new MSelection('tipo1','',' ',$options->result),
+						//                $lnkNew,
+						new MButton('btnInserir','Inserir'),
+						
+					)
+			
+				);
+		}
+		else 
+		{
+			$fields = array
+			(
+				$gridPatrimonioInstituicao, new MSpacer(1),
+				array( 
+					new MTextField('patriInicial','','Patrimônio Inicial',10),
+					new MTextField('patriFinal','','Patrimônio Final',10),			
+					new MTextField('empenho','','Empenho',20),
+					new MTextField('notafiscal','','Nota Fiscal',10),
+				),
+				new MTextField('descricao','','Descrição',100),
+				array (
+					$lkpsetor,
+					new MHiddenField('idSetor'),		
+					$lkclassificador,
+					new MSelection('tipoIngresso','','Tipo de Ingresso',$tipoIngresso),				
+					new MSelection('ordenacao','','Ordenação', $opcaoOrdenacao),	
+					new MCheckBox('listarTotalizacoes','S','Listar Totalizações?', true,''),
+					$findButton,
+					
+				),	
+				array(
+								
+				),
+				new MSpacer(1),
+
+				$grid,
+						
+				array(
+					new MText('','<BR>Novo item proveniente de'),
+					new MSelection('tipo1','',' ',$options->result),
+					//                $lnkNew,
+					new MButton('btnInserir','Inserir'),
+					
+				)
+		
+			);
+		}
+			
+		//echo('<pre>');
+		//var_dump($_POST);
+			
+		//echo('</pre>');
+		
+        $this->SetFields($fields);
 		$this->defaultButton = false;
-
-		$this->SetFieldAttr('setor','module','common');
+		
+		$lkpsetor->setFieldsIni ($this, 'common', 'setor_patri', 'idSetor');
+		
+		/*$this->SetFieldAttr('setor','module','common');
 		$this->SetFieldAttr('setor','item','setor');
-		$this->SetFieldAttr('setor','related','idSetor,setor');
+		$this->SetFieldAttr('setor','related','idSetor,setor');*/
+		
+		$this->SetFieldAttr('idclassificador','module','common');
+		$this->SetFieldAttr('idclassificador','item','Classificador');		
+		$this->SetFieldAttr('idclassificador','related','idclassificador');
+		$this->SetFieldAttr('idclassificador','filter','idclassificador,idclassificador'); // o segundo filtro é apenas para habilitar filter0
+		
+		$this->page->onLoad("MIOLO_GetElementById('descricao').focus();");
+		
+	}
+	
+	public function CreateFields()
+	{
+		global $MIOLO, $action, $module, $item, $perms;
+		
+		$login = $MIOLO->GetLogin();
+		$perm = $MIOLO->getPerms()->isMemberOf($login,'ADM_PATRIMONIO');
+				
+		if ($perm ==false) {
+			$this->AddError('Permissão de patrimônio negada');		
+		}
+		else { $this->CreateFieldsAuth(); }		
+		
 	}
 
 

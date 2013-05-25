@@ -1,14 +1,40 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report name" pageWidth="842" pageHeight="575" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<subDataset name="dataset1"/>
-	<parameter name="pIdItem" class="java.lang.Integer"/>
-	<parameter name="pItem2" class="java.lang.Integer"/>
-	<parameter name="idResponsavel" class="java.lang.Integer"/>
-	<parameter name="RESPONSAVEL" class="java.lang.String"/>
-	<parameter name="qtdtupla" class="java.lang.Integer"/>
-	<parameter name="idsetor" class="java.lang.Integer"/>
-	<queryString>
-		<![CDATA[SELECT
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="subRepTermo2"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="842"
+		 pageHeight="575"
+		 columnWidth="842"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<subDataset name="dataset1" >
+
+
+	</subDataset>
+
+	<parameter name="pIdItem" isForPrompting="true" class="java.lang.Integer"/>
+	<parameter name="pItem2" isForPrompting="true" class="java.lang.Integer"/>
+	<parameter name="idResponsavel" isForPrompting="true" class="java.lang.Integer"/>
+	<parameter name="RESPONSAVEL" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="qtdtupla" isForPrompting="true" class="java.lang.Integer"/>
+	<parameter name="idsetor" isForPrompting="true" class="java.lang.Integer"/>
+	<queryString><![CDATA[SELECT
      cm_setor.nomesetor,
      ad_itempatrimonio.idvidautil,
      ad_itempatrimonio.descricao,
@@ -31,149 +57,259 @@ WHERE
      and (cm_setor.idresponsavel = cm_pessoa.idpessoa)
      and(cm_setor.idresponsavel = $P{idResponsavel})
 ORDER BY
-     ad_itempatrimonio.iditempatrimonio ASC]]>
-	</queryString>
-	<field name="nomesetor" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="idvidautil" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="descricao" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="dataaquisicao" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="valor" class="java.math.BigDecimal">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="iditempatrimonio" class="java.lang.Integer">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="descr" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="responsavel" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<variable name="totalGeral" class="java.math.BigDecimal" calculation="Sum">
+     ad_itempatrimonio.iditempatrimonio ASC]]></queryString>
+
+	<field name="nomesetor" class="java.lang.String"/>
+	<field name="idvidautil" class="java.lang.String"/>
+	<field name="descricao" class="java.lang.String"/>
+	<field name="dataaquisicao" class="java.lang.String"/>
+	<field name="valor" class="java.math.BigDecimal"/>
+	<field name="iditempatrimonio" class="java.lang.Integer"/>
+	<field name="descr" class="java.lang.String"/>
+	<field name="responsavel" class="java.lang.String"/>
+
+	<variable name="totalGeral" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
 		<variableExpression><![CDATA[$F{valor}]]></variableExpression>
 	</variable>
-	<background>
-		<band/>
-	</background>
-	<columnHeader>
-		<band height="33">
-			<staticText>
-				<reportElement key="staticText" x="1" y="8" width="189" height="19"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font fontName="Times New Roman" size="12" isBold="true" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
-				</textElement>
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="33"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="1"
+						y="8"
+						width="189"
+						height="19"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="12" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
 				<text><![CDATA[Conta Contábil]]></text>
-			</staticText>
-			<line>
-				<reportElement key="line" x="1" y="7" width="803" height="1"/>
-			</line>
-			<line>
-				<reportElement key="line" x="1" y="27" width="803" height="2"/>
-			</line>
-			<staticText>
-				<reportElement key="staticText" x="190" y="8" width="70" height="19"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="Times New Roman" size="12" isBold="true" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
-				</textElement>
+				</staticText>
+				<line direction="TopDown">
+					<reportElement
+						x="1"
+						y="7"
+						width="803"
+						height="1"
+						key="line"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<line direction="TopDown">
+					<reportElement
+						x="1"
+						y="27"
+						width="803"
+						height="2"
+						key="line"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="190"
+						y="8"
+						width="70"
+						height="19"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="12" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
 				<text><![CDATA[Cod-Item]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText" x="262" y="8" width="366" height="19"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font fontName="Times New Roman" size="12" isBold="true" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="262"
+						y="8"
+						width="366"
+						height="19"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="12" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
 				<text><![CDATA[Descrição]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText" x="698" y="8" width="106" height="19"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="Times New Roman" size="12" isBold="true" pdfFontName="Times-Roman" isPdfEmbedded="false"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="698"
+						y="8"
+						width="106"
+						height="19"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" pdfFontName="Times-Roman" size="12" isBold="true" isPdfEmbedded ="false"/>
+					</textElement>
 				<text><![CDATA[Data-Aquisição]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="632" y="8" width="65" height="19"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font fontName="Times New Roman" size="12" isBold="true"/>
-				</textElement>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="632"
+						y="8"
+						width="65"
+						height="19"
+						key="staticText"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Valor]]></text>
-			</staticText>
-		</band>
-	</columnHeader>
-	<detail>
-		<band height="26">
-			<rectangle>
-				<reportElement stretchType="RelativeToTallestObject" x="1" y="4" width="803" height="20" forecolor="#FFFFFF" backcolor="#BEBEBE">
-					<printWhenExpression><![CDATA[new Boolean(($V{REPORT_COUNT}.intValue()) % 2 == 0)]]></printWhenExpression>
-				</reportElement>
-			</rectangle>
-			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToTallestObject" x="1" y="4" width="206" height="20"/>
-				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font fontName="Times New Roman" size="11"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{descr}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="207" y="4" width="51" height="20"/>
-				<textElement textAlignment="Center" verticalAlignment="Top">
-					<font fontName="Times New Roman" size="11"/>
-				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{iditempatrimonio}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToTallestObject" x="263" y="4" width="365" height="20"/>
-				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font fontName="Times New Roman" size="11"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{descricao}]]></textFieldExpression>
-			</textField>
-			<textField pattern="¤ #,##0.00">
-				<reportElement stretchType="RelativeToTallestObject" x="632" y="4" width="76" height="20"/>
-				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font fontName="Times New Roman" size="11"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{valor} )]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="710" y="4" width="92" height="20"/>
-				<textElement textAlignment="Center" verticalAlignment="Top">
-					<font fontName="Times New Roman" size="11"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{dataaquisicao}]]></textFieldExpression>
-			</textField>
-		</band>
-	</detail>
-	<summary>
-		<band height="34">
-			<staticText>
-				<reportElement key="staticText-26" mode="Opaque" x="563" y="4" width="62" height="22" isPrintWhenDetailOverflows="true"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
+				</staticText>
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="26"  isSplitAllowed="true" >
+				<rectangle>
+					<reportElement
+						x="1"
+						y="4"
+						width="803"
+						height="20"
+						forecolor="#FFFFFF"
+						backcolor="#F5F5E5"
+						key="rectangle"
+						stretchType="RelativeToTallestObject">
+							<printWhenExpression><![CDATA[new Boolean(($V{REPORT_COUNT}.intValue()) % 2 == 0)]]></printWhenExpression>
+						</reportElement>
+					<graphicElement stretchType="RelativeToTallestObject"/>
+				</rectangle>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="1"
+						y="4"
+						width="206"
+						height="20"
+						key="textField"
+						stretchType="RelativeToTallestObject"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Times New Roman" size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{descr}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="207"
+						y="4"
+						width="51"
+						height="20"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Times New Roman" size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.Integer"><![CDATA[$F{iditempatrimonio}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="263"
+						y="4"
+						width="365"
+						height="20"
+						key="textField"
+						stretchType="RelativeToTallestObject"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Times New Roman" size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{descricao}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" pattern="¤ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="632"
+						y="4"
+						width="76"
+						height="20"
+						key="textField"
+						stretchType="RelativeToTallestObject"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Times New Roman" size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $F{valor} )]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="710"
+						y="4"
+						width="92"
+						height="20"
+						key="textField"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Times New Roman" size="11"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{dataaquisicao}]]></textFieldExpression>
+				</textField>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="34"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						mode="Opaque"
+						x="563"
+						y="4"
+						width="62"
+						height="22"
+						key="staticText-26"
+						isPrintWhenDetailOverflows="true"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
+					</textElement>
 				<text><![CDATA[Total:]]></text>
-			</staticText>
-			<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-18" stretchType="RelativeToTallestObject" mode="Opaque" x="633" y="4" width="104" height="22"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $V{totalGeral} )]]></textFieldExpression>
-			</textField>
-			<rectangle>
-				<reportElement key="rectangle-2" mode="Transparent" x="3" y="2" width="799" height="24" isPrintWhenDetailOverflows="true" backcolor="#FFFFFF"/>
-				<graphicElement>
+				</staticText>
+				<textField isStretchWithOverflow="true" pattern="R$ #,##0.00" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						mode="Opaque"
+						x="633"
+						y="4"
+						width="104"
+						height="22"
+						key="textField-18"
+						stretchType="RelativeToTallestObject"/>
+					<box></box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font pdfFontName="Helvetica-Bold" size="11" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[DecimalFormat.getCurrencyInstance( new java.util.Locale( "pt", "BR" ) ).format( $V{totalGeral} )]]></textFieldExpression>
+				</textField>
+				<rectangle>
+					<reportElement
+						mode="Transparent"
+						x="3"
+						y="2"
+						width="799"
+						height="24"
+						backcolor="#FFFFFF"
+						key="rectangle-2"
+						isPrintWhenDetailOverflows="true"/>
+					<graphicElement stretchType="NoStretch">
 					<pen lineWidth="0.1" lineStyle="Solid"/>
-				</graphicElement>
-			</rectangle>
-		</band>
-	</summary>
+</graphicElement>
+				</rectangle>
+			</band>
+		</summary>
 </jasperReport>

@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!-- Created with iReport - A designer for JasperReports -->
+<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport
+		 name="repEmpenhoConferencia_Parametros"
+		 columnCount="1"
+		 printOrder="Vertical"
+		 orientation="Landscape"
+		 pageWidth="802"
+		 pageHeight="535"
+		 columnWidth="802"
+		 columnSpacing="0"
+		 leftMargin="0"
+		 rightMargin="0"
+		 topMargin="0"
+		 bottomMargin="0"
+		 whenNoDataType="NoPages"
+		 isTitleNewPage="false"
+		 isSummaryNewPage="false">
+	<property name="ireport.scriptlethandling" value="0" />
+	<property name="ireport.encoding" value="UTF-8" />
+	<import value="java.util.*" />
+	<import value="net.sf.jasperreports.engine.*" />
+	<import value="net.sf.jasperreports.engine.data.*" />
+
+	<style 
+		name="Times8"
+		isDefault="true"
+		fontName="Times New Roman"
+		fontSize="8"
+	>
+	</style>
+
+	<parameter name="pOrdenacao" isForPrompting="true" class="java.lang.String"/>
+	<parameter name="plistarItens" isForPrompting="false" class="java.lang.String"/>
+	<parameter name="pNumeroEmpenho" isForPrompting="false" class="java.lang.String"/>
+	<queryString><![CDATA[select 
+    case $P{pOrdenacao}
+       when 'id'           then 'Número do Patrimônio'
+       when 'nf_id'        then 'Nota Fiscal + Número do Patrimônio'
+       when 'nf_desc'      then 'Nota Fiscal + Descrição'
+       when 'desc'         then 'Descrição'
+    end As NomeOrdenacao,
+    case $P{plistarItens} when 'S' then 'SIM' else 'NÃO' end AS listarItens]]></queryString>
+
+	<field name="nomeordenacao" class="java.lang.String"/>
+	<field name="listaritens" class="java.lang.String"/>
+
+		<background>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</background>
+		<title>
+			<band height="18"  isSplitAllowed="true" >
+				<staticText>
+					<reportElement
+						x="0"
+						y="0"
+						width="802"
+						height="18"
+						key="staticText-1"/>
+					<box></box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="14" isBold="true" isUnderline="true"/>
+					</textElement>
+				<text><![CDATA[Parâmetros do Relatório:]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="18"  isSplitAllowed="true" >
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="-24"
+						width="535"
+						height="0"
+						forecolor="#808080"
+						key="line"
+						positionType="FixRelativeToBottom"/>
+					<graphicElement stretchType="NoStretch">
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+</graphicElement>
+				</line>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="279"
+						y="3"
+						width="303"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{nomeordenacao}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="206"
+						y="5"
+						width="66"
+						height="13"
+						key="staticText-4"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<text><![CDATA[Ordenação:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="682"
+						y="3"
+						width="100"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{listaritens}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="598"
+						y="5"
+						width="75"
+						height="13"
+						key="staticText-6"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<text><![CDATA[Listar Itens:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="62"
+						y="3"
+						width="126"
+						height="15"
+						key="textField"/>
+					<box></box>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$P{pNumeroEmpenho}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="0"
+						y="5"
+						width="54"
+						height="13"
+						key="staticText-7"/>
+					<box></box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+				<text><![CDATA[Empenho:]]></text>
+				</staticText>
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<summary>
+			<band height="68"  isSplitAllowed="true" >
+				<printWhenExpression><![CDATA[new Boolean($P{plistarItens} == "S")]]></printWhenExpression>
+				<line direction="TopDown">
+					<reportElement
+						x="0"
+						y="0"
+						width="802"
+						height="1"
+						key="line-1"/>
+					<graphicElement stretchType="NoStretch"/>
+				</line>
+				<staticText>
+					<reportElement
+						x="185"
+						y="8"
+						width="263"
+						height="60"
+						key="staticText-8"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[OBS: Ao final totalizações que facilitam a conferência:
+        1) Totalização geral do empenho        
+        3) Totais por Descrição                      
+        5) Totais por Descrição no setor]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="457"
+						y="8"
+						width="127"
+						height="48"
+						key="staticText-9"/>
+					<box></box>
+					<textElement>
+						<font fontName="Times New Roman" pdfFontName="Helvetica-Bold" size="10" isBold="true"/>
+					</textElement>
+				<text><![CDATA[
+2) Totais por Nota Fiscal        
+4) Totais por Setor
+        ]]></text>
+				</staticText>
+			</band>
+		</summary>
+</jasperReport>

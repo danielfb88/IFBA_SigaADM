@@ -1,0 +1,10 @@
+/*
+ * Scripts contendo o schema e carga inicial (dados) de cada versão do SIGA-ADM
+ * São empacotados em cada release e utilizados pelos scripts de instalação dos pacotes .deb
+ * 
+ * Obs: A versão 11.07 é a última que possui os scripts de criação do schema e carga inicial
+ *      A partir da versão 11.11 apenas as alterações são registradas
+ *
+ * Responsáveis: Equipe de BD
+ *
+ */

@@ -1,0 +1,313 @@
+<?
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+ 
+ 
+ /*
+  <script type="text/javascript">
+        function OnChangeEyeColor () {
+            var radio = document.getElementById ("radio_speceyes");
+            var textBox = document.getElementById ("text_speceyes");
+            textBox.disabled = !radio.checked;
+        }
+    </script>
+ */
+
+MIOLO::Import('extensions::class.phpmailer.php','PHPMailer');
+class frmPatrimonioGarantia extends MFormAjax
+{
+
+	protected $objPatrimonio;
+	protected $perms;
+		
+    function __construct($objPatrimonio)
+    {
+		global $MIOLO,$module,$action,$item;
+		
+		//var_dump($_POST);
+		
+		$this->objPatrimonio = $objPatrimonio;
+		$this->perms  = $MIOLO->getPerms();
+        parent::__construct('GARANTIA PATRIMONIAL');
+		$this->SetClose(null);
+		$this->page->addJsCode(file_get_contents(dirname(__FILE__).'/js/frmPatrimonioGarantia.js'));
+        $this->EventHandler();
+    }
+
+    public function CreateFieldsAuth()
+    {
+		global $MIOLO, $action, $module, $item;
+		
+		//var_dump($_POST);
+		
+		$TipoGarantia = array(
+	        array('Todos os patrimônios de um empenho','EMPENHO'),
+		    array('Descrição específica de um empenho','DESCR_EMPENHO'),
+			array('Classificador específico de um empenho','CLASSIF_EMPENHO'),
+			array('Patrimônio específico','ESPECIFICO'),
+			array('Invetervalo de patrimônios','INTERVALO'),			
+        );
+		$PossuiGarantia = array(
+			array('Informar a garantia para os itens patrimoniais', 'GARANTIA'),
+			array('Informar itens que NÃO possuem garantia', 'SEM_GARANTIA'),
+		);		
+
+
+		$radioPossuiGarantia = new MRadioButtonGroup('radioPossuiGarantia', 'COM OU SEM GARANTIAS?', $PossuiGarantia, 'GARANTIA', '', 'vertical', 'css', 102);
+		$radioPossuiGarantia->AddAttribute('onClick',"javascript:doHabilitarGarantia();");
+		
+		$radioGroup = new MRadioButtonGroup('radioGroupGarantia', 'ADMINISTRAR GARANTIAS PARA:', $TipoGarantia, 'EMPENHO', '', 'vertical', 'css', 102);
+		
+		$radioGroup->AddAttribute('onClick',"javascript:doHabilitarCampos();");
+		
+
+		$findButton = new ButtonFind('');
+		$findButton->SetName('btnFind');
+		
+		$lkempenho = new MLookupTextField('numeroempenho','','Empenho',12);
+		$lkdescricao = new MLookupTextField('descricao','','Descrição', 104); // Descrição DE UM EMPENHO
+		$lkclassificador = new MLookupTextField('idclassificador','','ID do classificador', 6); // Descrição DE UM EMPENHO
+
+				
+		$fields = array
+			(
+			//$memoInformacao,
+			
+			$radioPossuiGarantia,
+			
+			new MCalendarField('datagarantia','','Data da Garantia','10'),
+			
+			$radioGroup,
+			//new MSeparator('OBS: Os campos de busca NÃO são obrigatórios'),
+			new MHiddenField('MinIdDescricao'), // Id do patrimônio da descrição),
+			$lkempenho ,  
+			$lkdescricao,			
+			array( 
+			    $lkclassificador,
+				new MTextField('patriInicial','','Patrimônio Inicial',10),
+				new MTextField('patriFinal','','Patrimônio Final',10),
+				
+			),
+			);
+        $this->SetFields($fields);		
+		//setFieldsIni (&$form, $module , $item, $related)
+		//$lkempenho->setFieldsIni ($this, 'common', 'Empenho_Garantia', 'numeroempenho');	
+		
+		$this->SetFieldAttr('numeroempenho','module','common');
+		$this->SetFieldAttr('numeroempenho','item','Garantia_Empenho');
+		$this->SetFieldAttr('numeroempenho','related','numeroempenho');
+		
+		
+		$this->SetFieldAttr('descricao','module','common');
+		$this->SetFieldAttr('descricao','item','Garantia_EmpenhoDescricao');		
+		$this->SetFieldAttr('descricao','related','MinIdDescricao,descricao');
+		$this->SetFieldAttr('descricao','filter','numeroempenho,descricao');
+		
+		$this->SetFieldAttr('idclassificador','module','common');
+		$this->SetFieldAttr('idclassificador','item','Garantia_EmpenhoClassificador');		
+		$this->SetFieldAttr('idclassificador','related','idclassificador');
+		$this->SetFieldAttr('idclassificador','filter','numeroempenho,idclassificador'); 
+		
+		
+		call_user_func($doHabilitarCampos);
+		//"<script>"javascript:doHabilitarCampos()"</script>"; 
+
+		$buttons = array
+			(
+				new MButton('butExecutar', 'Executar'),
+            );
+		$this->SetButtons($buttons);
+		
+		$this->page->onLoad("javascript:doHabilitarCampos();doHabilitarGarantia();");
+		
+
+    }
+	
+	
+	public function CreateFields()
+	{
+		global $MIOLO, $action, $module, $item, $perms;
+		
+		$login = $MIOLO->GetLogin();
+		$perm = $MIOLO->getPerms()->isMemberOf($login,'ADM_PATRIMONIOADMIN');
+		if ($perm == false) { $perm = $MIOLO->getPerms()->isMemberOf($login,'ADM_PATRIGARANTIA'); 
+		}
+		
+		if ($perm ==false) {
+			$this->AddError('Permissão para administrar garantias negada');		
+		}
+		else { $this->CreateFieldsAuth(); }		
+		
+	}
+
+	
+	public function butExecutar_click()
+	{
+		global $MIOLO;
+		
+		$tipoGarantia      = trim($this->GetFormValue('radioGroupGarantia'));
+		$numeroempenho     = trim($this->GetFormValue('numeroempenho')); 
+		$descricao         = $this->GetFormValue('descricao'); // não será passado!
+		$MinIdDescricao    = $this->GetFormValue('MinIdDescricao');
+		$idclassificador   = trim($this->GetFormValue('idclassificador'));
+	    $patriInicial      = $this->GetFormValue('patriInicial');
+		$patriFinal        = $this->GetFormValue('patriFinal');
+		
+		$radioPossuiGarantia = $this->GetFormValue('radioPossuiGarantia');
+		$datagarantia        = $this->GetFormValue('datagarantia');	
+		
+		
+		//echo('<pre>');
+		  //var_dump($radioPossuiGarantia, $datagarantia, empty($datagarantia));
+		//echo('</pre>');
+		//exit();
+		
+		if (($radioPossuiGarantia == 'GARANTIA') AND (empty($datagarantia)) )
+			{
+				$this->AddError('Informe a data da garantia!');
+				//var_dump('here');
+			}
+		
+	
+		$foco = '';
+		
+		switch ($tipoGarantia)
+		{
+			case 'EMPENHO': 
+				$p_IdTipoGarantia = 1;
+				
+				if (empty($numeroempenho)) { 
+					$this->AddError('Informe o número do empenho!');
+					$foco = 'numeroempenho';					
+				}
+			break;
+			
+			case 'DESCR_EMPENHO': 
+				$p_IdTipoGarantia = 2;
+				
+				if (empty($numeroempenho)) { 
+					$this->AddError('Informe o número do empenho!');
+					$foco = 'numeroempenho';
+				}
+				else if (empty($MinIdDescricao)) { 
+					$this->AddError('Informe a descrição!');
+					$foco = 'descricao';
+				}
+			break;
+			
+			case 'CLASSIF_EMPENHO': $aux = 'classificação';
+				$p_IdTipoGarantia = 3;
+				
+				if (empty($numeroempenho)) { 
+					$this->AddError('Informe o número do empenho!');
+					$foco = 'numeroempenho';
+				}
+				else if (empty($idclassificador)) { 
+					$this->AddError('Informe o classificador!');
+					$foco = 'idclassificador';
+				};
+			break;			
+			case 'ESPECIFICO': $aux = 'específico';
+				$p_IdTipoGarantia = 4;
+				
+				if (empty($patriInicial)) { 
+					$this->AddError('Informe o número do patrimônio!');
+					$foco = 'patriInicial';
+				}
+				else { $patriFinal = $patriInicial; }  // A Fç espera os dois setados!
+					
+			break;
+		
+			case 'INTERVALO': $aux = 'intervalo';
+				$p_IdTipoGarantia = 5;
+				
+				 if (empty($patriInicial)) { 
+					$this->AddError('Informe o número do patrimônio inicial!');
+					$foco = 'patriInicial';
+				}
+				 else if (empty($patriFinal)) { 
+					$this->AddError('Informe o número do patrimônio final!');
+					$foco = 'patriFinal';
+				};			
+		}
+		
+		//var_dump($foco, empty($foco));
+		if (!empty($foco)) {
+			//var_dump($foco);
+			$this->page->onLoad("MIOLO_GetElementById($foco).focus();");
+			
+		}
+		else {
+			
+			try
+                {
+                    $Business = $MIOLO->getBusiness('adm', 'executoralmox');
+				   
+				    if ($radioPossuiGarantia == 'SEM_GARANTIA') { $p_IdTipoGarantia = 6; }
+			
+					$sqlFn = 'FnAtualizaGarantiaPatri ( cast(' . $p_IdTipoGarantia .' AS smallint), ';
+					
+					$sqlFn = $sqlFn . ( empty($patriInicial)   ? 'CAST(NULL as integer),'       : 'CAST(' .$patriInicial . ' AS integer), ' );
+					$sqlFn = $sqlFn . ( empty($patriFinal)     ? 'CAST(NULL as integer),'       : 'CAST(' .$patriFinal   . ' AS integer), ' );
+					$sqlFn = $sqlFn . ( empty($numeroempenho)  ? 'CAST(NULL as varchar(12)),'   : '\'' . $numeroempenho .'\', ' );
+					$sqlFn = $sqlFn . ( empty($idclassificador)  ? 'CAST(NULL as varchar(10)),' : '\'' . $idclassificador .'\', ' );
+					$sqlFn = $sqlFn . ( empty($MinIdDescricao)  ? 'CAST(NULL as integer),'      : $MinIdDescricao  . ', ');
+					$sqlFn = $sqlFn . ( $radioPossuiGarantia == 'GARANTIA'  ? '\'' . $datagarantia . '\')' : ' NULL)');
+					
+					//var_dump ($sqlFn);
+					
+					
+					$sql = new sql($sqlFn);
+					  
+					$query = $Business->Query($sql);
+                    
+					if ( strlen($query->result[0][0]) < 6 ) { // não ocorrreu erro;
+						$this->AddInfo($query->result[0][0] . ' itens patrimoniais alterados!');		
+						//$this->manager->Information($query->result[0][0] . ' itens patrimoniais alterados!');
+
+						switch ($tipoGarantia)
+							{
+								case 'EMPENHO': $foco = 'numeroempenho'; break;			
+								case 'DESCR_EMPENHO': $foco = 'descricao';break;
+								case 'CLASSIF_EMPENHO': $foco = 'idclassificador'; break;
+								case 'ESPECIFICO': $foco = 'patriInicial'; break;		
+								case 'INTERVALO': $foco = 'patriInicial'; break;
+							}
+						//var_dump($foco);
+						
+						$this->page->onLoad("MIOLO_GetElementById($foco).focus();");
+					  }
+					  else { throw new Exception($query->result[0][0]); }
+                    
+                }
+                catch (Exception $e)
+                {
+					//echo('<pre>');
+					//var_dump($e->getMessage());
+					//echo('</pre>');
+                    $this->addError($e->getMessage());
+                }
+			//$this->AddInfo('Versão Postgres: ' . ' ' . $query->result[0][0]);		
+		
+		}		
+		
+	}
+
+ }
+?>

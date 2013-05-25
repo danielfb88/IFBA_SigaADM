@@ -26,6 +26,7 @@ class gridUoAlmoxarifadoEstornoSaida extends MGrid
     function __construct($objRequisicao)
     {
         global $MIOLO, $page, $action, $item, $module;
+
         $this->setTitle('Lista de materiais');
         $cf = new MCurrencyFormatter();
 		$movimento = $MIOLO->GetBusiness($module, 'movimento');

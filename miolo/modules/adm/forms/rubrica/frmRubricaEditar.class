@@ -38,10 +38,11 @@ class frmRubricaEditar extends MForm
         global $MIOLO;
         $fields = array	(
 	    new MTextField('idRubrica','','Código','20'),
-            new MTextField('descricao','','Descrição','70'),
-        );
-		
+            new MTextField('descricao','','Descrição','60','Máx. 60 caracteres'),
+        );	
         $this->SetFields($fields);
+
+	$this->descricao->addAttribute('maxlength',60);
 		
         $buttons = array (
            new FormButton('btnSalvar', 'Salvar')
@@ -66,18 +67,25 @@ class frmRubricaEditar extends MForm
 	
     public function btnSalvar_click()
     {
-        $this->objRubrica->SetData($this->GetData());
-        try
-        {
-            $this->objRubrica->save();
-            $this->objRubrica->Log(OP_UPD,"Dados de rubrica modificados");
-	    $go = $this->manager->GetActionURL('adm','main:rubrica',$this->objRubrica->idRubrica);
-	    $this->manager->Information('Rubrica alterada com sucesso', $go);
-        }
-        catch (Exception $e)
-        {
-            $this->addError($e->getMessage());
-        }
+	if( strlen(trim(Form::GetFormValue('descricao'))) < 3 )
+	{
+		$this->AddError('Informe corretamente a descrição da rubrica.');
+	}
+	else
+	{
+		$this->objRubrica->SetData($this->GetData());
+		try
+		{
+		    $this->objRubrica->save();
+		    $this->objRubrica->Log(OP_UPD,"Dados de rubrica modificados");
+		    $go = $this->manager->GetActionURL('adm','main:rubrica',$this->objRubrica->idRubrica);
+		    $this->manager->Information('Rubrica alterada com sucesso', $go);
+		}
+		catch (Exception $e)
+		{
+		    $this->addError($e->getMessage());
+		}
+	}
     }
 }
 ?>

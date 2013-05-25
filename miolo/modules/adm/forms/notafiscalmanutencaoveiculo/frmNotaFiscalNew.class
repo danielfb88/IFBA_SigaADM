@@ -39,11 +39,11 @@ class frmNotaFiscalNew extends MForm
 		$fields = array(
 			new MHiddenField('placa','','Veiculo'),
 			new LookupTextField('lkpVeiculo','','Veículo','15'),
-			new MHiddenField('idPrevRevisao'),
 			new MHiddenField('idEmpresa','','Empresa'),
 			new LookupTextField('lkpEmpresa','','Empresa','30'),
 			new MCalendarField('data','','Data',10),
 			new LookupTextField('lkpPrevRevisao','','Previsão de Revisão','15'),
+			new MHiddenField('idPrevRevisao'),
 			new MTextField('valorTotal','','Total','9'),
 					);
 
@@ -95,6 +95,7 @@ class frmNotaFiscalNew extends MForm
         $this->SetButtonAttr('btnEnviar','visible',true);
         $this->SetButtonAttr('btnEnviar3','visible',true);
         $this->SetButtonAttr('btnEnviar2','visible',false);
+        
     }
     function btnEnviar3_click()
     {
@@ -111,6 +112,8 @@ class frmNotaFiscalNew extends MForm
     	$this->SetButtonAttr('btnEnviar3','visible',false);
     	$this->SetButtonAttr('btnEnviar2','visible',false);
     	$this->SetButtonAttr('btnEnviar','visible',true);
+    	
+    	
     }
     function btnEnviar_click()
     {
@@ -120,22 +123,30 @@ class frmNotaFiscalNew extends MForm
 		$prev = $data->idPrevRevisao;
 		$objNotaFiscal = $MIOLO->GetBusiness('adm','notafiscalmanutencaoveiculo');
 		$objNotaFiscal->setData($data);
-		try
+		if(($data->idPrevRevisao == null) && ($data->lkpPrevRevisao != null))
 		{
-			$objNotaFiscal->Save();
-			if($prev)
-			{
-				$objPrevRevisao = $MIOLO->GetBusiness('adm','prevrevisao');
-				$objPrevRevisao->GetByid($prev);
-				$objPrevRevisao->situacao = 2;
-				$objPrevRevisao->Save();
-			}
-			$msg = "Nota Fiscal Cadastrada com sucesso, favor continue o cadastro das manutenções";
-			$MIOLO->Information($msg,$MIOLO->GetActionURL('adm','main:notafiscalmanutencaoveiculo:notamanutencao',$objNotaFiscal->idNotaFiscal));
+			$this->addError('Selecione uma Previsão de revisão Válida.');
 		}
-		catch(Exception $e)
+		else
 		{
-			$this->manager->Error($e->getMessage());
+			try
+			{
+				$objNotaFiscal->Save();
+				if($prev)
+				{
+					$objPrevRevisao = $MIOLO->GetBusiness('adm','prevrevisao');
+					$objPrevRevisao->GetByid($prev);
+					$objPrevRevisao->situacao = 2;
+					$objPrevRevisao->Save();
+				}
+				$msg = "Nota Fiscal Cadastrada com sucesso, favor continue o cadastro das manutenções";
+				$MIOLO->Information($msg,$MIOLO->GetActionURL('adm','main:notafiscalmanutencaoveiculo:notamanutencao',$objNotaFiscal->idNotaFiscal));
+			}
+			catch(Exception $e)
+			{
+				$this->manager->Error($e->getMessage());
+				
+			}
 		}
    }    
 }

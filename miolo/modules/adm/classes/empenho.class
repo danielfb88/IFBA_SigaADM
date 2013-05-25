@@ -2574,5 +2574,12 @@ class BusinessAdmEmpenho extends Business
 		$query = $criteria->retrieveAsQuery();
 		return $query->result[0][0];
 	}
+	
+	function findByNumero($numeroEmpenho)
+	{
+		$busca = "select count(*) as total from ad_empenho where numero = '$numeroEmpenho'";
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+	}
+	
 }
 ?>

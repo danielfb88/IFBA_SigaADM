@@ -147,6 +147,8 @@ class MLookup
     function setGrid($dbconf, $sql, $columns, $title = 'Pesquisa', $pageLength = 15, $indexColumn = 0)
     {
         $method = "Set" . $this->gridClass;
+		//var_dump ($method);
+		//exit();
         $this->$method($dbconf, $sql, $columns, $title, $pageLength, $indexColumn);
     }
 

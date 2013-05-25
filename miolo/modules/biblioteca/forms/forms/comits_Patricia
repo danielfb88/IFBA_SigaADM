@@ -1,0 +1,24 @@
+    <#tarefa>: número da tarefa.
+    <CDU | módulo>: CDU relacionado ou nome do módulo SIGA-ADM no caso de não haver um CDU relacionado.
+    <%conclusão>: percentual de conclusão da tarefa.
+        corrigido: erro que não permitia utilização de CARNES como ALIMENTOS (#173 / SIGA-ADM-CDU-XXX-YYYY / 90%)
+        removido: tabela ALIMENTO (#173 / SIGA-ADM-CDU-XXX-YYYY / 100%)
+        adicionado: relatório de Ordem de Entrega convertido para Jasper. (#24779 / Módulo Almoxarifado / 100%)
+
+==============
+Novo arquivo:
+---comitados:
+
+
+svn commit  -m  'resolvido:  Em administração/Generos tratar mensagem de aviso .  (#31087 / SIGA-ADM  / 100%) '  frmGenero.class
+
+svn commit  -m  'resolvido:  Em administração/Unidades validar ao excluir registro com mensagem de aviso .  (#32323 / SIGA-ADM  / 100%) '  frmUnidade.class
+
+
+-------* ----  Atualizados:
+
+  tarefa   32326 ---->		FrmDireitos.class--- com problema..
+
+
+
+

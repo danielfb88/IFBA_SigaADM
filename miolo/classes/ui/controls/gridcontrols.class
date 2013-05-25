@@ -266,6 +266,7 @@ class MGridActionText extends MGridAction
         if ($this->enabled)
         {
             $row = $this->grid->data[$this->grid->currentRow];
+
             $n = count($row);
 
             for ($r = 0; $r < $n; $r++)
@@ -346,6 +347,7 @@ class MGridActionSelect extends MGridAction
         $index = $row[$this->grid->index];
         $control = new MCheckBox("select".$this->grid->name."[$i]", $index, '');
         $control->AddAttribute('onclick', "javascript:miolo.grid.check(this,'".$this->grid->name."[$i]"."');");
+		//var_dump ($index);
         return $control;
     }
 }
@@ -476,9 +478,13 @@ class MGrid extends MBaseGrid
     
     function __construct($data, $columns, $href, $pageLength = 15, $index = 0, $name = '', $useSelecteds = true, $useNavigator = true)
     {
-        global $state;
-
+        global $state;        
+		
         parent::__construct(NULL);
+		//echo('<pre>');
+		//var_dump($this);
+		//echo('</pre>');
+		
         $this->AddStyleFile('m_grids.css');
         $this->SetColumns($columns);
         $this->href = $href;
@@ -505,6 +511,8 @@ class MGrid extends MBaseGrid
 		$this->actionDefault = new MGridActionDefault($this, '&nbsp;&nbsp;', NULL);
         $this->alternateColors = true;
         $this->buttonSelectClass = 'linkbtn';
+		
+		
 
         $this->SetUseSelecteds($useSelecteds);
         

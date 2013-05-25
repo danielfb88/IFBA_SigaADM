@@ -39,19 +39,27 @@ class frmMaterialNew extends Form
             );
 
         $fields = array(
-			new MTextField('codmaterial','','CATMAT','14','Máximo 14 caracteres'),
-			new MMultiLineField('descresum','','Descricao Resumida','',3,60,'Máximo 400'),
-			new MMultiLineField('descricao','','Descricao','',5,60,'Máximo 800'),
-			new MTextField('unidade','KG','Unidade','10','Máximo 10 caracteres'),
+			new MTextField('codmaterial','','CATMAT','14','Máx. 14 números'),
+			new MMultiLineField('descresum','','Descricao Resumida','',3,60,'Máx. 200 caracteres'),
+			new MMultiLineField('descricao','','Descricao','',5,60,'Máx. 800 caracteres'),
+			new MTextField('unidade','KG','Unidade','10','Máx. 10 caracteres'),
 			new MCurrencyField('precoestimado','','Preço Estimado',14),
 			//	    new MTextField('precoestimado','','Preço Estimado','14','Separação decimal por ponto'),
 			new MSelection('permcons','C','Tipo',$opcoes2),
 			new MSelection('estocavel','N','Estocável',$opcoes1),
-			new MTextField('idelemento','','Elemento','6','Máximo 6 caracteres'),
-			new MTextField('idsubelemento','','Subelemento','2','Máximo 2 caracteres'),
+			new MTextField('idelemento','','Elemento','6','Máx. 6 números'),
+			new MTextField('idsubelemento','','Subelemento','2','Máx. 2 números'),
 			new MSelection('ativo','S','Ativo',$opcoes1)
         );
         $this->SetFields($fields);
+	
+	$this->codmaterial->addAttribute('maxlength',14);
+	$this->descresum->addAttribute('maxlength',200);
+	$this->descricao->addAttribute('maxlength',800);
+	$this->unidade->addAttribute('maxlength',10);
+	$this->idelemento->addAttribute('maxlength',6);
+	$this->idsubelemento->addAttribute('maxlength',2);
+
         $validators = array(
                             new MRequiredValidator('codmaterial'),
                             new MRequiredValidator('idelemento'),
@@ -88,12 +96,50 @@ class frmMaterialNew extends Form
 		if ($data->precoestimado <= 0)
 		{
 			$this->AddError('O material não pode ter valor igual ou menor que zero.');
-		}elseif(strlen(trim($data->descresum)) > 400)
+		}
+		elseif(!is_numeric($data->codmaterial))
+		{
+			$this->AddError('O campo CATMAT deve conter somente números.');
+		}
+		elseif(strlen(trim($data->descresum)) > 400)
 		{
 			$this->AddError('O campo Descrição Resumida deve conter no máximo 400 caracteres.');
-		}elseif(strlen(trim($data->descricao)) > 800)
+		}
+		elseif(strlen(trim($data->descricao)) > 800)
 		{
 			$this->AddError('O campo Descrição deve conter no máximo 800 caracteres.');
+		}
+		elseif(!strlen(trim($data->descricao)))
+		{
+			$this->AddError('O campo Descrição não pode ser vazio.');
+		}
+		elseif(!strlen(trim($data->unidade)))
+		{
+			$this->AddError('O campo Unidade não pode ser vazio.');
+		}
+		elseif(!is_numeric($data->idelemento))
+		{
+			$this->AddError('O campo Elemento deve conter somente números.');
+		}
+		elseif(!is_numeric($data->idsubelemento))
+		{
+			$this->AddError('O campo Subelemento deve conter somente números.');
+		}
+		elseif(!($material->findBySubID((int)$data->idelemento, (int)$data->idsubelemento)))
+		{
+			$this->AddError('Elemento não cadastrado.');
+		}
+		elseif($data->permcons == "")
+		{
+			$this->AddError('Selecione o tipo do material.');
+		}
+		elseif($data->estocavel == "")
+		{
+			$this->AddError('Selecione se é ou não estocável.');
+		}
+		elseif($data->ativo == "")
+		{
+			$this->AddError('Selecione se o material está ou não ativo.');
 		}
 		else
 		{
@@ -125,8 +171,8 @@ class frmMaterialNew extends Form
             }
             $this->manager->question("$msg"."<br>Deseja cadastrar mesmo assim?",$action_sim, $action_nao);
         }
-        else
-        {
+	else
+	{
             try
             {
 				$material->descricao = str_replace("\n"," ", $material->descricao); 

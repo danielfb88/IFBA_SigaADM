@@ -58,6 +58,8 @@ class frmTipoLicAfastDados extends Form
 
 		$this->SetValidators($validators);
 		$this->SetData();
+		$this->tipoLicAfast->AddAttribute('maxlength',25);
+      $this->descricao->AddAttribute('maxlength',50);
     }
 
 	function SetData()
@@ -69,10 +71,15 @@ class frmTipoLicAfastDados extends Form
 
 	public function btnSalvar_click()
 	{
-           global $MIOLO;
-      
-
+       global $MIOLO;
+           
 		$data = $this->GetData();
+		
+		// Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->tipoLicAfast = str_replace($caracteres,"",$data->tipoLicAfast);
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
 		if(strlen(trim($data->tipoLicAfast)) < '5')
 		{
 			$this->addError('Informe o Tipo Licafast');
@@ -83,7 +90,7 @@ class frmTipoLicAfastDados extends Form
 		}
 		else
 		{
-			$this->objTipoLicAfast->SetData($this->GetData());
+			$this->objTipoLicAfast->SetData($data);
 			$this->objTipoLicAfast->save();
 
             		$go = $MIOLO->GetActionURL('rh','main:tipolicafast',$this->objTipoLicAfast->idTipoLicAfast);

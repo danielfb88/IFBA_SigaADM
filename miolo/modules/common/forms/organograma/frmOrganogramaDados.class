@@ -35,11 +35,13 @@ class frmOrganogramaDados extends MForm
 	{
 		$fields = array(
 			new MHiddenField('idTipoOrganograma'),
-			new MTextField('sigla','','Sigla','20'),
-			new MTextField('descricao','','Descrição','100'),
+			new MTextField('sigla','','Sigla','20','Max. 20 caracteres'),
+			new MMultiLineField('descricao','','Descrição',100,2,60,'Máx. 100 caracteres'),
 		);
 		$this->SetFields($fields);
-
+		$this->sigla->addAttribute('maxlength',20);
+		$this->descricao->addAttribute('maxlength',100);
+		
 		$buttons = array(
 			new FormButton('btnPost', 'Gravar')
 		);
@@ -64,15 +66,18 @@ class frmOrganogramaDados extends MForm
 	function btnPost_click()
 	{
 		$this->objOrganograma->setData($this->getData());
-
 		if( strlen(trim(Form::GetFormValue('sigla'))) < 2 )
 		{
 			$this->AddError('A sigla do organograma deve ter pelo menos dois caracteres, sem espaços.');
 		}
-		elseif( strlen(trim(Form::GetFormValue('descricao'))) < 5 )
+		else if( strlen(trim(Form::GetFormValue('descricao'))) < 5 )
 		{
-			$this->AddError('Descreva melhor este organograma.');
+			$this->AddError('O campo descrição deve conter, no mínimo, 4 caracteres.');
 		}
+		else if( $this->objOrganograma->findByNome(strtoupper($this->objOrganograma->sigla)) )
+ 		{
+ 			$this->addError('Sigla do Organograma já existente.');
+ 		}
 		else
 		{
 			try

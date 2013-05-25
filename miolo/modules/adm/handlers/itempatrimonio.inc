@@ -1,7 +1,7 @@
 <?
     $action = $context->ShiftAction();
     $navbar->AddOption('Patrimonio',$module,'main:patrimonio');
-    $navbar->AddOption('Itens', 'adm', 'main:itempatrimonio:find');
+    $navbar->AddOption('Itens', 'adm', 'main:itempatrimonioid:find');
     switch($action)
     {
         case 'find':

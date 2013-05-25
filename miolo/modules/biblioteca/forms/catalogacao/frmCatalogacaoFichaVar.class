@@ -17,7 +17,6 @@ class frmCatalogacaoFichaVar extends MFormAjax
         
        // Botão 'fechar', direcionando para o handler biblioteca/main/catalogacao
 	   $this->SetClose($this->manager->GetActionURL($module, 'main:catalogacao'));   
-		    
     }
 
 
@@ -112,10 +111,10 @@ class frmCatalogacaoFichaVar extends MFormAjax
         $this->addField($fields);
 
 		//validators
-		for($i = 0; $i < count($listaIndicadores); $i++)
+		/*for($i = 0; $i < count($listaIndicadores); $i++)
 		{
 			$this->AddValidator(new RequiredValidator($listaIndicadores[$i]));
-		}
+		}*/
 
         $campo = $this->ficha->getCampo($this->subficha->idficha,$this->subficha->idsubficha, $idEtiqueta, $ocorrencia);
         while (! $campo->eof)
@@ -219,13 +218,13 @@ class frmCatalogacaoFichaVar extends MFormAjax
 
 		//valores defaults
 		$sub = $this->subficha->idsubficha;
-		if($tag == '040')
+		/*if($tag == '040')
 		{
 			if($this->GetFieldValue($sub . '_27_a') == '')
 			{
-				$this->SetFieldValue($sub . '_27_a', 'UFJF');
+				$this->SetFieldValue($sub . '_27_a', 'IFMS');
 			}
-		}
+		}*/
 		if($tag == '100')
 		{
 			if($this->GetFieldValue($sub . '_IND_1') == '')
@@ -332,39 +331,59 @@ class frmCatalogacaoFichaVar extends MFormAjax
 		global $MIOLO, $module;
 
 		$this->objSimples = $MIOLO->GetBusiness($module,'pesquisasimples');
+		
+		$objAssunto = $MIOLO->GetBusiness($module,'assunto');
 
 		$idEtiqueta = $this->getFieldValue('idEtiqueta');
 		$tag = $this->getFieldValue('selEtiqueta');
+		
         $ocorrencia = MUtil::NVL($this->getFieldValue('txtOcorrencia'),'1');
+		
+		
+		if($tag >= 600 && $tag <= 699)
+		{
+			//Removendo os assuntos previamente cadastrados para essa etiqueta
+			$sql = new sql('ao.idassunto, ao.idobra','bt_assuntoobra ao, bt_assunto a','a.idassunto = ao.idassunto AND ao.idobra = '.$this->obra->idObra.' AND a.idetiqueta = '.$idEtiqueta.' AND ao.ocorrencia = '.$ocorrencia.' and a.indicador is null');
+			
+			$query = $this->obra->Query($sql);
+			
+			if($query->result)
+				$objAssunto->deleteAssuntoObra($query->result[0][0],$query->result[0][1]);
+		}
 
 		//deleta todos os materiais dessa obra, etiqueta, ocorrencia
 		$this->obra->deleteMaterial($idEtiqueta,$ocorrencia);
 
 		$etiqueta_vazia = true;
 		$fields = explode(',',$this->getFieldValue('hidFieldList'));
+		
 		foreach($fields as $field)
 	    {
-
 //			if (!is_null($value = $this->page->request($field)))
 //			{
 				$value = $this->page->request($field);
                 $campo = explode('_',$field);
 	            if ($campo[0] == $this->subficha->idsubficha)
-		        {
+		        {									
 			        if (is_array($value))
-				    {
+				    {					
 						foreach($value as $i=>$v)
-						{
-							$t = explode('] [',$v);
-							$linha = substr($t[0],1);
-							$conteudo = substr($t[1],0,strlen($t[1])-1);
+						{						
+							//$t = explode('] [',$v);
+							
+							//$linha = substr($t[0],1);
+							$linha = $i+1;
+							//$conteudo = substr($t[1],0,strlen($t[1])-1);
+							$conteudo = $v;
+							
 							$conteudo = trim($this->objSimples->RetirarCaracteresEspeciais($conteudo));
+							
 							if($conteudo != null)
 							{
 								$this->obra->saveMaterial($idEtiqueta, $ocorrencia, $campo[2], $linha, $conteudo, $tag);
 								$etiqueta_vazia = false;
 							}
-		                } 
+		                }
 			        }
 				    else
 					{
@@ -375,9 +394,23 @@ class frmCatalogacaoFichaVar extends MFormAjax
 				        else
 					    {
 							if($value != null)
-							{
+							{							
 								$value = trim($this->objSimples->RetirarCaracteresEspeciais($value));
 								$this->obra->saveMaterial($idEtiqueta, $ocorrencia, $campo[2], 1, $value, $tag);
+								
+								if($tag >= 600 && $tag <= 699)
+								{						
+									$idassunto = $objAssunto->locateAssunto($campo[1], $campo[2], $value);
+									
+									if($idassunto != null)
+										$objAssunto->saveAssuntoObra($idassunto[0][0],$this->obra->idObra,$ocorrencia,$idEtiqueta);
+									else
+									{
+										$idassunto = $objAssunto->InsertImportacao($idEtiqueta, $campo[2],$value,1,$ocorrencia, null);																				
+										$objAssunto->saveAssuntoObra($idassunto,$this->obra->idObra,$ocorrencia,$idEtiqueta);
+									}
+								}								
+								
 								$etiqueta_vazia = false;
 							}
 							else //para casos em que é preciso apagar campo da bt_obra
@@ -408,6 +441,9 @@ class frmCatalogacaoFichaVar extends MFormAjax
 				
 		//remove o negrito do botão, pois já foi pressionado uma vez
 		$this->SetButtonAttr('btnPost','label','Gravar');
+		
+		$MIOLO->Information('Valores alterados com sucesso!',
+			$MIOLO->GetActionURL('biblioteca','main:catalogacao:catalogacao',$this->obra->idObra));
 	}
 	
 	function btnAtualizarCutter_click()
@@ -417,7 +453,19 @@ class frmCatalogacaoFichaVar extends MFormAjax
         $objEtiqueta = $MIOLO->GetBusiness('biblioteca','etiqueta');
         $autor = $this->obra->autor;
         $titulo = $this->obra->titulo;
-        $cutter = $objEtiqueta->geraCutter($autor,$titulo,$this->obra->idObra);
+		
+		$tag = $this->getFormValue('selEtiqueta');
+		$tag = substr($tag,0,3);
+		
+		if($tag == '245')
+			$skip = $this->getFormValue('5_IND_2');
+		else
+		{
+			$et = $objEtiqueta->GetByTag('245');
+			$skip = $this->obra->GetIndicador2($this->obra->idObra,$et->idEtiqueta);
+		}
+        //$cutter = $objEtiqueta->geraCutter($autor,$titulo,$this->obra->idObra);
+		$cutter = $objEtiqueta->geraCutter($autor,$titulo,$skip);
         
         if ($cutter != null)
         {

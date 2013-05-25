@@ -42,8 +42,10 @@ class frmTransfOrcamento extends Form
 			array(
 				new MTextField('ano1', date("Y"), 'Ano', 5),
 				new MTextField('esfera1', '', 'Esfera', 5),
-				new MTextField('idptr1', '', 'PTR', 10),
-				new MTextField('idfonte1', '', 'Fonte', 13),
+				//new MTextField('idptr1', '', 'PTR', 10),
+				//new MTextField('idfonte1', '', 'Fonte', 13),
+				new LookupTextField('idptr1','','PTR',10),
+                new LookupTextField('idfonte1','','Fonte',13),
 				new MLookupTextField('idrubrica1', '', 'Rubrica', 10),
 //				new MTextField('saldo1', '', 'Saldo', 13),
 				new HiddenField('idOrcamento1'),
@@ -53,8 +55,10 @@ class frmTransfOrcamento extends Form
 			array(
 				new MTextField('ano2', date("Y"), 'Ano', 5),
 				new MTextField('esfera2', '', 'Esfera', 5),
-				new MTextField('idptr2', '', 'PTR', 10),
-				new MTextField('idfonte2', '', 'Fonte', 13),
+				//new MTextField('idptr2', '', 'PTR', 10),
+				//new MTextField('idfonte2', '', 'Fonte', 13),
+				new LookupTextField('idptr2','','PTR',10),
+                new LookupTextField('idfonte2','','Fonte',13),
 				new MLookupTextField('idrubrica2', '', 'Rubrica', 10),
 //				new MTextField('saldo2', '', 'Saldo', 13),
 				new HiddenField('idOrcamento2'),
@@ -64,6 +68,7 @@ class frmTransfOrcamento extends Form
 			new MCurrencyField('valor', '', 'Valor', 10)
 		);
 		$this->SetFields($fields);
+		$this->valor->AddAttribute('maxlength',12);
 
 		$this->SetFieldAttr('idrubrica1','module',$module);
 		$this->SetFieldAttr('idrubrica1','item','Orcamento');
@@ -71,6 +76,18 @@ class frmTransfOrcamento extends Form
 		$this->SetFieldAttr('idrubrica1','related', "idOrcamento1,ano1,idptr1,idfonte1,idrubrica1,,esfera1");
 		$this->SetFieldAttr('idrubrica1','filter','ano1_ro,idptr1,idfonte1,idrubrica1,esfera1');
 		$this->SetFieldAttr('ano1','readonly',true);
+		$this->SetFieldAttr('idptr1','module',$module);
+        $this->SetFieldAttr('idptr1','item','Ptr');
+        $this->SetFieldAttr('idptr1','event','filler');
+        $this->SetFieldAttr('idptr1','related','idptr1');
+        $this->SetFieldAttr('idfonte1','module',$module);
+        $this->SetFieldAttr('idfonte1','item','Fonte');
+        $this->SetFieldAttr('idfonte1','event','filler');
+        $this->SetFieldAttr('idfonte1','related','idfonte1');
+        $this->idptr1->addAttribute('readonly',true);
+        $this->idfonte1->addAttribute('readonly',true);
+        $this->idrubrica1->addAttribute('readonly',true);
+        $this->esfera1->addAttribute('maxlength',1);
 
 		$this->SetFieldAttr('idrubrica2','module',$module);
 		$this->SetFieldAttr('idrubrica2','item','Orcamento');
@@ -78,6 +95,18 @@ class frmTransfOrcamento extends Form
 		$this->SetFieldAttr('idrubrica2','related', "idOrcamento2,ano2,idptr2,idfonte2,idrubrica2,,esfera2");
 		$this->SetFieldAttr('idrubrica2','filter','ano2_ro,idptr2,idfonte2,idrubrica2,esfera2');
 		$this->SetFieldAttr('ano2','readonly',true);
+		$this->SetFieldAttr('idptr2','module',$module);
+        $this->SetFieldAttr('idptr2','item','Ptr');
+        $this->SetFieldAttr('idptr2','event','filler');
+        $this->SetFieldAttr('idptr2','related','idptr2');
+        $this->SetFieldAttr('idfonte2','module',$module);
+        $this->SetFieldAttr('idfonte2','item','Fonte');
+        $this->SetFieldAttr('idfonte2','event','filler');
+        $this->SetFieldAttr('idfonte2','related','idfonte2');
+        $this->idptr2->addAttribute('readonly',true);
+        $this->idfonte2->addAttribute('readonly',true);
+        $this->idrubrica2->addAttribute('readonly',true);
+        $this->esfera2->addAttribute('maxlength',1);
 
 		$buttons = array(
 			new FormButton('btnTransferir', 'Transferir'),
@@ -90,20 +119,35 @@ class frmTransfOrcamento extends Form
 		global $MIOLO, $module, $action;
 
 		$data = $this->GetData();
-		$orcamento = $MIOLO->GetBusiness($module, 'orcamento');
-		$cf = new MCurrencyFormatter();
-		if (substr_count($data->valor, ",") == 0)
-                {
-                        $data->valor = str_replace(".",",",$data->valor);
-                }
-                else
-                {
-                        $data->valor = str_replace(".","",$data->valor);
-                }
-                $data->valor = $cf->toDecimal($data->valor);
-
-		if(!$data->idOrcamento1)
-		{
+		$orcamento = $MIOLO->GetBusiness($module, 'orcamento');	
+		$valor = $data->valor;
+		if ( ($valor != NULL) ) {
+			if (substr_count($data->valor, ",") == 0)
+         {
+              $data->valor = str_replace(".",",",$data->valor);
+         }
+         else {
+              $data->valor = str_replace(".","",$data->valor);
+         }
+      }
+      $cf = new MCurrencyFormatter();	
+      $data->valor = $cf->toDecimal($data->valor);
+      $valor = $data->valor;
+      
+      if ($valor < 0) {
+			$this->AddError("O valor do Orçamento não pode ser negativo.");
+		}else if ( ($valor == NULL) || ($valor == 0) ) {
+			$this->AddError("Forneça um valor válido.");
+		}else if ( ($data->esfera1 == NULL) || ($data->idptr1 == NULL) || ($data->idfonte1 == NULL) ){
+			$this->AddError("Complete os campos para o orçamento original");
+		}else if ( ($data->idptr2 == NULL) || ($data->idfonte2 == NULL) ){
+			$this->AddError("Complete os campos para o orçamento destino");
+		}else if ($data->esfera1 == $data->esfera2 && $data->idptr1 == $data->idptr2 && $data->idfonte1 == $data->idfonte2 && $data->idrubrica1 == $data->idrubrica2){
+			$this->AddError("Não é possivel realizar uma tranferência entre orçamentos de mesma origem e destino.");
+		}else{
+		
+		
+		if(!$data->idOrcamento1) {
 			$idOrcamento1 = $orcamento->GetByClassOrcamentaria($data->ano1, $data->idptr1, $data->idfonte1, $data->idrubrica1, $data->esfera1);
 			if(!$idOrcamento1->result)
 			{
@@ -184,6 +228,7 @@ class frmTransfOrcamento extends Form
 		catch (Exception $e)
 		{
 			$this->addError($e->getMessage());
+		}
 		}
 	}
 }

@@ -31,6 +31,7 @@ class frmFornecedorNew extends Form
         $this->objLicitacao = $objLicitacao;
         $this->Form('Incluir Participante');
         $this->EventHandler();
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../../ui/js/mask.js'));
     }
 
     function CreateFields()
@@ -41,8 +42,8 @@ class frmFornecedorNew extends Form
 	    	
         $fields = array(
             array(
-                new MTextField('cnpj', $this->objFornecedor->instituicao->cgc,'CNPJ (Somente números)',22),
-                new TextField('empresa',$this->objFornecedor->instituicao->nome,'Empresa',100),
+                new TextField('cnpj', $this->objFornecedor->instituicao->cgc,'CNPJ (Somente números)',20),
+                new TextField('empresa',$this->objFornecedor->instituicao->nome,'Empresa',75),
             ),
 	            
             new HiddenField('idBanco',$this->objFornecedor->idBanco,'idBanco'),            
@@ -73,11 +74,23 @@ class frmFornecedorNew extends Form
         
         $this->SetFields($fields);
 		
- 
-
-	$this->cnpj->AddAttribute('maxlength','18');
-	$this->cep->AddAttribute('maxlength','8');
-        $rua->AddAttribute('maxlength','80');
+		$this->email->addAttribute('maxlength',30);
+        $rua->AddAttribute('maxlength','50');
+        $this->idAgencia->AddAttribute('maxlength','10');
+        $this->contaCorrente->AddAttribute('maxlength','10');
+        $this->empresa->AddAttribute('maxlength','75');
+		$this->cep->addAttribute('maxlength',9);
+		$this->cep->addAttribute('onKeyUp','makeMask(this, \'#####-###\');');
+		$this->cep->addAttribute('onBlur','makeMask(this, \'#####-###\');');
+		$this->cnpj->addAttribute('maxlength',18);
+		$this->cnpj->addAttribute('onKeyUp','makeMask(this, \'##.###.###/####-##\');');
+		$this->cnpj->addAttribute('onBlur','makeMask(this, \'##.###.###/####-##\');');
+		$this->telefone->addAttribute('maxlength',13);
+		$this->telefone->addAttribute('onKeyUp','makeMask(this, \'(##)####-####\');');
+		$this->telefone->addAttribute('onBlur','makeMask(this, \'(##)####-####\');');
+		$this->fax->addAttribute('maxlength',13);
+		$this->fax->addAttribute('onKeyUp','makeMask(this, \'(##)####-####\');');
+		$this->fax->addAttribute('onBlur','makeMask(this, \'(##)####-####\');');
 
 
         $this->SetFieldAttr('idAgencia','module','common');
@@ -95,8 +108,10 @@ class frmFornecedorNew extends Form
         );
         $this->SetButtons($buttons);
 
-      //  $validators = array(new MCNPJValidator('cnpj','','required','Informe um CNPJ Válido'));
-      $validators = array(new RequiredValidator('cnpj','','required','Informe um CNPJ Válido'));
+      $validators = array(
+			new CNPJValidator('cnpj','','required','Informe um CNPJ Válido'),
+			new EmailValidator('email', '', 'required', 'Informe um E-mail Válido'),			
+		);
       
         $this->SetValidators($validators);
     }
@@ -106,7 +121,6 @@ class frmFornecedorNew extends Form
     {
         $dadosBanco = split("_",$key);
         $this->SetFieldValue('idAgencia', $dadosBanco[0]);
-	    
         $this->SetFieldValue('selBanco', $dadosBanco[1]);
         $this->SetFieldValue('idBanco', $dadosBanco[1]);
     }
@@ -120,16 +134,29 @@ class frmFornecedorNew extends Form
         
         $municipio = $this->manager->getBusiness('common','municipio');
 
-        //aplicando a máscara no cnpj
+        // aplicando a máscara no cnpj
         $mascara = array(".","/","-");
         $cnpj = str_replace($mascara, "", $data->cnpj);
         $data->cnpj =  $cnpj;
+        
+        // aplicando a máscara no cep
+        $mascara = array(".","/","-");
+        $cep = str_replace($mascara, "", $data->cep);
+        $data->cep =  $cep;
+        
+        // aplicando a máscara no fax
+        $mascara = array(".","/","-","(",")");
+        $fax = str_replace($mascara, "", $data->fax);
+        $data->fax =  $fax;
+        
+        // aplicando a máscara no telefone
+        $mascara = array(".","/","-","(",")");
+        $telefone = str_replace($mascara, "", $data->telefone);
+        $data->telefone =  $telefone;
 
-        /**
-         * Verifica o cnpj da instituição
-         */
+        // Verifica o cnpj da instituição
         $temCGC = $instituicao->GetByCgc($data->cnpj);
-
+		
         if ($temCGC->idinstituicao){
             $action = $this->manager->GetActionURL($module,'main:fornecedor:find');
             $MIOLO->Error("O CNPJ desta empresa já está cadastrada",$action);
@@ -172,9 +199,8 @@ class frmFornecedorNew extends Form
                         
                         $instituicao->Log(OP_INS,"Nova Instituicao criada. Nome ".$data->empresa." com o idInstituicao: ".$instituicao->idinstituicao);
                     }
-                    //else $MIOLO->Error("Número inválido de carácteres no campo CNPJ",$action);
                 }
-                      
+                
                 $fornecedor = $this->manager->getBusiness('adm','fornecedor');
                 $fornecedor->contaCorrente = $data->contaCorrente;
                 $fornecedor->idInstituicao = $instituicao->idinstituicao;
@@ -185,16 +211,16 @@ class frmFornecedorNew extends Form
                 $fornecedor->Log(OP_INS,"Novo fornecedor criado. idInstituicao: ".$instiuicao->idinstituicao.", idFornecedor: ".$fornecedor->idFornecedor);
 
                 $action = $this->manager->GetActionURL($module,'main:fornecedor:find');
-		$this->manager->information("Inclusão de fornecedor efetuada com sucesso.",$action);
+				$this->manager->information("Inclusão de fornecedor efetuada com sucesso.",$action);
                 $idFornecedor = $fornecedor->idFornecedor;
                 
             }
             catch (Exception $e)
             {
-		if ($data->cnpj)
-		{
-			$instituicao->Delete($instituicao->idinstituicao);
-		}
+				if ($data->cnpj)
+				{
+					$instituicao->Delete($instituicao->idinstituicao);
+				}
                 $this->AddError("Informe o seguinte erro: ".$e->getMessage());
             }
         }

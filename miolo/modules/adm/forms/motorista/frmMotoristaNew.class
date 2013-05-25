@@ -40,6 +40,7 @@ class frmMotoristaNew extends MForm
             new MCalendarField('dataValidade','','Data de Validade'),
         );
         $this->SetFields($fields);
+        $this->carteiraHab->addAttribute('maxlength',15);
         $this->SetFieldAttr('lkpPessoa','module','common');
         $this->SetFieldAttr('lkpPessoa','item','pessoa');
         $this->SetFieldAttr('lkpPessoa','event','filler');
@@ -68,9 +69,13 @@ class frmMotoristaNew extends MForm
 		{
 			$this->AddError('Selecione uma pessoa.');
 		}
+		elseif($motorista->findByIdPessoa($data->idPessoa))
+		{
+			$this->addError('Esta pessoa já está cadastrada.');
+		}
 		elseif(!is_numeric($data->carteiraHab) or ($data->carteiraHab <= 0) or ( strlen(trim($data->carteiraHab)) < 4))
 		{
-			$this->AddError('Informe corretamente o número da carteira de motorista correta.');
+			$this->AddError('Informe corretamente o número da carteira de motorista.');
 		}
 		elseif($data->categoria == '')
 		{

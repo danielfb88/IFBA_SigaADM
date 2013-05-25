@@ -98,6 +98,11 @@ class frmPesquisa extends Form
         
                 
 		//ajuste no tamanho do campo classificação
+		
+		/*echo '<pre>';
+		var_dump($query->result);
+		echo '</pre>';*/
+		
 		$max = 33;
 		for($i = 0; $i < count($query->result); $i++)
 		{
@@ -168,8 +173,14 @@ class frmPesquisa extends Form
 			$parametros1 = null;
 			$parametros2 = null;
 		}
+		
+		//Trocando a coluna autor e titulo
+		$temp = $columns[2];
+		$columns[2] = $columns[3];
+		$columns[3] = $temp;
 
 		$href_datagrid = $MIOLO->GetActionURL('biblioteca',$self,$data->busca, $parametros1);
+		
 		$datagrid = new DataGrid2($query, $columns, $href_datagrid,20);
 
         $objGenero = $MIOLO->GetBusiness('common','genero');

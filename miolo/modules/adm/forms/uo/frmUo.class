@@ -59,7 +59,7 @@ class frmUo extends CompoundForm
                 break;
             case 'tipoReqs':
 				$uo->getTipoReqs();
-				if ( ($id = $this->getFormValue('id')) != NULL )
+				if ( ($id = $this->getFormValue('id')) != NULL && $this->getFormValue('idTipoReq') == NULL)
 				{
 					$uo->DeleteTipoReq($id);
 			    	$uo->getTipoReqs();
@@ -73,9 +73,9 @@ class frmUo extends CompoundForm
 				$uo->getusuarios();
 
 				if ( ($id = $this->getFormValue('id')) != NULL )
-				{
-					$uo->DeleteUsuario($id);
-				    $uo->getusuarios();
+				{					
+					$uo->DeleteUsuario($id);						
+					$uo->getusuarios();		
 				}
 				
 			 	$this->_form[] = $ui->GetForm($module,'frmUoAcesso',$uo,'uo');

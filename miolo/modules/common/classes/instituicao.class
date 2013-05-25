@@ -70,7 +70,7 @@ class BusinessCommonInstituicao extends MBusiness
 			$data->mesmoif        = $this->GetFieldValue('mesmoif');
 			$data->sigla          = $this->GetFieldValue('sigla');
 			$data->uasg           = $this->GetFieldValue('uasg');
-			$data->ug           = $this->GetFieldValue('ug');
+			$data->ug             = $this->GetFieldValue('ug');
 			$data->campus         = $this->GetFieldValue('campus');
 			$data->status         = $this->GetFieldValue('status');
 		return $data;
@@ -696,6 +696,12 @@ class BusinessCommonInstituicao extends MBusiness
 		return $query;
 	}
 	
+	//Retorna quantidade de CNPJ iguais do banco de dados.
+	function countByCNPJ($cgc)
+    {
+		$busca = "select count(*) as total from cm_instituicao where cgc = '$cgc'";					
+		return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
 }
 
 ?>

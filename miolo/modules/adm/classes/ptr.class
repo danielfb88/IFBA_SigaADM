@@ -73,5 +73,11 @@ class BusinessAdmPtr extends Business
         $criteria->addOrderAttribute('descricao');
         return $criteria->retrieveAsQuery();
     }
+
+    function findByCodigo($codigo)
+    {
+	$busca = "select count(*) as total from ad_ptr where idptr = '$codigo'";					
+	return pg_fetch_result( pg_query($busca) ,0, 'total' );
+    }
 }
 ?>

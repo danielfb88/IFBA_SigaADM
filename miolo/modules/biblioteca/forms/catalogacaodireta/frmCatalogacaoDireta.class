@@ -32,8 +32,7 @@ class frmCatalogacaoDireta extends MFormAjax
     function __construct()  // construtor da Classe
     {
         global $MIOLO,$module, $item;
-
-
+		
         //Instancia o objeto precatalogacao
         $this->objObra = $MIOLO->GetBusiness($module,'obra');
         $this->objAutor = $MIOLO->GetBusiness($module,'autor');

@@ -46,6 +46,8 @@ class frmFuncaoAlterar extends MFormAjax
         parent::__construct('Alteração de Função');
         $this->registerMethod('onSelectCargo');
         $this->EventHandler();
+        // Adiciona script para criação de máscaras.
+        $this->page->AddJsCode(file_get_contents(dirname(__FILE__) . '/../mask.js'));
     }
 
     function CreateFields()
@@ -112,7 +114,7 @@ class frmFuncaoAlterar extends MFormAjax
             $fields[] = new MSeparator();
 
         //bloco para Início da Função ---------------------------------------------------------------------------------------------
-            $fields[] = new MCalendarField('datainicio',$this->objfuncao->datainicio,'Início' ,'10');
+            $fields[] = new MCalendarField('datainicio',$this->objfuncao->datainicio,'Dasta Início' ,'10');
 
             //para recuperar descrição da publicação, ??????? após refazimento de tela por lookup não de publicação
             $idpublicacaoinicio = MForm::GetFormValue('idpublicacaoinicio');
@@ -130,7 +132,7 @@ class frmFuncaoAlterar extends MFormAjax
                 $fields[] = new MSpacer(1);
                 $fields[] = new MSeparator();
 
-                $datafim = new MCalendarField('datafim',$datafim,'Término','10');
+                $datafim = new MCalendarField('datafim',$datafim,'Data Término','10');
                 $datafim->setColor('red');
                 $datafim->addStyle('fontWeight','bold');
                 $fields[] = $datafim;
@@ -149,11 +151,26 @@ class frmFuncaoAlterar extends MFormAjax
         $this->SetFields($fields);
 
         $this->idcargoconfianca->addAttribute('onchange','ajaxCurso.call()'); // set onchange
-		$this->mandato->addMask('#');
-        $validators[] = new MRequiredValidator('idnivel','',3);
-        $validators[] = new MRequiredValidator('siglasetor');
-        $validators[] = new MRequiredValidator('descricao');
-        $validators[] = new MRequiredValidator('datainicio');
+		  
+		  $this->mandato->addMask('###');
+        $this->mandato->AddAttribute('maxlength',3);
+        $this->descricao->AddAttribute('maxlength',100);
+        $this->idcargoconfianca->addAttribute('onchange','ajaxCurso.call()');
+
+   	  $this->datainicio->addAttribute('maxlength',10);
+    	  $this->datainicio->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+    	  $this->datainicio->addAttribute('onBlur','makeMask(this, \'##/##/####\');');
+    	  $this->datafim->addAttribute('maxlength',10);
+    	  $this->datafim->addAttribute('onKeyUp','makeMask(this, \'##/##/####\');');
+    	  $this->datafim->addAttribute('onBlur','makeMask(this, \'##/##/####\');');	
+
+         $validators = array(
+            new MRequiredValidator('idnivel','',8),
+            new MRequiredValidator('siglasetor'),
+            new MRequiredValidator('descricao','',100),
+            new MRequiredValidator('datainicio'),
+            new MRequiredValidator('datafim'),
+        );
         $this->SetValidators($validators);
 
         $buttons = array( new MButton('btnSalvar', 'Salvar Alteração') );
@@ -233,6 +250,11 @@ class frmFuncaoAlterar extends MFormAjax
         $this->k = new Mkrono();
 
         $data = $this->GetData();    //recupera somente os editáveis
+        
+        // Retirando os caracteres especiais. :-)
+		$caracteres = array("#","*", "&", "%", "(", ")", "$", "@", "!", "'", "\"", "+", "=", "-", "/", ".", ",", "^", "?", ":", "}", "]", "[", "º","{","|",">","<",";");
+		$data->descricao = str_replace($caracteres,"",$data->descricao);
+		
         if ($data->mandato == 0)
         {
             $data->mandato = NULL;   //para manter o conteúdo em branco em vez de 0 nas visualizações

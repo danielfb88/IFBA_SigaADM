@@ -32,19 +32,19 @@ class frmTipoReqNew extends Form
 	function CreateFields()
 	{
 		$fields = array(
-			new TextField('descricao','','Descrição','15','Máx. 30 caracteres'),
+			new TextField('descricao','','Descrição','30','Máx. 30 caracteres'),
 			new LookupTextField('lkpDescRubrica','','Rubrica',20),
 			new HiddenField('idRubrica')
 		);
 
 		$this->SetFields($fields);
 
+		$this->descricao->addAttribute('maxlength', 30);
+
 		$this->SetFieldAttr('lkpDescRubrica','module','adm');
 		$this->SetFieldAttr('lkpDescRubrica','item','descrubrica');
 		$this->SetFieldAttr('lkpDescRubrica','event','btnReadOnly:click');
 		$this->SetFieldAttr('lkpDescRubrica','related','idRubrica');
-
-		$this->descricao->AddAttribute('maxlength','30');
 
 		$buttons = array(
 			new FormButton('btnNew', 'Incluir Tipo de Requisição')

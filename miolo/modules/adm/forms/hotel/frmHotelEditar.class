@@ -44,6 +44,8 @@ class frmHotelEditar extends frmHotelPai
 		      new FormButton("btnSalvar","Salvar")
 		);
 		$this->SetButtons($buttons);
+		$this->nome->addAttribute('maxlength',30);
+		$this->valorDiaria->addAttribute('maxlength',8);
 
 		$this->SetData();
 	}
@@ -61,25 +63,39 @@ class frmHotelEditar extends frmHotelPai
                 $cf = new MCurrencyFormatter();
                 $data->valorDiaria = $cf->toDecimal($data->valorDiaria);
 
-
-		$this->objHotel->SetData($data);		
+		$this->objHotel->SetData($data);	
+		
+		$ativo = $data->ativo;
+		$nome = $data->nome;
+		$valorDiaria = $data->valorDiaria;	
 		
 		$this->objHotel->ativo = $data->ativo;
 		$this->objHotel->valorDiaria = str_replace(',', '.', $this->objHotel->valorDiaria);
 		$this->objHotel->nome = strtoupper($this->objHotel->nome);
-
-		//if(trim(Form::GetFormValue('nome')) == '')
-		if(trim($this->objHotel->nome) == '')
+		
+		if(strlen(trim($nome)) < 4)
 		{
-			$this->AddError('Informe o nome do Hotel.');
+			$this->AddError('Insira um nome válido para o Hotel.');
 		}
-		elseif(!is_numeric($this->objHotel->valorDiaria))
+		elseif(strlen(trim($nome)) > 30)
+		{
+			$this->AddError('Insira um nome menor que 30 caracteres.');
+		}
+		elseif($valorDiaria == '')
+		{
+			$this->AddError('Informe o valor da diária.');
+		}
+		elseif(!is_numeric($valorDiaria))
 		{
 			$this->AddError('Informe um valor correto para a diária.');
 		}
-		elseif( $this->objHotel->valorDiaria <= 0 )
+		elseif($valorDiaria <= 0)
 		{
 			$this->AddError('O valor da diária não pode ser negativo.');
+		}
+		elseif($ativo == '')
+		{
+			$this->AddError('Informe se o Hotel está ativo ou não no sistema.');
 		}
 		else
 		{

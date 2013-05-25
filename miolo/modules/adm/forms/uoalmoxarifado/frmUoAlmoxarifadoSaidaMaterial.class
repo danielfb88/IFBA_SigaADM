@@ -24,10 +24,14 @@ class frmUoAlmoxarifadoSaidaMaterial extends MCompoundForm
     protected $requisicao;
     function __construct($objUO)
     {
-        global $MIOLO;
+		global $MIOLO;
         $this->uoalmoxarifado = $objUO;
         $this->requisicao = $MIOLO->getBusiness('adm','requisicao',Form::getFormValue('idRequisicao'));
+		
+		//var_dump(Form::getFormValue('idRequisicao'));
 		parent::__construct("Saída de Material - Requisição de almoxarifado {$this->requisicao->idRequisicao}");
+		$this->page->addJsCode(file_get_contents(dirname(__FILE__).'/js/frmUoAlmoxarifadoSaidaMaterial.js'));	
+		$this->page->OnSubmit("desabilita()");
         $this->eventHandler();
     }
     function CreateFields()
@@ -46,6 +50,8 @@ class frmUoAlmoxarifadoSaidaMaterial extends MCompoundForm
 		$this->_info[3] = new TextLabel('txtUoExecutante',$this->requisicao->uoExecutante->nome,'UO Exec.');
 		$this->_info[4] = new TextLabel('txtTipoReq',$tipoReq->descricao,'Tipo');
         $this->_info[5] = new TextLabel('txtDataHora',$this->requisicao->dataHora,'Data Hora');
+		$this->addFields(array(new MHiddenField('idRequisicao',Form::getFormValue('idRequisicao'))));
+		
         switch ($this->requisicao->status)
         {
             case 4:
@@ -54,7 +60,7 @@ class frmUoAlmoxarifadoSaidaMaterial extends MCompoundForm
             break;
             default:
                 $this->_form[] = $f = $this->manager->GetUI()->GetGrid('adm','gridRequisicaoAlmoxarifadoAutorizada',$this->requisicao);
-                $this->addButton(new MButton('btnVoltar','Voltar','return'));
+                //$this->addButton(new MButton('btnVoltar','Voltar','return'));
         }
     }
     
@@ -63,7 +69,8 @@ class frmUoAlmoxarifadoSaidaMaterial extends MCompoundForm
 		global $MIOLO;
 		
 		$cf = new MCurrencyFormatter();
-        $status = 9;
+        $status = 9;		
+
         if ( Form::getFormValue('quantAutorizada') < 0){
         	 $this->addError('Por favor, é necessário informar uma quantidade maior que zero!');
         }else        
@@ -71,7 +78,9 @@ class frmUoAlmoxarifadoSaidaMaterial extends MCompoundForm
         {
             foreach ($quantAutorizada as $idMaterial=>$quantidade)
             {
-                foreach ($this->requisicao->materialAlmoxarifado as $material)
+                //var_dump($idMaterial);
+				
+				foreach ($this->requisicao->materialAlmoxarifado as $material)
                 {
                     if ($idMaterial == $material->idMaterial)
                     {
@@ -133,11 +142,11 @@ class frmUoAlmoxarifadoSaidaMaterial extends MCompoundForm
                         $estoque->valorTotal = $cf->toDecimal($estoque->valorTotal) - $cf->toDecimal($material->quantAutorizada) * $cf->toDecimal($valorMedio);
                         $estoque->estoque = $cf->toDecimal($estoque->estoque) - $cf->toDecimal($material->quantAutorizada);
                         if ($estoque->estoque <= $estoque->estoqueMin){
-				$materialDesc = $this->manager->getBusiness('adm','material');							
-				$materialDesc->getById($material->idMaterial);							
-							
-				$materiaisEstoqueAtingido[] = $materialDesc;													
-			}
+							$materialDesc = $this->manager->getBusiness('adm','material');							
+							$materialDesc->getById($material->idMaterial);							
+										
+							$materiaisEstoqueAtingido[] = $materialDesc;													
+						}
                         $estoque->setTransaction($this->requisicao->getTransaction());
                         $estoque->save();
                         $movimento = $this->manager->getBusiness('adm','movimento');
@@ -200,7 +209,10 @@ class frmUoAlmoxarifadoSaidaMaterial extends MCompoundForm
                 $this->requisicao->dataHoraExec = date('d/m/Y');
                 $this->requisicao->save();
                 $this->requisicao->endTransaction();
-                $this->manager->information("Requisição {$this->requisicao->idRequisicao} executada com sucesso.",$this->manager->getActionURL('adm','main:uoalmoxarifado',$this->uoalmoxarifado->idUo,array('form'=>'saidamaterial','idRequisicao'=>$this->requisicao->idRequisicao,'idOrdemEntrega'=>$ordem->idOrdemEntrega,'event'=>'btnQuestionReport:click')));
+                $this->manager->information("Requisição {$this->requisicao->idRequisicao} executada com sucesso.",
+					$this->manager->getActionURL('adm','main:uoalmoxarifado',$this->uoalmoxarifado->idUo,
+						array('form'=>'saidamaterial','idRequisicao'=>$this->requisicao->idRequisicao,'idOrdemEntrega'=>$ordem->idOrdemEntrega,
+						'event'=>'btnQuestionReport:click')));
                 $this->requisicao->Log(OP_INS,"Requisição ".$this->requisicao->idRequisicao." executada pelo executor");
             }
             catch (Exception $e) {$this->addError($e->getMessage());}
@@ -267,73 +279,25 @@ class frmUoAlmoxarifadoSaidaMaterial extends MCompoundForm
 	}
     function btnQuestionReport_click()
     {
-		$data = $this->getData();
+		/*$data = $this->getData();
         $idOrdemEntrega = Form::getFormValue('idOrdemEntrega');
         $msg = 'Imprimir a Ordem de Entrega? Clique em Não para voltar.';
-        $url = $this->manager->GetActionURL('adm','main:uoalmoxarifado',$this->uoalmoxarifado->idUo,array('form'=>'saidamaterial','idRequisicao'=>$this->requisicao->idRequisicao,'idOrdemEntrega'=>$idOrdemEntrega));
-        $eventYes = "btnReport:click";
-        $this->manager->Question($msg, $url, $url, $eventYes, $eventNo);
-    }
-    function GenerateReportFooter($report)
-    {
-        $x0 = $report->pdf->left;
-        $x1 = $report->pdf->right;
-        $footer = $report->pdf->openObject();
-        $report->pdf->saveState();
-        $report->pdf->SetStrokeColor(0, 0, 0);
-        $h = $report->pdf->getFontHeight(9);
-        $report->pdf->addText($x0+0, 180, 9, 'VISTO');
-        $report->pdf->addText($x0+180, 180, 9, "SR. COORDENADOR DA COSUP");
-        $report->pdf->addText($x0+180, 180-(1*$h), 9, "PROVINDECIAMOS A ENTREGA DO");
-        $report->pdf->addText($x0+180, 180-(2*$h), 9, "MATERIAL ESPECIFICADO ACIMA");
-        $report->pdf->addText($x0+360, 180, 9, "DECLARO PELO PRESENTE ");
-        $report->pdf->addText($x0+360, 180-(1*$h), 9, "DOCUMENTO DE RESPONSABILIDADE,");
-        $report->pdf->addText($x0+360, 180-(2*$h), 9, "QUE RECEBI DO SETOR DE ESTOQUE");
-        $report->pdf->addText($x0+360, 180-(3*$h), 9, "DA UFJF, O MATERIAL ACIMA"); 
-        $report->pdf->addText($x0+360, 180-(4*$h), 9, "ESPECIFICADO");
-        $report->pdf->addText($x0+0, 120, 9, date('d/m/Y'));
-        $report->pdf->addText($x0+180, 120, 9, date('d/m/Y'));
-        $report->pdf->line($x0+0, 60, $x0+160, 60);
-        $report->pdf->line($x0+180, 60, $x0+340, 60);
-        $report->pdf->line($x0+360, 60, $x0+520, 60);
-        $report->pdf->addText($x0+0, 50, 9, 'JULIETA M. BARRA');
-        $report->pdf->addText($x0+180, 50, 9, 'PAULO SÉRGIO F. GOMES');
-        $report->pdf->addText($x0+360, 50, 9, 'FUNCIONÁRIO RESPONSÁVEL');
-        $report->pdf->addText($x0+0, 40, 9, 'COORDENADOR DE SUPRIMENTOS');
-        $report->pdf->addText($x0+180, 40, 9, 'GERENTE DE ESTOQUE / UFJF');
-        $report->pdf->restoreState();
-        $report->pdf->closeObject();
-        $report->pdf->addObject($footer, 'add');
-    }
-    function GeneratePageHeader($report)
-    {
-        $this->requisicao->ordemEntrega[0]->movimento[0]->retrieveAssociation('requisicao');
-        $this->requisicao->ordemEntrega[0]->movimento[0]->requisicao->getUoRequisitante();
-        //$orcamento = $this->ordem->movimento[0]->requisicao->uoRequisitante->getOrcamentoByRubrica($this->ordem->movimento[0]->requisicao->getRubrica());
-        $x0 = $report->pdf->left-5;
-        $x1 = $report->pdf->right-5;
-        $h = $report->pdf->getFontHeight(10);
-        $header = $report->pdf->openObject();
-        $report->pdf->saveState();
-        $report->pdf->addPngFromFile($this->manager->getUI()->GetImageSrc('logonet.png','adm'), $x0, 760, 50, 50);
-        $alturaCabecalho = $x0 + 70;
-        $ano = date('Y');
-        $report->pdf->SetStrokeColor(0, 0, 0);
-        $report->pdf->addText($alturaCabecalho, 800-0*$h, 9,"UNIVERSIDADE FEDERAL DE JUIZ DE FORA");
-        $report->pdf->addText($alturaCabecalho, 800-1*$h, 9,"COORDENADORIA DE SUPRIMENTOS");
-        $report->pdf->addText($alturaCabecalho, 800-2*$h, 9,"{$this->uoalmoxarifado->nome}");
-        $report->pdf->addText($alturaCabecalho, 800-3*$h, 9,"ORDEM DE ENTREGA No {$this->requisicao->ordemEntrega[0]->numero}/{$ano} - CONSUMO - ELEMENTO 349030");
-        if ($this->requisicao->ordemEntrega[0]->movimento[0]->requisicao->localEntrega) $report->pdf->addText($alturaCabecalho, 800-4*$h, 9,"LOCAL DE ENTREGA: {$this->requisicao->ordemEntrega[0]->movimento[0]->requisicao->localEntrega}");
-        $report->pdf->restoreState();
-        $report->pdf->closeObject();
-        $report->pdf->addObject($header, 'all');
-        $report->pdf->ezSetDy(+15);
-    }
+        $url = $this->manager->GetActionURL('adm','main:uoalmoxarifado',
+			$this->uoalmoxarifado->idUo,array('form'=>'saidamaterial','idRequisicao'=>$this->requisicao->idRequisicao,'idOrdemEntrega'=>$idOrdemEntrega));*/
+        $buttons = array(
+			new MButton('btnReport','Imprimir Ordem de Entrega','PDF'),
+		);
+		$this->SetButtons($buttons);
+		
+/*		$eventYes = "btnReport:click";
+		btnReport_click()*/
+        //$this->manager->Question($msg, $url, $url, $eventYes, $eventNo);
+    }    
     function btnReport_click()
     {
         
       
-	$ui = $this->manager->GetUI();
+		$ui = $this->manager->GetUI();
         $ordem = $this->manager->getBusiness('adm','ordementrega',Form::getFormValue('idOrdemEntrega'));
         try
         {
@@ -346,71 +310,16 @@ class frmUoAlmoxarifadoSaidaMaterial extends MCompoundForm
             $parameters['int_idordement']   = Form::getFormValue('idOrdemEntrega');
             $parameters['SUBREPORT_DIR'] = $MIOLO->GetConf('home.modules');
             $parameters['pURL']          = $MIOLO->GetConf('home.url');
-            $parameters['int_pIdUsuario']    = $MIOLO->login->idkey;
+            $parameters['int_pIdUsuario']    = $MIOLO->login->idkey;      
+            
+			$report->Execute('adm', 'repOrdemEntrega', $parameters, null, 'PDF');
+			
+        }
+        catch (Exception $e)
+        {
+            $this->addError($e->getMessage());
+        }
         
-            $report->Execute('adm', 'repOrdemEntrega', $parameters);
-		
-
-            //$report = $ui->GetReport('adm','repUoAlmoxarifadoOrdemEntrega',$this->uoalmoxarifado);
-            //$report->Generate();
-        }
-        catch (Exception $e)
-        {
-            $this->addError($e->getMessage());
-        }
-        /*
-		$cf = new MCurrencyFormatter();
-        $report = new MEzPDFReport('2','portrait');
-	    $report->pdf->ezSetMargins(80,180,32,32);
-        $cols = array('Código','N. Empenho','Especifição','UN','Quant.','Valor Total');
-        $options['textCol'] = array(0,0,0);
-        $options['shaded'] = 1;
-        $options['showLines'] = 0;
-        $options['fontSize'] = 10;
-        $options['width'] = 540;
-        $options['xPos'] = 'left';
-        $options['xOrientation'] = 'right';
-        $report->pdf->ezText('',20);
-        $this->requisicao->getOrdemEntrega($this->requisicao->idUoExecutante);
-        $this->requisicao->ordemEntrega[0]->retrieveAssociation('movimento');
-        foreach ($this->requisicao->ordemEntrega[0]->movimento as $movimento)
-        {
-            $movimento->retrieveAssociation('itemreq');
-            $movimento->itemreq->retrieveAssociation('material');
-            $movimento->retrieveAssociation('itemNota');
-            if ($movimento->itemNota) $movimento->itemNota->retrieveAssociation('empenhado');
-            if ($movimento->itemNota->empenhado) $movimento->itemNota->empenhado->retrieveAssociation('empenho');
-            $data[$movimento->itemreq->material->codmaterial][0] =  $movimento->itemreq->material->codmaterial;
-            $data[$movimento->itemreq->material->codmaterial][1] =  $movimento->itemNota->empenhado->empenho->numero;
-            $data[$movimento->itemreq->material->codmaterial][2] =  $movimento->itemreq->material->descricao;
-            $data[$movimento->itemreq->material->codmaterial][3] =  $movimento->itemreq->material->unidade;
-            $data[$movimento->itemreq->material->codmaterial][4] =  $cf->toDecimal($movimento->quantidade);
-            $data[$movimento->itemreq->material->codmaterial][5] =  $cf->toDecimal($movimento->valorTotal);
-            $total = $cf->toDecimal($total) + $cf->toDecimal($movimento->valorTotal);
-        }
-        foreach ($data as $d)
-        {
-            $resultado[] = array($d[0],$d[1],$d[2],$d[3],$d[4],$cf->formatWithSymbol($d[5]));
-        }
-        $resultado[] = array('Total','','','','',$cf->formatWithSymbol($cf->toDecimal($total)));
-        try
-        {
-            $this->requisicao->ordemEntrega[0]->impresso = 1;
-            $this->requisicao->ordemEntrega[0]->save();
-            $this->requisicao->ordemEntrega[0]->Log(OP_UPD,"Ordem Entrega impressa.");
-            $this->generatePageHeader($report);
-            $report->pdf->ezText("Requisição: {$this->requisicao->ordemEntrega[0]->movimento[0]->idRequisicao}",14,array('justification'=>'center'));
-            $report->pdf->ezText("",14);
-            $report->pdf->ezTable($resultado,$cols,'',$options);
-            $report->pdf->ezText('_______________________________________________________________________________________________',10);
-            $this->generateReportFooter($report);
-            $report->Execute();
-        }
-        catch (Exception $e)
-        {
-            $this->addError($e->getMessage());
-        }
-        */
     }
  }
 ?>

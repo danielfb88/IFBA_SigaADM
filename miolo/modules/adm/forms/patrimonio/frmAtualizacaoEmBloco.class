@@ -1,0 +1,598 @@
+
+<?
+/* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
+ *
+ * Este arquivo é parte do programa SigaEPT
+ *
+ * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+ * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+ * na versão 2 da Licença.
+ *
+ * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+ * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+ * Pública Geral GNU/GPL em português para maiores detalhes.
+ *
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+ * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+ * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+ * St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+ 
+
+
+MIOLO::Import('extensions::class.phpmailer.php','PHPMailer');
+class frmAtualizacaoEmBloco extends MFormAjax
+{
+
+	protected $objPatrimonio;
+	protected $perms;
+	
+	public function confirmaExecucao()
+	{
+	
+	 	
+		$code = "function confirmaExecucao() { \n".	
+			" if (MIOLO_GetElementById('butExecutar') != null) \n".
+			"   return confirm ('Confirma a alteração?'); \n".
+			"   else \n".
+			"return true;\n".
+			"}\n";
+			
+		return $code;
+	}
+	
+    function __construct()
+    {
+		global $MIOLO,$module,$action,$item;
+		
+		
+		$this->perms  = $MIOLO->getPerms();
+        parent::__construct('ATUALIÇÃO EM BLOCO');
+		
+		$this->AddJsCode($this->confirmaExecucao());	
+		$this->name = 'frmAtualizacaoEmBloco';
+
+		$this->OnSubmit('confirmaExecucao()');
+		
+		$this->SetClose($MIOLO->GetActionURL('adm','main:atualizacaoembloco:find'));
+		$this->page->addJsCode(file_get_contents(dirname(__FILE__).'/js/frmAtualizacaoEmBloco.js'));
+        $this->EventHandler();
+    }
+
+    protected function CreateFieldsAuth()
+    {
+		global $MIOLO, $action, $module, $item;
+		
+		$tipoAtualizacao = array(
+			array('Baseada nas descrições de um empenho', 'EMPENHO'),
+			array('Baseada num intervalo de patrimônio (itens sem empenho)', 'INTERVALO'),
+		);
+		
+		$radioTipoAtualizacao = new MRadioButtonGroup('radioTipoAtualizacao', 'TIPO DE ATUALIZAÇÃO', $tipoAtualizacao, 'EMPENHO', '', 'vertical', 'css', 102);
+		$radioTipoAtualizacao->AddAttribute('onClick',"javascript:doHabilitarTipoAtualizacao();");
+
+		$findButton = new ButtonFind('');
+		$findButton->SetName('btnFind');
+		
+		$lkempenho = new MLookupTextField('numeroempenho','','Empenho',12);
+		$lkdescricao = new MLookupTextField('descricao','','Descrição', 104); // Descrição DE UM EMPENHO		
+		// Descrição DE UM EMPENHO		
+		
+		$ui = $MIOLO->GetUI();
+		//var_dump($ui); 		
+		$grid = $ui->GetGrid( 'adm', 'gridPatrimonio_AtualizacaoEmBloco' );
+        $grid->SetTitle('Selecione apenas uma descrição para atualização em bloco!');		
+		$grid->emptyMsg = 'Nenhum registro com base nos parâmetros!';
+		
+		
+		//$numeroempenho = $this->GetFormValue('numeroempenho');
+		//var_dump($numeroempenho);		
+				
+		$fields = array
+			(
+			$radioTipoAtualizacao,
+			
+			//new MSeparator('OBS: Os campos de busca NÃO são obrigatórios'),
+			new MHiddenField('MinIdDescricao'), // Id do patrimônio da descrição),
+			array ( 
+				$lkempenho ,  new MTextField('notaFiscal', '', 'Nota Fiscal', 10),
+				$lkdescricao,								
+			),
+			array( 
+			    new MTextField('patriInicial','','Patrimônio Inicial',10),
+				new MTextField('patriFinal','','Patrimônio Final',10),
+				
+			),
+			$findButton,
+			$grid,
+			);
+        $this->SetFields($fields);			
+		
+		//setFieldsIni (&$form, $module , $item, $related)
+		//$lkempenho->setFieldsIni ($this, 'common', 'Empenho_Garantia', 'numeroempenho');	
+		
+		$this->SetFieldAttr('numeroempenho','module','common');
+		$this->SetFieldAttr('numeroempenho','item','Patrimo_Empenho');
+		$this->SetFieldAttr('numeroempenho','related','numeroempenho');		
+		
+		$this->SetFieldAttr('descricao','module','common');
+		$this->SetFieldAttr('descricao','item','Patrimo_EmpenhoDescricao');		
+		$this->SetFieldAttr('descricao','related','descricao');
+		$this->SetFieldAttr('descricao','filter','numeroempenho,descricao');
+		
+		$buttons = array
+			(
+				new MButton('butSelecionar', 'Selecionar'),
+            );
+		$this->SetButtons($buttons);
+		
+		
+		$this->page->onLoad("javascript:doHabilitarTipoAtualizacao();");
+		//$this->page->onSubmit("desabilitaSelecao()");
+		
+		
+    }
+	
+    protected function CreateFieldsAuthEtapa2($descr)
+    {
+		global $MIOLO, $action, $module, $item;
+		
+		$descricaoEtapa2 = $this->GetformValue('descricaoEtapa2');
+			
+					
+		//header("Content-Type: text/html; charset=UTF-8");
+		//var_dump ($descr . 'xxxx');
+		
+		$numeroempenho = $this->GetFormValue('numeroempenho');
+		$notaFiscal    = pg_escape_string($this->GetFormValue('notaFiscal'));		
+		$descricao     = pg_escape_string($descr);		
+		$patriInicial  = $this->GetFormValue('patriInicial');
+		$patriFinal    = $this->GetFormValue('patriFinal');
+		
+		
+		if (!empty($numeroempenho)) { $TIPO = 'EMPENHO'; } else { $TIPO = 'INTERVALO'; }
+		
+		//var_dump ('AAAA_' . $numeroempenho . '_AAAA');
+			
+		
+		$Business = $MIOLO->getBusiness('adm', 'executoralmox'); //poderia ser qualquer
+		
+		if ($TIPO == 'EMPENHO') 
+			{		
+			    $where = "Ativo = 'S' AND NumeroEmpenho = '" . $numeroempenho . "' AND DescricaoOriginal iLIKE '" . $descricao . "'"; //WHERE	
+						
+				if (!empty($notaFiscal)) 
+				{
+					$where .= " AND NotaFiscal = '" . $notaFiscal . "'";
+				}
+				
+				//var_dump($where);
+				
+				$sql = new sql('Min(IdItemPatrimonio) AS MinIdItemPatrimonio, MAX(IdItemPatrimonio) AS MaxIdItemPatrimonio, MIN(idTipoIngresso) AS idTipoIngresso, ' .
+				       ' MIN(NomeTipoIngresso) AS NomeTipoIngresso, COUNT(distinct NotaFiscal) AS NumNotasFiscais',
+						'Vad_Patrimonio', $where);
+			}
+			else
+			{
+				$sql = new sql('Min(IdItemPatrimonio) AS MinIdItemPatrimonio, MAX(IdItemPatrimonio) AS MaxIdItemPatrimonio,  MIN(idTipoIngresso) AS idTipoIngresso, ' .
+				       ' MIN(NomeTipoIngresso) AS NomeTipoIngresso, COUNT(distinct NotaFiscal) AS NumNotasFiscais',
+						'Vad_Patrimonio', //$tables
+						"Ativo = 'S' AND DescricaoOriginal iLIKE '" . $descricao . "' AND idItemPatrimonio between " . $patriInicial . ' AND ' . $patriFinal //WHERE		
+				
+					);
+			}
+			
+	
+		$query = $Business->Query($sql);
+				
+		$MinIdItemPatrimonio = $query->result[0][0];	
+		$MaxIdItemPatrimonio = $query->result[0][1];	
+		$idTipoIngresso   = $query->result[0][2];
+		$NomeTipoIngresso = $query->result[0][3];
+		
+		$NumNotasFiscais = $query->result[0][4];
+		$erro = '';
+		//var_dump($NumNotasFiscais);
+		if ($NumNotasFiscais > 1) 
+		{ 	$erro = $NumNotasFiscais . ' notas fiscais encontradas. Escolha uma única nota fiscal para atualizar.';
+			$this->AddError($erro);
+			
+		}
+		
+		$objPatrimonio = $this->manager->GetBusiness( 'adm','itempatrimonio' );
+		
+		$objPatrimonio->GetById( $MinIdItemPatrimonio );
+		$objPatrimonio->SetData( $this->GetData() );
+		
+		
+		if ($TIPO == 'EMPENHO')
+		{
+			$fields = array
+			(
+				array ( 
+					new MTextLabel ('lbMinIdItemPatrimonio', 'ID Inicial:'),
+					new MTextLabel ('MinIdItemPatrimonio', $MinIdItemPatrimonio, '', 'blue'),							
+				),
+				array (
+					new MTextLabel ('lbMaxIdItemPatrimonio', 'ID Final:'),
+					new MTextLabel ('MaxIdItemPatrimonio', $MaxIdItemPatrimonio, '', 'blue'),											
+				),
+				array(
+
+					new MTextLabel('lbEmpenho','Empenho:'),
+					new MTextLabel('lbnumeroempenho', $numeroempenho, '', 'blue'),
+					new MHiddenField('numeroempenho', $numeroempenho), 
+				),
+				array (
+					new MTextLabel('lbNotaFiscal', 'Nota Fiscal:'),
+					new MTextLabel('lbnotaFiscal2', $notaFiscal, '', 'blue'),
+					new MHiddenField('notaFiscal', $notaFiscal), 
+				),
+				array(			
+					new MTextLabel('lbDescricao','Descrição:'),
+					new MTextLabel('descr',$descr, '', 'blue'),
+					new MHiddenField('descricaoEtapa2', $descr), 
+				),
+				
+			);
+		
+		}	
+		else
+		{
+			$fields = array
+			(
+				array ( 
+					new MTextLabel ('lbMinIdItemPatrimonio', 'ID Inicial:'),
+					new MTextLabel ('MinIdItemPatrimonio', $MinIdItemPatrimonio, '', 'blue'),
+				),
+				array (
+					new MTextLabel ('lbMaxIdItemPatrimonio', 'ID Final:'),
+					new MTextLabel ('MaxIdItemPatrimonio', $MaxIdItemPatrimonio, '', 'blue'),
+				),
+				array(			
+					new MTextLabel('lbDescricao','Descrição:'),
+					new MTextLabel('descr',$descr, '', 'blue'),
+					new MHiddenField('descricaoEtapa2', $descr, '', 'blue'), 
+				),
+				array(
+						new MTextLabel('lbPatrimonioInicial','Patrimônio Inicial:'),
+						new MTextLabel('lpatriInicial',$patriInicial, '', 'blue'),
+						new MTextLabel('lbPatrimonioFinal','Patrimônio Final:'),
+						new MTextLabel('lpatriInicial',$patriFinal, '', 'blue'),
+						new MHiddenField('patriInicial', $patriInicial),
+						new MHiddenField('patriFinal', $patriFinal),
+					),				
+				
+			);		
+		}
+		
+        $this->SetFields($fields);	
+		
+		if (empty($erro))
+		{
+		
+			$tipoIngresso = $objPatrimonio->tipoIngresso;
+			$dataAquisicao = $objPatrimonio->dataAquisicao;
+			$marcaModelo = $objPatrimonio->marcaModelo;
+			$valor = $objPatrimonio->valor;
+			$notaFiscal = $objPatrimonio->notaFiscal;
+			$idClassificador = $objPatrimonio->idClassificador;		
+			$numeroEmpenho = $objPatrimonio->numeroEmpenho;
+			$descricaoEstado = $objPatrimonio->descricaoEstado;
+			$datainiciouso = $objPatrimonio->datainiciouso;
+			
+			
+			//$lkempenho = new MLookupTextField('numeroempenho','','Empenho',12);
+			//$lkdescricao = new MLookupTextField('descricao','','Descrição', 104); // Descrição DE UM EMPENHO
+			$lookClassif = new MLookupTextField('idclassificador_N', $idClassificador,'Classificador', 6); 
+			
+			$NumEstadosDistintos = 0;
+			
+			if ($TIPO == 'EMPENHO') 
+			{
+				$where = "Ativo = 'S' AND NumeroEmpenho = '" . $numeroempenho . "' AND Descricao iLIKE '" . $descricao . "'" ;
+				
+				if (!empty($notaFiscal)) 
+				{
+					$where .= " AND NotaFiscal = '" . $notaFiscal . "'";
+				}
+				
+				$sqlNumEstadosDistintos = new sql(' count(*) AS NumItens, count(distinct descricaoEstado) AS NumDistintos', 
+							'ad_itempatrimonio' , $where
+							
+					);
+			}
+			else
+			{
+				$sqlNumEstadosDistintos = new sql(' count(*) AS NumItens, count(distinct descricaoEstado) AS NumDistintos', 
+							'ad_itempatrimonio',
+							"Ativo = 'S' AND Descricao iLIKE '" . $descricao . "' AND idItemPatrimonio between " . $patriInicial . ' AND ' . $patriFinal //WHERE
+					);
+
+			}
+			
+			$business = $MIOLO->getBusiness('adm', 'itempatrimonio');
+			$queryDistintos = $business->Query($sqlNumEstadosDistintos );			
+			
+			$NumItensAAtualizar =  $queryDistintos->result[0][0];		
+			$NumEstadosDistintos = $queryDistintos->result[0][1];						
+			
+			
+			$fieldsComplem = array
+				(
+					array ( 
+						//__construct( $name = '', $text = null, $label = '', $color = '', $bold = false )
+						new MTextLabel ('lbNumItensAAtualizar', 'Nº de Itens a atualizar:'),
+						new MTextLabel ('NumItensAAtualizar', $NumItensAAtualizar, '', 'blue'),							
+					),
+					new MSpacer(2),
+					new MHiddenField('idTipoIngresso', $idTipoIngresso),
+					new MTextField('NomeTipoIngresso', $NomeTipoIngresso,'Tipo de ingresso',25),				
+					new MMultiLineField('descricao_N',$descr,'Descrição',60,5,70,'Máx. 1000 caracteres'),
+					//new MTextField('','','Descrição',104),			
+					new MCalendarField('dataAquisicao_N',$dataAquisicao,'Data de Aquisição',10),				
+					new MTextField('marcaModelo_N',$marcaModelo,'Marca/Modelo',50,'Máx. 50 caracteres'),
+					new MCurrencyField('valor_N',$valor,'Valor',10),
+					new MTextField('notaFiscal_N', $notaFiscal,'Nota Fiscal',16),
+					$lookClassif,
+					new MTextField('numeroEmpenho_N',$numeroEmpenho,'Empenho',12),				
+					new MMultiLineField('descricaoEstado_N',
+						( 	($NumEstadosDistintos <= 1) ? 	($descricaoEstado) : 
+															('O estado do material não será atualizado (em bloco)!' . 
+															 '  Para o primeiro item:' . chr(13) . $descricaoEstado) 
+							), 'Estado do Material', 60,5,70
+						),
+					new MHiddenField('NumEstadosDistintos', $NumEstadosDistintos),
+					new MCalendarField('datainiciouso_N',$datainiciouso,'Data de Início de Uso',10),								
+				);
+			
+			$this->AddFields($fieldsComplem);
+			
+			/*header("Content-Type: text/html; charset=UTF-8");
+			echo('<pre>');
+				var_dump($NumEstadosDistintos, $sqlNumEstadosDistintos->where);
+			echo('</pre>');*/
+			
+			if ($NumEstadosDistintos > 1) { 
+				$this->AddInfo('O estado do material não será atualizado pois já foi especificado para um patrimônio em particular!');
+				$this->SetFieldAttr('descricaoEstado_N','readonly',true); 
+			}
+			
+			
+			$this->SetFieldAttr('NomeTipoIngresso','readonly',true);
+			
+			$this->SetFieldAttr('idclassificador_N','module','common');
+			$this->SetFieldAttr('idclassificador_N','item','classificador');
+			$this->SetFieldAttr('idclassificador_N','related','idclassificador_N');
+			$this->SetFieldAttr('idclassificador_N','filter','idclassificador_N,idclassificador_N');		
+			
+			$buttons = array
+				(
+					//new MButton('butConsultar', 'Consultar'),
+					new MButton('butExecutar', 'Executar'),				
+				);
+			
+			$this->ClearButtons(); // LIMPA OS BOTÕES CORRENTES!
+			$this->SetButtons($buttons);
+		}
+		else 
+		{
+			$fieldsComplem = array
+				(
+					new MHiddenField('voltarEtapaUm', 'voltar para a etapa anterior'),
+				);
+			$this->AddFields($fieldsComplem);
+				
+			$buttons = array
+				(
+					new MButton('butVoltarEtapaUm', 'Voltar'),				
+				);
+			
+			$this->ClearButtons(); // LIMPA OS BOTÕES CORRENTES!
+			$this->SetButtons($buttons);
+		}
+    }	
+	
+	public function CreateFields()
+	{
+		global $MIOLO, $action, $module, $item, $perms;	
+		
+		$login = $MIOLO->GetLogin();
+		$perm = $MIOLO->getPerms()->isMemberOf($login,'ADM_PATRIMONIOADMIN');
+				
+		if ($perm ==false) {
+			$this->AddError('Permissão de administrador do patrimônio requerida');		
+		}
+		else { 
+			$descricaoEtapa2 = $this->GetformValue('descricaoEtapa2');
+			
+			$voltarEtapaUm = $this->GetformValue('voltarEtapaUm');
+			
+			if (!empty($voltarEtapaUm)) { $this->CreateFieldsAuth(); }
+			else
+			{
+			
+				if (!empty($descricaoEtapa2)) { $this->CreateFieldsAuthEtapa2($descricaoEtapa2); }
+				else { $this->CreateFieldsAuth();}
+			}
+		
+		}		
+		
+	}
+	
+	function formataData($s)
+	{
+		return substr($s,6,4).substr($s,3,2).substr($s,0,2);
+		//retorna  a data formatada no formato YYYYMMDD (sem barras)!
+	}
+	
+	function formataMonetario ($valor)
+	{
+		$cf = new MCurrencyFormatter();
+	 
+		if (substr_count($valor, ",") == 0) { $valor = str_replace(".",",",$valor); }
+		else { $valor = str_replace(".","",$valor); }	
+		
+		return $cf->toDecimal($valor);
+	}
+	
+	public function butExecutar_click($sender)
+	{
+		global $MIOLO;
+
+		
+		$descricao = Form::GetFormValue('descricaoEtapa2');
+		
+		$data = $this->GetData();
+		
+		$notaFiscal    = pg_escape_string($data->notaFiscal);
+
+		$valor_N 			= $this->formataMonetario($data->valor_N);		
+		$notaFiscal_N 		= TRIM($data->notaFiscal_N);
+		$dataAquisicao_N 	= $this->formataData($data->dataAquisicao_N);
+		$datainiciouso_N 	= $this->formataData($data->datainiciouso_N);
+		$descricao_N 		= pg_escape_string(strtoupper(TRIM($data->descricao_N))); 
+		$marcaModelo_N 		= pg_escape_string(strtoupper(TRIM($data->marcaModelo_N)));
+		$descricaoEstado_N 	= pg_escape_string(strtoupper(TRIM($data->descricaoEstado_N)));
+		$idclassificador_N 	= TRIM($data->idclassificador_N);
+		$numeroEmpenho_N	= TRIM($data->numeroEmpenho_N);
+		$NumEstadosDistintos = $data->NumEstadosDistintos;		
+		
+		//$this->manager->Informantion($notaFiscal, $this->manager->GetActionURL('adm','main:atualizacaoembloco:find'));
+		
+		if (strlen($descricao_N) < 10)  { $this->addError("Informe uma descrição válida."); }		
+		if ($valor_N <= 0.0)   { $this->AddError("Informe um valor maior que zero.");}		
+		if (!$dataAquisicao_N) { $this->addError("Informe a data de aquisição.");} 
+		if (!$datainiciouso_N) { $this->addError("Informe a data de início de uso.");} 
+		if ($datainiciouso_N < $dataAquisicao_N) {$this->addError('Informe a data de início de uso maior ou igual à data de aquisição do bem');	}
+		if (strlen($idclassificador_N) < 5)  { $this->addError("Informe um classificador válido."); }
+		if (strlen($descricaoEstado_N) < 4)  { $this->addError("Informe corretamente o estado do material."); }
+	
+		
+		if ($this->errors == '')
+		{
+		
+			$descricao			= $data->descricaoEtapa2;
+			$numeroempenho 		= $data->numeroempenho;
+			$patriInicial  		= $data->patriInicial;
+			$patriFinal    		= $data->patriFinal;
+			
+			$db = $MIOLO->GetDatabase('sigaept');		
+
+			
+			$sql = 'UPDATE ad_itemPatrimonio SET ' . chr(13) .
+					'     descricao =  ' 		. "'" . $descricao_N . "'" . chr(13) .
+					'    , DataAquisicao = ' 	. "'" . $dataAquisicao_N . "'" .  chr(13) .
+					'    , MarcaModelo = ' 		. ( $marcaModelo_N == ''  ? 'NULL'  : "'" . $marcaModelo_N . "'") . chr(13) .
+					'    , Valor = ' 			. $valor_N . chr(13) .
+					'    , NotaFiscal = ' 		. ( $notaFiscal_N == ''  ? 'NULL'  : "'" . $notaFiscal_N . "'") . chr(13) .
+					'    , IdClassificador = ' 	. "'" . $idclassificador_N . "'" . chr(13) .
+					'    , NumeroEmpenho = ' 	. ( $numeroEmpenho_N == ''  ? 'NULL'  : "'" . $numeroEmpenho_N . "'" ) . chr(13) .				   
+					( $NumEstadosDistintos == 1  ? '    , descricaoEstado = ' 	. "'" . $descricaoEstado_N . "'" . chr(13) 
+												: '/* _____________O ESTADO NÃO SERÁ ATUALIZADO _____________*/' . chr(13)
+												// não atualiza o estado caso vários estados para a mesma descrição do mesmo empenho
+					) .
+					'    , DataInicioUso = ' 	. "'" . $datainiciouso_N . "'" . chr(13) ;
+				   
+			if (!empty($numeroempenho)) { $TIPO = 'EMPENHO'; } else { $TIPO = 'INTERVALO'; }			
+		
+			if ($TIPO == 'EMPENHO') 
+				{		
+					$sql .= 
+					' WHERE numeroEmpenho = '	. "?" . chr(13) .
+					'	AND Descricao = ' 		. "?";
+					
+					if (empty($notaFiscal)) { $args = array($numeroempenho, $descricao); }
+					else {
+						$sql .= '  AND NotaFiscal = ' . "?";
+						
+						$args = array($numeroempenho, $descricao, $notaFiscal);					
+					}
+					
+					//var_dump ($args);
+				}
+				ELSE
+				{
+					$sql .= 
+					' WHERE idItemPatrimonio BETWEEN ? AND ? ' . chr(13) .
+					'	AND Descricao = ' 		. "?";
+					
+					$args = array($patriInicial, $patriFinal, $descricao);
+					
+				}
+
+				   
+
+			//header("Content-Type: text/html; charset=UTF-8");
+			//echo('<pre>');
+			//	//var_dump($descricao	,$numeroempenho , $patriInicial , $patriFinal );
+			//	//var_dump($sql, $marcaModelo_N, $marcaModelo_N == ''  ? 'NULL'  : "'" . $marcaModelo_N . "'" . chr(13) );
+			//var_dump($sql);		
+			//echo('</pre>');
+					
+			
+			try
+			{
+				$ok = $db->Execute($db->Prepare($sql,$args));				
+				$this->manager->Information('Atualização feita com sucesso!',$this->manager->GetActionURL('adm','main:atualizacaoembloco:find'));
+			}	
+			catch (Exception $e)
+			{
+				$this->addError('Não foi possível executar: ' . $e->getMessage());
+			}
+			
+		}
+		else { $this->GenerateErrors(); }
+		
+	}
+	
+	public function butCancelar_click()
+	{
+		$this->manager->Information('Operação cancelada!',$this->manager->GetActionURL('adm','main:atualizacaoembloco:find'));
+	}
+	
+	public function butSelecionar_click()
+	{
+		
+		//var_dump($_POST);
+		
+		$patriInicial  = $this->GetFormValue('patriInicial');
+		$patriFinal    = $this->GetFormValue('patriFinal');
+		
+		if (!empty($patriInicial))
+		{
+			if (empty($patriFinal)) { $this->addError("Informe o patrimônio final.");}
+			else if ( $patriInicial > $patriFinal ) { $this->addError("O patrimônio final deve ser maior ou igual ao inicial.");}
+			
+		}
+		
+		if ($this->errors == '')
+		{
+			$selected = $this->GetFormValue('select' . 'gridPatrimonio_AtualizacaoEmBloco');
+			$countItens = 0;	
+
+			//$grid = MIOLO_GetElementById('gridItensPatrimonioSelection');
+			//var_dump($grid);
+			
+			//exit();
+			
+			foreach ($selected as $item) //conta qtas itens foram selecionadas
+				{ $countItens++; }
+			
+			if($countItens == 0) { $this->addError("Escolha a descrição que deseja atualizar."); }
+			else if ($countItens > 1) { $this->addError("Escolha uma e apenas uma descrição para atualizar."); }
+			else {		
+				
+				$a = array_keys($selected);
+				$descr = array_shift($selected);			
+				$this->CreateFieldsAuthEtapa2($descr);
+			}
+		}
+
+	}
+	
+
+ }
+ 
+?>

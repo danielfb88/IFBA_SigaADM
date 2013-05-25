@@ -98,6 +98,17 @@ class frmPessoaDadosBancarios extends MForm
 		$data->idbanco          = $this->GetFieldValue('selBanco');
 		return $data;
 	}
+	
+	function invert($datainv)
+	{//recebe a data e inverte a data para comparação se data é maior ou menor.
+
+		$ano=substr("$datainv",6, 4);
+		$mes=substr("$datainv",3, 2);
+		$dia=substr("$datainv",0, 2);
+		$datainv="$ano$mes$dia";
+
+		return $datainv;
+	}    	
 
 	public function btnSalvar_click()
 	{
@@ -112,20 +123,27 @@ class frmPessoaDadosBancarios extends MForm
             	$this->AddError("Número do PIS/PASEP inválido!");
             
             }
+            elseif( date('Ymd') < $this->invert(Form::GetFormValue('datapispasep')) )
+			{		
+				$this->AddError('A data informada é superior à data corrente.');
+			}
+			else
+			{
             
-            $agencia = $this->manager->getBusiness('common','agencia');
-            $agencia->getById($objAgencia);
-            if ($agencia->nome == NULL)
-            {
-                $this->AddError("Erro! Agência não existe.");
-            }
-            else
-            {
-                $this->pessoa->SetData($data);
-                @$this->pessoa->save();
-                $this->pessoa->log(OP_UPD,"Atualização dos dados bancários. Id pessoa: ".$this->pessoa->idpessoa." Via rh");
-				$this->AddInfo('Dados atualizados');
-            }
+		        $agencia = $this->manager->getBusiness('common','agencia');
+		        $agencia->getById($objAgencia);
+		        if ($agencia->nome == NULL)
+		        {
+		            $this->AddError("Erro! Agência não existe.");
+		        }
+		        else
+		        {
+		            $this->pessoa->SetData($data);
+		            @$this->pessoa->save();
+		            $this->pessoa->log(OP_UPD,"Atualização dos dados bancários. Id pessoa: ".$this->pessoa->idpessoa." Via rh");
+					$this->AddInfo('Dados atualizados');
+		        }
+		    }
         }
         catch ( Exception $e )
         {	

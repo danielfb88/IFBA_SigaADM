@@ -86,21 +86,25 @@ class frmPreCatalogacao extends MFormAjax
             $url = $this->manager->getActionUrl('biblioteca','ajaxhandler');            
 
             $fields = Array (
-            new TextField('edtISBN','','ISBN',17),
+            new TextField('edtISBN','','ISBN',30),
             new MlookupFieldValue('lkpautor','','Autor',45,'Pesquisar ou inserir novo autor'),
+			//new MLiveLookup('lkpautor','','Entrada Principal',45),
             new HiddenField('idautor'),
             new MHiddenField('ocorrencia',''),
             new TextField('edtTitulo','','Título',60),
             new TextField('edtSubtitulo','','Subtítulo',20),
          
             new TextField('edtCutter','','Cutter',6),
+			new TextField('edtSkip','0','Desprezar caracteres do título',1),
             new MButton('bntGeraCutter','Gerar Cutter',"buscaCutter('$url','lkpautor','edtTitulo','');"),          
-            new TextField('edtEdicao','2 ed.','Edição',10,'Campo opcional'),
+            new TextField('edtEdicao','','Edição',10,'Campo opcional'),
             new MlookupFieldValue('lkpEditora','','Editora',58,''),
+			//new MLiveLookup('lkpEditora','','Editora',58,''),
+			
+            //new MLookupFieldValue('lkpMunicipio','','Local de Publicação',50,'Pesquisar'),
+			new TextField('edtMunicipio','','Local de Publicação',50),
 
-            new MLookupFieldValue('lkpMunicipio','','Local de Publicação',50,'Pesquisar'),
-
-            new TextField('numero','','Ano de Publicação',4,'Somente o ano. Ex.: 2012'),
+            new TextField('numero','','Ano de Publicação',30),
             new TextField('edtDescFisica','','Descrição Física',20),
             new Selection('selGenero','','Genero',$generos),
             new HiddenField('ideditora'),
@@ -112,8 +116,8 @@ class frmPreCatalogacao extends MFormAjax
 
   //          $this->edtISBN->addAttribute('onKeyUp','makeMask(this, \'###-##-###-####-#\');');
   //          $this->edtISBN->addAttribute('onBlur','makeMask(this,  \'###-##-###-####-#\');');
-            $this->edtISBN->addAttribute('maxlength',17);
-            $this->numero->addAttribute('maxlength',4);
+            $this->edtISBN->addAttribute('maxlength',30);
+            $this->numero->addAttribute('maxlength',30);
             $this->edtTitulo->addAttribute("onChange","buscaCutter('$url','lkpautor','edtTitulo');");
             $this->SetFields($fields);
 
@@ -131,16 +135,16 @@ class frmPreCatalogacao extends MFormAjax
             //$this->SetFieldAttr("lkpautor",'event',"onChange","buscaCutter('$url','$aguarde','lkpautor','edtTitulo');");
 
             //Lookup Local de publicacao de obra    //
-            $this->SetFieldAttr('lkpMunicipio','module','common');
-            $this->SetFieldAttr('lkpMunicipio','item','municipio');
-            $this->SetFieldAttr('lkpMunicipio','event','filler');
-            $this->SetFieldAttr('lkpMunicipio','related','idMunicipio,lkpMunicipio');
+            //$this->SetFieldAttr('lkpMunicipio','module','common');
+            //$this->SetFieldAttr('lkpMunicipio','item','municipio');
+            //$this->SetFieldAttr('lkpMunicipio','event','filler');
+            //$this->SetFieldAttr('lkpMunicipio','related','idMunicipio,lkpMunicipio');
 
             // 4 propiedades do lookup
             $this->SetFieldAttr('lkpEditora','module','biblioteca');
             $this->SetFieldAttr('lkpEditora','item','editora');
             $this->SetFieldAttr('lkpEditora','event','filler');
-            $this->SetFieldAttr('lkpEditora','related', 'ideditora,lkpEditora');
+            $this->SetFieldAttr('lkpEditora','related', 'ideditora,lkpEditora,edtMunicipio');
 
 
             $this->idautor->addAttribute("onChange","buscaCutter('$url','lkpautor','edtTitulo');");
@@ -149,8 +153,8 @@ class frmPreCatalogacao extends MFormAjax
             new MRequiredValidator('edtISBN'),
             new MRequiredValidator('edtTitulo'),
             new MRequiredValidator('lkpEditora'),
-            new MRequiredValidator('lkpMunicipio'),
-            new MRequiredValidator('numero'),
+            //new MRequiredValidator('lkpMunicipio'),
+            //new MRequiredValidator('numero'),
             new MRequiredValidator('edtDescFisica'),
             new MRequiredValidator('selGenero','Genero',15),
             new RequiredValidator('selClass','Tipo de classificação',15),
@@ -185,10 +189,12 @@ class frmPreCatalogacao extends MFormAjax
         $data = new FormData();
 
         $data->idautor = $this->GetFieldValue('idautor');
+		$data->autor = $this->GetFieldValue('lkpautor');
         $data->titulo = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtTitulo')));
         $data->subtitulo = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtSubtitulo')));
         $data->edicao = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtEdicao')));
-        $data->localdepublicacao = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('lkpMunicipio')));
+        //$data->localdepublicacao = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('lkpMunicipio')));
+		$data->localdepublicacao = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('edtMunicipio')));
         $data->editora = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('lkpEditora')));
         $data->ideditora = $this->GetFieldValue('ideditora');
         $data->datadepublicacao = trim($this->objSimples->RetirarCaracteresEspeciais($this->GetFieldValue('numero')));
@@ -247,7 +253,8 @@ class frmPreCatalogacao extends MFormAjax
     function btnIncluir_click()
     {
         // Validação dos campos
-        if( strlen(trim(Form::GetFormValue('edtISBN'))) < 13)
+        //if( strlen(trim(Form::GetFormValue('edtISBN'))) < 13)
+		if( strlen(trim(Form::GetFormValue('edtISBN'))) < 10)
         {
             $this->AddError('Informe o campo ISBN corretamente.');
         }
@@ -264,7 +271,8 @@ class frmPreCatalogacao extends MFormAjax
         {
             $this->AddError('Selecione o editora.');
         }
-        elseif( Form::GetFormValue('lkpMunicipio') == '')
+        //elseif( Form::GetFormValue('lkpMunicipio') == '')
+		elseif( Form::GetFormValue('edtMunicipio') == '')
         {
             $this->AddError('Selecione o Local de publicação.');
         }
@@ -272,10 +280,10 @@ class frmPreCatalogacao extends MFormAjax
         {
             $this->AddError('Selecione o Ano de publicação.');
         }
-        elseif( (Form::GetFormValue('numero')!='') and preg_match("/\D/", Form::GetFormValue('numero')) )
+        /*elseif( (Form::GetFormValue('numero')!='') and preg_match("/\D/", Form::GetFormValue('numero')) )
         {
             $this->AddError('O campo Ano deve ser um numerico.');
-        }
+        }*/
         elseif( strlen(trim(Form::GetFormValue('edtDescFisica'))) < 2 )
         {
             $this->AddError('Informe a Descrição Fisica corretamente.');
@@ -402,14 +410,19 @@ class frmPreCatalogacao extends MFormAjax
 
     function TestaISBN()
     {
-
-        $ok = false;
+		if( strlen(trim(Form::GetFormValue('edtISBN'))) < 10)
+			return false;
+		else
+			return true;
+	
+	
+        /*$ok = false;
         if( strlen(trim(Form::GetFormValue('edtISBN'))) == 17)
         {
             $this->edtISBN->addAttribute('onKeyUp','makeMask(this, \'###-##-###-####-#\');');
             $this->edtISBN->addAttribute('onBlur','makeMask(this,  \'###-##-###-####-#\');');
             $this->edtISBN->addAttribute('maxlength',17);
-            $this->numero->addAttribute('maxlength',4);
+            $this->numero->addAttribute('maxlength',30);
             $ok = true;
              
         }
@@ -418,11 +431,11 @@ class frmPreCatalogacao extends MFormAjax
             $this->edtISBN->addAttribute('onKeyUp','makeMask(this, \'##-###-####-#\');');
             $this->edtISBN->addAttribute('onBlur','makeMask(this,  \'##-###-####-#\');');
             $this->edtISBN->addAttribute('maxlength',14);
-            $this->numero->addAttribute('maxlength',4);
+            $this->numero->addAttribute('maxlength',30);
             $ok = true;
 
         }
-        return $ok;
+        return $ok;*/
 
     }
 

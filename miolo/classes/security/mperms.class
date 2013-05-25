@@ -36,7 +36,11 @@ class MPerms extends MService
 
         if ( ! $ok && $deny )
         {
-            $msg   = _M('Access Denied') . "<br><br>\n" . "<center><big><i><font color=red>Transação: $transaction</font></i></big></center><br><br>\n" . _M('Por favor informe o login/password corretos para acessar este conteúdo.') . "<br>";
+			if($this->auth->IsLogged())
+				$msg   = _M('Access Denied') . "<br><br>\n" . "<center><big><i><font color=red>Transação: $transaction</font></i></big></center><br><br>\n" . _M('Por favor informe o login/password corretos para acessar este conteúdo.') . "<br>";
+			else
+				$msg   = _M('Você não está logado, ou sua sessão expirou. Informe o login/senha para continuar acessando o Sistema');
+				
             $users = $this->GetGroupsAllowed($transaction, $access);
             
             if ( $users )

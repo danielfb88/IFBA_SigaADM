@@ -44,7 +44,7 @@ class frmPatrimonioExcluir extends MForm
 			(
 				new MSelection('motivoBaixa','','Motivo da Baixa',$options->result),
 				new MCalendarField('dataMovimento',date('d/m/Y'),'Data',20),
-				new MTextField('numeroProcesso','','N Processo',20),
+				new MTextField('numeroProcesso','','Nº Processo',20),
 			);
 		
         $this->SetFields($fields);
@@ -74,6 +74,12 @@ class frmPatrimonioExcluir extends MForm
 	    if ($instituicao_usuario == $instituicao_patrimonio || $this->perms->checkAccess('ADM_PATRIMONIOADMIN', A_EXECUTE)) {
         /* --Fim-- */
         
+        	if($this->invertData($this->objPatrimonio->dataAquisicao) > $this->invertData($data->dataMovimento))
+        	{
+        		$this->addError('A data da baixa deve ser igual ou posterior a data de aquisição');
+        		return;
+        	}
+        
 			$movimentoPat = $this->manager->GetBusiness('adm','movimentopat');		
 			$movimentoPat->tipoMovimento = '3';
 			$movimentoPat->motivoBaixa = $data->motivoBaixa;
@@ -100,5 +106,17 @@ class frmPatrimonioExcluir extends MForm
 			$this->manager->Information($msg,$this->manager->GetActionURL('adm','main:patrimonio'));
 		}
 	}
+	
+	function invertData($datainv)
+	{//recebe a data
+
+		$ano	= substr("$datainv",6, 4);
+		$mes	= substr("$datainv",3, 2);
+		$dia	= substr("$datainv",0, 2);
+		$datainv = "$ano$mes$dia";
+		
+		return $datainv;
+	}
+	
  }
 ?>
