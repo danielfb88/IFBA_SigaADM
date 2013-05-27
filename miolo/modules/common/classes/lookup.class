@@ -1,5 +1,4 @@
 
-
 <?php
 /* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
  *
@@ -21,7 +20,6 @@
 ?>
 
 <?php
-
 class BusinessCommonLookup
 {
 	function LookupTransacao(&$lookup)
@@ -105,7 +103,7 @@ class BusinessCommonLookup
 		}
 
 
-	$lookup->SetGrid('common',$sql,$columns,'Pesquisa por Agências ou Bancos ',50,0);
+	$lookup->SetGrid('common',$sql,$columns,'Pesquisa por Agências ou Bancos ',15,0);
 	}
 	
 	function LookupCadAgencia(&$lookup)
@@ -195,6 +193,50 @@ class BusinessCommonLookup
         $lookup->SetGrid('common',$sql,$columns,'Pesquisa Agências',15,0);
     }
 
+    // Daniel Bonfim - 23/10/2012
+	function LookupMunicipioBiblioteca(&$lookup)
+	{
+		$filter = $lookup->GetFilterValue('filter');
+		if ( !$filter )
+		{
+			$filter = $lookup->GetFilterValue();
+			if (!$filter)
+			{
+				$filter= '';
+			}
+		}
+		
+		$lookup->AddFilterField( new TextField('filter',$filter,'Municipio',20) );
+		$columns = array(
+			new DataGridColumn('idmunicipio','IdMunicipio','left',true,'10%',false),
+			new DataGridColumn('municipio','Nome','left',true,'50%',true),
+			new DataGridColumn('pais','Pais','center','10%',true),
+			new DataGridColumn('iduf','Estado','left','10%',true)		
+			);
+			
+		$sql = new sql('m.idmunicipio,  INITCAP(m.municipio)  as municipio, m.iduf, p.idpais, p.pais','cm_municipio m,cm_pais p','m.idpais = p.idpais');
+		if ($filter)
+		{
+	        $sql->where .= " and upper(m.municipio) LIKE upper('%$filter%')";
+		}
+         //Para trazer todos sem precisar colocar o simbolo %
+
+        else{
+             $filter = '%';
+
+             // if (! $filterNome )
+                     $sql->where .= " and (m.municipio) LIKE upper('%$filter%')";
+
+            }
+            
+        $sql->SetOrderBy('m.municipio');
+        $lookup->SetGrid('common',$sql,$columns,'Pesquisa Municipio',15,0);
+        
+        
+	}
+
+
+
    
    	function LookupMunicipio(&$lookup)
 	{
@@ -207,13 +249,16 @@ class BusinessCommonLookup
 				$filter= '';
 			}
 		}
+		
+		
 		$lookup->AddFilterField( new TextField('filter',$filter,'Municipio',20) );
 		$columns = array(
 			new DataGridColumn('idmunicipio','IdMunicipio','left',true,'10%',false),
 			new DataGridColumn('municipio','Nome','left',true,'50%',true),
 			new DataGridColumn('iduf','Estado','left','10%',true)		
 			);
-		$sql = new sql('m.idmunicipio,m.municipio,m.iduf,p.pais,p.idpais','cm_municipio m,cm_pais p','m.idpais = p.idpais');
+			
+		$sql = new sql('m.idmunicipio,  INITCAP(m.municipio)  as municipio  ,m.iduf,p.pais,p.idpais','cm_municipio m,cm_pais p','m.idpais = p.idpais');
 		if ($filter)
 		{
 	        $sql->where .= " and upper(m.municipio) LIKE upper('%$filter%')";
@@ -224,14 +269,21 @@ class BusinessCommonLookup
              $filter = '%';
 
              // if (! $filterNome )
-                     $sql->where .= " and upper(m.municipio) LIKE upper('%$filter%')";
+                     $sql->where .= " and (m.municipio) LIKE upper('%$filter%')";
 
             }
-
             
         $sql->SetOrderBy('m.municipio');
         $lookup->SetGrid('common',$sql,$columns,'Pesquisa Municipio',15,0);
+        
+        
 	}
+
+
+
+
+
+
 
    	function LookupMunicipioInternacional(&$lookup)
 	{
@@ -381,12 +433,6 @@ class BusinessCommonLookup
 	function LookupPessoa(&$lookup)
     {   
         $filterNome = $lookup->GetFilterValue('filterNome');
-		$filterNome = str_replace('.', '%', $filterNome);
-		$filterNome = str_replace('  ', ' ', $filterNome);
-		$filterNome = str_replace(' ', '%', $filterNome);
-		$filterNome = str_replace(']', '', $filterNome); //erro digitação
-		$filterNome = str_replace('[', '', $filterNome);		
-		
         if (!$filterNome) {
            $filterNome = $lookup->GetFilterValue();
            if (!$filterNome) {
@@ -395,15 +441,15 @@ class BusinessCommonLookup
         }
         $lookup->AddFilterField( new TextField('filterNome','','Nome', 40));
         $columns = array(
-           new DataGridColumn('idpessoa','Id','right', true, '10%',true),
-           new DataGridColumn('nome','Nome','left', true, '60%',true),
-		   new DataGridColumn('cpf','cpf','left', true, '30%',true)
+           new DataGridColumn('idpessoa','Id','right',
+           true, '10%',true),
+           new DataGridColumn('nome','Nome','left', true, '90%',true)
         );
         $columns[0]->visible = false;
-        $sql = new sql('p.idpessoa, p.nome, p.cpf','cm_pessoa p', 'P.idPessoa > 0');
+        $sql = new sql('p.idpessoa, p.nome','cm_pessoa p');
         if ( $filterNome )
         {
-          $sql->where .= " AND ( upper(p.nome) like
+          $sql->where .= " ( upper(p.nome) like
           upper('{$filterNome}%') )";
         }
         $sql->SetOrderBy('p.nome');  
@@ -477,473 +523,39 @@ class BusinessCommonLookup
         $lookup->SetGrid('common',$sql,$columns,
         'Pesquisa Grupos',15,0);
     }
-	
-	//LookupSetorVisao
 
 	function LookupSetor(&$lookup)
     {
-		
-		$filter = $lookup->GetFilterValue('filter');
-		
-		//var_dump($filter);
-		//exit();
-		
-		if (!$filter) 
+        $filter = $lookup->GetFilterValue('filter');
+        if (!$filter) 
            $filter = $lookup->GetFilterValue();
                 if (!$filter)
                     $filter = '';
-					
-		//var_dump ($filter);
-		
-		$lookup->AddFilterField( new TextField('filter', $filter,'Nome ou Sigla Setor', 20));
+        $lookup->AddFilterField( new TextField('filter',
+        $filter,'Nome ou Sigla Setor', 20));
         $columns = array(
-           //new DataGridColumn('idsetor','Id','right', true, '10%',true),
-           new DataGridColumn('siglasetor','Sigla','left', true, '10%',true),
-           new DataGridColumn('nomesetor','Nome','left', true, '40%',true),
-		   new DataGridColumn('SiglaInstituicao','INST','left', true, '10%',true),
-		   new DataGridColumn('Responsavel','Responsável','left', true, '40%',true),   
-           
+           new DataGridColumn('idsetor','Id','right', true, '10%',true),
+           new DataGridColumn('siglasetor','Sigla','left', true, '20%',true),
+           new DataGridColumn('nomesetor','Nome','left', true, '55%',true),
+           new DataGridColumn('datafim','Data Fim','left', true, '15%',true)
         );
-        $sql = new sql('idSetor, SiglaSetor, SiglaInstituicao, NomeSetor, Responsavel', 'vSetor','','siglasetor');
+        $sql = new sql('idsetor,siglasetor,nomesetor,dataini,datafim,tiposetor,fone,'.
+'fax,centrocusto,obs,localizacao, idsetor as key', 'cm_setor','','siglasetor');
         if ( $filter )
         {
-            $sql->where .= " ( upper(siglasetor) like upper('%{$filter}%') or upper(nomesetor) like upper('%{$filter}%') )";
+            $sql->where .= " ( upper(siglasetor) like upper('{$filter}%') or upper(nomesetor) like upper('%{$filter}%') )";
         }
-		
-		//var_dump ($sql);
-        $lookup->SetGrid('common',$sql,$columns, 'Pesquisa Setores',25,0);		
-		
+
+        else{
+            $filter = '%';
+
+             // if (! $filterNome )
+                     $sql->where .= " ( upper(siglasetor) like upper('{$filter}%') or upper(nomesetor) like upper('%{$filter}%') )";
+
+        }
+        $lookup->SetGrid('common',$sql,$columns,
+        'Pesquisa Setores',15,0);
     }
-	
-	function LookupSetor_Patri(&$lookup)
-    {
-		
-		$filter = $lookup->GetFilterValue('filter');
-		
-		//var_dump('LookupSetor_Patri');
-		//exit();
-		
-		if (!$filter) 
-           $filter = $lookup->GetFilterValue();
-                if (!$filter)
-                    $filter = '';
-					
-		//var_dump ($filter);
-		
-		$lookup->AddFilterField( new TextField('filter', $filter,'Nome ou Sigla Setor', 20));
-        $columns = array(
-           //new DataGridColumn('idsetor','Id','right', true, '10%',true),
-           new DataGridColumn('siglasetor','Sigla','left', true, '7%',true),
-           new DataGridColumn('nomesetor','Nome','left', true, '45%',true),
-		   new DataGridColumn('SiglaInstituicao','INST','left', true, '10%',true),
-		   new DataGridColumn('Responsavel','Responsável','left', true, '30%',true),   
-		   new DataGridColumn('PossuiDependencia','Depend. Físicas','left', true, '8%',true),   		   
-		   
-           
-        );
-        $sql = new sql('idSetor, SiglaSetor, SiglaInstituicao, NomeSetor, Responsavel, PossuiDependencia', 'vSetor','','siglasetor');
-		
-		$sql->where .= " possuipatri = 1 ";
-        if ( $filter )
-        {
-            $sql->where .= " AND ( upper(siglasetor) like upper('%{$filter}%') or upper(nomesetor) like upper('%{$filter}%') )";
-			
-        }		
-		
-		/*echo ('<pre>');
-		var_dump ($sql);		
-		echo ('</pre>');*/
-        $lookup->SetGrid('common',$sql,$columns, 'Pesquisa Setores (apenas os que possuem patrimônio)',25,0);		
-		
-    }
-	
-	function LookupClassificador(&$lookup)
-    {
-		
-		$idclassificador = $lookup->GetFilterValue('filter0'); // Classificador
-		
-		$lookup->AddFilterField( new TextField('filter0', $idclassificador, 'ID Classif', 6));
-		
-		$lookup->AddFilterField( new TextField('classificador', '', 'Classificador', 20));		
-		
-        $columns = array(
-		   
-			new DataGridColumn('idclassificador'    ,'ID do Classificador' ,'left',   true, '20%',true),
-			new DataGridColumn('Classificador'      ,'Classificador'       ,'left',   true, '80%',true),		   
-			
-        );
-		
-        $sql = new sql('idclassificador, Classificador', 
-		               'Vad_ClassificadorTotal',
-					   "Ativo = 'S'"
-					   );//,'','numeroempenho');
-		
-		if (empty($idclassificador)) { $idclassificador = '%'; }
-		
-		$classificador = $lookup->GetFilterValue('classificador');
-		
-		
-		if (!empty($classificador)) { 
-		   $sql->where .= ' AND classificador iLIKE \'%' . $classificador . '%\'';  
-		}
-		else { $sql->where .= ' AND idclassificador iLIKE \'%' . $idclassificador . '%\''; }						
-		
-        $lookup->SetGrid('common',$sql,$columns, 'Pesquisa de Classificadores',30,0);		
-    }	
-
-	
-	function LookupPatrimo_Empenho(&$lookup)
-    {
-	
-		$filter = $lookup->GetFilterValue('filter');
-		
-		//var_dump('LookupEmpenho_Garantia');
-		//exit();
-		
-		
-		if (!$filter) 
-           $filter = $lookup->GetFilterValue();
-                if (!$filter)
-                    $filter = '';
-					
-		//var_dump ($filter);
-		
-		
-		$lookup->AddFilterField( new TextField('filter', $filter,'Número do Empenho', 12));
-        $columns = array(
-		   new MDataGridColumn('NumeroEmpenho'  ,'Empenho'      ,'left'  , true, '50%' ),		   
-		   new MDataGridColumn('NumItens'       ,'Nº Itens'           ,'right' , true, '10%' ),
-		   new MDataGridColumn('NumItensDist'   ,'Nº Itens distintos' ,'right' , true, '10%' ),		   
-		   new MDataGridColumn('ValorTotal'     ,'Valor Total'         ,'right', true, '30%'),
-        );
-        		$sql = new sql("NumeroEmpenho, count(*) AS NumItens, " .
-						' count(distinct Descricao) AS NumItensDist,  SUM(valor) AS ValorTotal',
-		                'ad_ItemPatrimonio', //$tables
-						"Ativo = 'S'", // where
-						'NumeroEmpenho', //ordenacao
-						'NumeroEmpenho ' //group by
-						);
-		
-
-		if ( $filter )
-        {
-            $sql->where .= " AND numeroEmpenho iLIKE '{$filter}'";			
-        }		
-		
-		/*
-		echo ('<pre>');
-		var_dump ($sql);		echo "<font color='red'> Por favor, escolha primeiramente o Empenho!<br></font>";
-		echo ('</pre>');
-		*/
-		
-		
-		
-        $lookup->SetGrid('common',$sql,$columns, 'Pesquisa de empenhos relacionados aos bens patrimoniais',30,0);		
-		
-    }	
-	
-	function LookupPatrimo_EmpenhoDescricao(&$lookup)
-    {
-	
-		$empenho = $lookup->GetFilterValue('filter0'); // Empenho 		  
-		$descricao = $lookup->GetFilterValue('filter1'); // Descrição
-		
-		if (!$empenho) {
-		  { echo "<font color='red'> Por favor, escolha primeiramente o Empenho!<br></font>"; $erro = 1;} 
-		    Exit();
-		  };
-	
-		//$filter = $lookup->GetFilterValue('filter');		
-		//var_dump( $empenho, $descricao);
-		
-		$lookup->AddFilterField( new TextField('filter0', $empenho, 'Empenho', 12));		
-		$lookup->AddFilterField( new TextField('filter1', $descricao, 'Descrição', 100));
-
-
-        $columns = array(
-		   new MDataGridColumn('Descricao'      ,'Descrição'           ,'left'  , false, '70%' ),		   
-		   new MDataGridColumn('NumItens'       ,'Nº Itens'            ,'right' , true,  '10%' ),
-		   new MDataGridColumn('ValorTotal'     ,'Valor Total'         ,'right' , true,  '20%'),
-        );
-        
-		$sql = new sql("Descricao, count(*) AS NumItens, SUM(valor) AS ValorTotal",
-		                'ad_ItemPatrimonio', //$tables
-						"Ativo = 'S'", // where
-						'Descricao', //ordenacao
-						'Descricao' //group by
-						);
-		
-
-		$sql->where .= " AND NumeroEmpenho iLIKE  '{$empenho}'" ;
-		
-		if ( $descricao )
-        {
-            $sql->where .= " AND descricao iLIKE '%$descricao%'";			
-        }			
-		/*
-		echo ('<pre>');
-		var_dump ($sql);		
-		echo ('</pre>');
-		*/
-		
-		
-		
-        $lookup->SetGrid('common',$sql,$columns, 'Pesquisa de empenhos relacionados aos bens patrimoniais',30,0);		
-		
-    }	
-	
-	
-	function LookupGarantia_Empenho(&$lookup)
-    {
-	
-		$filter = $lookup->GetFilterValue('filter');
-		
-		//var_dump('LookupEmpenho_Garantia');
-		//exit();
-		
-		
-		if (!$filter) 
-           $filter = $lookup->GetFilterValue();
-                if (!$filter)
-                    $filter = '';
-					
-		//var_dump ($filter);
-		
-		
-		$lookup->AddFilterField( new TextField('filter', $filter,'Número do Empenho', 12));
-        $columns = array(
-           new DataGridColumn('numeroempenho'      ,'Número do Empenho'   ,'center',   true, '30%',true),
-           new DataGridColumn('NumItensDefinidos'  ,'Nº itens Definidos'  ,'center', true, '10%',true),
-		   new DataGridColumn('NumItensIndefinidos','Nº itens Indefinidos','center', true, '10%',true),          
-		   new DataGridColumn('MinGarantia'        ,'MinGarantia'         ,'center', true, '15%',true),
-		   new DataGridColumn('MaxGarantia'        ,'MaxGarantia'         ,'center', true, '15%',true),
-		   new DataGridColumn('ItensSemGarantia'   ,'Itens sem garantia'  ,'center', true, '20%',true),
-        );
-        $sql = new sql('NumeroEmpenho, NumItensDefinidos, NumItensIndefinidos, MinGarantia, MaxGarantia, ItensSemGarantia', 'Vad_GarantiaPatri_Empenho');//,'','numeroempenho');
-		
-
-		if ( $filter )
-        {
-            $sql->where .= " numeroEmpenho iLIKE '{$filter}'";			
-        }		
-		
-		/*
-		echo ('<pre>');
-		var_dump ($sql);		
-		echo ('</pre>');
-		*/
-		
-		
-		
-        $lookup->SetGrid('common',$sql,$columns, 'Pesquisa de Empenhos com e sem Garantias',30,0);		
-		
-    }	
-
-	function LookupGarantia_EmpenhoDescricao(&$lookup)
-    {
-		/*if (!$aux) 
-		  { $empenho = $lookup->GetFilterValue('filter0'); // Empenho 
-		    $aux = $empenho;
-		  }
-		  else { $empenho = $aux; }
-		*/
-		
-		$empenho = $lookup->GetFilterValue('filter0'); // Empenho 		  
-		$descricao = $lookup->GetFilterValue('filter1'); // Descrição
-		
-		if (!$empenho) {
-		  { echo "<font color='red'> Por favor, escolha primeiramente o Empenho!<br></font>"; $erro = 1;} 
-		    Exit();
-		  };
-	
-		//$filter = $lookup->GetFilterValue('filter');		
-		//var_dump( $empenho, $descricao);
-		
-		$lookup->AddFilterField( new TextField('filter0', $empenho, 'Empenho', 12));		
-		$lookup->AddFilterField( new TextField('filter1', $descricao, 'Descrição', 100));
-		
-        $columns = array(
-		   
-			new DataGridColumn('Descricao'          ,'Descrição'           ,'left',   false, '75%'),
-			new DataGridColumn('NumItensDefinidos'  ,'Nº itens Definidos'  ,'center', false, '5%'),
-			new DataGridColumn('NumItensIndefinidos','Nº itens Indefinidos','center', false, '5%'),
-			new DataGridColumn('MinGarantia'        ,'MinGarantia'         ,'center', false, '5%'),
-			new DataGridColumn('MaxGarantia'        ,'MaxGarantia'         ,'center', false, '5%'),	
-			new DataGridColumn('ItensSemGarantia'   ,'Itens sem garantia'  ,'center', false, '5%'),			
-        );
-        $sql = new sql('MinIdDescricao, Descricao, NumItensDefinidos, NumItensIndefinidos, MinGarantia, MaxGarantia, ItensSemGarantia', 
-		               'Vad_GarantiaPatri_EmpenhoDescricao');//,'','numeroempenho');
-		
-		$sql->where .= " NumeroEmpenho iLIKE  '{$empenho}'" ;
-		
-		if ( $descricao )
-        {
-            $sql->where .= " AND descricao iLIKE '%$descricao%'";			
-        }			
-		
-		/*
-		echo ('<pre>');
-		var_dump ($sql->where);		
-		echo ('</pre>');
-		*/
-		
-        $lookup->SetGrid('common',$sql,$columns, 'Pesquisa de Descrições do empenho com e sem Garantias',30,0);		
-		
-    }	
-	function LookupGarantia_Descricao(&$lookup)
-    {
-		$descricao = $lookup->GetFilterValue('filter0'); // Descrição
-		if (empty($descricao)) { $descricao = 'INFORME A DESCRIÇÃO'; }
-		
-		$TipoGarantia = array(
-	        'TODOS' 		=> 'TODOS',
-		    'UNDEF' 		=> 'Garantia ainda não definida',
-			'COM_GARANTIA' 	=> 'Patrimônios COM garantia',			
-			'SEM_GARANTIA' 	=> 'Patrimônios SEM garantia',			
-        );
-		
-		$lookup->AddFilterField( new TextField('filter0', $descricao, 'Descrição', 80));
-		
-		$lookup->AddFilterField( new MSelection('tipogarantia','COM_GARANTIA','Tipo de garantia', $TipoGarantia) );
-		
-        $columns = array(
-		   
-			new DataGridColumn('Descricao'          ,'Descrição'           ,'left',   false, '68%'),
-			new DataGridColumn('NumItensDefinidos'  ,'Nº itens Definidos'  ,'center', false, '5%'),
-			new DataGridColumn('NumItensIndefinidos','Nº itens Indefinidos','center', false, '5%'),
-			new DataGridColumn('MinGarantia'        ,'MinGarantia'         ,'center', false, '8%'),
-			new DataGridColumn('MaxGarantia'        ,'MaxGarantia'         ,'center', false, '8%'),	
-			new DataGridColumn('ItensSemGarantia'   ,'Itens sem garantia'  ,'center', false, '5%'),			
-        );
-        $sql = new sql('MinIdDescricao, Descricao, NumItensDefinidos, NumItensIndefinidos, MinGarantia, MaxGarantia, ItensSemGarantia', 
-		               'Vad_GarantiaPatri_EmpenhoDescricao', '', 'descricao');
-				
-		
-		if (empty($descricao)) { $descricao = '%'; }
-		
-        $sql->where .= " descricao iLIKE '%$descricao%'";			
-        
-		$tipogarantia = $lookup->GetFilterValue('tipogarantia');
-		
-		if ($tipogarantia == 'UNDEF') { $sql->where .= ' AND NumItensIndefinidos > 0'; }
-		else if ($tipogarantia == 'COM_GARANTIA') { $sql->where .= ' AND NumItensDefinidos > 0'; }
-		else if ($tipogarantia == 'SEM_GARANTIA') { $sql->where .= ' AND ItensSemGarantia > 0'; }		
-		
-		/*
-		echo ('<pre>');
-		var_dump ($sql->where);		
-		echo ('</pre>');
-		*/
-		
-        $lookup->SetGrid('common',$sql,$columns, 'Pesquisa de Descrições com e sem Garantias',30,0);		
-		
-    }	
-	
-	
-	function LookupGarantia_EmpenhoClassificador(&$lookup)
-    {
-		
-		$empenho = $lookup->GetFilterValue('filter0'); // Empenho 		  
-		$idclassificador = $lookup->GetFilterValue('filter1'); // Descrição
-		
-		if (!$empenho) {
-		  { 
-		    echo "<font color='red'> Por favor, escolha primeiramente o Empenho!<br></font>"; $erro = 1;} 
-		    Exit();
-		  };
-	
-		$lookup->AddFilterField( new TextField('filter0', $empenho, 'Empenho', 12));		
-		$lookup->AddFilterField( new TextField('filter1', $idclassificador, 'Classificador', 6));
-		
-        $columns = array(
-		   
-			new DataGridColumn('idclassificador'    ,'ID do Classificador' ,'left',   true, '10%',true),
-			new DataGridColumn('Classificador'      ,'Classificador'       ,'left',   true, '40%',true),		   
-			new DataGridColumn('NumItensDefinidos'  ,'Nº itens Definidos'  ,'center', true, '10%',true),
-			new DataGridColumn('NumItensIndefinidos','Nº itens Indefinidos','center', true, '10%',true), 
-			new DataGridColumn('MinGarantia'        ,'MinGarantia'         ,'center', true, '10%',true),
-			new DataGridColumn('MaxGarantia'        ,'MaxGarantia'         ,'center', true, '10%',true),
-			new DataGridColumn('ItensSemGarantia'   ,'Itens sem garantia'  ,'center', true, '10%',true),			
-        );
-		
-        $sql = new sql('IdClassificador, Classificador, NumItensDefinidos, NumItensIndefinidos, MinGarantia, MaxGarantia, ItensSemGarantia', 
-		               'Vad_GarantiaPatri_EmpenhoClassificador');//,'','numeroempenho');
-		
-		$sql->where .= " NumeroEmpenho iLIKE  '{$empenho}'" ;
-		
-		if ( $idclassificador )
-        {
-            $sql->where .= " AND idclassificador iLIKE '%$idclassificador%'";			
-        }			
-			
-		/*echo ('<pre>');
-		var_dump ($sql->where);		
-		echo ('</pre>');*/	
-		
-        $lookup->SetGrid('common',$sql,$columns, 'Pesquisa de Classificadores do empenho com e sem Garantias',30,0);		
-		
-    }	
-	
-	function LookupGarantia_Classificador(&$lookup)
-    {
-		
-		$idclassificador = $lookup->GetFilterValue('filter0'); // Classificador
-		
-		$TipoGarantia = array(
-	        'TODOS' 		=> 'TODOS',
-		    'UNDEF' 		=> 'Garantia ainda não definida',
-			'COM_GARANTIA' 	=> 'Patrimônios COM garantia',			
-			'SEM_GARANTIA' 	=> 'Patrimônios SEM garantia',			
-        );
-		
-		$lookup->AddFilterField( new TextField('filter0', $idclassificador, 'ID Classif', 6));
-		
-		$lookup->AddFilterField( new TextField('classificador', '', 'Classificador', 20));
-		
-		$lookup->AddFilterField( new MSelection('tipogarantia','TODOS','Tipo de garantia', $TipoGarantia) );	
-		
-		
-        $columns = array(
-		   
-			new DataGridColumn('idclassificador'    ,'ID do Classificador' ,'left',   true, '10%',true),
-			new DataGridColumn('Classificador'      ,'Classificador'       ,'left',   true, '40%',true),		   
-			new DataGridColumn('NumItensDefinidos'  ,'Nº itens Definidos'  ,'center', true, '10%',true),
-			new DataGridColumn('NumItensIndefinidos','Nº itens Indefinidos','center', true, '10%',true), 
-			new DataGridColumn('MinGarantia'        ,'MinGarantia'         ,'center', true, '10%',true),
-			new DataGridColumn('MaxGarantia'        ,'MaxGarantia'         ,'center', true, '10%',true),
-			new DataGridColumn('ItensSemGarantia'   ,'Itens sem garantia'  ,'center', true, '10%',true),			
-        );
-		
-        $sql = new sql('IdClassificador, Classificador, NumItensDefinidos, NumItensIndefinidos, MinGarantia, MaxGarantia, ItensSemGarantia', 
-		               'Vad_GarantiaPatri_Classificador');//,'','numeroempenho');
-		
-		if (empty($idclassificador)) { $idclassificador = '%'; }
-		
-		$classificador = $lookup->GetFilterValue('classificador');
-		
-		//echo ('<pre>');
-			//var_dump ($classificador, $tipogarantia, $sql->where);
-		//echo ('</pre>');		
-		
-		if (!empty($classificador)) { 
-		   $sql->where .= ' classificador iLIKE \'%' . $classificador . '%\'';  
-		}
-		else { $sql->where .= ' idclassificador iLIKE \'%' . $idclassificador . '%\''; }		
-				
-		$tipogarantia = $lookup->GetFilterValue('tipogarantia');
-		
-		if ($tipogarantia == 'UNDEF') { $sql->where .= ' AND NumItensIndefinidos > 0'; }
-		else if ($tipogarantia == 'COM_GARANTIA') { $sql->where .= ' AND NumItensDefinidos > 0'; }
-		else if ($tipogarantia == 'SEM_GARANTIA') { $sql->where .= ' AND ItensSemGarantia > 0'; }
-		
-		//echo ('<pre>');
-			//var_dump ($tipogarantia, $sql->where);
-		//echo ('</pre>');		
-		
-        $lookup->SetGrid('common',$sql,$columns, 'Pesquisa de Classificadores com e sem Garantias',30,0);		
-		
-    }	
-	
 		
 	function LookupTipoOrganograma(&$lookup)
     {
@@ -1092,7 +704,7 @@ class BusinessCommonLookup
         }
         if (!$filter)
         {
-            $filter = '%';
+            $filter = 'A DEFINIR';
         }
         $lookup->addFilterField( new TextField('filter',
         $filter,'Nome ou Sigla Setor', 20));
@@ -1130,5 +742,4 @@ class BusinessCommonLookup
 		$lookup->SetGrid('sigaept', $sql, $columns, 'Pesquisa Instituições', 20, 0);
 	}
 }
-
 ?>

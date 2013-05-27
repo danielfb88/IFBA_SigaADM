@@ -36,6 +36,16 @@ class BusinessCommonMunicipio extends MBusiness
 	{
        parent::__construct('common',$data);
     }
+    
+    // Daniel Bonfim - 23/10/2012
+	function SetData2($data) {
+       $this->idMunicipio = $data->idMunicipio;
+       $this->municipio = strtoupper($data->municipio);
+       $this->idPais = $data->idPais;
+       $this->idUF = $data->idUF;
+       $this->categoriaDiaria = $data->categoriaDiaria;
+       $this->populacao = $data->populacao;
+    }
 
     function SetData($data)
    
@@ -75,6 +85,15 @@ class BusinessCommonMunicipio extends MBusiness
         );
         $ok = $this->Execute($sql->Update($args));
         if ($ok) {$this->Log(OP_UPD,"idmunicipio = $this->idmunicipio");} 
+        return $ok;
+    }
+    
+    // Daniel Bonfim / 20/10/2012
+	function deleteById($id)
+    {
+        $sql = new sql('','cm_municipio', 'idmunicipio = ?');
+        $ok = $this->Execute( $sql->Delete($id) );
+        if ($ok) {$this->Log(OP_DEL,"idmunicipio = $id");} 
         return $ok;
     }
     
@@ -133,6 +152,21 @@ class BusinessCommonMunicipio extends MBusiness
 		$criteria = $this->getCriteria();
 		$criteria->addCriteria('municipio', 'like', strtoupper("'%{$nome}%'"));
 		return $criteria->retrieveAsQuery();
+	}
+	
+	// Daniel Bonfim - 22/10/2012
+	/*
+	 * Verifica se o registro já existe atraves da constraint unique (municipio, idUF)
+	 */
+	function existe() {
+		$criteria = $this->getCriteria();
+		$criteria->addCriteria('municipio', '=', trim(strtoupper("'$this->municipio'")));
+		$criteria->addCriteria('idUF', '=', trim(strtoupper("'$this->idUF'")));
+		
+		if($criteria->retrieveAsQuery()->result[0])
+			return true;
+		else
+			return false;
 	}
 
 }
