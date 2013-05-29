@@ -50,7 +50,7 @@ $tutPanel->AddAction('Direitos',$ui->GetImage($module,'direitos.png'),$module,'m
 $tutPanel->AddAction('Areas de Conhecimento',$ui->GetImage($module,'colecoes.png'),$module,'main:admin:colecao');
 $tutPanel->AddAction('Infrações',$ui->GetImage($module,'infracoes.png'),$module,'main:admin:infracao');
 $tutPanel->AddAction('Situações da Reserva',$ui->GetImage($module,'situacao_da_reserva.png'),$module,'main:admin:reserva');
-$tutPanel->AddAction('Assuntos',$ui->GetImage($module,'assuntos.png'),$module,'main:admin:assunto');
+//$tutPanel->AddAction('Assuntos',$ui->GetImage($module,'assuntos.png'),$module,'main:admin:assunto');
 $tutPanel->AddAction('Autor',$ui->GetImage($module,'autor.png'),$module,'main:admin:autor');
 $tutPanel->AddAction('Etiqueta',$ui->GetImage($module,'etiqueta.png'),$module,'main:admin:etiqueta');
 // Daniel Bonfim
