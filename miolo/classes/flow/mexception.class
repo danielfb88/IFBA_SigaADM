@@ -26,18 +26,8 @@ class EDatabaseException extends EMioloException
 {
     public function __construct($db, $msg)
     {
-	global $MIOLO;
-	parent::__construct();
-        $idUsuario = $MIOLO->GetLogin()->idkey;
-        if ($idUsuario && $idUsuario != 0)
-        {
-            $this->message = "Error in Database: $db; " . $msg;
-        }
-        else
-        {
-            $this->message = _M("Sessão encerrada por timeout.");
-	    $this->goTo = $this->manager->getActionURL($this->manager->GetConf('login.module'),'main');
-	}
+        parent::__construct();
+        $this->message = "Error in Database: $db; " . $msg;
         $this->Log();
     }
 }
@@ -150,6 +140,20 @@ class ELoginException extends EMioloException
 }
 
 class ESecurityException extends EMioloException
+{
+    public function __construct($msg)
+    {
+        parent::__construct();
+        $this->message = $msg;
+    }
+}
+
+/**
+ * Excessão para Marc (Biblioteca)
+ * @author Daniel Bonfim
+ *
+ */
+class EMarcException extends EMioloException
 {
     public function __construct($msg)
     {

@@ -1,50 +1,50 @@
 <?php
 /* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
  *
- * Este arquivo é parte do programa SigaEPT
- *
- * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
- * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
- * na versão 2 da Licença.
- *
- * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
- * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
- * Pública Geral GNU/GPL em português para maiores detalhes.
- *
- * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
- * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
- * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
- * St, Fifth Floor, Boston, MA 02110-1301, USA
- */
+* Este arquivo é parte do programa SigaEPT
+*
+* O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+* termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+* na versão 2 da Licença.
+*
+* Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+* uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+* Pública Geral GNU/GPL em português para maiores detalhes.
+*
+* Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+* junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+* www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+* St, Fifth Floor, Boston, MA 02110-1301, USA
+*/
 ?>
 <?php
 /**
-* @package SIGA
-* @subpackage Biblioteca
-* @author SETEC/MEC
-*/
+ * @package SIGA
+ * @subpackage Biblioteca
+ * @author SETEC/MEC
+ */
 
 class BusinessBibliotecaEtiqueta extends Business
 {
 	public $idEtiqueta;
-    public $tag;
-    public $indicador1;
-    public $indicador2;
-    public $mnemonico;
-    public $descricao;
-    public $observacao;
-    public $temRepeticoes;
-    public $temSubcampos;
-    public $estaAtivo;
-    public $emDemonstracao; 
-    public $obsoleto; 
+	public $tag;
+	public $indicador1;
+	public $indicador2;
+	public $mnemonico;
+	public $descricao;
+	public $observacao;
+	public $temRepeticoes;
+	public $temSubcampos;
+	public $estaAtivo;
+	public $emDemonstracao;
+	public $obsoleto;
 
-    private $allFields;
+	private $allFields;
 
 	function __construct($data = NULL)
 	{
-        parent::__construct('sigaept', $data);
-        $this->allFields = 'idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao,temrepeticoes,temsubcampos,estaativo,emdemonstracao,obsoleto';
+		parent::__construct('sigaept', $data);
+		$this->allFields = 'idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao,temrepeticoes,temsubcampos,estaativo,emdemonstracao,obsoleto';
 	}
 
 	function GetById($idEtiqueta)
@@ -53,7 +53,7 @@ class BusinessBibliotecaEtiqueta extends Business
 		$query = $this->Query($sql,$idEtiqueta);
 		if ( !$query->eof() )
 			$this->SetData($query->GetRowObject());
-        	return $this;
+		return $this;
 	}
 
 	function GetByTag($tag)
@@ -62,7 +62,7 @@ class BusinessBibliotecaEtiqueta extends Business
 		$query = $this->Query($sql,$tag);
 		if ( !$query->eof() )
 			$this->SetData($query->GetRowObject());
-        return $this;
+		return $this;
 	}
 
 	function GetData()
@@ -70,263 +70,267 @@ class BusinessBibliotecaEtiqueta extends Business
 		$data = new FormData();
 		return $data;
 	}
-    
-    function GetByCodigo($idetiqueta)
-    {
-        
-    //    $sql = new //sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao','bt_etiqueta',
-                 //      'idetiqueta = ?');
+
+	function GetByCodigo($idetiqueta)
+	{
+
+		//    $sql = new //sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao','bt_etiqueta',
+		//      'idetiqueta = ?');
 
 
-        $sql = new sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao,temrepeticoes, temsubcampos, estaativo, emlistas, emdemonstracao, obsoleto','bt_etiqueta',
-                       'idetiqueta = ?');
-	
-	
-        $query = $this->Query($sql,$idetiqueta);
+		$sql = new sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao,temrepeticoes, temsubcampos, estaativo, emlistas, emdemonstracao, obsoleto','bt_etiqueta',
+				'idetiqueta = ?');
 
-        if ( !$query->eof() )
-            $this->SetData($query->GetRowObject());
 
-        return $this;
-        
-    }
+		$query = $this->Query($sql,$idetiqueta);
+
+		if ( !$query->eof() )
+			$this->SetData($query->GetRowObject());
+
+		return $this;
+
+	}
 
 	function SetData($data)
 	{
-        $this->idEtiqueta     = $data->idetiqueta;
-        $this->tag            = $data->tag;
-        $this->indicador1     = $data->indicador1;
-        $this->indicador2     = $data->indicador2;
-        $this->mnemonico      = $data->mnemonico;
-        $this->descricao      = $data->descricao;
-        $this->observacao     = $data->observacao;
-        $this->temRepeticoes  = $data->temrepeticoes;
-        $this->temSubcampos   = $data->temsubcampos;
-        $this->emListas        = $data->emlistas;
-        $this->estaAtivo      = $data->estaativo;
-        $this->emDemonstracao = $data->emdemonstracao;
-        $this->obsoleto       = $data->obsoleto;
+		$this->idEtiqueta     = $data->idetiqueta;
+		$this->tag            = $data->tag;
+		$this->indicador1     = $data->indicador1;
+		$this->indicador2     = $data->indicador2;
+		$this->mnemonico      = $data->mnemonico;
+		$this->descricao      = $data->descricao;
+		$this->observacao     = $data->observacao;
+		$this->temRepeticoes  = $data->temrepeticoes;
+		$this->temSubcampos   = $data->temsubcampos;
+		$this->emListas        = $data->emlistas;
+		$this->estaAtivo      = $data->estaativo;
+		$this->emDemonstracao = $data->emdemonstracao;
+		$this->obsoleto       = $data->obsoleto;
 
-    }
+	}
 
 	function GetByFicha($idficha, $idsubficha)
 	{
-	//Código substituído devido a utilização da estrutura decode, que não existe em PostgreSQL
-	//$sql = new sql("e.idetiqueta, e.tag, decode(e.temrepeticoes,1,'[r]','')",'','(cs.idficha = ?) and (cs.idsubficha = ?)', 'e.tag');
-	$sql = new sql("e.idetiqueta, e.tag, (CASE WHEN e.temrepeticoes = '1' THEN e.temrepeticoes = '[r]' ELSE e.temrepeticoes = '' END)",'','(cs.idficha = ?) and (cs.idsubficha = ?)', 'e.tag');
-        $sql->distinct = TRUE; 
-        $sql->setJoin('bt_camposubficha cs','bt_etiqueta e','(cs.idetiqueta = e.idetiqueta)');
+		//Código substituído devido a utilização da estrutura decode, que não existe em PostgreSQL
+		//$sql = new sql("e.idetiqueta, e.tag, decode(e.temrepeticoes,1,'[r]','')",'','(cs.idficha = ?) and (cs.idsubficha = ?)', 'e.tag');
+		$sql = new sql("e.idetiqueta, e.tag, (CASE WHEN e.temrepeticoes = '1' THEN e.temrepeticoes = '[r]' ELSE e.temrepeticoes = '' END)",'','(cs.idficha = ?) and (cs.idsubficha = ?)', 'e.tag');
+		$sql->distinct = TRUE;
+		$sql->setJoin('bt_camposubficha cs','bt_etiqueta e','(cs.idetiqueta = e.idetiqueta)');
 		$query = $this->Query($sql,array($idficha, $idsubficha));
-        return $query; 
+		return $query;
 	}
 
 
 	function GetByFichaCatalogacao($idficha, $idsubficha)
 	{
-       		$sql = new sql("e.idetiqueta, e.tag, (CASE WHEN e.temrepeticoes = '1' THEN e.temrepeticoes = '[r]' ELSE e.temrepeticoes = '' END)",'',"(cs.idficha = ?) and (cs.idsubficha = ?) and ((e.tag<'600') or (e.tag>'690'))", 'e.tag');
-	       	$sql->distinct = TRUE;
-	       	$sql->setJoin('bt_camposubficha cs','bt_etiqueta e','(cs.idetiqueta = e.idetiqueta)');
-	       	$query = $this->Query($sql,array($idficha, $idsubficha));
-      		return $query;
-       }
+		$sql = new sql("e.idetiqueta, e.tag, (CASE WHEN e.temrepeticoes = '1' THEN e.temrepeticoes = '[r]' ELSE e.temrepeticoes = '' END)",'',"(cs.idficha = ?) and (cs.idsubficha = ?) and ((e.tag<'600') or (e.tag>'690'))", 'e.tag');
+		$sql->distinct = TRUE;
+		$sql->setJoin('bt_camposubficha cs','bt_etiqueta e','(cs.idetiqueta = e.idetiqueta)');
+		$query = $this->Query($sql,array($idficha, $idsubficha));
+		return $query;
+	}
 
-//20/05/2009 : Criado para retirar da ficha Campos variaveis a etiqueta 100,700(de autor) e editora= 260)
-       function GetByFichaCatalogacaoVar($idficha, $idsubficha)
-       {
-               
-               $sql = new sql("e.idetiqueta, e.tag, (CASE WHEN e.temrepeticoes = '1' THEN e.temrepeticoes = '[r]' ELSE e.temrepeticoes = '' END)",'',"(cs.idficha = ?) and (cs.idsubficha = ?) and ((e.tag<'600') or (e.tag>'690')) and (e.tag<>'100') and (e.tag<>'700') and (e.tag<>'260')", 'e.tag');
-               $sql->distinct = TRUE;
-               $sql->setJoin('bt_camposubficha cs','bt_etiqueta e','(cs.idetiqueta = e.idetiqueta)');
-               $query = $this->Query($sql,array($idficha, $idsubficha));
-               return $query;
-       }
-	/*
-	function GetIndicadores()
+	//20/05/2009 : Criado para retirar da ficha Campos variaveis a etiqueta 100,700(de autor) e editora= 260)
+	function GetByFichaCatalogacaoVar($idficha, $idsubficha)
 	{
-		$sql = new sql("indicador1, indicador2",'bt_etiqueta','(idetiqueta = ?)');
-		$query = $this->Query($sql, $this->idEtiqueta);
-        $array = array("1" => $query->fields("indicador1"),"2" => $query->fields("indicador2"));
-        return $array; 
+			
+		$sql = new sql("e.idetiqueta, e.tag, (CASE WHEN e.temrepeticoes = '1' THEN e.temrepeticoes = '[r]' ELSE e.temrepeticoes = '' END)",'',"(cs.idficha = ?) and (cs.idsubficha = ?) and ((e.tag<'600') or (e.tag>'690')) and (e.tag<>'100') and (e.tag<>'700') and (e.tag<>'260')", 'e.tag');
+		$sql->distinct = TRUE;
+		$sql->setJoin('bt_camposubficha cs','bt_etiqueta e','(cs.idetiqueta = e.idetiqueta)');
+		$query = $this->Query($sql,array($idficha, $idsubficha));
+		return $query;
+	}
+	/*
+	 function GetIndicadores()
+	 {
+	$sql = new sql("indicador1, indicador2",'bt_etiqueta','(idetiqueta = ?)');
+	$query = $this->Query($sql, $this->idEtiqueta);
+	$array = array("1" => $query->fields("indicador1"),"2" => $query->fields("indicador2"));
+	return $array;
 	}
 	*/
-	
-	
+
+
 	function GetIndicadores($idEtiqueta)
 	{
 		$sql = new sql("indicador1, indicador2","bt_etiqueta",'(idetiqueta = ?)');
 		$query = $this->Query($sql, $idEtiqueta);
-        $array = array("1" => $query->fields("indicador1"),"2" => $query->fields("indicador2"));
-        return $array; 
+		$array = array("1" => $query->fields("indicador1"),"2" => $query->fields("indicador2"));
+		return $array;
 	}
-	
+
 
 	function GetOpcao($posicao)
 	{
 		$sql = new sql('idopcao','bt_posicao','(posicao = ?) and (idetiqueta = ?)');
 		$query = $this->Query($sql,array($posicao, $this->idEtiqueta));
-        return $query->fields("idopcao"); 
+		return $query->fields("idopcao");
 	}
 
 	function Insert($data)
 	{
-		
+
 		$sql = new sql('idgenero,descricao','bt_genero');
 
 		$novo_codigo = $this->_db->GetNewId('seq_bt_genero');
-		
+
 		$values = array($novo_codigo,$data->descricao);
-		
+
 		$ok = $this->Execute($sql->Insert($values));
-    if($ok){$ok = $novo_codigo;}
-    
-	return $ok;
+		if($ok){
+			$ok = $novo_codigo;
+		}
+
+		return $ok;
 
 	}
 
-    
-
-    function InsertEtiqueta($data)
-    {
-		
-		
-        $sql = new sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao,temrepeticoes,estaativo,emlistas,emdemonstracao,obsoleto','bt_etiqueta');
-
-        
-      //  $novo_codigo = $this->_db->GetNewId('seq_bt_genero');
-		
-      $values = array($data->idetiqueta,$data->tag,$data->indicador1,$data->indicador2,$data->mnemonico,$data->descricao,$data->observacao,$data->temrepeticoes,$data->estaativo,$data->emlistas,$data->emdemonstracao,$data->obsoleto);
-		
-      $ok = $this->Execute($sql->Insert($values));
-      if($ok){$ok = $novo_codigo;}
-    
-      return $ok;
-
-      
-
-    }
 
 
-    
+	function InsertEtiqueta($data)
+	{
 
 
-    function UpdateEtiqueta($data)
-    {
+		$sql = new sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao,temrepeticoes,estaativo,emlistas,emdemonstracao,obsoleto','bt_etiqueta');
 
 
-        $sql = new
-                sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao, temrepeticoes,temsubcampos, estaativo, emlistas, emdemonstracao, obsoleto',
-                    'bt_etiqueta','idetiqueta = ?');
+		//  $novo_codigo = $this->_db->GetNewId('seq_bt_genero');
 
+		$values = array($data->idetiqueta,$data->tag,$data->indicador1,$data->indicador2,$data->mnemonico,$data->descricao,$data->observacao,$data->temrepeticoes,$data->estaativo,$data->emlistas,$data->emdemonstracao,$data->obsoleto);
 
-        
-		// values é um array com cada campo do primeiro parametro do sql mais os 
-		// parâmetros do where 
-                $values = array($data->idetiqueta,$data->tag,$data->indicador1, $data->indicador2,$data->mnemonico,$data->descricao,$data->observacao
-                ,$data->temrepeticoes,$data->temsubcampos,$data->estaativo,$data->emlistas,$data->emdemonstracao,$data->obsoleto,$data->idetiqueta);
+		$ok = $this->Execute($sql->Insert($values));
+		if($ok){
+			$ok = $novo_codigo;
+		}
 
-		
-        //var_dump($sql->Update($values));
-
-		//$this->BeginTransaction();
-        $ok = $this->Execute($sql->Update($values));
-		//$this->EndTransaction();
-		
-        return $ok;
-
-    }
-    
-    function Update($data)
-    {
-        // UPDATE  Tabela  bt_material   06/06/2009
-
-   //         $criteria = $data->idetiqueta;
-                        
-   // $sqlm = new sql('conteudo','bt_material ', "idobra in (select m.idobra from bt_obra o, bt_editora a ,bt_material m ,bt_etiqueta e where a.ideditora =o.ideditora  and o.idobra=m.idobra and m.idetiqueta = e.idetiqueta and m.idetiqueta = 70 and  m.subcampo='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a.ideditora = '$criteria')  and  idetiqueta = 70 and subcampo='b' and linha=1 and ocorrencia=1" );
-
-
-   // $Conteudo = ($data->descricao);
-  //  $commands[] = $sqlm->Update(array($Conteudo));
-
-                
-        //   var_dump($Conteudo);
- //   $this->execute($commands);
-
-
-        // UPDATE  tabela Etiqueta
-          //      $sql = new // TRATAR CAMPOS sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao,temrepeticoes,estaativo,emlistas,emdemonstracao,obsoleto',
-      //      '(idetiqueta = ?)');
+		return $ok;
 
 
 
-        $sql = new
-                sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao',
-                    '(idetiqueta = ?)');
+	}
 
 
-        
-		// values é um array com cada campo do primeiro parametro do sql mais os 
-		// parâmetros do where 
-                $values = array($data->idetiqueta,$data->tag,$data->indicador1, $data->indicador2,$data->mnemonico,$data->descricao,$data->observacao
-                               );
-           // $data->temrepeticoes,$data->estaativo,$data->emlistas,$data->emdeomonstracao,$data->obsoleto,$data->ideditora);
-		
+
+
+
+	function UpdateEtiqueta($data)
+	{
+
+
+		$sql = new
+		sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao, temrepeticoes,temsubcampos, estaativo, emlistas, emdemonstracao, obsoleto',
+				'bt_etiqueta','idetiqueta = ?');
+
+
+
+		// values é um array com cada campo do primeiro parametro do sql mais os
+		// parâmetros do where
+		$values = array($data->idetiqueta,$data->tag,$data->indicador1, $data->indicador2,$data->mnemonico,$data->descricao,$data->observacao
+				,$data->temrepeticoes,$data->temsubcampos,$data->estaativo,$data->emlistas,$data->emdemonstracao,$data->obsoleto,$data->idetiqueta);
+
+
 		//var_dump($sql->Update($values));
 
 		//$this->BeginTransaction();
-           $ok = $this->Execute($sql->Update($values));
+		$ok = $this->Execute($sql->Update($values));
 		//$this->EndTransaction();
-		
-        return $ok;
-    }
+
+		return $ok;
+
+	}
+
+	function Update($data)
+	{
+		// UPDATE  Tabela  bt_material   06/06/2009
+
+		//         $criteria = $data->idetiqueta;
+
+		// $sqlm = new sql('conteudo','bt_material ', "idobra in (select m.idobra from bt_obra o, bt_editora a ,bt_material m ,bt_etiqueta e where a.ideditora =o.ideditora  and o.idobra=m.idobra and m.idetiqueta = e.idetiqueta and m.idetiqueta = 70 and  m.subcampo='b' and m.linha=1 and m.ocorrencia=1 and  e.tag=260 and a.ideditora = '$criteria')  and  idetiqueta = 70 and subcampo='b' and linha=1 and ocorrencia=1" );
 
 
-	
+		// $Conteudo = ($data->descricao);
+		//  $commands[] = $sqlm->Update(array($Conteudo));
 
 
-    function Delete($idetiqueta)
-    {
-		
-
-        global $MIOLO,$module;
-        try
-        {
-            
+		//   var_dump($Conteudo);
+		//   $this->execute($commands);
 
 
-
-            //$sql = new sql('','bt_etiqueta','(idetiqueta = ?)  and (tag = ?)');
-
-            $sql = new sql('','bt_etiqueta','(idetiqueta = ?)');
-
-
-
-
-            var_dump($idetiqueta);
-            
+		// UPDATE  tabela Etiqueta
+		//      $sql = new // TRATAR CAMPOS sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao,temrepeticoes,estaativo,emlistas,emdemonstracao,obsoleto',
+		//      '(idetiqueta = ?)');
 
 
 
-            $ok = $this->Execute($sql->Delete($idetiqueta));
+		$sql = new
+		sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao',
+		'(idetiqueta = ?)');
 
 
-            return $ok;
-        }
+
+		// values é um array com cada campo do primeiro parametro do sql mais os
+		// parâmetros do where
+		$values = array($data->idetiqueta,$data->tag,$data->indicador1, $data->indicador2,$data->mnemonico,$data->descricao,$data->observacao
+		);
+		// $data->temrepeticoes,$data->estaativo,$data->emlistas,$data->emdeomonstracao,$data->obsoleto,$data->ideditora);
+
+		//var_dump($sql->Update($values));
+
+		//$this->BeginTransaction();
+		$ok = $this->Execute($sql->Update($values));
+		//$this->EndTransaction();
+
+		return $ok;
+	}
 
 
-        
 
-        catch (Exception $ok)
-        {
-            $MIOLO->Error("Etiqueta não poderá ser excluida. Existem Subcampos cadastradas com essa etiqueta!",$MIOLO->GetActionURL($module, $action,null ));
-        }
-    }
+
+
+	function Delete($idetiqueta)
+	{
+
+
+		global $MIOLO,$module;
+		try
+		{
+
+
+
+
+			//$sql = new sql('','bt_etiqueta','(idetiqueta = ?)  and (tag = ?)');
+
+			$sql = new sql('','bt_etiqueta','(idetiqueta = ?)');
+
+
+
+
+			var_dump($idetiqueta);
+
+
+
+
+			$ok = $this->Execute($sql->Delete($idetiqueta));
+
+
+			return $ok;
+		}
+
+
+
+
+		catch (Exception $ok)
+		{
+			$MIOLO->Error("Etiqueta não poderá ser excluida. Existem Subcampos cadastradas com essa etiqueta!",$MIOLO->GetActionURL($module, $action,null ));
+		}
+	}
 
 
 	function ListGenero()
 	{
 		$sql = new sql('idgenero,descricao','bt_genero','','idgenero');
-        $query = $this->Query($sql);
-        return $query;
+		$query = $this->Query($sql);
+		return $query;
 	}
 
 
@@ -334,81 +338,258 @@ class BusinessBibliotecaEtiqueta extends Business
 	{
 		$sql = new sql('idetiqueta','bt_etiqueta',"tag = '$tag'");
 		$query = $this->Query($sql);
-	        return $query;
+		return $query;
 	}
 
 	function ListAssuntos($idficha, $idsubficha)
 	{
 		$sql = new sql('distinct(e.tag)','bt_etiqueta e, bt_camposubficha cs',"e.tag>'599' and e.tag<'700' and (cs.idficha = $idficha) and (cs.idsubficha = $idsubficha) and (cs.idetiqueta = e.idetiqueta)");
 
-        $query = $this->Query($sql);
-        return $query;
+		$query = $this->Query($sql);
+		return $query;
 	}
-    
-    function ListAutor($idficha, $idsubficha)
-    {
-        $sql = new sql('distinct(e.tag)','bt_etiqueta e, bt_camposubficha cs',"((e.tag > '099' AND e.tag < '200' )or(e.tag > '699' AND e.tag < '800')) and (cs.idficha = $idficha) and (cs.idsubficha = $idsubficha) and (cs.idetiqueta = e.idetiqueta) ORDER BY e.tag");
-        $query = $this->Query($sql);
-        return $query->result;
-    }
+
+	function ListAutor($idficha, $idsubficha)
+	{
+		$sql = new sql('distinct(e.tag)','bt_etiqueta e, bt_camposubficha cs',"((e.tag > '099' AND e.tag < '200' )or(e.tag > '699' AND e.tag < '800')) and (cs.idficha = $idficha) and (cs.idsubficha = $idsubficha) and (cs.idetiqueta = e.idetiqueta) ORDER BY e.tag");
+		$query = $this->Query($sql);
+		return $query->result;
+	}
 
 	function ListIdAssuntos()
 	{
 		$sql = new sql('idetiqueta','bt_etiqueta',"tag>'599' and tag<'700'");
-	        $query = $this->Query($sql);
-        	return $query;
+		$query = $this->Query($sql);
+		return $query;
 	}
 
 	function GetTagById($idEtiqueta)
 	{
 		$sql = new sql('tag','bt_etiqueta',"idetiqueta = $idEtiqueta");
 		$query = $this->Query($sql)->result[0][0];
-	        return $query;
+		return $query;
 	}
-    
-    
+
+	/**
+	 * @author Daniel Bonfim
+	 * @since 14-12-2012
+	 *
+	 * Retorna o Id pela Tag
+	 *
+	 * @param int $tag
+	 * @return string
+	 */
+	function getIdByTag2($tag) {
+		$sql = new sql('idetiqueta','bt_etiqueta',"tag = '$tag'");
+		$query = $this->Query($sql)->result[0][0];
+		return $query;
+	}
 
 	function GetOpcaoAssunto($posicao, $idEtiqueta)
 	{
 		$sql = new sql('idopcao','bt_posicao','(posicao = ?) and (idetiqueta = ?)');
 		$query = $this->Query($sql,array($posicao, $idEtiqueta));
-        return $query->fields("idopcao"); 
+		return $query->fields("idopcao");
 	}
-    
-    function GetOpcaoAutor($posicao, $idEtiqueta)
-    {
-        $sql = new sql('idopcao','bt_posicao','(posicao = ?) and (idetiqueta = ?)');
-        $query = $this->Query($sql,array($posicao, $idEtiqueta));
-        return $query->fields("idopcao"); 
-    }
+
+	function GetOpcaoAutor($posicao, $idEtiqueta)
+	{
+		$sql = new sql('idopcao','bt_posicao','(posicao = ?) and (idetiqueta = ?)');
+		$query = $this->Query($sql,array($posicao, $idEtiqueta));
+		return $query->fields("idopcao");
+	}
 
 
-    function ListEtiqueta()
-    {
-        $sql = new sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao','bt_etiqueta','','idetiqueta');
+	function ListEtiqueta()
+	{
+		$sql = new sql('idetiqueta,tag,indicador1,indicador2,mnemonico,descricao,observacao','bt_etiqueta','','idetiqueta');
 
 
-        $query = $this->Query($sql);
-        return $query;
-    }
-    
-    function GetByIdAutor($idautor){
-    	$sql = new sql('b.tag','bt_autor a, bt_etiqueta b',"a.idautor = $idautor AND a.idetiqueta =  b.idetiqueta ");
-        $query = $this->Query($sql,$idAutor);
-        return $query->result[0][0];
-    }
+		$query = $this->Query($sql);
+		return $query;
+	}
 
-    /**
-     * 
-     * Metodo responsavel por gerar o cutter 
-     * @param $string String que sera utilizada para gerar o cutter.
-     */
-    function geraCutter($string,$titulo = '', $skip = '#')
-    {
-		global $MIOLO;
-	
-	    $objCutter = $MIOLO->GetBusiness('biblioteca','cutter');
-	    return $objCutter->getCutter($string,$titulo,$skip);
-    }  
+	function GetByIdAutor($idautor){
+		$sql = new sql('b.tag','bt_autor a, bt_etiqueta b',"a.idautor = $idautor AND a.idetiqueta =  b.idetiqueta ");
+		$query = $this->Query($sql,$idAutor);
+		return $query->result[0][0];
+	}
+
+	/**
+	 *
+	 * Metodo responsavel por gerar o cutter
+	 * @param $string String que sera utilizada para gerar o cutter.
+	 */
+	function geraCutter($autor,$titulo,$idObra)
+	{
+		if (empty($autor) and empty($titulo))
+		{
+			return '';
+		}
+		if (!empty($titulo))
+		{
+			if ($idObra != null)
+			{
+				$query = $this->getNumeroDesprezados($idObra);
+				if (!$query->eof())
+				{
+					$data = $query->GetRowObject();
+					$tamanho = $data->conteudo;
+					if (is_numeric($tamanho) and $tamanho > 0 and $tamanho < strlen($titulo))
+					{
+						$titulo = substr($titulo,$tamanho,strlen($titulo));
+					}
+				}
+			}
+			else
+			{
+				$titulo = $this->retornaTitulo($titulo);
+			}
+		}
+
+		if (empty($autor))
+		{
+			$string = $titulo;
+		}
+		else
+		{
+			$string = $autor;
+		}
+
+		if(!empty($string))
+		{
+			$string = strtoupper($string);
+			$achou_cutter = false;
+			$i = 0;
+			$abreviacao = "";
+			$codigo = 0;
+			while ($i <= strlen($string))
+			{
+				$abreviacao = $abreviacao.$string[$i];
+				$sql = new sql('codigo','bt_cutter',"upper(abreviacao) like '".$abreviacao."%' order by abreviacao limit 1");
+				$query = $this->Query($sql);
+
+				if ($query->eof)
+				{
+					break;
+				}
+				else
+				{
+					$data = $query->GetRowObject();
+					$codigo = $data->codigo;
+				}
+				$i++;
+			}
+
+			if($codigo != 0)
+			{
+				return $string[0].$codigo.strtolower($titulo[0]);
+			}
+			else
+			{
+				return '';
+			}
+		}
+		else
+		{
+			return '';
+		}
+	}
+
+	function retornaTitulo($titulo)
+	{
+		if (!empty($titulo))
+		{
+
+			$artigos = Array('O','Ó','A','À','Á','OS','AS','UM','UMA','UNS','UMAS');
+			$palavra = explode(" ",$titulo);
+			if (!array_search(strtoupper($palavra[0]), $artigos))
+			{
+				$titulo = $palavra[0];
+			}
+			else
+			{
+				if (count($palavra)>1)
+				{
+					$titulo = $palavra[1];
+				}
+				else
+				{
+					return '';
+				}
+			}
+			if (is_numeric($titulo))
+			{
+				//pegar valor por extenso
+				$titulo = ltrim($this->extenso($titulo.",00"));
+			}
+
+			return $titulo;
+		}
+		else
+		{
+			return '';
+		}
+	}
+
+	function extenso($valor=0,$tipo=0,$caixa="alta") {
+		$valor = strval($valor);
+		$valor = str_replace(",",".",$valor);
+
+		if($tipo==1){
+			$singular = array("centavo", "real", "mil", "milhão", "bilhão", "trilhão", "quatrilhão");
+			$plural = array("centavos", "reais", "mil", "milhões", "bilhões", "trilhões","quatrilhões");
+		}else{
+			$pos   = strpos($valor,".");
+			$valor = substr($valor,0,$pos);
+			$singular = array("", "", "mil", "milhão", "bilhão", "trilhão", "quatrilhão");
+			$plural = array("", "", "mil", "milhões", "bilhões", "trilhões","quatrilhões");
+		}
+		$c = array("", "cem", "duzentos", "trezentos", "quatrocentos","quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos");
+		$d = array("", "dez", "vinte", "trinta", "quarenta", "cinquenta","sessenta", "setenta", "oitenta", "noventa");
+		$d10 = array("dez", "onze", "doze", "treze", "quatorze", "quinze","dezesseis", "dezesete", "dezoito", "dezenove");
+		$u = array("", "um", "dois", "três", "quatro", "cinco", "seis","sete", "oito", "nove");
+		$z=0;
+		$valor = number_format($valor, 2, ".", ".");
+
+		$inteiro = explode(".", $valor);
+
+		for($i=0;$i<count($inteiro);$i++)
+			for($ii=strlen($inteiro[$i]);$ii<3;$ii++)
+			$inteiro[$i] = "0".$inteiro[$i];
+		$fim = count($inteiro) - ($inteiro[count($inteiro)-1] > 0 ? 1 : 2);
+		for ($i=0;$i<count($inteiro);$i++) {
+			$valor = $inteiro[$i];
+			$rc = (($valor > 100) && ($valor < 200)) ? "cento" : $c[$valor[0]];
+			$rd = ($valor[1] < 2) ? "" : $d[$valor[1]];
+			$ru = ($valor > 0) ? (($valor[1] == 1) ? $d10[$valor[2]] : $u[$valor[2]]) : "";
+			$r = $rc.(($rc && ($rd || $ru)) ? " e " : "").$rd.(($rd && $ru) ? " e " : "").$ru;
+			$t = count($inteiro)-1-$i;
+			$r .= $r ? " ".($valor > 1 ? $plural[$t] : $singular[$t]) : "";
+			if ($valor == "000")$z++; elseif ($z > 0) $z--;
+			if (($t==1) && ($z>0) && ($inteiro[0] > 0)) $r .= (($z>1) ? " de " : "").$plural[$t];
+			if ($r) $rt = $rt . ((($i > 0) && ($i <= $fim) &&($inteiro[0] > 0) && ($z < 1)) ? ( ($i < $fim) ? " e " : " e ") : " ") . $r;
+		}
+			
+		if($caixa=="alta"){
+			$rt = strtoupper($rt);
+	    }
+
+	    $maiusculas = array("Á","À","Â","Ã","É","Ê","Í","Ó","Ô","Õ","Ú","Û");
+	    $minusculas = array("á","à","â","ã","é","ê","í","ó","ô","õ","ú","û");
+	    for($i=0;$i<count($maiusculas);$i++){
+            $rt = ereg_replace($minusculas[$i],$maiusculas[$i],$rt);
+		}
+
+		return $rt;
+	}
+
+	function getNumeroDesprezados($idObra)
+	{
+		$sql = new sql('conteudo','bt_indicadores '," idobra =  $idObra AND indicador = '2' AND idetiqueta = 62 ");
+		$query = $this->Query($sql);
+		return $query;
+	}
+
 }
 ?>
