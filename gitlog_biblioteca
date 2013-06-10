@@ -1,0 +1,1498 @@
+commit ee7a33128d7ce4b8347449ad081ce2f1792a94e5
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Thu May 9 15:34:18 2013 -0300
+
+    Bug #32613 - Corrigir erro após criar Usuario. // Status: Concluído
+
+ classes/usuario.class  | 1270 ++++++++++++++++++++++++------------------------
+ forms/frmUsuario.class |  818 +++++++++++++++----------------
+ 2 files changed, 1045 insertions(+), 1043 deletions(-)
+
+commit 324aba385a0e127bc998400c117038accdb910bd
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Thu Apr 25 22:40:31 2013 -0300
+
+    Update: Relatório de Emprestimos v2.0 / Transformação dos 2 Relatrórios de Empréstimos Regulares e Irregulares em apenas 1
+
+ forms/frmRelatorioEmprestimos.class                |   77 ++++++++
+ handlers/circulacao/relatorio.inc                  |    3 +-
+ handlers/circulacao/relatorio/emprestimos.inc      |   40 ++++
+ .../relatorio/emprestimosIrregulares.inc           |   36 ----
+ .../circulacao/relatorio/emprestimosRegulares.inc  |   37 ----
+ reports/emprestimos.jasper                         |  Bin 0 -> 27694 bytes
+ reports/emprestimos.jrxml                          |  197 +++++++++++++++++++
+ reports/emprestimos.pdf                            |  Bin 0 -> 2459 bytes
+ reports/emprestimosIrregulares.jasper              |  Bin 28181 -> 0 bytes
+ reports/emprestimosIrregulares.jrxml               |  203 --------------------
+ reports/emprestimosIrregulares.pdf                 |  Bin 2152 -> 0 bytes
+ 11 files changed, 315 insertions(+), 278 deletions(-)
+
+commit b1dee291c09446c06a3846f520e20ce0516b2bb1
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Wed Apr 10 07:28:52 2013 -0300
+
+    Novo: Relatório de Empréstimos Regulares e Irregulares v1.0
+
+ handlers/circulacao/relatorio.inc                  |    5 +
+ .../relatorio/emprestimosIrregulares.inc           |   36 ++++
+ .../circulacao/relatorio/emprestimosRegulares.inc  |   37 ++++
+ reports/emprestimosIrregulares.jasper              |  Bin 0 -> 28181 bytes
+ reports/emprestimosIrregulares.jrxml               |  203 ++++++++++++++++++++
+ reports/emprestimosIrregulares.pdf                 |  Bin 0 -> 2152 bytes
+ reports/emprestimosRegulares.jasper                |  Bin 0 -> 28182 bytes
+ reports/emprestimosRegulares.jrxml                 |  203 ++++++++++++++++++++
+ reports/emprestimosRegulares.pdf                   |  Bin 0 -> 2215 bytes
+ 9 files changed, 484 insertions(+)
+
+commit bde41958dc4afd42f4d132f6f6528bc00840094c
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Wed Apr 10 01:16:51 2013 -0300
+
+    Update: Emprestimo v1.0.4 / Query de pesquisa do grid da tela principal de consulta de emprestimos
+
+ classes/emprestimo.class |    1 -
+ 1 file changed, 1 deletion(-)
+
+commit 53bf54cdb25dd39c5e791a7adbbf7f2f9594d8bd
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Thu Apr 4 01:42:39 2013 -0300
+
+    Update: Emprestimo v1.0.2 / Descrição: Alterado mensagem de erro referente a ausência de política de circulação do grupo do usuário equivalente a política de circulação do exemplar
+
+ forms/frmEmprestimo.class |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 9a8f67fbb8ad8bfa82e31cbf6ad4f819761384c5
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Tue Apr 2 01:16:26 2013 -0300
+
+    Funcionalidade: Devolução Múltipla v1.0
+
+ classes/devolucao.class             |   35 ++-
+ classes/emprestimo.class            |   60 +++++-
+ classes/exemplar.class              |   21 ++
+ forms/frmDevolucao.class            |  401 +++++++++++++----------------------
+ reports/Ticket1_Devolucao_UI.jasper |  Bin 34789 -> 33841 bytes
+ reports/Ticket1_Devolucao_UI.jrxml  |  192 +++++++++--------
+ reports/Ticket1_Devolucao_UI.pdf    |  Bin 0 -> 2858 bytes
+ 7 files changed, 339 insertions(+), 370 deletions(-)
+
+commit 9bce437a134f4c2b0d7e390011c0fa30e203b1e9
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Sun Mar 31 04:06:46 2013 -0300
+
+    Update: Correção em Empréstimo v1.0.1
+
+ classes/exemplar.class    |   37 +++++++++++++++++++------------------
+ forms/frmEmprestimo.class |    2 +-
+ 2 files changed, 20 insertions(+), 19 deletions(-)
+
+commit 980159ba4f5b2dcf40a082642cef0ef551c725ad
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Sat Mar 23 05:32:32 2013 -0300
+
+    Update: Renovação v1.0.2
+
+ classes/emprestimo.class   |   23 ++------
+ classes/exemplar.class     |   18 +++++--
+ forms/frmEmprUsuario.class |  124 +++++++++++++++++++++++++++++---------------
+ 3 files changed, 101 insertions(+), 64 deletions(-)
+
+commit dd1c66f512781be7794a018bb62a15da9ba250c3
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Sat Mar 23 04:27:13 2013 -0300
+
+    Update: Renovação v1.0.1 / Descrição: Correção na Query do Grid da tela de 'Renovar Empréstimos'; Correcao na Query do Grid de 'Consultar Empréstimos'
+
+ classes/emprestimo.class    |   39 +++++++++++++-
+ forms/frmEmprUsuario.class  |  122 ++++++++++++++++++++++---------------------
+ forms/frmRenovUsuario.class |    8 +--
+ 3 files changed, 106 insertions(+), 63 deletions(-)
+
+commit 72977211017ebaafb5faf9641b1c20894a6eeeac
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Sat Mar 23 03:02:51 2013 -0300
+
+    Update: Reserva v1.2 / Descricao: Adicionado opção 'Cancelar' na tela de Consulta de Reservas; Adicionado informação ao campo 'Validade da Reserva' no grid da tela de Consulta de Reservas sobre se o empréstimo já EXPIROU
+
+ classes/emprestimo.class  |    9 ++++
+ classes/exemplar.class    |   17 +++++++-
+ classes/reserva.class     |   35 +++++++++++++--
+ forms/frmEmprestimo.class |    4 +-
+ forms/frmResUsuario.class |  104 +++++++++++++++++++++------------------------
+ 5 files changed, 107 insertions(+), 62 deletions(-)
+
+commit 93530a27974a6c24481acbfadc0fffd62ef0a125
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Wed Mar 20 04:21:17 2013 -0300
+
+    Update: Reserva v1.1.0 / Descricao: Tela 'Consultar reservas' Concluída. Adicionado campo no grid que informa a validade da reserva.
+
+ classes/reserva.class          |   36 ++++++
+ forms/frmEmprestimo.class      |    2 +-
+ forms/frmPesquisaSimples.class |    7 -
+ forms/frmResUsuario.class      |  278 +++++++++++++++++++++++++++++-----------
+ 4 files changed, 242 insertions(+), 81 deletions(-)
+
+commit e0aafd14ad243e97b98d36924dfae61e25cc2537
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Mon Mar 18 23:51:29 2013 -0300
+
+    Update: Reserva v1.0.1
+
+ classes/emprestimo.class       |   13 +++++++
+ classes/exemplar.class         |    6 +++-
+ classes/reserva.class          |   14 ++++++++
+ forms/frmEmprestimo.class      |   76 ++++++++++++++++++++++++----------------
+ forms/frmPesquisaSimples.class |    2 +-
+ 5 files changed, 78 insertions(+), 33 deletions(-)
+
+commit aa9bb25c3a11d24688fda331851f86bf23158be0
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Mon Mar 18 01:22:20 2013 -0300
+
+    Funcionalidade: Reserva v1.0
+
+ classes/devolucao.class        |   34 ++-
+ classes/direito.class          |  124 ++++++-----
+ classes/emprestimo.class       |  171 ++++++++++----
+ classes/exemplar.class         |  134 ++++++++++-
+ classes/operacao.class         |   13 ++
+ classes/reserva.class          |   15 ++
+ forms/frmDevolucao.class       |    6 +-
+ forms/frmEmprestimo.class      |  483 +++++++++++++++++++++++-----------------
+ forms/frmPesquisaSimples.class |  100 ++++++---
+ 9 files changed, 724 insertions(+), 356 deletions(-)
+
+commit 74e2621b5a91868929731893f8a1a0898cdee367
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Wed Mar 6 22:00:25 2013 -0300
+
+    Corrigido bug em Relatorio de Emprestimo
+
+ reports/Ticket1_Emprestimo_UI.jasper |  Bin 34909 -> 34772 bytes
+ reports/Ticket1_Emprestimo_UI.jrxml  |    5 ++---
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+commit 7b13bb68fba111eaa775e851c2069ffff587602e
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Wed Mar 6 21:50:40 2013 -0300
+
+    Correcao para bug que impedia que usuarios diferentes efetuassem o emprestimo de exemplares da mesma obra
+
+ classes/emprestimo.class  |   27 +-
+ forms/frmEmprestimo.class |  832 ++++++++++++++++++++++-----------------------
+ 2 files changed, 440 insertions(+), 419 deletions(-)
+
+commit a5f790c8635f0a131bdaeb8e9dbfaa8a1b2f6f3a
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Wed Mar 6 21:47:50 2013 -0300
+
+    Correcao do bug de 'Exemplar nao encontrado ao efetuar uma devolucao'
+
+ classes/devolucao.class |   58 +++++++++++++++++------------------------------
+ 1 file changed, 21 insertions(+), 37 deletions(-)
+
+commit 679ec7080740baedeadc4887257fd6cb00221943
+Author: Daniel Bonfim <daniel.fb88@gmail.com>
+Date:   Mon Mar 4 15:31:05 2013 -0300
+
+    primeiro commit
+
+ .gitignore                                         |    7 +
+ classes/0607_obra.class                            | 1611 +++
+ classes/PDFBarcode.class                           |  267 +
+ classes/aluno.class                                | 1297 ++
+ classes/ant_etiqueta.class                         |  403 +
+ classes/ant_etiquetaLombada.class                  |  162 +
+ classes/artigo.class                               |  894 ++
+ classes/assunto.class                              |  423 +
+ classes/assunto_Saulo.class                        |  417 +
+ classes/autor.class                                |  851 ++
+ classes/autorSaulo.class                           |  609 +
+ classes/autor_VOLTAR.class                         |  602 +
+ classes/autor_com marc atualizado.class            |  659 +
+ classes/autor_funcionando.class                    |  641 +
+ classes/code128.class                              |  237 +
+ classes/code39.class                               |  191 +
+ classes/codigobarra.class                          |  119 +
+ classes/colecao.class                              |  128 +
+ classes/cutter.class                               |12442 +++++++++++++++++
+ classes/devolucao.class                            |  400 +
+ classes/direito.class                              |  154 +
+ classes/editora.class                              |  266 +
+ classes/emprestimo.class                           | 2240 ++++
+ classes/estado.class                               |  244 +
+ classes/etiqueta.class                             |  595 +
+ classes/etiquetaLombada.class                      |  199 +
+ classes/etiquetaLombada22.class                    |  194 +
+ classes/etiquetaPronta.class                       |  129 +
+ classes/etiqueta_voltar.class                      |  403 +
+ classes/exemplar.class                             | 1144 ++
+ classes/exemplarperiodico.class                    |  806 ++
+ classes/ficha.class                                |  315 +
+ classes/ficha2.class                               |  301 +
+ classes/ficha_voltar.class                         |  301 +
+ classes/genero.class                               |  165 +
+ classes/grupo.class                                |  118 +
+ classes/historico.class                            |   73 +
+ classes/indicadores.class                          |   65 +
+ classes/infracao.class                             |  119 +
+ classes/int25.class                                |  105 +
+ classes/livroImportacao.class                      | 1068 ++
+ classes/log.class                                  |  177 +
+ classes/lookup.class                               | 1515 +++
+ classes/map/assunto.xml                            |   40 +
+ classes/map/emprestimo.xml                         |   57 +
+ classes/map/exemplar.xml                           |   64 +
+ classes/map/indicadores.xml                        |   40 +
+ classes/map/log.xml                                |   35 +
+ classes/map/material.xml                           |   44 +
+ classes/map/multa.xml                              |   50 +
+ classes/map/operacao.xml                           |   20 +
+ classes/material.class                             |   67 +
+ classes/multa.class                                |  423 +
+ classes/municipio.class                            |  152 +
+ classes/ob.class                                   | 1371 ++
+ classes/obra _ant.class                            | 2192 +++
+ classes/obra.class                                 | 2437 ++++
+ classes/obra2.class                                | 1529 +++
+ classes/obra_Saulo.class                           | 2117 +++
+ classes/operacao.class                             |  159 +
+ classes/periodico.class                            |  825 ++
+ classes/permitemulta.class                         |   96 +
+ classes/pesquisa.class                             |  314 +
+ classes/pesquisaindice.class                       |  157 +
+ classes/pesquisamulticampo.class                   |  202 +
+ classes/pesquisanumerica.class                     |  141 +
+ classes/pesquisasimples.class                      |  608 +
+ classes/pesquisatermo.class                        |   51 +
+ classes/pesquisaunidade.class                      |   81 +
+ classes/politica.class                             |  187 +
+ classes/precadastroccn.class                       |  107 +
+ classes/precatalogacao.class                       |  154 +
+ classes/regracirculacao.class                      |  125 +
+ classes/reserva.class                              |  424 +
+ classes/reservar.class                             |  314 +
+ classes/situacaoreserva.class                      |  146 +
+ classes/subcampo.class                             |  211 +
+ classes/transicao.class                            |  124 +
+ classes/unidade.class                              |  152 +
+ classes/unidade_anterior.class                     |  152 +
+ classes/usuario.class                              |  704 +
+ classes/usuarioexterno.class                       |  160 +
+ classes/usuarioinfracoes.class                     |  153 +
+ classes/usuarioobservacoes.class                   |  145 +
+ classes/usuariovalidacao.class                     |  202 +
+ etc/module.conf                                    |    6 +
+ etc/pesquisa.xml                                   |  229 +
+ etc/pesquisaPeriodicoArtigo.xml                    |   56 +
+ etc/pesquisa_bibliografica.xml                     |  269 +
+ files/PRIMEIRA_VERSAO_REVISADA.rar                 |  Bin 0 -> 8763917 bytes
+ files/exportacao.txt                               |    1 +
+ files/marc_11.txt                                  |   71 +
+ files/marc_17.txt                                  |    1 +
+ files/marc_23.txt                                  |    1 +
+ files/marc_26.txt                                  |  Bin 0 -> 15827 bytes
+ files/marc_28.txt                                  |   59 +
+ files/marc_29.txt                                  |  152 +
+ files/marc_30.txt                                  |   59 +
+ files/marc_34.txt                                  |    2 +
+ files/marc_37.txt                                  |    1 +
+ files/marc_40.txt                                  |    1 +
+ files/marc_41.txt                                  |    1 +
+ files/marc_43.txt                                  |    1 +
+ files/marc_44.txt                                  |    2 +
+ files/marc_61.txt                                  |    2 +
+ files/marc_62.txt                                  |    1 +
+ files/marc_65.txt                                  |    1 +
+ files/marc_66.txt                                  |    1 +
+ files/marc_68.txt                                  |    1 +
+ files/marc_85.txt                                  |   18 +
+ files/marc_86.txt                                  |    2 +
+ files/marc_92.txt                                  |   18 +
+ files/marc_96.txt                                  |    1 +
+ files/marc_97.txt                                  |    1 +
+ files/marc_99.txt                                  |    1 +
+ files/segunda_VERSAO_REVISADA.rar                  |  Bin 0 -> 4409398 bytes
+ forms/.goutputstream-UPJ7BW                        |  505 +
+ forms/artigos/frmCatalogacaoArtigo.class           |  630 +
+ forms/catalogacao/frmCatalogacaoAlteracao.class    |  361 +
+ forms/catalogacao/frmCatalogacaoAlteracao2.class   |  352 +
+ forms/catalogacao/frmCatalogacaoFicha.class        |   64 +
+ forms/catalogacao/frmCatalogacaoFicha006.class     |  117 +
+ forms/catalogacao/frmCatalogacaoFicha007.class     |  134 +
+ forms/catalogacao/frmCatalogacaoFicha008.class     |  176 +
+ forms/catalogacao/frmCatalogacaoFichaLeader.class  |  117 +
+ forms/catalogacao/frmCatalogacaoFichaObra.class    |  416 +
+ forms/catalogacao/frmCatalogacaoFichaVar.class     |  429 +
+ .../catalogacao/frmCatalogacaoFichaVar_volta.class |  419 +
+ forms/catalogacao/frmCatalogacaoFichas.class       |   85 +
+ forms/catalogacao/frmCatalogacaoObra.class         |   94 +
+ .../pergamum/frmCatalogacaoFichaMarc.class         |  325 +
+ .../pergamum/frmCatalogacaoFichaPlanilha.class     |  130 +
+ .../pergamum/frmCatalogacaoFichaPrincipal.class    |  131 +
+ .../pergamum/frmCatalogacaoPergamum.class          |   58 +
+ .../frmCatalogacaoAlteracao.class                  |  358 +
+ .../frmCatalogacaoAlteracao2.class                 |  351 +
+ forms/catalogacaodireta/frmCatalogacaoDireta.class |  745 +
+ .../frmCatalogacaoDireta_funcionando.class         |  783 ++
+ forms/catalogacaodireta/frmCatalogacaoFicha.class  |   64 +
+ .../catalogacaodireta/frmCatalogacaoFicha006.class |  117 +
+ .../catalogacaodireta/frmCatalogacaoFicha007.class |  134 +
+ .../catalogacaodireta/frmCatalogacaoFicha008.class |  175 +
+ .../frmCatalogacaoFichaLeader.class                |  117 +
+ .../frmCatalogacaoFichaObra.class                  |  414 +
+ .../catalogacaodireta/frmCatalogacaoFichaVar.class |  419 +
+ forms/catalogacaodireta/frmCatalogacaoFichas.class |  113 +
+ forms/catalogacaodireta/frmCatalogacaoObra.class   |   81 +
+ forms/catalogacaodireta/frmPreCatalogacao.class    |  314 +
+ forms/comits_Patricia                              |   24 +
+ forms/formatacao_msg                               |  109 +
+ forms/frmAlterarPrevisaoDevolucao.class            |  177 +
+ forms/frmAssunto.class                             |  446 +
+ forms/frmAutor.class                               |  273 +
+ forms/frmAutorAutoridade.class                     |  407 +
+ forms/frmAutorAutoridade2.class                    |  520 +
+ forms/frmAutorAutoridade_voltar.class              |  475 +
+ forms/frmBalcaoemprestimo.class                    |  223 +
+ forms/frmCadastraMarc.class                        | 1392 ++
+ forms/frmCartaCobranca.class                       |  206 +
+ forms/frmCatalogacaoAlteracao.class                |  337 +
+ forms/frmCatalogacaoAssunto.class                  |  374 +
+ forms/frmCatalogacaoAutor.class                    |  259 +
+ forms/frmCatalogacaoAutorSecundario.class          |  166 +
+ forms/frmCatalogacaoFichaObra.class                |  405 +
+ forms/frmCatalogacaoNovoAutorSec.class             |  289 +
+ forms/frmCatalogacaoPeriodico.class                |  138 +
+ forms/frmColecao.class                             |  295 +
+ forms/frmControleAcesso.class                      |  314 +
+ forms/frmDevolucao.class                           |  428 +
+ forms/frmDevolucaoOLD.class                        |  374 +
+ forms/frmDevolucao_voltar.class                    |  830 ++
+ forms/frmDireito.class                             |  406 +
+ forms/frmEditarObra                                |  278 +
+ forms/frmEditora(2).class                          |  352 +
+ forms/frmEditora.class                             |  352 +
+ forms/frmEditora2.class                            |  363 +
+ forms/frmEditora_anterior.class                    |  382 +
+ forms/frmEmpAtrasado.class                         |  249 +
+ forms/frmEmpHistExemplar.class                     |  249 +
+ forms/frmEmpHistUsuario.class                      |  259 +
+ forms/frmEmpPendente.class                         |  171 +
+ forms/frmEmpPendenteExemplar.class                 |  216 +
+ forms/frmEmpPendenteUsuario.class                  |  253 +
+ forms/frmEmprUsuario.class                         |  173 +
+ forms/frmEmprestimo.class                          |  861 ++
+ forms/frmEmprestimoNovo.class                      |  299 +
+ forms/frmEmprestimoOLD.class                       |  719 +
+ forms/frmEmprestimoRecinto.class                   |   92 +
+ forms/frmEmprestimoRecintoComunidade.class         |  623 +
+ forms/frmEmprestimoRecintoUfjf.class               |  421 +
+ forms/frmEnviaEmail.class                          |  187 +
+ forms/frmEstado.class                              |  312 +
+ forms/frmEstado_com_teste_backup.class             |  325 +
+ forms/frmEtiquetaLombada.class                     |  386 +
+ forms/frmEtiquetaLombada2.class                    |  341 +
+ forms/frmEtiquetaLombada_ant.class                 |  364 +
+ forms/frmExemplar.class                            | 1100 ++
+ forms/frmExemplarItem.class                        |  818 ++
+ forms/frmExemplarTransferencia.class               |  153 +
+ forms/frmExemplar_anterior.class                   | 1094 ++
+ forms/frmExemplar_funcionando.class                |  961 ++
+ forms/frmExportacaoMARC.class                      |  222 +
+ forms/frmGenero.class                              |  407 +
+ forms/frmGrupo.class                               |  289 +
+ forms/frmHistoricoExemplar.class                   |  176 +
+ forms/frmHistoricoUsuario.class                    |  168 +
+ forms/frmImportacao.class                          |   93 +
+ forms/frmImportacaoMARC.class                      |  427 +
+ forms/frmInfracao.class                            |  279 +
+ forms/frmLiberacaoCartao.class                     |  151 +
+ forms/frmLogin.abstract.class                      |  628 +
+ forms/frmMarc.class                                |  265 +
+ forms/frmMarcArtigo.class                          |  160 +
+ forms/frmMarc_copia.class                          |  373 +
+ forms/frmMarc_sexta.class                          |  194 +
+ forms/frmMultaHistOperador.class                   |  152 +
+ forms/frmMultaNova.class                           |  129 +
+ forms/frmMultaPagamento.class                      |  392 +
+ forms/frmMultaPendente.class                       |  242 +
+ forms/frmMultaPendenteExemplar.class               |  334 +
+ forms/frmMultaPendenteUsuario.class                |  344 +
+ forms/frmMultaPerdao.class                         |  175 +
+ forms/frmMultaUsuario.class                        |   89 +
+ forms/frmNadaConsta.class                          |  367 +
+ forms/frmNovaEditora.class                         |  345 +
+ forms/frmOperacao.class                            |  295 +
+ forms/frmPenalidade.class                          |  282 +
+ forms/frmPermiteMulta.class                        |  134 +
+ forms/frmPesquisa.class                            |  260 +
+ forms/frmPesquisaIndice.class                      |  334 +
+ forms/frmPesquisaMulticampo.class                  |  276 +
+ forms/frmPesquisaNumerica.class                    |  377 +
+ forms/frmPesquisaSimples.class                     |  913 ++
+ forms/frmPesquisaSimples_ant.class                 |  831 ++
+ forms/frmPesquisaSimples_voltar.class              |  723 +
+ forms/frmPesquisaTermo.class                       |  171 +
+ forms/frmPesquisaTombo.class                       |  142 +
+ forms/frmPesquisaUnidade.class                     |  157 +
+ forms/frmPolitica.class                            |  338 +
+ forms/frmPreCadastroCCN.class                      |  118 +
+ forms/frmPreCadastroCCN_bkp.class                  |  115 +
+ forms/frmPreCatalogacao.class                      |  701 +
+ forms/frmPreCatalogacaoPeriodico2.class            |  220 +
+ forms/frmPreCatalogacao_Periodico.class            |  790 ++
+ forms/frmRegracirculacao.class                     |  279 +
+ forms/frmRelatorioCnpq.class                       |  111 +
+ forms/frmRelatorioEmprestimosporPeriodo.class      |   74 +
+ ...frmRelatorioExemplaresporPeriodoeOperacao.class |   81 +
+ forms/frmRelatorioMultasporPeriodo.class           |   76 +
+ forms/frmRelatorioObraporClasse.class              |   75 +
+ forms/frmRelatorioObraseExemplaresporUnidade.class |   75 +
+ forms/frmRelatorioObrasporPeriodoeOperacao.class   |   81 +
+ forms/frmRelatorioObrasporUnidade.class            |   81 +
+ forms/frmRelatorioReservasporPeriodo.class         |   74 +
+ forms/frmRenovUsuario.class                        |  148 +
+ forms/frmRepEmprestimoAnalitico.class              |  103 +
+ forms/frmRepEmprestimoSintetico.class              |   76 +
+ forms/frmResUsuario.class                          |  189 +
+ forms/frmReserva.class                             |  289 +
+ forms/frmReservaAtendidaBiblioteca.class           |  122 +
+ forms/frmReservaAtendidaExemplar.class             |  121 +
+ forms/frmReservaAtendidaUsuario.class              |  124 +
+ forms/frmReservaEsperaExemplar.class               |  120 +
+ forms/frmReservaEsperaUsuario.class                |  124 +
+ forms/frmReservar.class                            |  274 +
+ forms/frmSituacaoExemplar.class                    |  186 +
+ forms/frmSituacaoUsuario.class                     |  343 +
+ forms/frmTransicao.class                           |  268 +
+ forms/frmUnidade.class                             |  299 +
+ forms/frmUnidade_FUNCIONANDO.class                 |  304 +
+ forms/frmUsuario.class                             |  495 +
+ forms/frmUsuarioAltGrupo.class                     |  212 +
+ forms/frmUsuarioInfracoes.class                    |  412 +
+ forms/frmUsuarioObservacoes.class                  |  368 +
+ forms/frmUsuarioValidacao.class                    |  489 +
+ forms/js/frmAutorAutoridade.js                     |   14 +
+ forms/js/frmPreCatalogacao.js                      |   25 +
+ forms/municipio/frmMunicipioDados.class            |  141 +
+ forms/municipio/frmMunicipioDel.class              |   66 +
+ forms/municipio/frmMunicipioNew.class              |  123 +
+ forms/municipioBiblioteca/frmMunicipio.class       |  241 +
+ forms/municipioBiblioteca/frmMunicipioFind.class   |   44 +
+ forms/municipioBiblioteca/js/frmMunicipio.js       |   11 +
+ .../frmCatalogacaoAlteracaoPeriodico.class         |  339 +
+ .../frmCatalogacaoAssuntoPeriodico.class           |  266 +
+ forms/periodicos/frmCatalogacaoFicha.class         |   64 +
+ forms/periodicos/frmCatalogacaoFicha006.class      |  121 +
+ forms/periodicos/frmCatalogacaoFicha007.class      |  135 +
+ forms/periodicos/frmCatalogacaoFicha008.class      |  177 +
+ forms/periodicos/frmCatalogacaoFichaLeader.class   |  118 +
+ .../periodicos/frmCatalogacaoFichaPeriodico.class  |  164 +
+ forms/periodicos/frmCatalogacaoFichaVar.class      |  419 +
+ forms/periodicos/frmCatalogacaoPeriodico.class     |  138 +
+ .../periodicos/frmCatalogacaoPeriodicoFichas.class |   92 +
+ forms/periodicos/frmExemplarPeriodico.class        |  840 ++
+ forms/periodicos/frmMarcPeriodico.class            |  161 +
+ forms/periodicos/frmPreCatalogacaoPeriodico.class  |  220 +
+ forms/periodicos/frmPreCatalogacaoPeriodico2.class |  216 +
+ forms/repEtiquetasLombada.class                    |  408 +
+ forms/tarefasPre-Catalogacao                       |   44 +
+ forms/testePreCatalogacao.class                    |  386 +
+ grids/gridEmprPendExemp.class                      |  100 +
+ grids/gridEmprPendUsuario.class                    |  100 +
+ grids/gridEmprPendente.class                       |  101 +
+ grids/gridHistEmpr.js                              |   47 +
+ grids/gridHistExemp.class                          |  101 +
+ grids/gridHistExemp.js                             |   48 +
+ grids/gridHistUsuario.class                        |  101 +
+ grids/gridMunicipio.class                          |  125 +
+ handlers/admin.inc                                 |   70 +
+ handlers/admin/ajaxhandler.inc                     |   31 +
+ handlers/admin/assunto.inc                         |   68 +
+ handlers/admin/autor.inc                           |   42 +
+ handlers/admin/balcaoemprestimo.inc                |   38 +
+ handlers/admin/cadastramarc.inc                    |   40 +
+ handlers/admin/colecao.inc                         |   42 +
+ handlers/admin/controleacesso.inc                  |   39 +
+ handlers/admin/direito.inc                         |   30 +
+ handlers/admin/editora.inc                         |   41 +
+ handlers/admin/estado.inc                          |   42 +
+ handlers/admin/etiqueta.inc                        |   37 +
+ handlers/admin/genero.inc                          |   41 +
+ handlers/admin/grupo.inc                           |   41 +
+ handlers/admin/infracao.inc                        |   41 +
+ handlers/admin/municipio.inc                       |   42 +
+ handlers/admin/municipioBiblioteca.inc             |   31 +
+ handlers/admin/municipioBibliotecaFind.inc         |   31 +
+ handlers/admin/novaeditora.inc                     |   41 +
+ handlers/admin/operacao.inc                        |   41 +
+ handlers/admin/permitemulta.inc                    |   26 +
+ handlers/admin/politica.inc                        |   40 +
+ handlers/admin/regracirculacao.inc                 |   38 +
+ handlers/admin/reserva.inc                         |   40 +
+ handlers/admin/transicao.inc                       |   38 +
+ handlers/admin/transicao.inc.old                   |   19 +
+ handlers/admin/unidade.inc                         |   41 +
+ handlers/ajaxhandler.inc                           |   32 +
+ handlers/ant_main.inc                              |  157 +
+ handlers/cadastramarc.inc                          |   25 +
+ handlers/catalogacao.inc                           |   56 +
+ handlers/catalogacao/assunto.inc                   |   36 +
+ handlers/catalogacao/autor.inc                     |   36 +
+ handlers/catalogacao/cadastramarc.inc              |   25 +
+ handlers/catalogacao/catalogacao.inc               |   47 +
+ handlers/catalogacao/catalogacaoPergamum.inc       |   47 +
+ handlers/catalogacao/catalogacaoalteracao.inc      |   50 +
+ handlers/catalogacao/catalogacaodireta.inc         |   47 +
+ handlers/catalogacao/exemplar.inc                  |   63 +
+ handlers/catalogacao/exportacaoMARC.inc            |   27 +
+ handlers/catalogacao/importacao.inc                |    8 +
+ handlers/catalogacao/importacaoMARC.inc            |   27 +
+ handlers/catalogacao/periodicos.inc                |   47 +
+ .../catalogacao/periodicos/assuntoperiodico.inc    |   36 +
+ .../periodicos/catalogacaoalteracaoperiodico.inc   |   53 +
+ .../catalogacao/periodicos/catalogacaoartigo.inc   |   40 +
+ .../periodicos/catalogacaoperiodico.inc            |   52 +
+ .../catalogacao/periodicos/catalogarartigo.inc     |   40 +
+ .../catalogacao/periodicos/exemplarperiodico.inc   |   40 +
+ handlers/catalogacao/periodicos/marcPeriodico.inc  |   25 +
+ .../periodicos/precatalogacaoperiodico.inc         |   39 +
+ handlers/catalogacao/precatalogacao.inc            |   40 +
+ handlers/catalogacaoalteracao.inc                  |   28 +
+ handlers/catalogacaoautorsecundario.inc            |   25 +
+ handlers/catalogacaodireta/assunto.inc             |   36 +
+ handlers/catalogacaodireta/autor.inc               |   36 +
+ handlers/catalogacaodireta/cadastramarc.inc        |   25 +
+ handlers/catalogacaodireta/catalogacao.inc         |   47 +
+ handlers/catalogacaodireta/catalogacaoPergamum.inc |   47 +
+ .../catalogacaodireta/catalogacaoalteracao.inc     |   50 +
+ handlers/catalogacaodireta/catalogacaodireta.inc   |   47 +
+ handlers/catalogacaodireta/exemplar.inc            |   40 +
+ handlers/catalogacaodireta/exportacaoMARC.inc      |   27 +
+ handlers/catalogacaodireta/importacao.inc          |    8 +
+ handlers/catalogacaodireta/importacaoMARC.inc      |   27 +
+ handlers/catalogacaodireta/periodicos.inc          |   47 +
+ handlers/catalogacaodireta/precatalogacao.inc      |   40 +
+ handlers/catalogacaoetiqueta.inc                   |   50 +
+ handlers/catalogacaonovoautorsec.inc               |   25 +
+ handlers/circulacao.inc                            |   47 +
+ handlers/circulacao/alterarprevisaodevolucao.inc   |   27 +
+ handlers/circulacao/atendidaporbiblioteca.inc      |   27 +
+ handlers/circulacao/atendidaporexemplar.inc        |   27 +
+ handlers/circulacao/atendidaporusuario.inc         |   27 +
+ handlers/circulacao/atrasado.inc                   |   27 +
+ handlers/circulacao/cartaCobranca.inc              |   27 +
+ handlers/circulacao/editidexemplar.inc             |   27 +
+ handlers/circulacao/emprestimo.inc                 |   40 +
+ handlers/circulacao/enviaemail.inc                 |   39 +
+ handlers/circulacao/esperaporexemplar.inc          |   27 +
+ handlers/circulacao/esperaporusuario.inc           |   27 +
+ handlers/circulacao/historicoporexemplar.inc       |   27 +
+ handlers/circulacao/historicoporoperador.inc       |   27 +
+ handlers/circulacao/historicoporusuario.inc        |   27 +
+ handlers/circulacao/infracoes.inc                  |   36 +
+ handlers/circulacao/liberacaocartao.inc            |   35 +
+ handlers/circulacao/multa.inc                      |   34 +
+ handlers/circulacao/multaedit.inc                  |   27 +
+ handlers/circulacao/multanova.inc                  |   27 +
+ handlers/circulacao/multapendente.inc              |   27 +
+ handlers/circulacao/multapendenteporexemplar.inc   |   27 +
+ handlers/circulacao/multapendenteporusuario.inc    |   27 +
+ .../circulacao/multapendenteporusuarioedit.inc     |   27 +
+ handlers/circulacao/multaperdao.inc                |   27 +
+ handlers/circulacao/nadaconsta.inc                 |   26 +
+ handlers/circulacao/novo.inc                       |   27 +
+ handlers/circulacao/observacoes.inc                |   37 +
+ handlers/circulacao/pendentes.inc                  |   27 +
+ handlers/circulacao/pendentesmulta.inc             |   30 +
+ handlers/circulacao/pendentesporexemplar.inc       |   27 +
+ handlers/circulacao/pendentesporexemplaredit.inc   |   27 +
+ handlers/circulacao/pendentesporexemplarhist.inc   |   27 +
+ handlers/circulacao/pendentesporusuario.inc        |   27 +
+ handlers/circulacao/pendentesporusuarioedit.inc    |   27 +
+ handlers/circulacao/pendentesporusuariohist.inc    |   27 +
+ handlers/circulacao/relatorio.inc                  |   49 +
+ .../circulacao/relatorio/emprestimoAnalitico.inc   |   36 +
+ .../circulacao/relatorio/emprestimoSintetico.inc   |   36 +
+ .../circulacao/relatorio/emprestimosporperiodo.inc |   37 +
+ .../relatorio/exemplaresporperiodoeoperacao.inc    |   37 +
+ handlers/circulacao/relatorio/multasporperiodo.inc |   37 +
+ .../relatorio/obraseexemplaresporunidade.inc       |   37 +
+ handlers/circulacao/relatorio/obrasporclasse.inc   |   37 +
+ .../relatorio/obrasporperiodoeoperacao.inc         |   37 +
+ handlers/circulacao/relatorio/obrasporunidade.inc  |   37 +
+ handlers/circulacao/relatorio/relatoriocnpq.inc    |   36 +
+ .../circulacao/relatorio/reservasporperiodo.inc    |   37 +
+ handlers/circulacao/reserva.inc                    |   37 +
+ handlers/circulacao/usuario.inc                    |   42 +
+ handlers/circulacao/usuario/alteragrupo.inc        |   35 +
+ handlers/circulacao/usuario/infracoes.inc          |   36 +
+ handlers/circulacao/usuario/liberacaocartao.inc    |   35 +
+ handlers/circulacao/usuario/observacoes.inc        |   37 +
+ handlers/circulacao/usuario/validacao.inc          |   37 +
+ handlers/circulacao/validacao.inc                  |   37 +
+ handlers/controleacesso.inc                        |   39 +
+ handlers/editarobra.inc                            |   25 +
+ handlers/emprestimo.inc                            |   28 +
+ handlers/emprestimos.inc                           |   46 +
+ handlers/emprestimos/devolucao.inc                 |   26 +
+ handlers/emprestimos/emprestimo.inc                |   26 +
+ handlers/emprestimos/emprestimorecinto.inc         |   26 +
+ .../emprestimos/emprestimorecintocomunidade.inc    |   26 +
+ handlers/emprestimos/emprestimorecintoufjf.inc     |   26 +
+ handlers/emprestimos/historico.inc                 |   38 +
+ handlers/emprestimos/historicoexemplar.inc         |   38 +
+ handlers/emprestimos/historicoporexemplar.inc      |   26 +
+ handlers/emprestimos/historicoporusuario.inc       |   26 +
+ handlers/emprestimos/historicousuario.inc          |   38 +
+ handlers/emprestimos/multa.inc                     |   26 +
+ handlers/emprestimos/situacaoexemplar.inc          |   26 +
+ handlers/emprestimos/situacaousuario.inc           |   26 +
+ handlers/emprusuario.inc                           |   27 +
+ handlers/handler.class                             |   31 +
+ handlers/indice.inc                                |   26 +
+ handlers/main.inc                                  |  161 +
+ handlers/marc.inc                                  |   25 +
+ handlers/marcArtigo.inc                            |   25 +
+ handlers/multa.inc                                 |   26 +
+ handlers/multausuario.inc                          |   27 +
+ handlers/multicampo.inc                            |   26 +
+ handlers/penalidade.inc                            |   26 +
+ handlers/pesquisa.inc                              |  102 +
+ handlers/pesquisaindice.inc                        |   26 +
+ handlers/pesquisamulticampo.inc                    |   26 +
+ handlers/pesquisanumerica.inc                      |   26 +
+ handlers/pesquisasimples.inc                       |   26 +
+ handlers/pesquisasimples2.inc                      |   26 +
+ handlers/pesquisatermo.inc                         |   26 +
+ handlers/pesquisatombo.inc                         |   26 +
+ handlers/pesquisaunidade.inc                       |   26 +
+ handlers/precadastro.inc                           |   33 +
+ handlers/renovacao.inc                             |   27 +
+ handlers/renovausu.inc                             |   86 +
+ handlers/renovusuario.inc                          |   28 +
+ handlers/reserva.inc                               |   26 +
+ handlers/reservar.inc                              |   27 +
+ handlers/reservausu.inc                            |   88 +
+ handlers/resusuario.inc                            |   28 +
+ handlers/secretaria.inc                            |   34 +
+ handlers/secretaria/gerenciausuario.inc            |   45 +
+ handlers/secretaria/historicoporoperador.inc       |   26 +
+ handlers_ant/admin.inc                             |   70 +
+ handlers_ant/admin/ajaxhandler.inc                 |   31 +
+ handlers_ant/admin/assunto.inc                     |   68 +
+ handlers_ant/admin/autor.inc                       |   42 +
+ handlers_ant/admin/balcaoemprestimo.inc            |   38 +
+ handlers_ant/admin/cadastramarc.inc                |   40 +
+ handlers_ant/admin/colecao.inc                     |   42 +
+ handlers_ant/admin/controleacesso.inc              |   39 +
+ handlers_ant/admin/direito.inc                     |   30 +
+ handlers_ant/admin/editora.inc                     |   41 +
+ handlers_ant/admin/estado.inc                      |   42 +
+ handlers_ant/admin/etiqueta.inc                    |   37 +
+ handlers_ant/admin/genero.inc                      |   41 +
+ handlers_ant/admin/grupo.inc                       |   41 +
+ handlers_ant/admin/infracao.inc                    |   41 +
+ handlers_ant/admin/novaeditora.inc                 |   41 +
+ handlers_ant/admin/operacao.inc                    |   41 +
+ handlers_ant/admin/permitemulta.inc                |   26 +
+ handlers_ant/admin/politica.inc                    |   40 +
+ handlers_ant/admin/regracirculacao.inc             |   38 +
+ handlers_ant/admin/reserva.inc                     |   40 +
+ handlers_ant/admin/transicao.inc                   |   38 +
+ handlers_ant/admin/transicao.inc.old               |   19 +
+ handlers_ant/admin/unidade.inc                     |   41 +
+ handlers_ant/ajaxhandler.inc                       |   31 +
+ handlers_ant/ant_main.inc                          |  157 +
+ handlers_ant/cadastramarc.inc                      |   25 +
+ handlers_ant/catalogacao.inc                       |   56 +
+ handlers_ant/catalogacao/assunto.inc               |   36 +
+ handlers_ant/catalogacao/autor.inc                 |   36 +
+ handlers_ant/catalogacao/cadastramarc.inc          |   25 +
+ handlers_ant/catalogacao/catalogacao.inc           |   47 +
+ handlers_ant/catalogacao/catalogacaoPergamum.inc   |   47 +
+ handlers_ant/catalogacao/catalogacaoalteracao.inc  |   50 +
+ handlers_ant/catalogacao/catalogacaodireta.inc     |   47 +
+ handlers_ant/catalogacao/exemplar.inc              |   45 +
+ handlers_ant/catalogacao/exportacaoMARC.inc        |   27 +
+ handlers_ant/catalogacao/importacao.inc            |    8 +
+ handlers_ant/catalogacao/importacaoMARC.inc        |   27 +
+ handlers_ant/catalogacao/periodicos.inc            |   47 +
+ .../catalogacao/periodicos/assuntoperiodico.inc    |   36 +
+ .../periodicos/catalogacaoalteracaoperiodico.inc   |   53 +
+ .../catalogacao/periodicos/catalogacaoartigo.inc   |   40 +
+ .../periodicos/catalogacaoperiodico.inc            |   52 +
+ .../catalogacao/periodicos/catalogarartigo.inc     |   40 +
+ .../catalogacao/periodicos/exemplarperiodico.inc   |   40 +
+ .../catalogacao/periodicos/marcPeriodico.inc       |   25 +
+ .../periodicos/precatalogacaoperiodico.inc         |   39 +
+ handlers_ant/catalogacao/precatalogacao.inc        |   40 +
+ handlers_ant/catalogacaoalteracao.inc              |   28 +
+ handlers_ant/catalogacaoautorsecundario.inc        |   25 +
+ handlers_ant/catalogacaodireta/assunto.inc         |   36 +
+ handlers_ant/catalogacaodireta/autor.inc           |   36 +
+ handlers_ant/catalogacaodireta/cadastramarc.inc    |   25 +
+ handlers_ant/catalogacaodireta/catalogacao.inc     |   47 +
+ .../catalogacaodireta/catalogacaoPergamum.inc      |   47 +
+ .../catalogacaodireta/catalogacaoalteracao.inc     |   50 +
+ .../catalogacaodireta/catalogacaodireta.inc        |   47 +
+ handlers_ant/catalogacaodireta/exemplar.inc        |   40 +
+ handlers_ant/catalogacaodireta/exportacaoMARC.inc  |   27 +
+ handlers_ant/catalogacaodireta/importacao.inc      |    8 +
+ handlers_ant/catalogacaodireta/importacaoMARC.inc  |   27 +
+ handlers_ant/catalogacaodireta/periodicos.inc      |   47 +
+ handlers_ant/catalogacaodireta/precatalogacao.inc  |   40 +
+ handlers_ant/catalogacaoetiqueta.inc               |   50 +
+ handlers_ant/catalogacaonovoautorsec.inc           |   25 +
+ handlers_ant/circulacao.inc                        |   47 +
+ .../circulacao/alterarprevisaodevolucao.inc        |   27 +
+ handlers_ant/circulacao/atendidaporbiblioteca.inc  |   27 +
+ handlers_ant/circulacao/atendidaporexemplar.inc    |   27 +
+ handlers_ant/circulacao/atendidaporusuario.inc     |   27 +
+ handlers_ant/circulacao/atrasado.inc               |   27 +
+ handlers_ant/circulacao/cartaCobranca.inc          |   27 +
+ handlers_ant/circulacao/editidexemplar.inc         |   27 +
+ handlers_ant/circulacao/emprestimo.inc             |   40 +
+ handlers_ant/circulacao/enviaemail.inc             |   39 +
+ handlers_ant/circulacao/esperaporexemplar.inc      |   27 +
+ handlers_ant/circulacao/esperaporusuario.inc       |   27 +
+ handlers_ant/circulacao/historicoporexemplar.inc   |   27 +
+ handlers_ant/circulacao/historicoporoperador.inc   |   27 +
+ handlers_ant/circulacao/historicoporusuario.inc    |   27 +
+ handlers_ant/circulacao/infracoes.inc              |   36 +
+ handlers_ant/circulacao/liberacaocartao.inc        |   35 +
+ handlers_ant/circulacao/multa.inc                  |   34 +
+ handlers_ant/circulacao/multaedit.inc              |   27 +
+ handlers_ant/circulacao/multanova.inc              |   27 +
+ handlers_ant/circulacao/multapendente.inc          |   27 +
+ .../circulacao/multapendenteporexemplar.inc        |   27 +
+ .../circulacao/multapendenteporusuario.inc         |   27 +
+ .../circulacao/multapendenteporusuarioedit.inc     |   27 +
+ handlers_ant/circulacao/multaperdao.inc            |   27 +
+ handlers_ant/circulacao/nadaconsta.inc             |   26 +
+ handlers_ant/circulacao/novo.inc                   |   27 +
+ handlers_ant/circulacao/observacoes.inc            |   37 +
+ handlers_ant/circulacao/pendentes.inc              |   27 +
+ handlers_ant/circulacao/pendentesmulta.inc         |   30 +
+ handlers_ant/circulacao/pendentesporexemplar.inc   |   27 +
+ .../circulacao/pendentesporexemplaredit.inc        |   27 +
+ .../circulacao/pendentesporexemplarhist.inc        |   27 +
+ handlers_ant/circulacao/pendentesporusuario.inc    |   27 +
+ .../circulacao/pendentesporusuarioedit.inc         |   27 +
+ .../circulacao/pendentesporusuariohist.inc         |   27 +
+ handlers_ant/circulacao/relatorio.inc              |   49 +
+ .../circulacao/relatorio/emprestimoAnalitico.inc   |   36 +
+ .../circulacao/relatorio/emprestimoSintetico.inc   |   36 +
+ .../circulacao/relatorio/emprestimosporperiodo.inc |   37 +
+ .../relatorio/exemplaresporperiodoeoperacao.inc    |   37 +
+ .../circulacao/relatorio/multasporperiodo.inc      |   37 +
+ .../relatorio/obraseexemplaresporunidade.inc       |   37 +
+ .../circulacao/relatorio/obrasporclasse.inc        |   37 +
+ .../relatorio/obrasporperiodoeoperacao.inc         |   37 +
+ .../circulacao/relatorio/obrasporunidade.inc       |   37 +
+ .../circulacao/relatorio/relatoriocnpq.inc         |   36 +
+ .../circulacao/relatorio/reservasporperiodo.inc    |   37 +
+ handlers_ant/circulacao/reserva.inc                |   37 +
+ handlers_ant/circulacao/usuario.inc                |   42 +
+ handlers_ant/circulacao/usuario/alteragrupo.inc    |   35 +
+ handlers_ant/circulacao/usuario/infracoes.inc      |   36 +
+ .../circulacao/usuario/liberacaocartao.inc         |   35 +
+ handlers_ant/circulacao/usuario/observacoes.inc    |   37 +
+ handlers_ant/circulacao/usuario/validacao.inc      |   37 +
+ handlers_ant/circulacao/validacao.inc              |   37 +
+ handlers_ant/controleacesso.inc                    |   39 +
+ handlers_ant/editarobra.inc                        |   25 +
+ handlers_ant/emprestimo.inc                        |   28 +
+ handlers_ant/emprestimos.inc                       |   46 +
+ handlers_ant/emprestimos/devolucao.inc             |   26 +
+ handlers_ant/emprestimos/emprestimo.inc            |   26 +
+ handlers_ant/emprestimos/emprestimorecinto.inc     |   26 +
+ .../emprestimos/emprestimorecintocomunidade.inc    |   26 +
+ handlers_ant/emprestimos/emprestimorecintoufjf.inc |   26 +
+ handlers_ant/emprestimos/historico.inc             |   38 +
+ handlers_ant/emprestimos/historicoexemplar.inc     |   38 +
+ handlers_ant/emprestimos/historicoporexemplar.inc  |   26 +
+ handlers_ant/emprestimos/historicoporusuario.inc   |   26 +
+ handlers_ant/emprestimos/historicousuario.inc      |   38 +
+ handlers_ant/emprestimos/multa.inc                 |   26 +
+ handlers_ant/emprestimos/situacaoexemplar.inc      |   26 +
+ handlers_ant/emprestimos/situacaousuario.inc       |   26 +
+ handlers_ant/emprusuario.inc                       |   27 +
+ handlers_ant/handler.class                         |   31 +
+ handlers_ant/indice.inc                            |   26 +
+ handlers_ant/main.inc                              |  161 +
+ handlers_ant/marc.inc                              |   25 +
+ handlers_ant/marcArtigo.inc                        |   25 +
+ handlers_ant/multa.inc                             |   26 +
+ handlers_ant/multausuario.inc                      |   27 +
+ handlers_ant/multicampo.inc                        |   26 +
+ handlers_ant/novaeditora.inc                       |   41 +
+ handlers_ant/penalidade.inc                        |   26 +
+ handlers_ant/pesquisa.inc                          |  102 +
+ handlers_ant/pesquisaindice.inc                    |   26 +
+ handlers_ant/pesquisamulticampo.inc                |   26 +
+ handlers_ant/pesquisanumerica.inc                  |   26 +
+ handlers_ant/pesquisasimples.inc                   |   26 +
+ handlers_ant/pesquisasimples2.inc                  |   26 +
+ handlers_ant/pesquisatermo.inc                     |   26 +
+ handlers_ant/pesquisatombo.inc                     |   26 +
+ handlers_ant/pesquisaunidade.inc                   |   26 +
+ handlers_ant/precadastro.inc                       |   33 +
+ handlers_ant/renovacao.inc                         |   27 +
+ handlers_ant/renovausu.inc                         |   86 +
+ handlers_ant/renovusuario.inc                      |   28 +
+ handlers_ant/reserva.inc                           |   26 +
+ handlers_ant/reservar.inc                          |   27 +
+ handlers_ant/reservausu.inc                        |   88 +
+ handlers_ant/resusuario.inc                        |   28 +
+ handlers_ant/secretaria.inc                        |   34 +
+ handlers_ant/secretaria/gerenciausuario.inc        |   45 +
+ handlers_ant/secretaria/historicoporoperador.inc   |   26 +
+ html/atendidas_por_usuario.png                     |  Bin 0 -> 180 bytes
+ html/colecoes.png                                  |  Bin 0 -> 5534 bytes
+ html/em_espera_por_usuario.png                     |  Bin 0 -> 180 bytes
+ html/images/13.png                                 |  Bin 0 -> 63339 bytes
+ html/images/85.png                                 |  Bin 0 -> 79061 bytes
+ html/images/85_mini.png                            |  Bin 0 -> 28403 bytes
+ html/images/Download_fluo.png                      |  Bin 0 -> 183813 bytes
+ html/images/Download_fluo_mini.png                 |  Bin 0 -> 639 bytes
+ html/images/Office Excel.png                       |  Bin 0 -> 201904 bytes
+ html/images/Recherche fichier texte.png            |  Bin 0 -> 14431 bytes
+ html/images/Thumbs.db                              |  Bin 0 -> 72704 bytes
+ html/images/adicional.png                          |  Bin 0 -> 5070 bytes
+ html/images/adicional_mini.png                     |  Bin 0 -> 1196 bytes
+ html/images/administracao.png                      |  Bin 0 -> 5345 bytes
+ html/images/alteracao_de_grupos.png                |  Bin 0 -> 6041 bytes
+ html/images/alterar_previsao_de_devolucao.png      |  Bin 0 -> 5275 bytes
+ html/images/aposentadoria.png                      |  Bin 0 -> 11267 bytes
+ html/images/aposentadoria2.png                     |  Bin 0 -> 29844 bytes
+ html/images/aposentadoria2_mini.png                |  Bin 0 -> 1196 bytes
+ html/images/aposentadoria_mini.png                 |  Bin 0 -> 1196 bytes
+ html/images/artigo.png                             |  Bin 0 -> 641 bytes
+ html/images/artigos.png                            |  Bin 0 -> 5277 bytes
+ html/images/assunto_da_obra.png                    |  Bin 0 -> 5582 bytes
+ html/images/assunto_mini.png                       |  Bin 0 -> 853 bytes
+ html/images/assuntos.png                           |  Bin 0 -> 5298 bytes
+ html/images/assuntos/assuntos.png                  |  Bin 0 -> 5298 bytes
+ html/images/atendidas_por_biblioteca.png           |  Bin 0 -> 5810 bytes
+ html/images/atendidas_por_exemplar.png             |  Bin 0 -> 5869 bytes
+ html/images/atrasados.png                          |  Bin 0 -> 5575 bytes
+ html/images/autor.png                              |  Bin 0 -> 5492 bytes
+ html/images/autor/autor.png                        |  Bin 0 -> 5492 bytes
+ html/images/averbacao.png                          |  Bin 0 -> 75917 bytes
+ html/images/averbacao_mini.png                     |  Bin 0 -> 1196 bytes
+ html/images/bullet_blue.png                        |  Bin 0 -> 726 bytes
+ html/images/bullet_del.png                         |  Bin 0 -> 821 bytes
+ html/images/bullet_green.png                       |  Bin 0 -> 887 bytes
+ html/images/bullet_trash.png                       |  Bin 0 -> 832 bytes
+ html/images/cadastro_de_infracoes.png              |  Bin 0 -> 5455 bytes
+ html/images/cadastro_de_observacoes.png            |  Bin 0 -> 3149 bytes
+ html/images/cadeado.png                            |  Bin 0 -> 46301 bytes
+ html/images/cadeado_32x32.png                      |  Bin 0 -> 2205 bytes
+ html/images/cadeado_mini.png                       |  Bin 0 -> 733 bytes
+ html/images/capacitacao.png                        |  Bin 0 -> 59908 bytes
+ html/images/capacitacao_mini.png                   |  Bin 0 -> 1196 bytes
+ html/images/cartao2_mini.png                       |  Bin 0 -> 1077 bytes
+ html/images/cartao_mini.png                        |  Bin 0 -> 916 bytes
+ html/images/catalogacao.png                        |  Bin 0 -> 5255 bytes
+ html/images/catalogacao32.png                      |  Bin 0 -> 5273 bytes
+ html/images/cedidos.png                            |  Bin 0 -> 37719 bytes
+ html/images/cedidos_mini.png                       |  Bin 0 -> 1196 bytes
+ html/images/circulacao.png                         |  Bin 0 -> 5847 bytes
+ html/images/circulacao_enviaremail.png             |  Bin 0 -> 5556 bytes
+ .../circulacao_enviaremail.png                     |  Bin 0 -> 5556 bytes
+ html/images/circulacao_nadaconsta.png              |  Bin 0 -> 5652 bytes
+ .../circulacao_relatorios.png                      |  Bin 0 -> 5403 bytes
+ html/images/circulacaoemprestimos.png              |  Bin 0 -> 5897 bytes
+ html/images/circulacaoreservas.png                 |  Bin 0 -> 5463 bytes
+ html/images/circulacaousuarios.png                 |  Bin 0 -> 5587 bytes
+ html/images/classe.png                             |  Bin 0 -> 1155 bytes
+ html/images/classe_mini.png                        |  Bin 0 -> 391 bytes
+ html/images/cnpq.png                               |  Bin 0 -> 1530 bytes
+ html/images/cnpq_mini.png                          |  Bin 0 -> 785 bytes
+ html/images/codigo.png                             |  Bin 0 -> 155 bytes
+ html/images/colecoes.png                           |  Bin 0 -> 5534 bytes
+ html/images/configuracao.png                       |  Bin 0 -> 14109 bytes
+ html/images/configuracao_mini.png                  |  Bin 0 -> 1196 bytes
+ html/images/configure.png                          |  Bin 0 -> 1175 bytes
+ html/images/contato.png                            |  Bin 0 -> 2227 bytes
+ html/images/contato_mini.png                       |  Bin 0 -> 589 bytes
+ html/images/controle_de_acesso.png                 |  Bin 0 -> 5829 bytes
+ html/images/dadosbancarios.png                     |  Bin 0 -> 46301 bytes
+ html/images/dadosfuncionais.png                    |  Bin 0 -> 68611 bytes
+ html/images/dadosfuncionais_mini.png               |  Bin 0 -> 1196 bytes
+ html/images/dadospessoais.png                      |  Bin 0 -> 1427 bytes
+ html/images/dadospessoais_mini.png                 |  Bin 0 -> 796 bytes
+ html/images/dependente.png                         |  Bin 0 -> 1756 bytes
+ html/images/dependente_mini.png                    |  Bin 0 -> 750 bytes
+ html/images/devolucao.png                          |  Bin 0 -> 5827 bytes
+ html/images/diplomalegal.png                       |  Bin 0 -> 1812 bytes
+ html/images/direitos.png                           |  Bin 0 -> 5528 bytes
+ html/images/documento.png                          |  Bin 0 -> 70089 bytes
+ html/images/documento_mini.png                     |  Bin 0 -> 1196 bytes
+ html/images/documentos.png                         |  Bin 0 -> 1413 bytes
+ html/images/documentos_mini.png                    |  Bin 0 -> 533 bytes
+ html/images/edit.png                               |  Bin 0 -> 1627 bytes
+ html/images/editoras.png                           |  Bin 0 -> 5617 bytes
+ html/images/em_espera_por_exemplar.png             |  Bin 0 -> 5747 bytes
+ html/images/emprestimo.png                         |  Bin 0 -> 5841 bytes
+ html/images/emprestimo_mini.png                    |  Bin 0 -> 800 bytes
+ html/images/emprestimo_no_recinto.png              |  Bin 0 -> 5624 bytes
+ html/images/emprestimo_recinto.png                 |  Bin 0 -> 5624 bytes
+ html/images/emprestimos.png                        |  Bin 0 -> 5897 bytes
+ html/images/emprestimos_por_periodo.png            |  Bin 0 -> 5564 bytes
+ html/images/enviar_email.png                       |  Bin 0 -> 5556 bytes
+ html/images/escolaridade.png                       |  Bin 0 -> 13385 bytes
+ html/images/escolaridade_mini.png                  |  Bin 0 -> 1196 bytes
+ html/images/estados.png                            |  Bin 0 -> 5391 bytes
+ html/images/etiqueta.png                           |  Bin 0 -> 5307 bytes
+ html/images/excluir.png                            |  Bin 0 -> 1368 bytes
+ html/images/exclusao.png                           |  Bin 0 -> 8111 bytes
+ html/images/exclusao2.png                          |  Bin 0 -> 12912 bytes
+ html/images/exclusao2_mini.png                     |  Bin 0 -> 1196 bytes
+ html/images/exclusao_mini.png                      |  Bin 0 -> 1196 bytes
+ html/images/exemplares.png                         |  Bin 0 -> 5777 bytes
+ html/images/exemplares_por_periodo_e_operacao.png  |  Bin 0 -> 5664 bytes
+ html/images/exportacao_marc.png                    |  Bin 0 -> 5696 bytes
+ html/images/externo.png                            |  Bin 0 -> 39266 bytes
+ html/images/externo_mini.png                       |  Bin 0 -> 1196 bytes
+ html/images/ferias.png                             |  Bin 0 -> 2253 bytes
+ html/images/ferias2.png                            |  Bin 0 -> 27801 bytes
+ html/images/ferias_32x32.png                       |  Bin 0 -> 2108 bytes
+ html/images/ferias_mini.png                        |  Bin 0 -> 1196 bytes
+ html/images/ferias_mini2.png                       |  Bin 0 -> 592 bytes
+ html/images/figura02.png                           |  Bin 0 -> 5337 bytes
+ html/images/formacao.png                           |  Bin 0 -> 1634 bytes
+ html/images/formacao_mini.png                      |  Bin 0 -> 729 bytes
+ html/images/frequencia.png                         |  Bin 0 -> 15773 bytes
+ html/images/frequencia_mini.png                    |  Bin 0 -> 1196 bytes
+ html/images/funcionario.png                        |  Bin 0 -> 3149 bytes
+ html/images/funcionario_mini.png                   |  Bin 0 -> 916 bytes
+ html/images/generos.png                            |  Bin 0 -> 6301 bytes
+ html/images/geral.png                              |  Bin 0 -> 120244 bytes
+ html/images/geral_mini.png                         |  Bin 0 -> 1196 bytes
+ html/images/grupocargo.png                         |  Bin 0 -> 1170 bytes
+ html/images/grupocargo_mini.png                    |  Bin 0 -> 588 bytes
+ html/images/grupos.png                             |  Bin 0 -> 5728 bytes
+ html/images/histexemplar.png                       |  Bin 0 -> 1975 bytes
+ html/images/histexemplar_mini.png                  |  Bin 0 -> 1403 bytes
+ html/images/historico.png                          |  Bin 0 -> 3021 bytes
+ html/images/historico_de_multas_por_operador.png   |  Bin 0 -> 5772 bytes
+ html/images/historico_exemp.png                    |  Bin 0 -> 5789 bytes
+ html/images/historico_multas.png                   |  Bin 0 -> 5772 bytes
+ html/images/historico_por_exemplar.png             |  Bin 0 -> 5789 bytes
+ html/images/historico_por_operador.png             |  Bin 0 -> 5791 bytes
+ html/images/historico_por_usuario.png              |  Bin 0 -> 5786 bytes
+ html/images/historico_user.png                     |  Bin 0 -> 5786 bytes
+ html/images/histusuario.png                        |  Bin 0 -> 2010 bytes
+ html/images/histusuario_mini.png                   |  Bin 0 -> 1409 bytes
+ html/images/importacao_marc.png                    |  Bin 0 -> 5753 bytes
+ html/images/infracoes.png                          |  Bin 0 -> 5466 bytes
+ html/images/infracoes_mini.png                     |  Bin 0 -> 1196 bytes
+ html/images/intersticio.png                        |  Bin 0 -> 79808 bytes
+ html/images/intersticio_mini.png                   |  Bin 0 -> 1196 bytes
+ html/images/jornada.png                            |  Bin 0 -> 2456 bytes
+ html/images/jornada2.png                           |  Bin 0 -> 15518 bytes
+ html/images/jornada2_mini.png                      |  Bin 0 -> 1196 bytes
+ html/images/jornada_mini.png                       |  Bin 0 -> 1061 bytes
+ html/images/liberacao_de_cartao.png                |  Bin 0 -> 5680 bytes
+ html/images/licenca.png                            |  Bin 0 -> 13998 bytes
+ html/images/licenca2.png                           |  Bin 0 -> 73142 bytes
+ html/images/licenca2_mini.png                      |  Bin 0 -> 1196 bytes
+ html/images/licenca_mini.png                       |  Bin 0 -> 1196 bytes
+ html/images/lixeira.png                            |  Bin 0 -> 1620 bytes
+ html/images/logo_siga.jpg                          |  Bin 0 -> 5759 bytes
+ html/images/logo_siga.png                          |  Bin 0 -> 4116 bytes
+ html/images/logonet.png                            |  Bin 0 -> 2545 bytes
+ html/images/multa.png                              |  Bin 0 -> 5556 bytes
+ html/images/multa_mini.png                         |  Bin 0 -> 742 bytes
+ html/images/multas.png                             |  Bin 0 -> 5815 bytes
+ html/images/multas_nao_pagas.png                   |  Bin 0 -> 5844 bytes
+ html/images/multas_por_periodo.png                 |  Bin 0 -> 5398 bytes
+ html/images/multasperiodo_mini.png                 |  Bin 0 -> 3663 bytes
+ html/images/nada_consta.png                        |  Bin 0 -> 5652 bytes
+ html/images/nova_multa.png                         |  Bin 0 -> 5734 bytes
+ html/images/obras_por_periodo_e_operacao.png       |  Bin 0 -> 5562 bytes
+ html/images/obrasporperiodo_mini.png               |  Bin 0 -> 3988 bytes
+ html/images/obs_mini.png                           |  Bin 0 -> 997 bytes
+ html/images/observacoes_mini.png                   |  Bin 0 -> 3617 bytes
+ html/images/ocorrencia.png                         |  Bin 0 -> 1719 bytes
+ html/images/ocorrencia_mini.png                    |  Bin 0 -> 742 bytes
+ html/images/ocupacaovaga.png                       |  Bin 0 -> 1952 bytes
+ html/images/ocupacaovaga_mini.png                  |  Bin 0 -> 916 bytes
+ html/images/operacoes.png                          |  Bin 0 -> 4994 bytes
+ html/images/operacoes/operacoes.png                |  Bin 0 -> 4994 bytes
+ html/images/pendenteexemplar.png                   |  Bin 0 -> 1842 bytes
+ html/images/pendentes.png                          |  Bin 0 -> 5092 bytes
+ html/images/pendentes_por_exemplar.png             |  Bin 0 -> 5812 bytes
+ html/images/pendentes_por_usuario.png              |  Bin 0 -> 5565 bytes
+ html/images/pendentesusuario.png                   |  Bin 0 -> 1881 bytes
+ html/images/periodicos.png                         |  Bin 0 -> 5256 bytes
+ html/images/periodoaquisitivo.png                  |  Bin 0 -> 2302 bytes
+ html/images/periodoaquisitivo_mini.png             |  Bin 0 -> 856 bytes
+ html/images/permitir_multa.png                     |  Bin 0 -> 5805 bytes
+ html/images/pesquisa_alpeh.png                     |  Bin 0 -> 5606 bytes
+ html/images/pesquisa_indices.png                   |  Bin 0 -> 5908 bytes
+ html/images/pesquisa_multicampo.png                |  Bin 0 -> 5731 bytes
+ html/images/pesquisa_numerica.png                  |  Bin 0 -> 5897 bytes
+ html/images/pesquisa_por_unidades.png              |  Bin 0 -> 5651 bytes
+ html/images/pesquisa_simples.png                   |  Bin 0 -> 5662 bytes
+ html/images/pesquisa_termo.png                     |  Bin 0 -> 5508 bytes
+ html/images/pessoa.png                             |  Bin 0 -> 75214 bytes
+ html/images/pessoa1.png                            |  Bin 0 -> 2340 bytes
+ html/images/pessoa1_mini.png                       |  Bin 0 -> 845 bytes
+ html/images/pessoa2.png                            |  Bin 0 -> 75214 bytes
+ html/images/pessoa2_mini.png                       |  Bin 0 -> 613 bytes
+ html/images/pessoa_mini.png                        |  Bin 0 -> 1196 bytes
+ html/images/politicas.png                          |  Bin 0 -> 5764 bytes
+ html/images/politicas/politicas.png                |  Bin 0 -> 5764 bytes
+ html/images/posgraduacao.png                       |  Bin 0 -> 11533 bytes
+ html/images/posgraduacao_mini.png                  |  Bin 0 -> 1196 bytes
+ html/images/pre_catalogacao.png                    |  Bin 0 -> 5489 bytes
+ html/images/progressao.png                         |  Bin 0 -> 67098 bytes
+ html/images/progressao_mini.png                    |  Bin 0 -> 1196 bytes
+ html/images/prorh.png                              |  Bin 0 -> 34762 bytes
+ html/images/prorh_mini.png                         |  Bin 0 -> 1196 bytes
+ html/images/provimentos.png                        |  Bin 0 -> 2291 bytes
+ html/images/publicacao.png                         |  Bin 0 -> 1698 bytes
+ html/images/publicacao_mini.png                    |  Bin 0 -> 797 bytes
+ html/images/quantidade_de_obras_e_exemplares.png   |  Bin 0 -> 5840 bytes
+ html/images/referencia.png                         |  Bin 0 -> 752 bytes
+ html/images/referencia_mini.png                    |  Bin 0 -> 349 bytes
+ html/images/regras_de_circulacao.png               |  Bin 0 -> 5763 bytes
+ html/images/relacao.png                            |  Bin 0 -> 1715 bytes
+ html/images/relacao_mini.png                       |  Bin 0 -> 734 bytes
+ html/images/relatorio2.png                         |  Bin 0 -> 5207 bytes
+ html/images/relatorio2_mini.png                    |  Bin 0 -> 1196 bytes
+ html/images/relatorio_areas_conhecimento_cnpq.png  |  Bin 0 -> 5720 bytes
+ html/images/relatorio_de_obras_por_classe.png      |  Bin 0 -> 5344 bytes
+ .../relatorio_de_obras_por_unidade_e_genero.png    |  Bin 0 -> 5555 bytes
+ html/images/relatorios.png                         |  Bin 0 -> 5403 bytes
+ html/images/relatorios_mini.png                    |  Bin 0 -> 1196 bytes
+ html/images/remocao.png                            |  Bin 0 -> 31819 bytes
+ html/images/remocao_mini.png                       |  Bin 0 -> 1196 bytes
+ html/images/reserva_mini.png                       |  Bin 0 -> 1196 bytes
+ html/images/reservas.png                           |  Bin 0 -> 5463 bytes
+ html/images/reservas_por_periodo.png               |  Bin 0 -> 5523 bytes
+ html/images/rh_original.png                        |  Bin 0 -> 75214 bytes
+ html/images/secretaria.png                         |  Bin 0 -> 5748 bytes
+ html/images/servidor.png                           |  Bin 0 -> 15309 bytes
+ html/images/servidor3.png                          |  Bin 0 -> 9353 bytes
+ html/images/servidor3_mini.png                     |  Bin 0 -> 1196 bytes
+ html/images/servidor_mini.png                      |  Bin 0 -> 1196 bytes
+ html/images/setor.png                              |  Bin 0 -> 99567 bytes
+ html/images/setor_mini.png                         |  Bin 0 -> 1196 bytes
+ html/images/situacao_da_reserva.png                |  Bin 0 -> 5498 bytes
+ html/images/situacaofuncional.png                  |  Bin 0 -> 3267 bytes
+ html/images/situacaofuncional_mini.png             |  Bin 0 -> 1144 bytes
+ html/images/tabelas.png                            |  Bin 0 -> 1175 bytes
+ html/images/telefone.png                           |  Bin 0 -> 41776 bytes
+ html/images/telefone_mini.png                      |  Bin 0 -> 1196 bytes
+ html/images/titulacao_mini.png                     |  Bin 0 -> 729 bytes
+ html/images/unidades.png                           |  Bin 0 -> 5469 bytes
+ html/images/unidades/unidades.png                  |  Bin 0 -> 5469 bytes
+ html/images/usuario_emprestimos.png                |  Bin 0 -> 5731 bytes
+ html/images/usuario_multas.png                     |  Bin 0 -> 5565 bytes
+ html/images/usuario_penalidades.png                |  Bin 0 -> 5506 bytes
+ html/images/usuario_renovacao.png                  |  Bin 0 -> 5789 bytes
+ html/images/usuario_reservas.png                   |  Bin 0 -> 5634 bytes
+ html/images/usuarios.png                           |  Bin 0 -> 5587 bytes
+ html/images/usuarios_mini.png                      |  Bin 0 -> 4298 bytes
+ html/images/utils_mini.png                         |  Bin 0 -> 681 bytes
+ html/images/vaga.png                               |  Bin 0 -> 2355 bytes
+ html/images/vaga_mini.png                          |  Bin 0 -> 1144 bytes
+ html/images/validacao_de_cartao.png                |  Bin 0 -> 5765 bytes
+ html/images/verificar_sit_exemp.png                |  Bin 0 -> 5478 bytes
+ html/images/verificar_sit_user.png                 |  Bin 0 -> 5476 bytes
+ html/images/verificar_situacao_de_exemplar.png     |  Bin 0 -> 5478 bytes
+ html/images/vinculo.png                            |  Bin 0 -> 16130 bytes
+ html/images/vinculo_mini.png                       |  Bin 0 -> 1196 bytes
+ offline/alteraprevdevol.php                        |   73 +
+ offline/atualizareservas.php                       |  148 +
+ offline/carteira.csv                               |  645 +
+ offline/listagemru.php                             |   99 +
+ offline/material.php                               |   89 +
+ offline/validaCarteira.php                         |  122 +
+ reports/Ticket1_Devolucao_UE.jasper                |  Bin 0 -> 25160 bytes
+ reports/Ticket1_Devolucao_UE.jrxml                 |  214 +
+ reports/Ticket1_Devolucao_UI.jasper                |  Bin 0 -> 34789 bytes
+ reports/Ticket1_Devolucao_UI.jrxml                 |  225 +
+ reports/Ticket1_Emprestimo_UE.jasper               |  Bin 0 -> 25695 bytes
+ reports/Ticket1_Emprestimo_UE.jrxml                |  231 +
+ reports/Ticket1_Emprestimo_UI.jasper               |  Bin 0 -> 34909 bytes
+ reports/Ticket1_Emprestimo_UI.jrxml                |  238 +
+ reports/Ticket2_Devolucao_UE.jasper                |  Bin 0 -> 25081 bytes
+ reports/Ticket2_Devolucao_UE.jrxml                 |  214 +
+ reports/Ticket2_Devolucao_UI.jasper                |  Bin 0 -> 25369 bytes
+ reports/Ticket2_Devolucao_UI.jrxml                 |  221 +
+ reports/Ticket2_Emprestimo_UE.jasper               |  Bin 0 -> 25689 bytes
+ reports/Ticket2_Emprestimo_UE.jrxml                |  231 +
+ reports/Ticket2_Emprestimo_UI.jasper               |  Bin 0 -> 25786 bytes
+ reports/Ticket2_Emprestimo_UI.jrxml                |  237 +
+ reports/Ticket3_Devolucao_UE.jasper                |  Bin 0 -> 25014 bytes
+ reports/Ticket3_Devolucao_UE.jrxml                 |  214 +
+ reports/Ticket3_Devolucao_UI.jasper                |  Bin 0 -> 25299 bytes
+ reports/Ticket3_Devolucao_UI.jrxml                 |  221 +
+ reports/Ticket3_Emprestimo_UE.jasper               |  Bin 0 -> 25430 bytes
+ reports/Ticket3_Emprestimo_UE.jrxml                |  231 +
+ reports/Ticket3_Emprestimo_UI.jasper               |  Bin 0 -> 25718 bytes
+ reports/Ticket3_Emprestimo_UI.jrxml                |  237 +
+ reports/cartaCobranca.jasper                       |  Bin 0 -> 26842 bytes
+ reports/cartaCobranca.jrxml                        |  279 +
+ reports/cartaCobranca.pdf                          |  Bin 0 -> 908 bytes
+ reports/cartaCobrancaTodos.jasper                  |  Bin 0 -> 28336 bytes
+ reports/cartaCobrancaTodos.jrxml                   |  294 +
+ reports/cartaCobrancaTodos.pdf                     |  Bin 0 -> 2849 bytes
+ reports/cartaCobranca_subreport0.jasper            |  Bin 0 -> 23063 bytes
+ reports/cartaCobranca_subreport0.jrxml             |  225 +
+ reports/emprestimoSintetico.jasper                 |  Bin 0 -> 26220 bytes
+ reports/emprestimoSintetico.jrxml                  |  178 +
+ reports/emprestimoSintetico.pdf                    |   54 +
+ reports/genbarcode-0.4/.dep                        |   18 +
+ reports/genbarcode-0.4/GPL                         |  341 +
+ reports/genbarcode-0.4/Makefile                    |  109 +
+ reports/genbarcode-0.4/README                      |  122 +
+ reports/genbarcode-0.4/genbarcode                  |  Bin 0 -> 117399 bytes
+ reports/genbarcode-0.4/genbarcode.c                |  128 +
+ reports/genbarcode-0.4/genbarcode.o                |  Bin 0 -> 10688 bytes
+ reports/repAtrasado.class                          |  115 +
+ reports/repCodigoBarra.class                       |  101 +
+ reports/repEmprestimosPorPeriodo.class             |  184 +
+ reports/repEtiquetasLombada.class                  |  408 +
+ reports/repEtiquetasLombada22.class                |  402 +
+ reports/repEtiquetasLombada_ant.class              |  263 +
+ reports/repExemplaresPorPeriodoeOperacao.class     |  197 +
+ reports/repMultasPorPeriodo.class                  |  229 +
+ reports/repObraPorClasse.class                     |  186 +
+ reports/repObrasPorPeriodoeOperacao.class          |  201 +
+ reports/repObraseExemplaresporUnidade.class        |  203 +
+ reports/repObrasporUnidade.class                   |  213 +
+ reports/repResAtendidaBib.class                    |  119 +
+ reports/repReservasPorPeriodo.class                |  185 +
+ sql/Biblioteca_Dados1.0.sql                        | 4618 +++++++
+ sql/Script_Alteracoes.sql                          |    3 +
+ sql/Script_Assunto_temp.sql                        |   11 +
+ sql/Script_Autor.sql                               |   42 +
+ sql/Script_Bib_Alteracoes.sql                      |  632 +
+ sql/Script_Bib_Estrutura1.0.sql                    | 2718 ++++
+ sql/Script_CodeBar.sql                             |   41 +
+ sql/Script_Editora.sql                             |   59 +
+ sql/Script_Exportacao.sql                          |    5 +
+ sql/Script_GA.sql                                  |   32 +
+ sql/Script_Periodico.sql                           |  247 +
+ sql/Script_RH.sql                                  |    9 +
+ sql/Script_etiquetaLombada.sql                     |   42 +
+ svn-commit.tmp.save                                |    7 +
+ types.class                                        |   19 +
+ ui/js/mask.js                                      |  125 +
+ ui/js/mask2.js                                     |   97 +
+ ui/rte/blank.htm                                   |   11 +
+ ui/rte/changelog.txt                               |   49 +
+ ui/rte/demo.asp                                    |   94 +
+ ui/rte/demo.htm                                    |   65 +
+ ui/rte/demo.php                                    |   90 +
+ ui/rte/images/bgcolor.gif                          |  Bin 0 -> 148 bytes
+ ui/rte/images/blackdot.gif                         |  Bin 0 -> 807 bytes
+ ui/rte/images/bold.gif                             |  Bin 0 -> 81 bytes
+ ui/rte/images/centre.gif                           |  Bin 0 -> 76 bytes
+ ui/rte/images/copy.gif                             |  Bin 0 -> 118 bytes
+ ui/rte/images/cut.gif                              |  Bin 0 -> 100 bytes
+ ui/rte/images/email.gif                            |  Bin 0 -> 374 bytes
+ ui/rte/images/hr.gif                               |  Bin 0 -> 77 bytes
+ ui/rte/images/hyperlink.gif                        |  Bin 0 -> 196 bytes
+ ui/rte/images/image.gif                            |  Bin 0 -> 203 bytes
+ ui/rte/images/indent.gif                           |  Bin 0 -> 96 bytes
+ ui/rte/images/insert_table.gif                     |  Bin 0 -> 923 bytes
+ ui/rte/images/italic.gif                           |  Bin 0 -> 84 bytes
+ ui/rte/images/justifyfull.gif                      |  Bin 0 -> 76 bytes
+ ui/rte/images/left_just.gif                        |  Bin 0 -> 76 bytes
+ ui/rte/images/list.gif                             |  Bin 0 -> 88 bytes
+ ui/rte/images/numbered_list.gif                    |  Bin 0 -> 90 bytes
+ ui/rte/images/outdent.gif                          |  Bin 0 -> 96 bytes
+ ui/rte/images/paste.gif                            |  Bin 0 -> 152 bytes
+ ui/rte/images/redo.gif                             |  Bin 0 -> 88 bytes
+ ui/rte/images/right_just.gif                       |  Bin 0 -> 76 bytes
+ ui/rte/images/smiley.gif                           |  Bin 0 -> 310 bytes
+ ui/rte/images/spellcheck.gif                       |  Bin 0 -> 107 bytes
+ ui/rte/images/textcolor.gif                        |  Bin 0 -> 109 bytes
+ ui/rte/images/underline.gif                        |  Bin 0 -> 93 bytes
+ ui/rte/images/undo.gif                             |  Bin 0 -> 89 bytes
+ ui/rte/insert_table.htm                            |   70 +
+ ui/rte/install.htm                                 |   91 +
+ ui/rte/multi.htm                                   |   76 +
+ ui/rte/palette.htm                                 |  126 +
+ ui/rte/richtext.js                                 |  608 +
+ ui/rte/richtext_compressed.js                      |    1 +
+ ui/rte/rte.css                                     |   41 +
+ ui/tinymce/changelog.txt                           | 1084 ++
+ ui/tinymce/examples/css/content.css                |  105 +
+ ui/tinymce/examples/css/word.css                   |   53 +
+ ui/tinymce/examples/custom_formats.html            |  111 +
+ ui/tinymce/examples/full.html                      |  101 +
+ ui/tinymce/examples/index.html                     |   10 +
+ ui/tinymce/examples/lists/image_list.js            |    9 +
+ ui/tinymce/examples/lists/link_list.js             |   10 +
+ ui/tinymce/examples/lists/media_list.js            |   10 +
+ ui/tinymce/examples/lists/template_list.js         |    9 +
+ ui/tinymce/examples/media/logo.jpg                 |  Bin 0 -> 2729 bytes
+ ui/tinymce/examples/media/logo_over.jpg            |  Bin 0 -> 6473 bytes
+ ui/tinymce/examples/media/sample.avi               |  Bin 0 -> 82944 bytes
+ ui/tinymce/examples/media/sample.dcr               |  Bin 0 -> 6774 bytes
+ ui/tinymce/examples/media/sample.mov               |  Bin 0 -> 55622 bytes
+ ui/tinymce/examples/media/sample.ram               |    1 +
+ ui/tinymce/examples/media/sample.rm                |  Bin 0 -> 17846 bytes
+ ui/tinymce/examples/media/sample.swf               |  Bin 0 -> 6118 bytes
+ ui/tinymce/examples/menu.html                      |   17 +
+ ui/tinymce/examples/simple.html                    |   47 +
+ ui/tinymce/examples/skins.html                     |  216 +
+ ui/tinymce/examples/templates/layout1.htm          |   15 +
+ ui/tinymce/examples/templates/snippet1.htm         |    1 +
+ ui/tinymce/examples/translate.html                 |   84 +
+ ui/tinymce/examples/word.html                      |   71 +
+ ui/tinymce/jscripts/tiny_mce/langs/en.js           |  170 +
+ ui/tinymce/jscripts/tiny_mce/license.txt           |  504 +
+ .../jscripts/tiny_mce/plugins/advhr/css/advhr.css  |    5 +
+ .../tiny_mce/plugins/advhr/editor_plugin.js        |    1 +
+ .../tiny_mce/plugins/advhr/editor_plugin_src.js    |   57 +
+ .../jscripts/tiny_mce/plugins/advhr/js/rule.js     |   43 +
+ .../tiny_mce/plugins/advhr/langs/en_dlg.js         |    5 +
+ .../jscripts/tiny_mce/plugins/advhr/rule.htm       |   57 +
+ .../tiny_mce/plugins/advimage/css/advimage.css     |   13 +
+ .../tiny_mce/plugins/advimage/editor_plugin.js     |    1 +
+ .../tiny_mce/plugins/advimage/editor_plugin_src.js |   50 +
+ .../jscripts/tiny_mce/plugins/advimage/image.htm   |  232 +
+ .../tiny_mce/plugins/advimage/img/sample.gif       |  Bin 0 -> 1624 bytes
+ .../jscripts/tiny_mce/plugins/advimage/js/image.js |  443 +
+ .../tiny_mce/plugins/advimage/langs/en_dlg.js      |   43 +
+ .../tiny_mce/plugins/advlink/css/advlink.css       |    8 +
+ .../tiny_mce/plugins/advlink/editor_plugin.js      |    1 +
+ .../tiny_mce/plugins/advlink/editor_plugin_src.js  |   61 +
+ .../tiny_mce/plugins/advlink/js/advlink.js         |  528 +
+ .../tiny_mce/plugins/advlink/langs/en_dlg.js       |   52 +
+ .../jscripts/tiny_mce/plugins/advlink/link.htm     |  333 +
+ .../tiny_mce/plugins/advlist/editor_plugin.js      |    1 +
+ .../tiny_mce/plugins/advlist/editor_plugin_src.js  |  154 +
+ .../tiny_mce/plugins/autoresize/editor_plugin.js   |    1 +
+ .../plugins/autoresize/editor_plugin_src.js        |  119 +
+ .../tiny_mce/plugins/autosave/editor_plugin.js     |    1 +
+ .../tiny_mce/plugins/autosave/editor_plugin_src.js |  422 +
+ .../jscripts/tiny_mce/plugins/autosave/langs/en.js |    4 +
+ .../tiny_mce/plugins/bbcode/editor_plugin.js       |    1 +
+ .../tiny_mce/plugins/bbcode/editor_plugin_src.js   |  120 +
+ .../tiny_mce/plugins/contextmenu/editor_plugin.js  |    1 +
+ .../plugins/contextmenu/editor_plugin_src.js       |  147 +
+ .../plugins/directionality/editor_plugin.js        |    1 +
+ .../plugins/directionality/editor_plugin_src.js    |   82 +
+ .../tiny_mce/plugins/emotions/editor_plugin.js     |    1 +
+ .../tiny_mce/plugins/emotions/editor_plugin_src.js |   43 +
+ .../tiny_mce/plugins/emotions/emotions.htm         |   40 +
+ .../tiny_mce/plugins/emotions/img/smiley-cool.gif  |  Bin 0 -> 354 bytes
+ .../tiny_mce/plugins/emotions/img/smiley-cry.gif   |  Bin 0 -> 329 bytes
+ .../plugins/emotions/img/smiley-embarassed.gif     |  Bin 0 -> 331 bytes
+ .../plugins/emotions/img/smiley-foot-in-mouth.gif  |  Bin 0 -> 344 bytes
+ .../tiny_mce/plugins/emotions/img/smiley-frown.gif |  Bin 0 -> 340 bytes
+ .../plugins/emotions/img/smiley-innocent.gif       |  Bin 0 -> 336 bytes
+ .../tiny_mce/plugins/emotions/img/smiley-kiss.gif  |  Bin 0 -> 338 bytes
+ .../plugins/emotions/img/smiley-laughing.gif       |  Bin 0 -> 344 bytes
+ .../plugins/emotions/img/smiley-money-mouth.gif    |  Bin 0 -> 321 bytes
+ .../plugins/emotions/img/smiley-sealed.gif         |  Bin 0 -> 325 bytes
+ .../tiny_mce/plugins/emotions/img/smiley-smile.gif |  Bin 0 -> 345 bytes
+ .../plugins/emotions/img/smiley-surprised.gif      |  Bin 0 -> 342 bytes
+ .../plugins/emotions/img/smiley-tongue-out.gif     |  Bin 0 -> 328 bytes
+ .../plugins/emotions/img/smiley-undecided.gif      |  Bin 0 -> 337 bytes
+ .../tiny_mce/plugins/emotions/img/smiley-wink.gif  |  Bin 0 -> 351 bytes
+ .../tiny_mce/plugins/emotions/img/smiley-yell.gif  |  Bin 0 -> 336 bytes
+ .../tiny_mce/plugins/emotions/js/emotions.js       |   22 +
+ .../tiny_mce/plugins/emotions/langs/en_dlg.js      |   20 +
+ .../jscripts/tiny_mce/plugins/example/dialog.htm   |   22 +
+ .../tiny_mce/plugins/example/editor_plugin.js      |    1 +
+ .../tiny_mce/plugins/example/editor_plugin_src.js  |   84 +
+ .../tiny_mce/plugins/example/img/example.gif       |  Bin 0 -> 87 bytes
+ .../jscripts/tiny_mce/plugins/example/js/dialog.js |   19 +
+ .../jscripts/tiny_mce/plugins/example/langs/en.js  |    3 +
+ .../tiny_mce/plugins/example/langs/en_dlg.js       |    3 +
+ .../tiny_mce/plugins/fullpage/css/fullpage.css     |  182 +
+ .../tiny_mce/plugins/fullpage/editor_plugin.js     |    1 +
+ .../tiny_mce/plugins/fullpage/editor_plugin_src.js |  153 +
+ .../tiny_mce/plugins/fullpage/fullpage.htm         |  571 +
+ .../tiny_mce/plugins/fullpage/js/fullpage.js       |  471 +
+ .../tiny_mce/plugins/fullpage/langs/en_dlg.js      |   85 +
+ .../tiny_mce/plugins/fullscreen/editor_plugin.js   |    1 +
+ .../plugins/fullscreen/editor_plugin_src.js        |  151 +
+ .../tiny_mce/plugins/fullscreen/fullscreen.htm     |  109 +
+ .../tiny_mce/plugins/iespell/editor_plugin.js      |    1 +
+ .../tiny_mce/plugins/iespell/editor_plugin_src.js  |   54 +
+ .../tiny_mce/plugins/inlinepopups/editor_plugin.js |    1 +
+ .../plugins/inlinepopups/editor_plugin_src.js      |  635 +
+ .../inlinepopups/skins/clearlooks2/img/alert.gif   |  Bin 0 -> 818 bytes
+ .../inlinepopups/skins/clearlooks2/img/button.gif  |  Bin 0 -> 280 bytes
+ .../inlinepopups/skins/clearlooks2/img/buttons.gif |  Bin 0 -> 1195 bytes
+ .../inlinepopups/skins/clearlooks2/img/confirm.gif |  Bin 0 -> 915 bytes
+ .../inlinepopups/skins/clearlooks2/img/corners.gif |  Bin 0 -> 911 bytes
+ .../skins/clearlooks2/img/horizontal.gif           |  Bin 0 -> 769 bytes
+ .../skins/clearlooks2/img/vertical.gif             |  Bin 0 -> 92 bytes
+ .../inlinepopups/skins/clearlooks2/window.css      |   90 +
+ .../tiny_mce/plugins/inlinepopups/template.htm     |  387 +
+ .../plugins/insertdatetime/editor_plugin.js        |    1 +
+ .../plugins/insertdatetime/editor_plugin_src.js    |   83 +
+ .../tiny_mce/plugins/layer/editor_plugin.js        |    1 +
+ .../tiny_mce/plugins/layer/editor_plugin_src.js    |  212 +
+ .../tiny_mce/plugins/legacyoutput/editor_plugin.js |    1 +
+ .../plugins/legacyoutput/editor_plugin_src.js      |  136 +
+ .../tiny_mce/plugins/media/css/content.css         |    6 +
+ .../jscripts/tiny_mce/plugins/media/css/media.css  |   16 +
+ .../tiny_mce/plugins/media/editor_plugin.js        |    1 +
+ .../tiny_mce/plugins/media/editor_plugin_src.js    |  414 +
+ .../jscripts/tiny_mce/plugins/media/img/flash.gif  |  Bin 0 -> 241 bytes
+ .../tiny_mce/plugins/media/img/flv_player.swf      |  Bin 0 -> 11668 bytes
+ .../tiny_mce/plugins/media/img/quicktime.gif       |  Bin 0 -> 303 bytes
+ .../tiny_mce/plugins/media/img/realmedia.gif       |  Bin 0 -> 439 bytes
+ .../tiny_mce/plugins/media/img/shockwave.gif       |  Bin 0 -> 387 bytes
+ .../jscripts/tiny_mce/plugins/media/img/trans.gif  |  Bin 0 -> 43 bytes
+ .../tiny_mce/plugins/media/img/windowsmedia.gif    |  Bin 0 -> 415 bytes
+ .../jscripts/tiny_mce/plugins/media/js/embed.js    |   73 +
+ .../jscripts/tiny_mce/plugins/media/js/media.js    |  630 +
+ .../tiny_mce/plugins/media/langs/en_dlg.js         |  103 +
+ .../jscripts/tiny_mce/plugins/media/media.htm      |  817 ++
+ .../tiny_mce/plugins/nonbreaking/editor_plugin.js  |    1 +
+ .../plugins/nonbreaking/editor_plugin_src.js       |   53 +
+ .../tiny_mce/plugins/noneditable/editor_plugin.js  |    1 +
+ .../plugins/noneditable/editor_plugin_src.js       |   90 +
+ .../tiny_mce/plugins/pagebreak/css/content.css     |    1 +
+ .../tiny_mce/plugins/pagebreak/editor_plugin.js    |    1 +
+ .../plugins/pagebreak/editor_plugin_src.js         |   77 +
+ .../tiny_mce/plugins/pagebreak/img/pagebreak.gif   |  Bin 0 -> 325 bytes
+ .../tiny_mce/plugins/pagebreak/img/trans.gif       |  Bin 0 -> 43 bytes
+ .../tiny_mce/plugins/paste/editor_plugin.js        |    1 +
+ .../tiny_mce/plugins/paste/editor_plugin_src.js    |  952 ++
+ .../tiny_mce/plugins/paste/js/pastetext.js         |   36 +
+ .../tiny_mce/plugins/paste/js/pasteword.js         |   51 +
+ .../tiny_mce/plugins/paste/langs/en_dlg.js         |    5 +
+ .../jscripts/tiny_mce/plugins/paste/pastetext.htm  |   27 +
+ .../jscripts/tiny_mce/plugins/paste/pasteword.htm  |   21 +
+ .../tiny_mce/plugins/preview/editor_plugin.js      |    1 +
+ .../tiny_mce/plugins/preview/editor_plugin_src.js  |   53 +
+ .../jscripts/tiny_mce/plugins/preview/example.html |   28 +
+ .../tiny_mce/plugins/preview/jscripts/embed.js     |   73 +
+ .../jscripts/tiny_mce/plugins/preview/preview.html |   17 +
+ .../tiny_mce/plugins/print/editor_plugin.js        |    1 +
+ .../tiny_mce/plugins/print/editor_plugin_src.js    |   34 +
+ .../tiny_mce/plugins/save/editor_plugin.js         |    1 +
+ .../tiny_mce/plugins/save/editor_plugin_src.js     |  101 +
+ .../plugins/searchreplace/css/searchreplace.css    |    6 +
+ .../plugins/searchreplace/editor_plugin.js         |    1 +
+ .../plugins/searchreplace/editor_plugin_src.js     |   57 +
+ .../plugins/searchreplace/js/searchreplace.js      |  130 +
+ .../tiny_mce/plugins/searchreplace/langs/en_dlg.js |   16 +
+ .../plugins/searchreplace/searchreplace.htm        |   99 +
+ .../tiny_mce/plugins/spellchecker/css/content.css  |    1 +
+ .../tiny_mce/plugins/spellchecker/editor_plugin.js |    1 +
+ .../plugins/spellchecker/editor_plugin_src.js      |  417 +
+ .../tiny_mce/plugins/spellchecker/img/wline.gif    |  Bin 0 -> 46 bytes
+ .../jscripts/tiny_mce/plugins/style/css/props.css  |   13 +
+ .../tiny_mce/plugins/style/editor_plugin.js        |    1 +
+ .../tiny_mce/plugins/style/editor_plugin_src.js    |   55 +
+ .../jscripts/tiny_mce/plugins/style/js/props.js    |  641 +
+ .../tiny_mce/plugins/style/langs/en_dlg.js         |   63 +
+ .../jscripts/tiny_mce/plugins/style/props.htm      |  723 +
+ .../tiny_mce/plugins/tabfocus/editor_plugin.js     |    1 +
+ .../tiny_mce/plugins/tabfocus/editor_plugin_src.js |  112 +
+ .../jscripts/tiny_mce/plugins/table/cell.htm       |  178 +
+ .../jscripts/tiny_mce/plugins/table/css/cell.css   |   17 +
+ .../jscripts/tiny_mce/plugins/table/css/row.css    |   25 +
+ .../jscripts/tiny_mce/plugins/table/css/table.css  |   13 +
+ .../tiny_mce/plugins/table/editor_plugin.js        |    1 +
+ .../tiny_mce/plugins/table/editor_plugin_src.js    | 1125 ++
+ .../jscripts/tiny_mce/plugins/table/js/cell.js     |  286 +
+ .../tiny_mce/plugins/table/js/merge_cells.js       |   27 +
+ .../jscripts/tiny_mce/plugins/table/js/row.js      |  237 +
+ .../jscripts/tiny_mce/plugins/table/js/table.js    |  449 +
+ .../tiny_mce/plugins/table/langs/en_dlg.js         |   74 +
+ .../tiny_mce/plugins/table/merge_cells.htm         |   32 +
+ ui/tinymce/jscripts/tiny_mce/plugins/table/row.htm |  155 +
+ .../jscripts/tiny_mce/plugins/table/table.htm      |  187 +
+ .../jscripts/tiny_mce/plugins/template/blank.htm   |   12 +
+ .../tiny_mce/plugins/template/css/template.css     |   23 +
+ .../tiny_mce/plugins/template/editor_plugin.js     |    1 +
+ .../tiny_mce/plugins/template/editor_plugin_src.js |  159 +
+ .../tiny_mce/plugins/template/js/template.js       |  106 +
+ .../tiny_mce/plugins/template/langs/en_dlg.js      |   15 +
+ .../tiny_mce/plugins/template/template.htm         |   31 +
+ .../tiny_mce/plugins/visualchars/editor_plugin.js  |    1 +
+ .../plugins/visualchars/editor_plugin_src.js       |   83 +
+ .../tiny_mce/plugins/wordcount/editor_plugin.js    |    1 +
+ .../plugins/wordcount/editor_plugin_src.js         |   98 +
+ .../jscripts/tiny_mce/plugins/xhtmlxtras/abbr.htm  |  141 +
+ .../tiny_mce/plugins/xhtmlxtras/acronym.htm        |  141 +
+ .../tiny_mce/plugins/xhtmlxtras/attributes.htm     |  148 +
+ .../jscripts/tiny_mce/plugins/xhtmlxtras/cite.htm  |  141 +
+ .../tiny_mce/plugins/xhtmlxtras/css/attributes.css |   11 +
+ .../tiny_mce/plugins/xhtmlxtras/css/popup.css      |    9 +
+ .../jscripts/tiny_mce/plugins/xhtmlxtras/del.htm   |  161 +
+ .../tiny_mce/plugins/xhtmlxtras/editor_plugin.js   |    1 +
+ .../plugins/xhtmlxtras/editor_plugin_src.js        |  132 +
+ .../jscripts/tiny_mce/plugins/xhtmlxtras/ins.htm   |  161 +
+ .../tiny_mce/plugins/xhtmlxtras/js/abbr.js         |   28 +
+ .../tiny_mce/plugins/xhtmlxtras/js/acronym.js      |   28 +
+ .../tiny_mce/plugins/xhtmlxtras/js/attributes.js   |  126 +
+ .../tiny_mce/plugins/xhtmlxtras/js/cite.js         |   28 +
+ .../jscripts/tiny_mce/plugins/xhtmlxtras/js/del.js |   63 +
+ .../plugins/xhtmlxtras/js/element_common.js        |  231 +
+ .../jscripts/tiny_mce/plugins/xhtmlxtras/js/ins.js |   62 +
+ .../tiny_mce/plugins/xhtmlxtras/langs/en_dlg.js    |   32 +
+ .../jscripts/tiny_mce/themes/advanced/about.htm    |   54 +
+ .../jscripts/tiny_mce/themes/advanced/anchor.htm   |   26 +
+ .../jscripts/tiny_mce/themes/advanced/charmap.htm  |   52 +
+ .../tiny_mce/themes/advanced/color_picker.htm      |   73 +
+ .../tiny_mce/themes/advanced/editor_template.js    |    1 +
+ .../themes/advanced/editor_template_src.js         | 1217 ++
+ .../jscripts/tiny_mce/themes/advanced/image.htm    |   80 +
+ .../tiny_mce/themes/advanced/img/colorpicker.jpg   |  Bin 0 -> 3189 bytes
+ .../tiny_mce/themes/advanced/img/icons.gif         |  Bin 0 -> 11794 bytes
+ .../jscripts/tiny_mce/themes/advanced/js/about.js  |   72 +
+ .../jscripts/tiny_mce/themes/advanced/js/anchor.js |   37 +
+ .../tiny_mce/themes/advanced/js/charmap.js         |  335 +
+ .../tiny_mce/themes/advanced/js/color_picker.js    |  253 +
+ .../jscripts/tiny_mce/themes/advanced/js/image.js  |  245 +
+ .../jscripts/tiny_mce/themes/advanced/js/link.js   |  156 +
+ .../tiny_mce/themes/advanced/js/source_editor.js   |   62 +
+ .../jscripts/tiny_mce/themes/advanced/langs/en.js  |   62 +
+ .../tiny_mce/themes/advanced/langs/en_dlg.js       |   51 +
+ .../jscripts/tiny_mce/themes/advanced/link.htm     |   58 +
+ .../themes/advanced/skins/default/content.css      |   36 +
+ .../themes/advanced/skins/default/dialog.css       |  117 +
+ .../themes/advanced/skins/default/img/buttons.png  |  Bin 0 -> 3274 bytes
+ .../themes/advanced/skins/default/img/items.gif    |  Bin 0 -> 70 bytes
+ .../advanced/skins/default/img/menu_arrow.gif      |  Bin 0 -> 68 bytes
+ .../advanced/skins/default/img/menu_check.gif      |  Bin 0 -> 70 bytes
+ .../themes/advanced/skins/default/img/progress.gif |  Bin 0 -> 1787 bytes
+ .../themes/advanced/skins/default/img/tabs.gif     |  Bin 0 -> 1326 bytes
+ .../tiny_mce/themes/advanced/skins/default/ui.css  |  213 +
+ .../themes/advanced/skins/o2k7/content.css         |   36 +
+ .../tiny_mce/themes/advanced/skins/o2k7/dialog.css |  116 +
+ .../themes/advanced/skins/o2k7/img/button_bg.png   |  Bin 0 -> 5859 bytes
+ .../advanced/skins/o2k7/img/button_bg_black.png    |  Bin 0 -> 3736 bytes
+ .../advanced/skins/o2k7/img/button_bg_silver.png   |  Bin 0 -> 5358 bytes
+ .../tiny_mce/themes/advanced/skins/o2k7/ui.css     |  215 +
+ .../themes/advanced/skins/o2k7/ui_black.css        |    8 +
+ .../themes/advanced/skins/o2k7/ui_silver.css       |    5 +
+ .../tiny_mce/themes/advanced/source_editor.htm     |   25 +
+ .../tiny_mce/themes/simple/editor_template.js      |    1 +
+ .../tiny_mce/themes/simple/editor_template_src.js  |   85 +
+ .../jscripts/tiny_mce/themes/simple/img/icons.gif  |  Bin 0 -> 1440 bytes
+ .../jscripts/tiny_mce/themes/simple/langs/en.js    |   11 +
+ .../themes/simple/skins/default/content.css        |   25 +
+ .../tiny_mce/themes/simple/skins/default/ui.css    |   32 +
+ .../tiny_mce/themes/simple/skins/o2k7/content.css  |   17 +
+ .../themes/simple/skins/o2k7/img/button_bg.png     |  Bin 0 -> 5102 bytes
+ .../tiny_mce/themes/simple/skins/o2k7/ui.css       |   35 +
+ ui/tinymce/jscripts/tiny_mce/tiny_mce.js           |    1 +
+ ui/tinymce/jscripts/tiny_mce/tiny_mce_popup.js     |    5 +
+ ui/tinymce/jscripts/tiny_mce/tiny_mce_src.js       |14170 ++++++++++++++++++++
+ .../jscripts/tiny_mce/utils/editable_selects.js    |   70 +
+ ui/tinymce/jscripts/tiny_mce/utils/form_utils.js   |  200 +
+ ui/tinymce/jscripts/tiny_mce/utils/mctabs.js       |   77 +
+ ui/tinymce/jscripts/tiny_mce/utils/validate.js     |  220 +
+ 1296 files changed, 175875 insertions(+)

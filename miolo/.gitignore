@@ -1,0 +1,8 @@
+.project
+*~
+*.swp
+/var/log/
+/var/reports/
+/etc/
+/modules/biblioteca/.gitignore
+/modules/biblioteca/.git/
