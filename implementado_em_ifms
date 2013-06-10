@@ -1,0 +1,39 @@
+Devolucao / Emprestimoi - STATUS: OK
+
+classes/devolucao.class
+miolo/modules/biblioteca/classes/exemplar.class
+classes/emprestimo.class  
+forms/frmEmprestimo.class 
+forms/frmDevolucao.class           
+miolo/classes/ui/reports/mjasperreport.class
+miolo/classes/extensions/jasper/lib/itext-2.1.7.jar
+miolo/classes/extensions/jasper/lib/jasperreports-4.8.0.jar
+reports/Ticket1_Emprestimo_UI.jasper
+reports/Ticket1_Emprestimo_UI.jrxml
+reports/Ticket1_Devolucao_UI.jasper
+reports/Ticket1_Devolucao_UI.jrxml 
+lo/modules/biblioteca/classes/exemplar.class
+miolo/modules/biblioteca/classes/operacao.class
+miolo/modules/biblioteca/classes/direito.class
+miolo/classes/ui/reports/mjasperreport.class
+
+Relatório de Empréstimos Regulares e Irregulares v1.0 - STATUS: OK
+
+forms/frmRelatorioEmprestimos.class                |   77 ++++++++
+miolo/modules/biblioteca/classes/operacao.class
+handlers/circulacao/relatorio.inc                  |    3 +-
+handlers/circulacao/relatorio/emprestimos.inc      |   40 ++++
+reports/emprestimos.jasper                         |  Bin 0 ->
+reports/emprestimos.jrxml                          |  197
+
+Reserva e Renovação - STATUS: OK
+
+classes/direito.class          
+classes/exemplar.class         
+classes/operacao.class         
+classes/reserva.class          
+forms/frmDevolucao.class       
+forms/frmPesquisaSimples.class 
+forms/frmResUsuario.class 
+forms/frmEmprUsuario.class  
+forms/frmRenovUsuario.class 
