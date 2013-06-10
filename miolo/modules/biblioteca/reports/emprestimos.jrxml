@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="emprestimos" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="8a3afaeb-359e-43c0-9621-a1f3d2e6d7d0">
+	<property name="ireport.zoom" value="0.75"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="ORDERBY" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[1]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT DISTINCT
+	usuario.login,
+	exemplar.numerodotombo,
+	obra.titulo,
+	(SELECT array_to_string(array_agg(conteudo),' / ') FROM bt_material WHERE idobra = obra.idobra AND idetiqueta = 53) as autor,
+	obra.edicao,
+	emprestimo.datahoradoemprestimo,
+	emprestimo.datahoraprevisaodevolucao,
+	(SELECT
+		CASE
+			WHEN datahoraprevisaodevolucao >= now() THEN 'OK'
+			ELSE 'EXPIRADO'
+		END
+	FROM bt_emprestimo
+	WHERE bt_emprestimo.idemprestimo = emprestimo.idemprestimo) as status
+
+FROM 	cm_usuario usuario
+JOIN	bt_validacao validacao ON (usuario.idusuario = validacao.idusuario)
+JOIN	bt_emprestimo emprestimo ON (emprestimo.idusuario = usuario.idusuario)
+JOIN	bt_exemplar exemplar ON (emprestimo.idexemplar = exemplar.idexemplar)
+JOIN	bt_estado estado ON (exemplar.idestado = estado.idestado)
+JOIN	bt_obra obra ON (exemplar.idobra = obra.idobra)
+JOIN	bt_autor autor ON (obra.idautor = autor.idautor)
+
+WHERE
+	emprestimo.datahoradadevolucao is null
+
+ORDER BY $P!{ORDERBY};]]>
+	</queryString>
+	<field name="login" class="java.lang.String"/>
+	<field name="numerodotombo" class="java.lang.String"/>
+	<field name="titulo" class="java.lang.String"/>
+	<field name="autor" class="java.lang.String"/>
+	<field name="edicao" class="java.lang.String"/>
+	<field name="datahoradoemprestimo" class="java.sql.Timestamp"/>
+	<field name="datahoraprevisaodevolucao" class="java.sql.Timestamp"/>
+	<field name="status" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="41" splitType="Stretch">
+			<rectangle>
+				<reportElement uuid="0c9fbfba-dccb-4e82-a699-88459d42d6ba" x="0" y="0" width="802" height="32" backcolor="#CCCCCC"/>
+			</rectangle>
+			<staticText>
+				<reportElement uuid="7d9ec20c-c515-4721-9854-0092a5f32e3b" x="161" y="4" width="481" height="28" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Center">
+					<font fontName="Monospaced" size="18" isBold="true" pdfFontName="Times-Roman" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[Relatório de Empréstimos]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="3" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="21" splitType="Stretch">
+			<rectangle>
+				<reportElement uuid="2bb38489-34bf-4746-bd90-1d1a1d7d7113" x="0" y="-4" width="802" height="20"/>
+			</rectangle>
+			<staticText>
+				<reportElement uuid="5f69b4e2-75b0-4106-9e72-3a4f2fd9a28a" x="4" y="0" width="51" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Login]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="744fd2d7-707c-45c7-8696-b7e17428d4c0" x="247" y="1" width="63" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Autor(es)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="8fd8c750-fcdc-4981-afe4-435925ac32e4" x="393" y="0" width="50" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Edição]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="2de9a5cc-6f06-48c2-96ff-2eff4bd5a0be" x="448" y="0" width="78" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Empréstimo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="6e7b17e6-1d8b-4fee-92ab-01088ae323e2" x="562" y="0" width="129" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Previsão de Devolução]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="f5eb0238-0d0c-407f-84b7-6ce231f2b02a" x="59" y="0" width="41" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tombo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="24ffc353-3190-4802-bc4c-755c81dda9d5" x="106" y="1" width="39" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Título]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="6e7b17e6-1d8b-4fee-92ab-01088ae323e2" x="702" y="0" width="45" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Status]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="47" splitType="Stretch">
+			<rectangle>
+				<reportElement uuid="970cc206-00c2-4ed6-9367-6a69c1079c74" x="1" y="5" width="801" height="42" backcolor="#F0F0FA">
+					<printWhenExpression><![CDATA[new Boolean(($V{COLUMN_COUNT}.intValue() % 2) == 0)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Double"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="59411b45-e41f-4228-bbea-4c1205062c37" x="3" y="10" width="51" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{login}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="fc096ab5-0d9a-4efe-b090-6c5aefedb964" x="60" y="10" width="40" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{numerodotombo}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="ae896501-2ec7-4c02-bd61-c8217c04418b" x="247" y="6" width="140" height="33"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{autor}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="7405fc5c-ec91-4cf5-864f-d74cb77e5551" x="106" y="7" width="137" height="33"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{titulo}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="020472ae-1319-433e-a810-e93ad7349679" x="393" y="9" width="30" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{edicao}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="true">
+				<reportElement uuid="d4f6ad97-8f44-44c0-b0c1-886fc69a6dd4" x="448" y="9" width="108" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{datahoradoemprestimo}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="true">
+				<reportElement uuid="777c4bcb-eb58-47fa-8bf9-cd7f0281f4c7" x="562" y="10" width="108" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{datahoraprevisaodevolucao}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="0f5a382a-7f72-439e-8de6-aeaed2268fc9" x="702" y="9" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{status}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="4" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="22" splitType="Stretch">
+			<textField>
+				<reportElement uuid="8b6dc06a-ced5-4df3-9544-a8a10b3f862c" isPrintRepeatedValues="false" mode="Transparent" x="782" y="0" width="20" height="20" isRemoveLineWhenBlank="true"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="4" splitType="Stretch"/>
+	</summary>
+</jasperReport>

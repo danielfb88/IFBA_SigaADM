@@ -142,6 +142,19 @@ class BusinessBibliotecaOperacao extends Business
         return $query;
 	}
 	
+	/**
+	 * Obtém o ID da operação pelo mnemonico.
+	 *
+	 * @author Daniel Bonfim
+	 * @since 13-03-2013
+	 *
+	 * @param string $mnemonico
+	 */
+	function getIdOperacaoByMnemonico2($mnemonico) {
+		$sql = new sql('idoperacao', 'bt_operacao', 'mnemonico = ?');
+		return $this->Query($sql, $mnemonico)->result[0][0];
+	}
+	
 	function GetIdoperacaoByMnemonico($mne)
 	{
         $criteria =  $this->getCriteria();
