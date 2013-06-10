@@ -1,59 +1,59 @@
 <?PHP
 /* Copyright 2006, 2007, 2008, 2009, 2010 do SETEC/MEC
  *
- * Este arquivo é parte do programa SigaEPT
- *
- * O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
- * termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
- * na versão 2 da Licença.
- *
- * Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
- * uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
- * Pública Geral GNU/GPL em português para maiores detalhes.
- *
- * Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
- * junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
- * www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
- * St, Fifth Floor, Boston, MA 02110-1301, USA
- */
+* Este arquivo é parte do programa SigaEPT
+*
+* O SigaEPT é um software livre;  você pode redistribuí-lo e/ou modificá-lo dentro dos
+* termos da Licença Pública Geral GNU como publicada pela fundação do software livre (FSF);
+* na versão 2 da Licença.
+*
+* Este programa é distribuído na esperança que possa ser útil, mas SEM NENHUMA GARANTIA; sem
+* uma garantia implícita de ADEQUAÇÃO a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja Licença
+* Pública Geral GNU/GPL em português para maiores detalhes.
+*
+* Você deve ter recebido uma cópia da Licença Pública Geral GNU, sob o título “LICENCA.txt”,
+* junto com este programa, se não, acesse o portal do Software Público Brasileiro no endereço
+* www.softwarepublico.gov.br ou escreva para Fundação do Software Livre (FSF) Inc.,51 Franklin
+* St, Fifth Floor, Boston, MA 02110-1301, USA
+*/
 ?>
 <?
 /*
 
 
 
-   Uma imagem vale por mil palavras...
+Uma imagem vale por mil palavras...
 
-   hierarquia de classes:
+hierarquia de classes:
 
-                                  FORM
-                                    |
-                                    |
-                                 PESQUISA  (frmPesquisa.class)
-                                    |
-                                    |
-   -----------------------------------------------------------------------------
-           |                    |                    |                  |
-           |                    |                    |                  |
-    Pesquisa Simples    Pesquisa Multicampo  Percorrer indices  Pesquisa Numérica
+FORM
+|
+|
+PESQUISA  (frmPesquisa.class)
+|
+|
+-----------------------------------------------------------------------------
+|                    |                    |                  |
+|                    |                    |                  |
+Pesquisa Simples    Pesquisa Multicampo  Percorrer indices  Pesquisa Numérica
 
 
 
- Para configurar os campos da Pesquisa Simples, acesse etc/pesquisa.xml
+Para configurar os campos da Pesquisa Simples, acesse etc/pesquisa.xml
 
 */
 
 MIOLO::IMPORT('modules::biblioteca::forms::frmPesquisa');
 
-class frmPesquisaSimples extends frmPesquisa 
+class frmPesquisaSimples extends frmPesquisa
 {
 	var $objSimples;
 	var $objObra;
 	var $objUnidade;
 	var $objGenero;
 
-    function frmPesquisaSimples()  // construtor da Classe
-    {
+	function frmPesquisaSimples()  // construtor da Classe
+	{
 		global $MIOLO,$module;
 
 		// Título do Formulário
@@ -62,14 +62,14 @@ class frmPesquisaSimples extends frmPesquisa
 		$this->objSimples = $MIOLO->GetBusiness($module,'pesquisasimples');
 
 		$this->EventHandler();
-		
+
 		// Botão 'fechar', direcionando para o handler biblioteca/main/
 		$this->SetClose($this->manager->GetActionURL($module, 'main'));
-    }
+	}
 
-   
-    function CreateFields()
-    {
+
+	function CreateFields()
+	{
 		global $MIOLO, $module, $action;
 
 		$camposPesquisa = $this->GetCamposPesquisa();
@@ -79,7 +79,7 @@ class frmPesquisaSimples extends frmPesquisa
 
 		$opU = $this->objUnidade->ListUnidade();
 		$opG = $this->objGenero->ListGenero();
-//		$opG = $this->objGenero->ListGenerosExistentes();
+		//		$opG = $this->objGenero->ListGenerosExistentes();
 		$optionsU['0'] = 'Todas';
 		$optionsG['0'] = 'Todos';
 		foreach($opU->result as $o)
@@ -93,16 +93,16 @@ class frmPesquisaSimples extends frmPesquisa
 
 		// Campos que aparecem no formulário
 		$fields = array (
-			new TextLabel('Atenção:','As palavras não são acentuadas.', 'Atenção'),
-			new TextField('edtBusca','','Busca',30,'<a href=index.php?module=biblioteca&action=main:pesquisamulticampo>Busca Avançada</a>'),
-			new CheckBox('chkboxTermo','1','Termo Exato',true,'','Permite pesquisa na sequência digitada. Exemplo de BUSCA: Calculo integral'),
-			new TextLabel('Dica','Em caso de pesquisa por autor, desmarque a opção de Termo Exato.','Dica'),
-			new MSeparator,
-			new TextLabel('filtros','','<b>Filtros</b>'),
-			new Selection('selConsultarPor_1','','Consultar por'),
-			new Selection('selUnidade','','Unidades'),
-			new Selection('selGenero','','Tipos de Material')
-			
+				new TextLabel('Atenção:','As palavras não são acentuadas.', 'Atenção'),
+				new TextField('edtBusca','','Busca',30,'<a href=index.php?module=biblioteca&action=main:pesquisamulticampo>Busca Avançada</a>'),
+				new CheckBox('chkboxTermo','1','Termo Exato',true,'','Permite pesquisa na sequência digitada. Exemplo de BUSCA: Calculo integral'),
+				new TextLabel('Dica','Em caso de pesquisa por autor, desmarque a opção de Termo Exato.','Dica'),
+				new MSeparator,
+				new TextLabel('filtros','','<b>Filtros</b>'),
+				new Selection('selConsultarPor_1','','Consultar por'),
+				new Selection('selUnidade','','Unidades'),
+				new Selection('selGenero','','Tipos de Material')
+					
 		);
 
 		// Insere os campos
@@ -113,21 +113,21 @@ class frmPesquisaSimples extends frmPesquisa
 		$sel[$selcont] = array('Todos','Todos');
 		$this->SetFieldAttr('selConsultarPor_1','options', $sel);
 		$this->SetFieldAttr('selUnidade','options', $optionsU);
-  	    	$this->SetFieldAttr('selGenero','options', $optionsG);
+		$this->SetFieldAttr('selGenero','options', $optionsG);
 
-//		$this->SetFieldAttr('chkboxTermo','checked',true);
+		//		$this->SetFieldAttr('chkboxTermo','checked',true);
 
-	    // Botões que aparecem no formulário
+		// Botões que aparecem no formulário
 		$buttons = Array(
-			new FormButton('btnConsultar', 'Consultar'),
-			new FormButton('btnVoltar', 'Nova Pesquisa', $MIOLO->GetActionURL($module = $module, $action = $action)),
-   		);
+				new FormButton('btnConsultar', 'Consultar'),
+				new FormButton('btnVoltar', 'Nova Pesquisa', $MIOLO->GetActionURL($module = $module, $action = $action)),
+		);
 
 		//Insere os Botões
 		$this->SetButtons($buttons);
 		$this->SetButtonAttr('btnVoltar','visible',false);
 
-   		//Definindo o foco
+		//Definindo o foco
 		if ( (!$this->GetFieldValue('edtBusca')) and ($this->GetFormValue('event') == null) )
 		{
 			$this->page->onLoad("MIOLO_GetElementById('edtBusca').focus();");
@@ -135,19 +135,19 @@ class frmPesquisaSimples extends frmPesquisa
 	}
 
 
-    // pega os dados que estão no formulário   
-    function GetData()
-    {
-        $data = new FormData();
-        $data->busca = trim($this->GetFormValue('edtBusca'));
-        $data->termo = $this->GetFormValue('chkboxTermo');
+	// pega os dados que estão no formulário
+	function GetData()
+	{
+		$data = new FormData();
+		$data->busca = trim($this->GetFormValue('edtBusca'));
+		$data->termo = $this->GetFormValue('chkboxTermo');
 		$data->ConsultarPor_1 = $this->GetFormValue('selConsultarPor_1');
 		$data->Unidade = $this->GetFormValue('selUnidade');
 		$data->Genero = $this->GetFormValue('selGenero');
 		return $data;
-    }
+	}
 
-	
+
 	// usada para inserir valores no formulário
 	function SetData($data)
 	{
@@ -176,7 +176,7 @@ class frmPesquisaSimples extends frmPesquisa
 			$unidade = $this->GetFormValue('Unidade');
 			$genero = $this->GetFormValue('Genero');
 		}
-		
+
 		elseif($tipo == 'detalhe')
 		{
 			if($filtro)
@@ -192,18 +192,18 @@ class frmPesquisaSimples extends frmPesquisa
 				$genero = $this->GetFormValue('Genero');
 			}
 		}
-		
+
 		elseif($tipo == 'indice')
 		{
-	        $unidade = $this->GetFormValue('unidade');
+			$unidade = $this->GetFormValue('unidade');
 			$consultarpor1 = $this->GetFormValue('consultarpor1');
 			$consulta1 = $this->GetFormValue('consulta1');
-			$termo = $this->GetFormValue('termo');		
+			$termo = $this->GetFormValue('termo');
 		}
-		
+
 		elseif($tipo == 'multi')
 		{
-	        $unidade = $this->GetFormValue('unidade');
+			$unidade = $this->GetFormValue('unidade');
 			$genero = $this->GetFormValue('genero');
 			$consultarpor1 = $this->GetFormValue('consultarpor1');
 			$consulta1 = $this->GetFormValue('consulta1');
@@ -211,7 +211,7 @@ class frmPesquisaSimples extends frmPesquisa
 			$consultarpor2 = $this->GetFormValue('consultarpor2');
 			$consulta2 = $this->GetFormValue('consulta2');
 		}
-		
+
 		else
 		{
 		}
@@ -245,8 +245,8 @@ class frmPesquisaSimples extends frmPesquisa
 				$data->Genero = $genero;
 
 			}
-			
-			
+
+
 			elseif($tipo == 'detalhe')
 			{
 				$data = new FormData();
@@ -267,16 +267,16 @@ class frmPesquisaSimples extends frmPesquisa
 					$data->Genero = $genero;
 				}
 			}
-			
+
 			elseif($tipo == 'indice')
 			{
 				$data = new FormData();
 				$data->Unidade = $unidade;
 				$data->ConsultarPor_1 = $consultarpor1;
 				$data->Consulta_1 = $consulta1;
-				$data->Termo = $termo;				
+				$data->Termo = $termo;
 			}
-			
+
 			elseif($tipo == 'multi')
 			{
 				$data = new FormData();
@@ -293,13 +293,13 @@ class frmPesquisaSimples extends frmPesquisa
 
 		if ( (trim($data->busca)<>'') OR (trim($filtro)<>'') OR ($voltou) ) // nao usei validators
 		{
-            $this->objGenero->GetByDescricao("PERIODICO");//pega idgenero para periodico   
-            if($data->Genero==$this->objGenero->idgenero){ //verifica se genero eh periodico
-                $camposPesquisa = $this->GetCamposPesquisaPeriodico();//pega xml de campos buscaveis de periodicos
-            }else{
-                $camposPesquisa = $this->GetCamposPesquisa();
-            }
-//			$this->objSimples = $MIOLO->GetBusiness($module,'pesquisasimples');
+			$this->objGenero->GetByDescricao("PERIODICO");//pega idgenero para periodico
+			if($data->Genero==$this->objGenero->idgenero){ //verifica se genero eh periodico
+				$camposPesquisa = $this->GetCamposPesquisaPeriodico();//pega xml de campos buscaveis de periodicos
+			}else{
+				$camposPesquisa = $this->GetCamposPesquisa();
+			}
+			//			$this->objSimples = $MIOLO->GetBusiness($module,'pesquisasimples');
 
 			//setdata para configurar o valor do campo edtBusca
 			if ( (trim($data->busca) == '') AND (trim($filtro) <> ''))
@@ -320,11 +320,11 @@ class frmPesquisaSimples extends frmPesquisa
 					$this->SetData($data);
 				}
 			}
-//			$data->busca = $this->objSimples->RetirarCaracteresEspeciais($data->busca);
+			//			$data->busca = $this->objSimples->RetirarCaracteresEspeciais($data->busca);
 
 			$query = $this->objSimples->Listar($data,$camposPesquisa,$filtro,$campo);
-	//		var_dump($query->result[0]);
-//AQUI É A SQL FORMADA EM pesquisaSimples.class
+			//		var_dump($query->result[0]);
+			//AQUI É A SQL FORMADA EM pesquisaSimples.class
 			if ($query)
 			{
 				if($data->termo)
@@ -332,14 +332,14 @@ class frmPesquisaSimples extends frmPesquisa
 					$this->AddField(new HiddenField('chkboxTermo'));
 					$this->SetFieldValue('chkboxTermo','1');
 				}
-                /*
-                var_dump("camposPesquisa </br>");
-                var_dump($camposPesquisa);
-                var_dump("</br>");
-                var_dump("Data</br>");
-                var_dump($data);
-                var_dump("</br>");
-                */
+				/*
+				 var_dump("camposPesquisa </br>");
+				var_dump($camposPesquisa);
+				var_dump("</br>");
+				var_dump("Data</br>");
+				var_dump($data);
+				var_dump("</br>");
+				*/
 				if($tipo == null)
 				{
 					$this->MontaDataGrid($camposPesquisa,$query,'simples',$data);
@@ -351,13 +351,13 @@ class frmPesquisaSimples extends frmPesquisa
 			}
 			else
 			{
-			
+					
 				$MIOLO->Prompt(Prompt::Error('Sua pesquisa por "' . $data->busca . '" não retornou nenhum resultado.<br><br>
-				Sugestões:<br><br> 
-					- Certifique-se de que todas as palavras estejam escritas corretamente.<br><br>
-					- Tente palavras-chave diferentes.<br><br>
-					- Tente palavras-chave mais genéricas.<br><br>
-					- Em caso de dúvida, consulte a pessoa responsável pelo atendimento na sua biblioteca.<br>',$MIOLO->GetActionURL($module,$action)));
+						Sugestões:<br><br>
+						- Certifique-se de que todas as palavras estejam escritas corretamente.<br><br>
+						- Tente palavras-chave diferentes.<br><br>
+						- Tente palavras-chave mais genéricas.<br><br>
+						- Em caso de dúvida, consulte a pessoa responsável pelo atendimento na sua biblioteca.<br>',$MIOLO->GetActionURL($module,$action)));
 			}
 		}
 		else
@@ -371,24 +371,24 @@ class frmPesquisaSimples extends frmPesquisa
 	{
 		global $MIOLO, $module, $self, $theme, $action, $page, $item;
 
-        $GeneroPeriodico = $MIOLO->GetBusiness($module,'genero');
-        $periodico = $MIOLO->GetBusiness($module,'periodico');
+		$GeneroPeriodico = $MIOLO->GetBusiness($module,'genero');
+		$periodico = $MIOLO->GetBusiness($module,'periodico');
 		//$artigo = $MIOLO->GetBusiness($module,'artigo');
-        $GeneroPeriodico->GetByDescricao("PERIODICO");
-        $ehPeriodico = false;
+		$GeneroPeriodico->GetByDescricao("PERIODICO");
+		$ehPeriodico = false;
 
-        if($this->GetFormValue('Genero') == $GeneroPeriodico->idgenero){
-            $ehPeriodico = true;
-        }
-        
+		if($this->GetFormValue('Genero') == $GeneroPeriodico->idgenero){
+			$ehPeriodico = true;
+		}
+
 		//tenta buscar endereco para botao voltar (para tela de resultados) caso tenha havido erro na reserva
 		$endereco = $this->GetFormValue('endereco');
-        /*
-        var_dump("</br></br>");
-        var_dump();
-        var_dump("</br></br>");
-        */
-        if($endereco != null) // adiciona botao com endereco previamente estabelecido, antes do erro
+		/*
+		 var_dump("</br></br>");
+		var_dump();
+		var_dump("</br></br>");
+		*/
+		if($endereco != null) // adiciona botao com endereco previamente estabelecido, antes do erro
 		{
 			//endereco nao pode conter "&", para nao confundir com novos parametros
 			$endereco = str_replace('@@@', '&', $this->GetFormValue('endereco'));
@@ -408,42 +408,42 @@ class frmPesquisaSimples extends frmPesquisa
 				$genero = $this->GetFormValue('Genero');
 
 				$endereco = $MIOLO->GetActionURL($module, $action, '', array('event'=>'btnConsultar_click', 'busca'=>$busca, 'termo'=>$termo, 'ConsultarPor_1'=>$consultarpor1, 'Unidade'=>$unidade, 'Genero'=>$genero, 'tipo'=>$tipo, 'pn_page'=>$page));
-				
+
 				$this->AddButton(new FormButton('btnVoltar', 'Voltar', $endereco ));
 			}
-/*
-			elseif($tipo == 'detalhe')
-			{
-				$campob = $this->GetFormValue('campo');
-				$busca = $this->GetFormValue('busca');
-				$endereco = $MIOLO->GetActionURL($module, $action, '', array('event'=>'btnConsultar_click', 'busca'=>$busca, 'campo'=>$campob, 'tipo'=>$tipo, 'pn_page'=>$page));
-				$this->AddButton(new FormButton('btnVoltar', 'Voltar', $endereco ));
+			/*
+			 elseif($tipo == 'detalhe')
+			 {
+			$campob = $this->GetFormValue('campo');
+			$busca = $this->GetFormValue('busca');
+			$endereco = $MIOLO->GetActionURL($module, $action, '', array('event'=>'btnConsultar_click', 'busca'=>$busca, 'campo'=>$campob, 'tipo'=>$tipo, 'pn_page'=>$page));
+			$this->AddButton(new FormButton('btnVoltar', 'Voltar', $endereco ));
 			}
-			
-*/
+
+			*/
 
 			elseif($tipo == 'indice')
 			{
 				$this->AddButton(new FormButton('btnVoltar', 'Voltar', 'RETURN'));
-				/*	
-				$endereco = $MIOLO->GetActionURL($module, 'main:pesquisaindice', $busca, Array('event'=>'PesquisaDetalhada','unidade'=>$unidade, 'termo' =>$termo, 'consultarpor1'=>$consultarpor1,'consulta'=>$consulta,'tipo'=>$tipo,'pn_page'=>$page));
+				/*
+				 $endereco = $MIOLO->GetActionURL($module, 'main:pesquisaindice', $busca, Array('event'=>'PesquisaDetalhada','unidade'=>$unidade, 'termo' =>$termo, 'consultarpor1'=>$consultarpor1,'consulta'=>$consulta,'tipo'=>$tipo,'pn_page'=>$page));
 				$this->AddButton(new FormButton('btnVoltar', 'Voltar', $endereco ));
-				*/				
-			}	
-			
-			
+				*/
+			}
+
+
 			elseif($tipo == 'multi')
 			{
-/*				$pesquisaUnidade = $this->GetFormValue('pesquisaUnidade');
-				if($pesquisaUnidade)
-				{
-					$actionVoltar = 'main:pesquisaunidade';
+				/*				$pesquisaUnidade = $this->GetFormValue('pesquisaUnidade');
+				 if($pesquisaUnidade)
+				 {
+				$actionVoltar = 'main:pesquisaunidade';
 				}
 				else
 				{
-*/
+				*/
 				$actionVoltar = 'main:pesquisamulticampo';
-//				}
+				//				}
 				$unidade = $this->GetFormValue('unidade');
 				$genero = $this->GetFormValue('genero');
 				$consultarpor1 = $this->GetFormValue('consultarpor1');
@@ -476,58 +476,73 @@ class frmPesquisaSimples extends frmPesquisa
 		}
 
 		//busca pagina atual do grid de exemplares, para o caso de ocorrer um erro posterior na reserva
-                $pgdet = $this->GetFormValue('pn_page'); 
+		$pgdet = $this->GetFormValue('pn_page');
 
 		// Primeiro, montar um grid com os exemplares
 		$columns = array(
-			new DataGridColumn('obra','Obra','center',true, '10%',true, null, true,true),
-			new DataGridColumn('exemplar','Exemplar','center',true, '16%',true, null, true,true),
-			new DataGridColumn('tipo','Tipo','center',true, '20%',true, null, true,true),
-			new DataGridColumn('estado','Estado','center',true, '14%',true, null, true,true),
-			new DataGridColumn('prevdev','Previsão Devolução','center',true, '17%',true, null, true,true),
-			new DataGridColumn('unidade','Unidade','center',true, '15%',true, null, true,true),
-			new DataGridColumn('volume','Volume','center',true, '8%',true, null, true,true),
-			
-        );
+				//new DataGridColumn('obra','Obra','center',true, '10%',true, null, true,true),
+				new DataGridColumn('exemplar','Número do tombo','center',true, '18%',true, null, true,true),
+				new DataGridColumn('tipo','Tipo','center',true, '22%',true, null, true,true),
+				new DataGridColumn('estado','Estado','center',true, '16%',true, null, true,true),
+				new DataGridColumn('prevdev','Previsão Devolução','center',true, '19%',true, null, true,true),
+				new DataGridColumn('unidade','Unidade','center',true, '17%',true, null, true,true),
+				new DataGridColumn('volume','Volume','center',true, '8%',true, null, true,true),
+		);
 
 		//endereco (para pag de resultados) nao pode conter "&", para nao confundir com novos parametros
 		$href_datagrid = $MIOLO->GetActionURL($module,$self,$item, Array('event'=>'btnDetalhesObra_click', "endereco"=>str_replace('&', '@@@', $endereco)));
 
 		//Instancia o objeto pesquisa simples
-	    $this->objSimples = $MIOLO->GetBusiness($module,'pesquisasimples');
+		$this->objSimples = $MIOLO->GetBusiness($module,'pesquisasimples');
 
-        if(!$ehPeriodico){
-            $query = $this->objSimples->ListExemplaresByIdObra($item);
-        }else{
-            $query = $this->objSimples->ListExemplaresByIdArtigo($item);
-        }
-       /*
-        var_dump("Item: </br>");
-        var_dump($item);
-        
-        var_dump("Genero: </br>");
-        var_dump($genero);
-        var_dump("Genero form: </br>");
-        var_dump($this->GetFormValue('Genero'));
-        */
-		
-		$href_reserva= $MIOLO->GetActionURL($module,'main:reservar','%0%',Array('event'=>'btnVerificar:click', "endereco"=>str_replace('&', '@@@', $endereco), "pgdet"=>$pgdet));	
+		if(!$ehPeriodico){
+			$query = $this->objSimples->ListExemplaresByIdObra($item);
+		}else{
+			$query = $this->objSimples->ListExemplaresByIdArtigo($item);
+		}
+
+		/*
+		 var_dump("Item: </br>");
+		var_dump($item);
+
+		var_dump("Genero: </br>");
+		var_dump($genero);
+		var_dump("Genero form: </br>");
+		var_dump($this->GetFormValue('Genero'));
+		*/
+
+		$href_reserva= $MIOLO->GetActionURL($module,'main:reservar','%0%',Array('event'=>'btnVerificar:click', "endereco"=>str_replace('&', '@@@', $endereco), "pgdet"=>$pgdet));
 		$datagrid = new DataGrid2($query, $columns, $href_datagrid,20);
-		
-        if(!$ehPeriodico){
-            $tituloObra = $this->objSimples->GetTitulo($item);
-            $mostra_reserva = $this->objSimples->GetEstadoExemplarById($item);
-            $datagrid->SetTitle('Exemplares de: ' . $tituloObra->result[0][0]);
-            if($mostra_reserva == 5){
-            	$datagrid->AddActionText('alt','Reservar',$href_reserva);
-            }
-        }else{
-            $tituloPeriodico = $this->objSimples->GetTituloPeriodicoByIdArtigo($item);
-            $datagrid->SetTitle('Exemplares do Periódico: ' . $tituloPeriodico->result[0][0]);
-        }
-		
+
+		if(!$ehPeriodico){
+			$tituloObra = $this->objSimples->GetTitulo($item);
+			$mostra_reserva = $this->objSimples->GetEstadoExemplarById($item);
+			$datagrid->SetTitle('Exemplares de: ' . $tituloObra->result[0][0]);
+			if($mostra_reserva == 5){
+				// 				$datagrid->AddActionText('alt','Reservar',$href_reserva);
+			}
+		}else{
+			$tituloPeriodico = $this->objSimples->GetTituloPeriodicoByIdArtigo($item);
+			$datagrid->SetTitle('Exemplares do Periódico: ' . $tituloPeriodico->result[0][0]);
+		}
+
+		// Daniel Bonfim - 25-02-2013
+		$datagrid->SetLinkType('linkbutton');
+		// </>
+
 		$datagrid->SetWidth('99%');
 		$datagrid->setClose(null);
+
+		/*
+		 * Daniel Bonfim - 25-02-2013
+		*
+		* Devido a falta de documentação, estou usando esta forma não muito elegante para passar argumentos para
+		* o método através da query_string http
+		*/
+		$actionVoltarHttpComFiltros = base64_encode($endereco);
+		$href_reserva = $MIOLO->GetActionURL($module, $self, '%2%', array('event'=>'reservarExemplar&actionVoltar='.$actionVoltarHttpComFiltros));
+		$datagrid->AddActionText('Reservar', 'Reservar', $href_reserva);
+		// </>
 
 		$theme->ClearContent();
 		$theme->InsertContent($datagrid);
@@ -535,7 +550,7 @@ class frmPesquisaSimples extends frmPesquisa
 		// Agora vamos inserir informações da Obra
 		$this->defaultButton = false;
 
-		$this->objObra = $MIOLO->GetBusiness($module, 'obra');          
+		$this->objObra = $MIOLO->GetBusiness($module, 'obra');
 		if(!$ehPeriodico){
 			$this->SetTitle('Ficha Detalhada');
 			$data = $this->objObra->getFichaDetalhada($item);
@@ -545,57 +560,36 @@ class frmPesquisaSimples extends frmPesquisa
 		}
 
 		$linhas = array();
-		
-    if(!$ehPeriodico){
-		  if($data[0])
+		if(!ehPeriodico){
+			if($data[0])
 				$linhas[] = array('Número da Obra', $data[0]);
-				
-			if($data[22])
-				$linhas[] = array('Número de Chamada', $data[22]);				
-				
-				$numObra = $data[0];
-			if($data[3])
-				$linhas[] = array('Autor', $data[3]);
+			$numObra = $data[0];
 			if($data[1])
-			{
-					$titulo = $data[1];
-					if($data[2])
-						$titulo .= ' : '. $data[2];
-					if($data[21])
-						$titulo .= ' / '. $data[21];					
-			
-					$linhas[] = array('Título', $titulo);
-			}
+				$linhas[] = array('Título', $data[1]);
+			if($data[2])
+				//		$linhas[] = array('Subtítulo', $data[2]);
+				if($data[3])
+				$linhas[] = array('Autor', $data[3]);
 			if($data[4])
 				$linhas[] = array('Edição', $data[4]);
 			if($data[5])
-				$linhas[] = array('Classificação', $data[5]);
-			if($data[6])
-				$linhas[] = array('Notação de Autor', $data[6]);
-			if($data[7])
-				$linhas[] = array('Notação de Título', $data[7]);
-			//if($data[8])
-				//$linhas[] = array('Local de Publicação', $data[8]);
-			//if($data[9])
-				//$linhas[] = array('Editora', $data[9]);
-			//if($data[10])
-				//$linhas[] = array('Data de Publicação', $data[10]);
-				
-			$linhas[] = array('Imprenta', $this->objObra->getImprentaPontuado($item)); 	
-				
-			//if($data[11])
-				//$linhas[] = array('Descrição Física', $data[11]);
-				
-			$linhas[] = array('Descrição Física', $this->objObra->getDescricaoFisica($item));					
-
-			//if($data[12])
-				//$linhas[] = array('Material Complementar', $data[12]);
+				//		$linhas[] = array('Classificação', $data[5]);
+				if($data[6])
+				//		$linhas[] = array('Notação de Autor', $data[6]);
+				if($data[7])//
+				//		$linhas[] = array('Notação de Título', $data[7]);
+				if($data[8])
+				$linhas[] = array('Local de Publicação', $data[8]);
+			if($data[9])
+				$linhas[] = array('Editora', $data[9]);
+			if($data[10])
+				$linhas[] = array('Data de Publicação', $data[10]);
+			if($data[11])
+				$linhas[] = array('Descrição Física', $data[11]);
+			if($data[12])
+				$linhas[] = array('Material Complementar', $data[12]);
 			if($data[13])
 				$linhas[] = array('Série', $data[13]);
-				
-			if($data[19])
-				$linhas[] = array('ISBN', $data[19]);				
-				
 			if($data[14])
 				$linhas[] = array('Número de Volume', $data[14]);
 			if($data[15])
@@ -604,233 +598,338 @@ class frmPesquisaSimples extends frmPesquisa
 				$linhas[] = array('Entrada Secundária', $data[16]);
 			if($data[17])
 				$linhas[] = array('Acesso Eletrônico', $data[17]);
-    }else{
-		    			//Alteração na Ficha detalhada    
-		     if($data[0])
+		}else{
+
+
+			//Alteração na Ficha detalhada
+
+			if($data[0])
 				$linhas[] = array('Número da Obra', $data[0]);
-				
-			if($data[22])
-				$linhas[] = array('Número de Chamada', $data[22]);		
-				
+
+			if($data[1])
+					
+				if($data[2])
+				$linhas[] = array('Título ', $data[1]  . '  : '  .$data[2]);
+			else
+				$linhas[] = array('Título ', $data[1] );
+
+
+			//  COMENTADO 24/2012
+			//	if($data[2])
+			//		$linhas[] = array('Subtitulo', $data[2]);
+
 			if($data[3])
 				$linhas[] = array('Autor', $data[3]);
-	  
-	  	     if($data[1])
-			
-				if($data[2])
-					$linhas[] = array('Título ', $data[1]  . '  : '  .$data[2]);
-				else
-					$linhas[] = array('Título ', $data[1] );
-				
 
-            	//  COMENTADO 24/2012
-		//	if($data[2])							
-		//		$linhas[] = array('Subtitulo', $data[2]);
-									
-				
+
 			if($data[18])
 				$linhas[] = array('Autor Secundário',     $data[18]  .  '  '   );
-				
-				
-				
+
+
+
 			if  ($data[4])
 				$linhas[] = array('Edição', $data[4]);
-				
+
 			if($data[5])
 				$linhas[] = array('--', $data[5]);
-				
+
 			if($data[6])
 				$linhas[] = array('--', $data[6]);
 
 
-				// IMPRENTA É LOCAL, EDITORA E ANO
-				
-			//if ($data[8])
-				//$linhas[] = array('Imprenta', $data[8] .  ' ; '  . $data[9] . ' ; '   .$data[10] );
-			$linhas[] = array('Imprenta', $this->objObra->getImprentaPontuado($item)); 	
+			// IMPRENTA É LOCAL, EDITORA E ANO
 
-							
+			if ($data[8])
+				$linhas[] = array('Imprenta', $data[8] .  ' ; '  . $data[9] . ' ; '   .$data[10] );
+
+
 			if($data[11])
 				$linhas[] = array('Descrição física', $data[11]);
 
+
+
 			if($data[15])
 				$linhas[] = array('Assuntos', $data[15]);
-				
-				
+
+
 			if($data[19])
 				$linhas[] = array('ISBN', $data[19]);
-   
-   			if($data[20])
+
+			if($data[20])
 				$linhas[] = array('Numero chamada'  , $data[20] .  ';  '   .$data[4] );
 
-    
-    
-	/*     rever porque está começando com o titulo e começa com o numero da obra
-	
+
+
+			/*     rever porque está começando com o titulo e começa com o numero da obra
+
 		 if($data[0])
 				$linhas[] = array('Título do Artigo', $data[0]);
 			if($data[1])
 				$linhas[] = array('Assunto', $data[1]);
 
-            	//  COMENTADO PORQUE ESTÁ SE TRATANDO AUTROR NOVAMENTE - 04/2011
+			//  COMENTADO PORQUE ESTÁ SE TRATANDO AUTROR NOVAMENTE - 04/2011
 			if($data[2])
 				$linhas[] = array('Autor', $data[2]);
-            //Uma listagem dos autores secundários
+			//Uma listagem dos autores secundários
 			//  COMENTADO PORQUE NÃO ESTÁ SE TRATANDO AUTROR SECUNDÁRIO
-              if($data[3]){
-				$linhas[] = array('Outros Autores', '<br>');// );
-                //var_dump($data[3]); => "  "
-                //então separa por ',' e imprime cada um:
-                $data[3] = split(';',$data[3]);
-                
-                foreach($data[3] as $linha){
-                    $linhas[] = array('=> ', $linha);
-                }
-                
-                */
-              
-        
-            
-       //   if($data[4])
-	//			$linhas[] = array('Demais informações:', $data[9]);
+			if($data[3]){
+			$linhas[] = array('Outros Autores', '<br>');// );
+			//var_dump($data[3]); => "  "
+			//então separa por ',' e imprime cada um:
+			$data[3] = split(';',$data[3]);
+
+			foreach($data[3] as $linha){
+			$linhas[] = array('=> ', $linha);
+			}
+
+			*/
+
+
+
+			//   if($data[4])
+			//			$linhas[] = array('Demais informações:', $data[9]);
 			if($data[5])
 				$linhas[] = array('Localização e Acesso Eletrônico', $data[5]);
-    }
+		}
 
-        $tabela = new MTableRaw('', $linhas);
+
+
+
+
+
+
+		$tabela = new MTableRaw('', $linhas);
 
 		//define atributos do tableraw, como fundo cinza (mesmo do form)
 		$this->page->addStyleCode(".m-tableraw-row{ background-color: threedface; font: message-box; color: #000; font-weight: normal; font-size: 11px; text-decoration: none}");
-      
-      //Insere referência bibliográfica no padrão ABNT
-      
 
-              // AUTOR SECUNDÁRIO TRATADO DE OUTRA FORMA - COMENTADO
-      $autor = $MIOLO->GetBusiness($module,'autor');
-      $autoresSecundarios = $autor->GetAutorSecundarioByObra($item);
-      $linhas = array();
-      $referencia = $this->objObra->formatarABNT($data,$item,$autoresSecundarios);
-      
-      if($referencia != null){
-         $linhas[] = array('Referência: ',$referencia);
-      }else{
-         //To do Formatar ABNT para periodico
-         $periodico = $MIOLO->GetBusiness($module,'periodico');
-         $referencia = $periodico->formatarABNT($data,$item);
-         if($referencia != null){
-            $linhas[] = array('Referência: ',$referencia);
-         }
-      }      
-      $tabela2 = new MTableRaw('', $linhas);
+		//Insere referência bibliográfica no padrão ABNT
 
-      $fields = Array(
-			$tabela,
-         $tabela2
+
+		// AUTOR SECUNDÁRIO TRATADO DE OUTRA FORMA - COMENTADO
+		$autor = $MIOLO->GetBusiness($module,'autor');
+		$autoresSecundarios = $autor->GetAutorSecundarioByObra($item);
+		$linhas = array();
+		$referencia = $this->objObra->formatarABNT($data,$item,$autoresSecundarios);
+
+		if($referencia != null){
+			$linhas[] = array('Referência: ',$referencia);
+		}else{
+			//To do Formatar ABNT para periodico
+			$periodico = $MIOLO->GetBusiness($module,'periodico');
+			$referencia = $periodico->formatarABNT($data,$item);
+			if($referencia != null){
+				$linhas[] = array('Referência: ',$referencia);
+			}
+		}
+		$tabela2 = new MTableRaw('', $linhas);
+
+		$fields = Array(
+				$tabela,
+				$tabela2
 		);
 
 		// Insere os campos
 		$this->SetFields($fields);
 
-                
+
 		$this->SetButtonAttr('btnConsultar','visible',false);
-        if(!$ehPeriodico){
-        	
-            $this->AddButton( new MButtonWindow('btnMarc', 'MARC', $MIOLO->GetActionURL($module = $module, $action = 'marc', $item )) );
-        }else{
-            $this->AddButton( new MButtonWindow('btnMarc', 'MARC', $MIOLO->GetActionURL($module = $module, $action = 'marcArtigo', $item)) );
-        }
+		if(!$ehPeriodico){
+
+			$this->AddButton( new MButtonWindow('btnMarc', 'MARC', $MIOLO->GetActionURL($module = $module, $action = 'marc', $item )) );
+		}else{
+			$this->AddButton( new MButtonWindow('btnMarc', 'MARC', $MIOLO->GetActionURL($module = $module, $action = 'marcArtigo', $item)) );
+		}
 	}
 
 
-		
-		
-		
-			
-			//
-/*			
-			 if($data[0])
-				$linhas[] = array('Título do Artigo', $data[0]);
-			if($data[1])
-				$linhas[] = array('Assunto', $data[1]);
 
-            	//  COMENTADO PORQUE ESTÁ SE TRATANDO AUTROR NOVAMENTE - 04/2011
-			if($data[2])
-				$linhas[] = array('Autor', $data[2]);
-            //Uma listagem dos autores secundários
-			//  COMENTADO PORQUE NÃO ESTÁ SE TRATANDO AUTROR SECUNDÁRIO
-              if($data[3]){
-				$linhas[] = array('Outros Autores', '<br>');// );
 
-                //então separa por ';' e imprime cada um:
-                $data[3] = split(';',$data[3]);
-                
-                foreach($data[3] as $linha){
-                    $linhas[] = array('=> '; $linha);
-                }
-              
-            }
-            
-          if($data[4])
-				$linhas[] = array('Resumo', $data[4]);
-			if($data[5])
-				$linhas[] = array('Localização e Acesso Eletrônico', $data[5]);
-    }
-		
-    
-        $tabela = new MTableRaw('', $linhas);
 
-		//define atributos do tableraw, como fundo cinza (mesmo do form)
-		$this->page->addStyleCode(".m-tableraw-row{ background-color: threedface; font: message-box; color: #000; font-weight: normal; font-size: 11px; text-decoration: none}");
-      
-      //Insere referência bibliográfica no padrão ABNT
-      
 
-              // AUTOR SECUNDÁRIO TRATADO DE OUTRA FORMA - COMENTADO
-      $autor = $MIOLO->GetBusiness($module,'autor');
-      $autoresSecundarios = $autor->GetAutorSecundarioByObra($item);
-      $linhas = array();
-      $referencia = $this->objObra->formatarABNT($data,$item,$autoresSecundarios);
-      
-      if($referencia != null){
-         $linhas[] = array('Referência: ',$referencia);
-      }else{
-         //To do Formatar ABNT para periodico
-         $periodico = $MIOLO->GetBusiness($module,'periodico');
-         $referencia = $periodico->formatarABNT($data,$item);
-         if($referencia != null){
-            $linhas[] = array('Referência: ',$referencia);
-         }
-      }      
-      $tabela2 = new MTableRaw('', $linhas);
+	//
+	/*
+	if($data[0])
+		$linhas[] = array('Título do Artigo', $data[0]);
+	if($data[1])
+		$linhas[] = array('Assunto', $data[1]);
 
-      $fields = Array(
-			$tabela,
-         $tabela2
-		);
+	//  COMENTADO PORQUE ESTÁ SE TRATANDO AUTROR NOVAMENTE - 04/2011
+	if($data[2])
+		$linhas[] = array('Autor', $data[2]);
+	//Uma listagem dos autores secundários
+	//  COMENTADO PORQUE NÃO ESTÁ SE TRATANDO AUTROR SECUNDÁRIO
+	if($data[3]){
+	$linhas[] = array('Outros Autores', '<br>');// );
 
-		// Insere os campos
-		$this->SetFields($fields);
+	//então separa por ';' e imprime cada um:
+	$data[3] = split(';',$data[3]);
 
-                
-		$this->SetButtonAttr('btnConsultar','visible',false);
-        if(!$ehPeriodico){
-            $this->AddButton( new MButtonWindow('btnMarc', 'MARC', $MIOLO->GetActionURL($module = $module, $action = 'marc', $item)) );
-        }else{
-            $this->AddButton( new MButtonWindow('btnMarc', 'MARC', $MIOLO->GetActionURL($module = $module, $action = 'marcArtigo', $item)) );
-        }
+	foreach($data[3] as $linha){
+	$linhas[] = array('=> '; $linha);
+	}
+
+	}
+
+	if($data[4])
+		$linhas[] = array('Resumo', $data[4]);
+	if($data[5])
+		$linhas[] = array('Localização e Acesso Eletrônico', $data[5]);
 	}
 
 
-          */
+	$tabela = new MTableRaw('', $linhas);
 
+	//define atributos do tableraw, como fundo cinza (mesmo do form)
+	$this->page->addStyleCode(".m-tableraw-row{ background-color: threedface; font: message-box; color: #000; font-weight: normal; font-size: 11px; text-decoration: none}");
+
+	//Insere referência bibliográfica no padrão ABNT
+
+
+	// AUTOR SECUNDÁRIO TRATADO DE OUTRA FORMA - COMENTADO
+	$autor = $MIOLO->GetBusiness($module,'autor');
+	$autoresSecundarios = $autor->GetAutorSecundarioByObra($item);
+	$linhas = array();
+	$referencia = $this->objObra->formatarABNT($data,$item,$autoresSecundarios);
+
+	if($referencia != null){
+	$linhas[] = array('Referência: ',$referencia);
+	}else{
+	//To do Formatar ABNT para periodico
+	$periodico = $MIOLO->GetBusiness($module,'periodico');
+	$referencia = $periodico->formatarABNT($data,$item);
+	if($referencia != null){
+	$linhas[] = array('Referência: ',$referencia);
+	}
+	}
+	$tabela2 = new MTableRaw('', $linhas);
+
+	$fields = Array(
+	$tabela,
+	$tabela2
+	);
+
+	// Insere os campos
+	$this->SetFields($fields);
+
+
+	$this->SetButtonAttr('btnConsultar','visible',false);
+	if(!$ehPeriodico){
+	$this->AddButton( new MButtonWindow('btnMarc', 'MARC', $MIOLO->GetActionURL($module = $module, $action = 'marc', $item)) );
+	}else{
+	$this->AddButton( new MButtonWindow('btnMarc', 'MARC', $MIOLO->GetActionURL($module = $module, $action = 'marcArtigo', $item)) );
+	}
+	}
+
+
+	*/
+
+	/**
+	 * Efetua a reserva do exemplar
+	 *
+	 * @author Daniel Bonfim
+	 * @since 27-02-2013
+	 */
+	function reservarExemplar() {
+		global $MIOLO, $module, $action, $item;
+
+		$numeroTombo = $item;
+		$actionVoltarHttpComFiltros = base64_decode($_GET['actionVoltar']);
+
+		$bussEstado = $MIOLO->GetBusiness($module, 'estado');
+		$estado = $bussEstado->getEstadoByNumeroTombo($numeroTombo);
+
+		/*
+		 * Só é possível reservar um exemplar que estiver emprestado.
+		*/
+		if($estado[0] != 5) {
+			$MIOLO->Error("O exemplar não pode ser reservado porque está $estado[1].", $actionVoltarHttpComFiltros);
+
+		} else {
+
+			$bussExemplar = $MIOLO->GetBusiness($module, 'exemplar');
+			$bussReserva = $MIOLO->GetBusiness($module, 'reserva');
+			$bussEstado  = $MIOLO->GetBusiness($module,'estado');
+			$bussOperacao = $MIOLO->GetBusiness($module,'operacao');
+			$bussDireito = $MIOLO->GetBusiness($module,'direito');
+
+			/*
+			 * Verificando se o grupo do usuário possui direito de Reserva
+			*/
+			$condicoesDoExemplarPorUsuario = $bussExemplar->getCondicoesDoExemplarPorUsuario($numeroTombo, $MIOLO->login->idkey);
+
+			if(!is_null($condicoesDoExemplarPorUsuario)) {
+					
+				$condicoesDoExemplar = array(
+						'idGrupo' => $condicoesDoExemplarPorUsuario[0],
+						'idExemplar' => $condicoesDoExemplarPorUsuario[1],
+						'idEstado' => $condicoesDoExemplarPorUsuario[2],
+						'idRegraCirculacao' => $condicoesDoExemplarPorUsuario[3],
+						'idObra' => $condicoesDoExemplarPorUsuario[4],
+						'diasEmprestimo' => $condicoesDoExemplarPorUsuario[5],
+						'diasReserva' => $condicoesDoExemplarPorUsuario[6],
+						'limiteDeEmprestimo' => $condicoesDoExemplarPorUsuario[7],
+						'limiteDeRenovacao' => $condicoesDoExemplarPorUsuario[8],
+						'limiteDeReserva' => $condicoesDoExemplarPorUsuario[9],
+				);
+
+				// Verificando se o grupo do usuário possui direitos para realizar a operação de reserva
+				$possuiDireitoDeReserva = $bussDireito->isGrupoComDireitoDeRealizarOperacao(
+						$condicoesDoExemplar['idRegraCirculacao'],
+						$bussOperacao->getIdOperacaoByMnemonico2("RESERVA"),
+						$condicoesDoExemplar['idGrupo']
+				);
+
+				if($possuiDireitoDeReserva) {
+
+					$k = new MKrono();
+					$dataHoje = $k->KDate('%d/%m/%Y %H:%i:00');
+
+					$db = $MIOLO->GetDatabase('sigaept');
+					$transaction = $db->getTransaction();
+					$transaction->begin();
+
+					// Alterando o exemplar (bt_exemplar)
+					$idestado = $bussEstado->GetIdByMnemonico("RESERVADO");
+					$bussExemplar->AlteraEstado($numeroTombo, $idestado);
+
+
+					// Inserindo nova reserva (bt_reserva)
+					$idExemplar = $bussExemplar->GetIdByTombo($numeroTombo);
+					$idUsuario = $MIOLO->login->idkey;
+
+					/*
+					 * $dataHoraReserva, $dataHoraSituacao, $dataHoraEntrada,
+					* $dataHoraLimite, $foiAvisado, $foiConfirmada, $idSituacao, $idUsuario, $idExemplar
+					*/
+					$bussReserva->insertReserva($dataHoje, null, null, null, null, null, 2, $idUsuario, $idExemplar);
+
+					$transaction->commit();
+
+					$msg = 'Exemplar reservado com sucesso.';
+					$this->manager->Information($msg, $actionVoltarHttpComFiltros);
+
+				} else {
+
+					$msg = 'O usuário não possui direitos para efetuar a reserva.';
+					$this->manager->Information($msg, $actionVoltarHttpComFiltros);
+				}
+
+			} else {
+				$msg = 'Exemplar sem política de circulação.';
+				$MIOLO->Error($msg, $actionVoltarHttpComFiltros);
+			}
+
+		}
+	}
 
 
 	function PesquisaDetalhada()
 	{
 		global $MIOLO, $module, $self, $theme, $action, $page;
 
-//		$filtro = $_GET["item"];
-//		$campo = $_GET["campo"];
+		//		$filtro = $_GET["item"];
+		//		$campo = $_GET["campo"];
 
 		$filtro = $this->GetFormValue('item');
 		$campo = $this->GetFormValue('campo');
